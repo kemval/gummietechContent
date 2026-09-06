@@ -15,7 +15,9 @@ Usage:
 
 import argparse
 import sys
+import time
 from pathlib import Path
+from urllib.parse import urlparse
 
 import feedparser
 import requests
@@ -39,6 +41,24 @@ HEADERS = {
     ),
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+# Several publishers list four feeds on one host (www.nasa.gov, for one),
+# and the YAML groups them, so an unpaced pass fires them back to back and
+# earns a 429 on all but the first. Space consecutive requests to the same
+# host; feeds on different hosts are never delayed. Both this module and
+# ingest.py fetch every feed, so both must pace.
+MIN_HOST_INTERVAL = 2.0
+_last_request_at: dict[str, float] = {}
+
+
+def pace_host(url: str) -> None:
+    """Sleep just long enough that this host is not hit twice in a row."""
+    host = urlparse(url).netloc
+    wait = MIN_HOST_INTERVAL - (time.monotonic() - _last_request_at.get(host, 0.0))
+    if wait > 0:
+        time.sleep(wait)
+    _last_request_at[host] = time.monotonic()
+
 
 OK = "\033[92m"
 BAD = "\033[91m"
@@ -67,6 +87,7 @@ def check_feed(entry, verbose=False):
     if not url:
         return "fail", "no url in entry"
 
+    pace_host(url)
     try:
         resp = requests.get(
             url, headers=HEADERS, timeout=TIMEOUT, allow_redirects=True

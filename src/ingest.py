@@ -16,7 +16,8 @@ Environment (.env locally, repo secrets in CI):
 
 Two constraints shape this file:
 
-  - Feeds are fetched with a browser User-Agent, reusing verify_feeds.HEADERS.
+  - Feeds are fetched with a browser User-Agent, reusing verify_feeds.HEADERS,
+    and paced per host so grouped feeds on one domain do not earn a 429.
     Publishers behind Cloudflare answer unfamiliar agents with a 403 or an
     HTML block page, and feedparser reports the latter as a confusing
     "not well-formed" XML error rather than a network failure.
@@ -43,7 +44,7 @@ import yaml
 from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
 
-from verify_feeds import HEADERS, TIMEOUT
+from verify_feeds import HEADERS, TIMEOUT, pace_host
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FEEDS_DIR = REPO_ROOT / "feeds"
@@ -115,6 +116,7 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
     if not url:
         return [], "no url in entry"
 
+    pace_host(url)
     try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT,
                             allow_redirects=True)
