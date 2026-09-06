@@ -47,6 +47,27 @@ def config() -> tuple[str, str]:
     return api_key, os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
 
 
+def _quota_violations(resp: requests.Response) -> list[str]:
+    """
+    Return the quota ids named in a 429 body, or [] when it carries none.
+
+    Gemini says which window it hit in error.details[].violations[].quotaId
+    ("GenerateRequestsPerMinutePerProjectPerModel-FreeTier" vs the PerDay
+    one). The prose message names neither — it just links the rate-limit
+    docs — so matching substrings against the whole body can read a
+    per-minute 429, which backoff fixes, as a daily cap, which ends the run.
+    """
+    try:
+        details = resp.json()["error"]["details"]
+    except (ValueError, KeyError, TypeError):
+        return []
+    ids: list[str] = []
+    for detail in details:
+        if str(detail.get("@type", "")).endswith("QuotaFailure"):
+            ids.extend(v.get("quotaId", "") for v in detail.get("violations", []))
+    return [i for i in ids if i]
+
+
 def generate(prompt: str, api_key: str, model: str,
              temperature: float = 0.2) -> str:
     """
@@ -81,8 +102,20 @@ def generate(prompt: str, api_key: str, model: str,
             raise SystemExit(f"Could not reach Gemini: {type(exc).__name__}: {exc}")
 
         if resp.status_code == 429:
-            detail = resp.text.lower()
-            if "perday" in detail or "per day" in detail or "daily" in detail:
+            quota_ids = _quota_violations(resp)
+            # Log the evidence before acting on it. A daily cap ends the run,
+            # and in CI a misclassified per-minute 429 leaves an identical red
+            # job with nothing to tell the two apart afterwards.
+            print("  Gemini 429 · " + (", ".join(quota_ids)
+                                       or resp.text[:200].replace("\n", " ")))
+            if quota_ids:
+                hit_daily = any("perday" in q.lower() for q in quota_ids)
+            else:
+                # No structured violation: the prose is all there is to go on.
+                detail = resp.text.lower()
+                hit_daily = ("perday" in detail or "per day" in detail
+                             or "daily" in detail)
+            if hit_daily:
                 raise SystemExit(
                     "Gemini daily quota is spent. Anything already written is "
                     "saved. The quota resets at midnight Pacific — re-run then, "
