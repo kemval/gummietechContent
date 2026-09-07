@@ -1,0 +1,26 @@
+{
+  "post_type": "drop",
+  "domain": "conservation ecology",
+  "colorway": "bloom",
+  "hook": "Artificial beaver dams: one creek's juvenile coho survival rose 8% to 60%.",
+  "what_happened": "The Scott River Watershed Council built artificial beaver dams in California, creating cooler wetland habitats that successfully shielded young coho salmon.",
+  "why_it_matters": "This low-cost intervention restored critical habitats, maintaining healthy salmon populations and high return rates even during severe drought.",
+  "the_catch": "The authors urge caution: the dams' effectiveness is highly location-specific, and this was an observational before-after comparison in one creek, not a controlled experiment.",
+  "caption": "By mimicking beaver dams with wooden posts and branches, conservationists in California's Scott River valley saw juvenile coho survival in French Creek rise from 8% to 60%.",
+  "keywords": [
+    "conservation",
+    "salmon",
+    "beaver dams"
+  ],
+  "hashtags": [
+    "#ecology",
+    "#conservation",
+    "#salmon",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide carousel explaining how artificial beaver dams in California successfully restored cold-water habitats and boosted juvenile salmon survival.",
+  "source_url": "https://www.discoverwildlife.com/animal-facts/artificial-beaver-dams-california",
+  "attribution": "Pollock et al., Frontiers in Ecology and Evolution (2026)",
+  "peer_reviewed": true,
+  "published_at": "2026-09-07"
+}
