@@ -1,0 +1,26 @@
+{
+  "post_type": "drop",
+  "domain": "Materials engineering",
+  "colorway": "ember",
+  "hook": "Ice structures can now be 3D printed at room temperature.",
+  "what_happened": "Researchers developed a simplified 3D printing method that creates ice structures at room temperature using evaporative cooling in a vacuum.",
+  "why_it_matters": "This approach prints complex ice structures without cryogenic infrastructure, support materials, or external refrigeration.",
+  "the_catch": "The printed ice structures are stable only under low-pressure conditions; once the vacuum is removed, they melt back into water.",
+  "caption": "A new 3D printing method uses evaporative cooling in a vacuum to create complex ice structures at room temperature.",
+  "keywords": [
+    "3D printing",
+    "ice structures",
+    "evaporative cooling"
+  ],
+  "hashtags": [
+    "#3dprinting",
+    "#materialsscience",
+    "#manufacturing",
+    "#gummietech"
+  ],
+  "alt_text": "An infographic explaining a new method for 3D printing ice structures at room temperature using a vacuum.",
+  "source_url": "https://www.pnas.org/doi/abs/10.1073/pnas.2608173123?af=R",
+  "attribution": "Demmenie et al., PNAS (2026)",
+  "peer_reviewed": true,
+  "published_at": "2026-09-08"
+}
