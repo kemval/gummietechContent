@@ -158,7 +158,7 @@ def build(posts: list[dict], outdir: Path) -> None:
 
     # `base` is the path back to the site root: post pages live one
     # directory down. Relative, not root-absolute, because Pages serves
-    # this under /gummietech/ while a local preview is opened at file://.
+    # this under /gummietechContent/ while a local preview is opened at file://.
     (outdir / "index.html").write_text(
         env.get_template("index.html").render(posts=posts, base="")
     )

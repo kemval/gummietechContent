@@ -252,7 +252,8 @@ convention.
 
 `src/site.py` builds `posts/*.json` into a static site — an index plus one
 page per carousel — deployed to GitHub Pages by `.github/workflows/site.yml`
-at <https://kemval.github.io/gummietech/>. That URL is the Instagram bio link.
+at <https://kemval.github.io/gummietechContent/>. That URL is the Instagram
+bio link.
 
 It exists because Instagram does not make caption URLs clickable. `draft.py`
 records `source_url` and `render.py` writes it into `caption.txt`, but slide 5

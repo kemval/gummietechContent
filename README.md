@@ -38,7 +38,7 @@ cp .env.example .env              # then fill in keys
 Instagram does not make caption URLs clickable, so the source of a carousel
 never reaches a reader. The archive is where the bio link points:
 
-<https://kemval.github.io/gummietech/>
+<https://kemval.github.io/gummietechContent/>
 
 ```bash
 python src/site.py                # builds site/ from posts/*.json

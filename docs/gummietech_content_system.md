@@ -364,7 +364,7 @@ Hashtags matter far less than they used to — Instagram removed hashtag followi
 
 - **First line = SEO.** Put the actual searchable terms in it: "quantum computing," "fusion reactor," "humanoid robot." Instagram indexes caption text.
 - **3–5 hashtags maximum**, mixed: one broad (#technology), two niche (#quantumcomputing #materialsscience), one branded (#gummietech).
-- **One link, and it is the archive.** `https://kemval.github.io/gummietech/` — newest post first, so the bio link always lands on what was posted today. A custom domain would cost ~$12/year and is the only thing in this plan that would break the $0 constraint; the default URL is fine until it isn't.
+- **One link, and it is the archive.** `https://kemval.github.io/gummietechContent/` — newest post first, so the bio link always lands on what was posted today. A custom domain would cost ~$12/year and is the only thing in this plan that would break the $0 constraint; the default URL is fine until it isn't.
 - **Always write alt text.** Accessibility win and a ranking signal. Already in the JSON schema.
 - **End every caption with a question.** Comments are the strongest early-stage signal.
 - **Reply to every comment in the first hour.** Non-negotiable, non-automatable.
