@@ -1,0 +1,26 @@
+{
+  "post_type": "drop",
+  "domain": "human evolution",
+  "colorway": "bloom",
+  "hook": "Ancient proteins confirm three Denisovan bones from Southwest China",
+  "what_happened": "Researchers screened >60,000 bone fragments, selected 76 for mass spectrometry, sequenced proteins from 17, identifying three hominin bones as Denisovan.",
+  "why_it_matters": "It fills a geographic gap, making Bianfu Cave the richest Denisovan site outside Siberia and informs their postcranial anatomy.",
+  "the_catch": "Ancient DNA recovery from the bones failed, and current Denisovan protein and genome data are too sparse to pin down this population's lineage.",
+  "caption": "Proteomic analysis finally uncovers Denisovan bones in Southwest China, expanding their known range and shedding light on their limb anatomy.",
+  "keywords": [
+    "Denisovan",
+    "proteomics",
+    "archaeology"
+  ],
+  "hashtags": [
+    "#denisovan",
+    "#ancientproteins",
+    "#paleoanthropology",
+    "#gummietech"
+  ],
+  "alt_text": "Carousel shows the discovery of three Denisovan bone fragments in Bianfu Cave identified by protein sequencing, maps their location, and explains the significance.",
+  "source_url": "https://www.nature.com/articles/s41586-026-10976-9",
+  "attribution": "Rao et al., Nature (2026)",
+  "peer_reviewed": true,
+  "published_at": "2026-09-09"
+}
