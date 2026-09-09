@@ -48,7 +48,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 | Ingest | `feedparser` + `requests` |
 | Scheduler | GitHub Actions cron |
 | Database | Google Sheets (`gspread`) |
-| LLM scoring | Gemini free tier (Flash) |
+| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER` |
 | Rendering | Playwright → PNG |
 | Templating | Jinja2 |
 | Config | YAML feed lists, `.env` for secrets |
@@ -61,6 +61,9 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 src/
   verify_feeds.py    checks every feed URL is live
   ingest.py          feeds → Google Sheets
+  llm.py             picks the scoring backend from LLM_PROVIDER
+  gemini.py          Gemini request + free-tier retry policy
+  groq_llm.py        Groq request, same interface as gemini.py
   score.py           LLM scoring, batched
   draft.py           winning item → JSON
   render.py          JSON + template → PNGs
@@ -94,6 +97,14 @@ before anything reaches the LLM.
 that varies by model. Limits apply per project, not per key. Daily quotas
 reset at midnight Pacific. Handle 429s with exponential backoff; fail fast on
 daily-cap errors since backoff will not help.
+
+**Swapping to Groq** is `LLM_PROVIDER=groq` in `.env` (or the repo variable in
+CI) plus `GROQ_API_KEY`. `llm.py` forwards `score.py` and `draft.py` to
+`groq_llm.py`, which mirrors `gemini.py`'s two-function interface. Groq's free
+tier has the same per-minute + per-day shape, but its 429 body is plain prose,
+not Gemini's structured `QuotaFailure` — so the daily-vs-per-minute split in
+`groq_llm.py` is a best-effort text parse and is flagged as unverified in the
+code. Confirm it against a real daily-cap response before relying on it in CI.
 
 **GitHub Actions on the free tier** delays scheduled runs by 10–30 minutes at
 peak and disables scheduled workflows after 60 days of repo inactivity.

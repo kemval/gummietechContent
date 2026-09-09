@@ -3,7 +3,7 @@
 Layer 3: turn the top queued item into a post JSON that render.py accepts.
 
 Takes the highest-scoring row with status "queued", fetches the source
-article, and asks Gemini for the strict JSON contract in CLAUDE.md. Writes
+article, and asks the LLM for the strict JSON contract in CLAUDE.md. Writes
 posts/<date>-<slug>.json and marks the row "drafted".
 
 Usage:
@@ -11,8 +11,8 @@ Usage:
     python src/draft.py --row 47            # draft a specific sheet row
     python src/draft.py --dry-run           # print the JSON, write nothing
 
-Environment: same as score.py (GEMINI_API_KEY, GOOGLE_SHEET_ID,
-GOOGLE_SHEETS_CREDENTIALS).
+Environment: same as score.py (LLM_PROVIDER, GEMINI_API_KEY / GROQ_API_KEY,
+GOOGLE_SHEET_ID, GOOGLE_SHEETS_CREDENTIALS).
 
 Three things are decided in code rather than left to the model, because
 they are the fields that damage the account if they are wrong:
@@ -39,7 +39,7 @@ from pathlib import Path
 
 import requests
 
-import gemini
+import llm                       # forwards to gemini or groq per LLM_PROVIDER
 from ingest import COLUMNS, open_sheet
 from render import COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT
 from verify_feeds import HEADERS, TIMEOUT
@@ -209,7 +209,7 @@ def main() -> int:
                     help="print the JSON without writing or marking the row")
     args = ap.parse_args()
 
-    api_key, model = gemini.config()
+    api_key, model = llm.config()
     worksheet = open_sheet()
     rows = worksheet.get_all_values()
     if not rows:
@@ -224,7 +224,7 @@ def main() -> int:
         print(f"  warning: {warning} — drafting from the feed summary, so "
               "check the slides against the source before posting")
 
-    reply = gemini.generate(
+    reply = llm.generate(
         PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
                       source=item["source"], title=item["title"],
                       url=item["url"], text=article or item["summary"]),

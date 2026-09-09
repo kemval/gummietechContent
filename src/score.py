@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Layer 2: score the sheet's new items with Gemini and rank them for the queue.
+Layer 2: score the sheet's new items with the LLM and rank them for the queue.
 
 Reads every row with status "new", scores it 1-10 on the four axes from
 docs/gummietech_content_system.md §Layer 2, and writes back a score, a
@@ -21,14 +21,18 @@ Usage:
     python src/score.py --dry-run           # score and print, write nothing
 
 Environment (.env locally, repo secrets in CI):
+    LLM_PROVIDER                 'gemini' (default) or 'groq' — see llm.py
     GEMINI_API_KEY               free-tier key from aistudio.google.com/apikey
     GEMINI_MODEL                 optional; see gemini.DEFAULT_MODEL
+    GROQ_API_KEY                 free-tier key from console.groq.com/keys
+    GROQ_MODEL                   optional; see groq_llm.DEFAULT_MODEL
     GOOGLE_SHEET_ID              spreadsheet key
     GOOGLE_SHEETS_CREDENTIALS    path to the service account JSON
 
 Items go up in batches of BATCH_SIZE with a sleep between calls, to stay
-inside the free tier's per-minute limit. gemini.py owns what happens when
-a request is throttled or the model is overloaded.
+inside the free tier's per-minute limit. The provider module (gemini.py or
+groq_llm.py) owns what happens when a request is throttled or the model is
+overloaded; llm.py picks which one from LLM_PROVIDER.
 """
 
 from __future__ import annotations
@@ -38,7 +42,7 @@ import json
 import sys
 import time
 
-import gemini
+import llm                       # forwards to gemini or groq per LLM_PROVIDER
 from ingest import COLUMNS, open_sheet
 
 # 15-20 items per request. One request per item would exhaust the daily cap
@@ -115,7 +119,7 @@ def main() -> int:
                     help="score and print without writing to the sheet")
     args = ap.parse_args()
 
-    api_key, model = gemini.config()
+    api_key, model = llm.config()
 
     worksheet = open_sheet()
     rows = worksheet.get_all_values()             # one read for the whole sheet
@@ -148,7 +152,7 @@ def main() -> int:
         for n, item in enumerate(batch, start=1):
             item["i"] = n                          # numbering is per request
 
-        results = parse_scores(gemini.generate(
+        results = parse_scores(llm.generate(
             PROMPT.format(items=build_items_block(batch)), api_key, model))
         by_index = {int(r["i"]): r for r in results if "i" in r}
 

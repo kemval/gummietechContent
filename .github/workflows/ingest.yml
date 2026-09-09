@@ -47,9 +47,16 @@ jobs:
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
         run: python src/ingest.py
 
+      # LLM_PROVIDER picks the backend (llm.py); default is Gemini. Set the
+      # LLM_PROVIDER repo variable to "groq" and add GROQ_API_KEY to swap.
+      # Both key secrets are passed unconditionally — the unused one is just
+      # an empty string, and the provider that needs its key will fail loud.
       - name: Score new items
         env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
         run: python src/score.py
