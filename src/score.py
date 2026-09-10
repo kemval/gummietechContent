@@ -72,9 +72,10 @@ product launches with no technical substance, opinion pieces and editorials, \
 listicles, awards, conference announcements, and stories with no specific \
 finding or mechanism.
 
-Return ONLY a JSON array, one object per item, no prose and no code fences:
-[{{"i": <item number>, "novelty": <1-10>, "visual": <1-10>, "explain": <1-10>, \
-"surprise": <1-10>, "why": "<at most 12 words>"}}]
+Return ONLY a JSON object with a "results" array, one entry per item, no \
+prose and no code fences:
+{{"results": [{{"i": <item number>, "novelty": <1-10>, "visual": <1-10>, \
+"explain": <1-10>, "surprise": <1-10>, "why": "<at most 12 words>"}}]}}
 
 Items:
 {items}"""
@@ -105,7 +106,11 @@ def parse_scores(text: str) -> list[dict]:
         print(f"  warning: response was not JSON, skipping batch: {text[:120]}")
         return []
 
-    return data if isinstance(data, list) else []
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict) and isinstance(data.get("results"), list):
+        return data["results"]
+    return []
 
 
 def overall(scores: dict) -> float:

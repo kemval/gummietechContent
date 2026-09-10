@@ -4,6 +4,7 @@
 # Re-run monthly. Publishers move these without notice.
 
 feeds:
+
   # --- research institutions ---
   - name: MIT News
     url: https://news.mit.edu/rss/feed
@@ -95,6 +96,10 @@ feeds:
 
   - name: Cloudflare Blog
     url: https://blog.cloudflare.com/rss/
+    topic: tech
+
+  - name: Apple Newsroom
+    url: https://www.apple.com/newsroom/rss-feed.rss
     topic: tech
 
   # --- journals / science press ---
