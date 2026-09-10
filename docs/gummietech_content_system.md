@@ -65,8 +65,8 @@ Five items, one slide each, ranked. Highest save rate of the three formats becau
 Seven layers. Build in order. Do not attempt the whole thing at once.
 
 ```
-[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] DESIGN → [5] HUMAN GATE → [6] PUBLISH → [7] LEARN
-  every 2h    free LLM     LLM        against source    HTML→PNG      10 min/day     Business Suite   weekly
+[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] DESIGN → [4b] PROOF → [5] HUMAN GATE → [6] PUBLISH → [7] LEARN
+  every 2h    free LLM     LLM        against source    HTML→PNG    the render    10 min/day     Business Suite   weekly
 ```
 
 ### Layer 1 — Ingest (every 2 hours)
@@ -135,6 +135,26 @@ Fonts from Google Fonts (free, self-hostable). Icons from Lucide or Tabler (free
 Output: 1080×1350 PNG per slide.
 
 *Note: Canva's Bulk Create is a Pro feature and is not available on the free plan. Canva free is still useful for one-off manual designs, but the automated path is HTML→PNG. Figma's free tier works for designing the template visually before translating it to HTML.*
+
+### Layer 4b — Proof the render (before the gate spends attention on it)
+
+`render.py` screenshots each slide at a fixed 1080×1350 but never inspects the
+result, and it sizes the hook from a character count rather than a measured
+layout. A long compound word, a body slide a few words over the 25-word rule,
+or a colorway rotation that lands pale ink type on a washed-out field can
+overflow the frame, fail contrast, or push the "Preprint — not yet
+peer-reviewed" flag off slide 4 — with no error, because nothing in code
+looks at the pixels.
+
+`.claude/agents/slide-proof.md` is a read-only agent that renders the post to
+a scratch directory, reads the five PNGs, and reports BLOCK / FIX / PASS on
+frame containment, hook sizing, the `lead · cream · support · dark · lead`
+rhythm, preprint-flag visibility, contrast, and the attribution line — the
+failures only the rendered image reveals. It never edits the JSON, never
+renders into `output/`, and never dates a post. It is the visual counterpart
+to Layer 3b: 3b checks whether the words are true, 4b checks whether they are
+legible on the slide. Run both before Layer 5 so the ten-minute review goes to
+judgement, not to spotting clipped text.
 
 ### Layer 5 — Human gate (DO NOT SKIP)
 
@@ -291,6 +311,13 @@ Doubly important on a zero budget: evergreen posts have no API cost, no rate lim
 | Practical Engineering, Asianometry | Infrastructure and semiconductors, absent from IG |
 
 **Batch-produce 30 of these in one sitting.** Target: never fewer than 15 approved evergreen posts in the queue.
+
+`.claude/agents/evergreen-scout.md` is the intake for this tier: given a topic
+family, it mines the sources above into a ranked shortlist of candidates —
+each with a real source, a colorway, and a "why it matters" / "the catch"
+angle — scored on the same four axes as `score.py`. It stops at the idea; a
+person picks from the list and runs it through the normal draft → fact-check →
+gate path. It never writes to `posts/` or drafts slide copy.
 
 ### Aggregation — do it in code, not with a service
 

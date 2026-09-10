@@ -15,8 +15,8 @@ feeds, scores items with an LLM, drafts post copy as JSON, renders that
 JSON to PNG slides, and queues them for human approval.
 
 ```
-[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] RENDER → [5] HUMAN GATE → [6] PUBLISH
-  every 2h    Gemini      LLM         against source    HTML→PNG     manual          Business Suite
+[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] RENDER → [4b] PROOF → [5] HUMAN GATE → [6] PUBLISH
+  every 2h    Gemini      LLM         against source    HTML→PNG     the slides   manual          Business Suite
 ```
 
 Layer 5 is manual and permanent. Do not propose removing it or building
@@ -56,7 +56,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 ## Layout
 
 ```
-.claude/agents/      fact-check.md — verifies a draft against its source
+.claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
+                     (all read-only pre-gate reviewers — see the sections below)
 .github/workflows/   GitHub Actions cron
 src/
   verify_feeds.py    checks every feed URL is live
@@ -113,7 +114,10 @@ punctual execution.
 
 **Feed URLs move constantly.** Never hardcode a URL from memory. Run
 `python src/verify_feeds.py -v` after any change to `feeds/`, and treat
-that as a required step before wiring a feed into ingest.
+that as a required step before wiring a feed into ingest. The `feed-scout`
+agent (`.claude/agents/feed-scout.md`) does the legwork — it runs the
+checker, finds where a dead feed moved, and proposes the corrected YAML with
+evidence — but it only proposes; you still run `verify_feeds.py` and commit.
 
 **Secrets** go in `.env` locally and GitHub Actions repo secrets in CI.
 Never commit `.env`, `credentials.json`, or any key.
@@ -173,6 +177,22 @@ Invariants that keep the grid recognizable, and that a new family must respect:
 `draft.py` picks the family and `render.py` resolves it, so an invented name
 falls back to `signal` with a warning rather than reaching the CSS.
 `render.py --colorway <name>` overrides the JSON at the human gate.
+
+### Proofing the render
+
+`render.py` warns on word count but never looks at the PNGs it produces, and
+`hook_size_class()` sizes the hook from its character count, not a measured
+layout — so a long compound word, a body field a few words over budget, or a
+palette rotation that puts pale ink type on a washed-out field can overflow
+the frame, fail contrast, or clip the preprint flag without any error.
+
+Run the `slide-proof` agent (`.claude/agents/slide-proof.md`) after
+`fact-check` and before the human gate. It renders the post to a scratch
+directory, reads the five slides, and reports BLOCK / FIX / PASS on frame
+containment, hook sizing, colorway rhythm, preprint-flag visibility, contrast,
+and attribution — the things only the rendered image shows. It is read-only:
+it never edits the JSON or renders into `output/`, and it does not check
+claims or wording accuracy — that is `fact-check`'s half.
 
 ## Fact-checking a draft
 
