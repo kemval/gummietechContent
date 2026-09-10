@@ -1,0 +1,26 @@
+{
+  "post_type": "drop",
+  "domain": "corrosion science",
+  "colorway": "ember",
+  "hook": "Slightly charged water droplets corrode coated metal more easily",
+  "what_happened": "Ni et al. showed spontaneously charged drops damage protective coatings and accelerate metal corrosion",
+  "why_it_matters": "This overlooked mechanism may add to weathering of buildings, ships and cars, and points to a need for coatings that resist charge-induced damage",
+  "the_catch": "The breakdown model is a lower-bound estimate assuming constant dielectric strength, though real coatings vary with thickness",
+  "caption": "Charged droplets are more destructive than we thought.",
+  "keywords": [
+    "water droplets",
+    "corrosion",
+    "charge"
+  ],
+  "hashtags": [
+    "#corrosion",
+    "#materials",
+    "#physics",
+    "#gummietech"
+  ],
+  "alt_text": "Carousel explains how slight electric charge on water drops damages coatings and speeds metal corrosion",
+  "source_url": "https://www.nature.com/articles/d41586-026-02705-z",
+  "attribution": "Ni et al., Nature (2026)",
+  "peer_reviewed": true,
+  "published_at": "2026-09-10"
+}
