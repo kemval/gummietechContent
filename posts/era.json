@@ -21,5 +21,12 @@
   "source_url": "https://www.nature.com/articles/s41586-026-10658-6",
   "code_url": "github.com/google-research/era",
   "attribution": "Aygün et al., Nature 654, 909–916 (2026)",
-  "peer_reviewed": true
+  "peer_reviewed": true,
+  "es": {
+    "domain": "investigación IA",
+    "hook": "Una IA creó 40 nuevos métodos. Todos superan el récord humano.",
+    "what_happened": "Google y Harvard construyeron ERA: un modelo de lenguaje combinado con búsqueda en árbol que escribe código científico, lo evalúa y lo reescribe miles de veces.",
+    "why_it_matters": "El cuello de botella en la ciencia computacional no son las ideas. Son los meses de programación necesarios para probar una. ERA convierte eso en un problema de búsqueda.",
+    "the_catch": "ERA solo funciona cuando \"bueno\" ya es un número. Alguien debe escribir la función de puntuación primero — y para la mayoría de las preguntas de investigación, nadie lo ha hecho."
+  }
 }

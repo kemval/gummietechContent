@@ -22,5 +22,12 @@
   "source_url": "https://www.discoverwildlife.com/animal-facts/artificial-beaver-dams-california",
   "attribution": "Pollock et al., Frontiers in Ecology and Evolution (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-07"
+  "published_at": "2026-09-07",
+  "es": {
+    "domain": "ecología de conservación",
+    "hook": "Represas de castores artificiales: la supervivencia juvenil de coho en un arroyo aumentó 8 % a 60 %",
+    "what_happened": "El Scott River Watershed Council construyó represas de castores artificiales en California, creando hábitats de humedales más frescos que protegieron con éxito a los jóvenes salmones coho",
+    "why_it_matters": "Esta intervención de bajo costo restauró hábitats críticos, manteniendo poblaciones saludables de salmones y altas tasas de retorno incluso durante sequías severas",
+    "the_catch": "Los autores advierten precaución: la efectividad de las represas es altamente específica de la ubicación, y este fue un estudio observacional antes y después en un solo arroyo, no un experimento controlado"
+  }
 }

@@ -3,47 +3,47 @@
 {% block title %}{{ post.hook }} — gummietech{% endblock %}
 {% block description %}{{ post.alt_text }}{% endblock %}
 
-{% block content %}
-  <header class="masthead">
-    <a class="back" href="{{ base }}">← all posts</a>
-  </header>
+{% block masthead %}
+    <a class="back" href="{{ base }}">{{ t("← all posts", "← todos los posts") }}</a>
+{% endblock %}
 
+{% block content %}
   <article>
     <div class="hero panel" style="--accent: var(--{{ post.lead }})">
-      {% if not post.peer_reviewed %}<div class="flag">Preprint — not yet peer-reviewed</div>{% endif %}
+      {% if not post.peer_reviewed %}<div class="flag">{{ t("Preprint — not yet peer-reviewed", translated and "Preprint — aún sin revisión por pares") }}</div>{% endif %}
       <div class="meta">
-        {% if post.domain %}{{ post.domain }} · {% endif %}<time datetime="{{ post.published_at }}">{{ post.published_on }}</time>
+        {% if post.domain %}{{ t(post.domain, post.es.domain) }} · {% endif %}<time datetime="{{ post.published_at }}">{{ t(post.published_on, post.published_on_es if post.es else "") }}</time>
       </div>
-      <h1 class="hook">{{ post.hook }}</h1>
+      <h1 class="hook">{{ t(post.hook, post.es.hook) }}</h1>
     </div>
 
     <div class="section">
-      <h2>What happened</h2>
-      <p>{{ post.what_happened }}</p>
+      <h2>{{ t("What happened", translated and "Qué pasó") }}</h2>
+      <p>{{ t(post.what_happened, post.es.what_happened) }}</p>
     </div>
 
     <div class="section">
-      <h2>Why it matters</h2>
-      <p>{{ post.why_it_matters }}</p>
+      <h2>{{ t("Why it matters", translated and "Por qué importa") }}</h2>
+      <p>{{ t(post.why_it_matters, post.es.why_it_matters) }}</p>
     </div>
 
     <div class="section">
-      <h2>The catch</h2>
-      <p>{{ post.the_catch }}</p>
+      <h2>{{ t("The catch", translated and "El detalle") }}</h2>
+      <p>{{ t(post.the_catch, post.es.the_catch) }}</p>
     </div>
 
     <dl class="source">
-      <dt>Source</dt>
+      <dt>{{ t("Source", translated and "Fuente") }}</dt>
       <dd>{{ post.attribution }}</dd>
       <dd><a href="{{ post.source_url }}">{{ post.source_host }} →</a></dd>
 
       {% if post.code_url %}
-      <dt>Code</dt>
+      <dt>{{ t("Code", translated and "Código") }}</dt>
       <dd><a href="{{ post.code_href }}">{{ post.code_url }} →</a></dd>
       {% endif %}
 
-      <dt>Status</dt>
-      <dd>{% if post.peer_reviewed %}Peer-reviewed{% else %}Preprint — not yet peer-reviewed{% endif %}</dd>
+      <dt>{{ t("Status", translated and "Estado") }}</dt>
+      <dd>{% if post.peer_reviewed %}{{ t("Peer-reviewed", translated and "Revisado por pares") }}{% else %}{{ t("Preprint — not yet peer-reviewed", translated and "Preprint — aún sin revisión por pares") }}{% endif %}</dd>
     </dl>
   </article>
 {% endblock %}

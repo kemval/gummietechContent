@@ -22,5 +22,12 @@
   "source_url": "https://www.nature.com/articles/d41586-026-02705-z",
   "attribution": "Ni et al., Nature (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-10"
+  "published_at": "2026-09-10",
+  "es": {
+    "domain": "ciencia de la corrosión",
+    "hook": "Gotas de agua ligeramente cargadas corroen el metal recubierto más fácilmente",
+    "what_happened": "Ni et al. demostraron que gotas cargadas espontáneamente dañan las capas protectoras y aceleran la corrosión del metal",
+    "why_it_matters": "Este mecanismo pasado por alto puede contribuir al desgaste de edificios, barcos y automóviles, y señala la necesidad de recubrimientos que resistan el daño inducido por carga",
+    "the_catch": "El modelo de ruptura es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor"
+  }
 }

@@ -3,28 +3,28 @@
 {% block title %}gummietech — sources{% endblock %}
 {% block description %}Every @gummietech carousel, with the source you can actually click.{% endblock %}
 
-{% block content %}
-  <header class="masthead">
+{% block masthead %}
     <div class="mark">gummietech</div>
     <p class="tagline">
-      Every carousel, with the paper, the press release and the code —
-      the links Instagram will not let you tap.
+      {{ t("Every carousel, with the paper, the press release and the code — the links Instagram will not let you tap.",
+            translated and "Cada carrusel, con el estudio, el comunicado y el código: los enlaces que Instagram no te deja tocar.") }}
     </p>
-  </header>
+{% endblock %}
 
+{% block content %}
   {% for post in posts %}
   <a class="entry" href="{{ post.slug }}/">
     <article class="panel" style="--accent: var(--{{ post.lead }})">
       <div class="meta">
-        {% if post.domain %}{{ post.domain }} · {% endif %}<time datetime="{{ post.published_at }}">{{ post.published_on }}</time>
+        {% if post.domain %}{{ t(post.domain, post.es.domain) }} · {% endif %}<time datetime="{{ post.published_at }}">{{ t(post.published_on, post.published_on_es if post.es else "") }}</time>
       </div>
-      <h2 class="hook">{{ post.hook }}</h2>
+      <h2 class="hook">{{ t(post.hook, post.es.hook) }}</h2>
     </article>
   </a>
   {% else %}
   <p class="empty">
-    Nothing published yet. Posts appear here once they clear the human
-    gate and get a <code>published_at</code> date.
+    {{ t("Nothing published yet. Posts appear here once they clear the human gate and get a published_at date.",
+          translated and "Todavía no hay nada publicado. Los posts aparecen aquí cuando pasan la revisión humana y reciben una fecha published_at.") }}
   </p>
   {% endfor %}
 {% endblock %}

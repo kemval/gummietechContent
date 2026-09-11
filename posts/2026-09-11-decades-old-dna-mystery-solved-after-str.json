@@ -22,5 +22,12 @@
   "source_url": "https://phys.org/news/2026-09-decades-dna-mystery-strands-captured.html",
   "attribution": "Catley et al., Nucleic Acids Research (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-11"
+  "published_at": "2026-09-11",
+  "es": {
+    "domain": "acoplamiento de ADN",
+    "hook": "Dos hélices dobles de ADN se acoplan, puenteadas por iones metálicos",
+    "what_happened": "Los investigadores emplearon microscopía de fuerza atómica para visualizar dos hélices dobles de ADN bloqueándose entre sí",
+    "why_it_matters": "Primera evidencia directa de un modelo de acoplamiento de ADN propuesto hace más de dos décadas, con implicaciones para la condensación cromosómica",
+    "the_catch": "La imagen utilizó iones de níquel sobre mica; los resultados fisiológicos con magnesio y calcio provienen de simulaciones, no de imágenes"
+  }
 }

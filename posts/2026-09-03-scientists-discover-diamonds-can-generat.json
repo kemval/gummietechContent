@@ -22,5 +22,12 @@
   "source_url": "https://www.sciencedaily.com/releases/2026/08/260829035223.htm",
   "attribution": "Jing et al., Science Advances (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-04"
+  "published_at": "2026-09-04",
+  "es": {
+    "domain": "ingeniería de materiales",
+    "hook": "Dobla un diamante tan delgado que genera electricidad.",
+    "what_happened": "Investigadores de la Universidad de Hong Kong emplearon exfoliación de borde para crear membranas de diamante policristalino flexibles que generan electricidad al doblarse.",
+    "why_it_matters": "Rompe la suposición centenaria de que el diamante no es piezoeléctrico, convirtiéndolo de un soporte estructural pasivo a un material eléctrico activo.",
+    "the_catch": "El voltaje proviene de los límites entre los pequeños cristales, no de la propia estructura del diamante, por lo que se requieren membranas policristalinas y aún no existe un dispositivo funcional."
+  }
 }

@@ -36,6 +36,14 @@ SLIDE_IDS = ["slide-1", "slide-2", "slide-3", "slide-4", "slide-5"]
 REQUIRED = ["hook", "what_happened", "why_it_matters", "the_catch",
             "attribution", "alt_text", "source_url"]
 
+# The fields the web archive shows in Spanish when a post carries an `es`
+# block: translate.py writes them, site.py renders them behind the page's
+# language toggle. The slides are English only, so nothing here touches a
+# render — the list lives in this module because it is the one both of those
+# can import. site.py cannot be imported by name (the standard library owns
+# `site`), and site.py must not pull in the LLM stack just to build a page.
+ES_FIELDS = ("domain", "hook", "what_happened", "why_it_matters", "the_catch")
+
 # Field hues by topic family: (lead, support). The five-slide sequence is
 # always lead - cream - support - dark - lead: the hook and CTA bookend the
 # post, slide 2 is the cream rest slide, and the catch always drops to ink.

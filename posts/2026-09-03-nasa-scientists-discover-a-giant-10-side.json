@@ -22,5 +22,12 @@
   "source_url": "https://www.sciencedaily.com/releases/2026/09/260903064229.htm",
   "attribution": "Sánchez-Lavega et al., Science Advances (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-04"
+  "published_at": "2026-09-04",
+  "es": {
+    "domain": "ciencia planetaria",
+    "hook": "Se ha formado una ola atmosférica gigante de diez lados en el polo sur de Saturno.",
+    "what_happened": "Los investigadores emplearon el Telescopio Espacial Hubble de la NASA y datos terrestres para identificar un patrón de chorro de diez lados recién formado y verticalmente extendido en la atmósfera sur de Saturno.",
+    "why_it_matters": "Es el primer patrón de chorro grande y regular observado en el sur de Saturno, lo que permite a los científicos observar el desarrollo de una estructura atmosférica gigante durante varios años.",
+    "the_catch": "Los científicos aún no saben qué provocó el decágono, cómo se formó o si la estructura permanecerá estable con el tiempo."
+  }
 }
