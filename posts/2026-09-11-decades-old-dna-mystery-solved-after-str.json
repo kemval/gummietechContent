@@ -1,0 +1,25 @@
+{
+  "post_type": "drop",
+  "domain": "DNA pairing",
+  "colorway": "bloom",
+  "hook": "Two DNA double helices zip together, bridged by metal ions",
+  "what_happened": "Researchers used atomic force microscopy to image two DNA double helices locking together",
+  "why_it_matters": "First direct evidence for a DNA-pairing model proposed over two decades ago, with implications for chromosome condensation.",
+  "the_catch": "Imaging used nickel ions on mica; the physiological magnesium and calcium results come from simulation, not images.",
+  "caption": "How two DNA double helices find each other - and the metal ions that bridge them.",
+  "keywords": [
+    "DNA",
+    "microscopy",
+    "visualization"
+  ],
+  "hashtags": [
+    "#dna",
+    "#microscopy",
+    "#science",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide carousel explaining how atomic force microscopy and molecular dynamics simulations showed two DNA double helices pairing groove-to-groove, bridged by divalent metal ions.",
+  "source_url": "https://phys.org/news/2026-09-decades-dna-mystery-strands-captured.html",
+  "attribution": "Catley et al., Nucleic Acids Research (2026)",
+  "peer_reviewed": true
+}
