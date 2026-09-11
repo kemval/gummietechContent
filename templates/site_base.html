@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}gummietech{% endblock %}</title>
 <meta name="description" content="{% block description %}Sources and full explanations for every @gummietech carousel.{% endblock %}">
+{% if translated %}
+<script>
+  /* Read the reader's last choice before anything paints, so someone who
+     picked Spanish never sees a flash of English first. Storage throws in
+     a locked-down browser; English is the right answer when it does. */
+  try {
+    if (localStorage.getItem('gummietech-lang') === 'es') {
+      document.documentElement.dataset.lang = 'es';
+      document.documentElement.lang = 'es';
+    }
+  } catch (err) { /* no stored preference is reachable — stay English */ }
+</script>
+{% endif %}
 <style>
 /* ============================================================
    gummietech — web archive.
@@ -43,6 +56,14 @@
    COLORWAYS allowlist in render.py, never straight from the draft
    JSON — Jinja autoescaping guards HTML, not CSS. */
 
+/* ---------- the two languages ----------
+   Every translated string is in the page twice (site.py's t()), and the
+   language on <html data-lang> decides which half is shown. No second set
+   of pages, no rebuild to switch, and a string with no Spanish carries no
+   data-lang at all, so it stays visible either way. */
+:root:not([data-lang="es"]) [data-lang="es"],
+:root[data-lang="es"] [data-lang="en"] { display: none; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -60,7 +81,11 @@ a { color: inherit; }
 .wrap { max-width: 660px; margin: 0 auto; padding: 30px 18px 80px; }
 
 /* ---------- masthead ---------- */
-.masthead { margin-bottom: 34px; }
+.masthead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 34px;
+}
+.masthead > .titles { min-width: 0; }   /* let the tagline wrap, not push */
 .mark {
   font-family: var(--display); font-weight: 800;
   font-size: 27px; letter-spacing: -0.035em; text-decoration: none;
@@ -90,6 +115,24 @@ a { color: inherit; }
   line-height: 1.02; letter-spacing: -0.035em;
   text-wrap: balance;
 }
+
+/* ---------- language toggle ----------
+   Same shape language as .panel and .flag: an ink outline that fills in on
+   hover. The globe carries the meaning for a reader skimming; the code says
+   which language the click leads to, not which one is showing. */
+.lang {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 4px; padding: 6px 12px;
+  background: none; color: inherit;
+  border: 2px solid var(--ink); border-radius: 999px;
+  font-family: var(--body); font-weight: 700;
+  font-size: 13px; letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.lang svg { width: 16px; height: 16px; }
+.lang:hover, .lang:focus-visible { background: var(--ink); color: var(--cream); }
 
 /* ---------- index ---------- */
 .entry { display: block; text-decoration: none; margin-bottom: 18px; }
@@ -140,19 +183,67 @@ a { color: inherit; }
   .entry .hook { font-size: 34px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .panel { transition: none; }
+  .panel, .lang { transition: none; }
   .entry:hover .panel, .entry:focus-visible .panel { transform: none; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <header class="masthead">
+    <div class="titles">{% block masthead %}{% endblock %}</div>
+{% if translated %}
+    <button type="button" class="lang" hidden aria-label="Ver en español">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3 12h18M3.9 7.5h16.2M3.9 16.5h16.2"/>
+        <path d="M12 3c2.7 2.7 2.7 15.3 0 18c-2.7-2.7-2.7-15.3 0-18"/>
+      </svg>
+      <span class="code">ES</span>
+    </button>
+{% endif %}
+  </header>
 {% block content %}{% endblock %}
   <p class="foot">
     <a href="https://www.instagram.com/gummietech/">@gummietech</a> —
-    science, technology and engineering, explained by someone whose code
-    also crashes.
+    {{ t("science, technology and engineering, explained by someone whose code also crashes.",
+         translated and "ciencia, tecnología e ingeniería, explicadas por alguien a quien también se le cae el código.") }}
   </p>
 </div>
+{% if translated %}
+<script>
+  /* The button is hidden in the markup and revealed here: without
+     JavaScript there is nothing it could do, and a dead control is worse
+     than none. Everything it needs is already in the page. */
+  (function () {
+    var root = document.documentElement;
+    var button = document.querySelector('.lang');
+    var code = button.querySelector('.code');
+    var label = { en: 'Ver en español', es: 'View in English' };
+
+    function apply(lang) {
+      root.dataset.lang = lang;
+      root.lang = lang;
+      button.lang = lang === 'en' ? 'es' : 'en';
+      button.setAttribute('aria-label', label[lang]);
+      code.textContent = lang === 'en' ? 'ES' : 'EN';
+    }
+
+    apply(root.dataset.lang === 'es' ? 'es' : 'en');
+    button.hidden = false;
+
+    button.addEventListener('click', function () {
+      var next = root.dataset.lang === 'es' ? 'en' : 'es';
+      apply(next);
+      /* Remembered across pages, so a reader picks Spanish once and the
+         whole archive stays Spanish. */
+      try {
+        localStorage.setItem('gummietech-lang', next);
+      } catch (err) { /* the choice just does not survive this page */ }
+    });
+  }());
+</script>
+{% endif %}
 </body>
 </html>

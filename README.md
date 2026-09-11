@@ -41,6 +41,7 @@ never reaches a reader. The archive is where the bio link points:
 <https://kemval.github.io/gummietechContent/>
 
 ```bash
+python src/translate.py           # adds the Spanish `es` block to posts
 python src/site.py                # builds site/ from posts/*.json
 ```
 
@@ -49,6 +50,12 @@ produces — no writing per post. A post appears **only** once it has a
 `published_at` date, which you add by hand when it actually goes live on
 Instagram. Without that gate, `draft.py` would put unreviewed drafts on the
 open web. Pushing to `master` rebuilds and deploys it.
+
+Pages are bilingual: the globe in the masthead switches between English and
+Spanish and remembers the choice. The Spanish comes from each post's `es`
+block, machine-written by `translate.py` on the same free LLM tier as
+scoring, so read it before the post goes live — it lands on a permalink.
+Posts without a complete `es` block simply stay English.
 
 ## Verify feeds
 

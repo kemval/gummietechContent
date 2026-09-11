@@ -22,5 +22,12 @@
   "source_url": "https://www.nature.com/articles/d41586-026-02758-0",
   "attribution": "DeVincent et al., Microbiol. Spectr. (2026)",
   "peer_reviewed": true,
-  "published_at": "2026-09-05"
+  "published_at": "2026-09-05",
+  "es": {
+    "domain": "microbiología",
+    "hook": "Los quemadores Bunsen no esterilizan los espacios de trabajo de laboratorio y pueden empeorar la contaminación.",
+    "what_happened": "Los investigadores probaron los quemadores Bunsen contaminando el aire del laboratorio con bacterias y midiendo cuántos microorganismos se depositaron cerca de quemadores activos versus inactivos.",
+    "why_it_matters": "Esto cuestiona la suposición de larga data de que las corrientes de convección de los quemadores Bunsen alejan las partículas que contienen microorganismos de las mesas de trabajo.",
+    "the_catch": "Solo un experimento extremo con niveles masivos de bacterias mostró menos bacterias depositadas cerca del quemador activo."
+  }
 }

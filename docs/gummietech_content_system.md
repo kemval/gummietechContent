@@ -188,6 +188,10 @@ Instagram does not make caption URLs clickable. `source_url` is drafted, rendere
 
 **This is deliberately not a blog.** A blog is a second content product — original long-form writing per post, forever, competing for the 20 minutes/day §8 budgets. The archive costs nothing per post because it is a pure function of the drafting JSON. If the appetite for writing long-form ever appears, that is a separate decision, not an extension of this.
 
+**The archive is bilingual; the feed is not.** Every page carries English and Spanish and shows one, switched by the globe in the masthead and remembered for the whole archive. `src/translate.py` writes each post's Spanish into an `es` block on the same JSON — the same free LLM tier as scoring, ~$0 and one call per post — so the rule above holds: still a pure function of the drafting JSON, still nothing written per post by hand. The slides, the caption and the hashtags stay English. This is the cheap half of the §10 Spanish question: it tests whether a Spanish-reading audience actually arrives before anything commits to producing Spanish *posts*, which would double the §8 daily budget.
+
+Machine-written Spanish on a permalink carries the same credibility risk as an unlabelled preprint, so it passes the same gate: run `translate.py` and read what it prints *before* adding `published_at`. A post whose translation is missing or incomplete stays English and loses its toggle rather than mixing the two.
+
 A post reaches the site only when it has a `published_at` date, added by hand when it actually goes live on Instagram. `draft.py` writes into `posts/` *before* approval, so without that gate an unreviewed draft would land on a public permalink — §7.1 applies to the web at least as hard as it applies to the feed.
 
 Secondary benefit: Route B needs media at a publicly accessible URL, and this puts that hosting in place already.
@@ -455,4 +459,4 @@ Explicitly **not** a primary metric: likes.
 - [ ] Database: Google Sheets (simpler) vs. Supabase (scales better)
 - [ ] Posting time locked (test 3 slots, pick by save rate)
 - [ ] Reels: in scope for month 1, or defer to month 2?
-- [ ] Spanish-language variant — Costa Rica base is an underserved-market advantage worth considering
+- [~] Spanish-language variant — Costa Rica base is an underserved-market advantage worth considering. **Decided for the archive** (2026-09-11): every archive page is bilingual, translated by `src/translate.py` at no cost and no per-post writing (§6b). **Still open for the feed:** Spanish slides or a second account are a per-post cost against the §8 budget, so the archive runs first and the traffic decides.
