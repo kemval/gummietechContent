@@ -17,3 +17,10 @@ feeds:
   - name: Hacker News 200+
     url: https://hnrss.org/frontpage?points=200
     topic: tech
+
+  # Smaller and more technical than HN. The front page is already ranked, so
+  # there is no points threshold to set — but equally no quality floor, so all
+  # ~12/day land in the sheet. https://lobste.rs/t/ai.rss narrows it if needed.
+  - name: Lobsters
+    url: https://lobste.rs/rss
+    topic: tech

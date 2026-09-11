@@ -10,9 +10,9 @@ feeds:
     url: https://news.mit.edu/rss/feed
     topic: general
 
-  - name: NASA Breaking News
-    url: https://www.nasa.gov/rss/dyn/breaking_news.rss
-    topic: space
+  # NASA Breaking News retired: /rss/dyn/breaking_news.rss 301s to
+  # /news-release/feed/, which is the NASA News Releases entry below.
+  # Listed first, it claimed the items and mislabelled their source.
 
   # JPL's own feed is gone; NASA now hosts center feeds on nasa.gov
   - name: NASA JPL
@@ -48,9 +48,10 @@ feeds:
     url: https://www.caltech.edu/news/rss
     topic: general
 
-  - name: Oak Ridge National Lab
-    url: https://www.ornl.gov/rss.xml
-    topic: engineering
+  # Oak Ridge retired: /rss.xml is Drupal's promoted-nodes feed — section
+  # landing pages with node-edit timestamps, not articles. Every /news feed
+  # path 404s and ORNL's own RSS directory page is a 404. No replacement
+  # short of a third-party bridge (EurekAlert/Newswise).
 
   - name: EPFL
     url: https://actu.epfl.ch/feeds/rss/mediacom/en/
@@ -115,6 +116,13 @@ feeds:
     url: https://www.nature.com/nmat.rss
     topic: materials
 
+  # Feed is truncated to its most recent items — ~8 entries, not a fault.
+  # Research articles are paywalled, so draft.py will often work from the
+  # summary. That is the case fact-check exists to catch.
+  - name: Nature Physics
+    url: https://www.nature.com/nphys.rss
+    topic: physics
+
   - name: Science News (AAAS)
     url: https://www.science.org/rss/news_current.xml
     topic: general
@@ -155,6 +163,16 @@ feeds:
     url: https://spectrum.ieee.org/feeds/feed.rss
     topic: engineering
 
+  # Trade press, so some items are deals and financing. DROP_PATTERNS catches
+  # "acquires" but not "to acquire" — expect a few business items at scoring.
+  - name: The Robot Report
+    url: https://www.therobotreport.com/feed/
+    topic: robotics
+
+  - name: InfoQ AI/ML/Data
+    url: https://feed.infoq.com/ai-ml-data-eng/
+    topic: ai
+
   - name: MIT Technology Review
     url: https://www.technologyreview.com/feed/
     topic: tech
@@ -163,12 +181,42 @@ feeds:
     url: https://feeds.arstechnica.com/arstechnica/index
     topic: tech
 
+  # Above the general Phys.org feed on purpose. ingest.py dedupes first-wins
+  # in file order, and 4 of these 30 items also appear there — this ordering
+  # is what tags them `space` instead of `general`.
+  - name: Phys.org Space
+    url: https://phys.org/rss-feed/space-news/
+    topic: space
+
   - name: Phys.org
     url: https://phys.org/rss-feed/
     topic: general
 
+  # Science X's engineering/computing newsroom — same publisher as Phys.org,
+  # measured zero URL overlap with it (different host).
+  - name: Tech Xplore
+    url: https://techxplore.com/rss-feed/
+    topic: tech
+
   - name: Space.com
     url: https://www.space.com/feeds/all
+    topic: space
+
+  # ~5/day, but 5 of 20 titles duplicate Phys.org Space under different URLs,
+  # so ingest's URL dedupe will not catch them. Net new is closer to 4/day.
+  - name: Universe Today
+    url: https://www.universetoday.com/rss.xml
+    topic: space
+
+  - name: NASASpaceflight
+    url: https://www.nasaspaceflight.com/feed/
+    topic: space
+
+  # One peer-reviewed AAS paper per post, first author named — the best
+  # depth-per-item here. Serves ~600 entries / 4.2 MB on every fetch, by far
+  # the heaviest feed in this file. Drop it if ingest runtime becomes a problem.
+  - name: AAS Nova
+    url: https://aasnova.org/feed/
     topic: space
 
   - name: New Atlas
