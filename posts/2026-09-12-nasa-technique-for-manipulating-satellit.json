@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "archaeology imaging",
+  "colorway": "signal",
+  "hook": "Decorrelation stretch reveals invisible ancient paintings",
+  "what_happened": "A Singaporean archaeologist applied NASA’s decorrelation stretch to Angkor Wat photos, uncovering about 200 faded paintings.",
+  "why_it_matters": "It removes the bottleneck of faded rock art visibility, enabling study of lost cultural heritage.",
+  "the_catch": "Most of the roughly 200 paintings are probably later graffiti left by pilgrims, not planned temple murals.",
+  "caption": "A NASA imaging technique revealed about 200 faded paintings inside Angkor Wat, most of them probably graffiti left by later pilgrims.",
+  "keywords": [
+    "decorrelation stretch",
+    "rock art",
+    "image processing"
+  ],
+  "hashtags": [
+    "#archaeology",
+    "#imageprocessing",
+    "#nasa",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide carousel explaining how decorrelation stretch enhancement of flash photographs revealed about 200 faded paintings inside Angkor Wat, and why most are probably later graffiti.",
+  "source_url": "https://spinoff.nasa.gov/Manipulating_Satellite_Photos_Now_Reveals_Ancient_Images",
+  "attribution": "Tan et al., Antiquity (2014)",
+  "peer_reviewed": true,
+  "published_at": "2026-09-12",
+  "es": {
+    "domain": "imagen arqueológica",
+    "hook": "El estiramiento de decorrelación revela pinturas antiguas invisibles",
+    "what_happened": "Un arqueólogo de Singapur aplicó el estiramiento de decorrelación de la NASA a fotos de Angkor Wat, descubriendo unas 200 pinturas descoloridas.",
+    "why_it_matters": "Elimina la limitación de la visibilidad del arte rupestre descolorido, permitiendo estudiar el patrimonio cultural perdido.",
+    "the_catch": "La mayoría de las aproximadamente 200 pinturas son probablemente grafitis posteriores dejados por peregrinos, no murales planificados del templo."
+  }
+}
