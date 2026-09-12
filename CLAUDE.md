@@ -226,6 +226,7 @@ A source that cannot be read is a hold, not a pass.
 ```json
 {
   "post_type": "drop | breakdown | signal",
+  "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
   "colorway": "signal | orbit | bloom | ember",
   "hook": "",
   "what_happened": "",
@@ -244,6 +245,10 @@ A source that cannot be read is a hold, not a pass.
 `attribution` and `alt_text` are required. `render.py` should refuse to
 render a record missing either — attribution is a legal and reputational
 requirement, not a nicety.
+
+`domain` is required too — it is in `REQUIRED` in `draft.py`, `drop.html`
+prints it on every slide, and `ES_FIELDS` translates it. It is a short field
+label, not a sentence.
 
 `colorway` is not required. It is validated against `COLORWAYS` and falls
 back to `signal` with a warning — a colour that does not suit the topic is a

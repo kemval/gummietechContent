@@ -96,6 +96,8 @@ Feed the winning item plus full source text to an LLM with a locked prompt retur
 ```json
 {
   "post_type": "drop | breakdown | signal",
+  "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
+  "colorway": "signal | orbit | bloom | ember",
   "hook": "...",
   "what_happened": "...",
   "why_it_matters": "...",
