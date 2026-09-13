@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "planetary science",
+  "colorway": "orbit",
+  "hook": "Material strength may have let the Moon form intact hours after impact",
+  "what_happened": "SPH simulations with temperature-dependent geologic strength found a hot but solid Theia is captured as an intact Moon, emerging within about five hours",
+  "why_it_matters": "It challenges modeling the collision as pure fluid, and hints the Moon’s formation may be tied to how hot Earth and Theia were",
+  "the_catch": "In every scenario the Moon still comes mostly from Theia’s mantle, so strength does not solve why Earth and the Moon match compositionally",
+  "caption": "New simulations suggest the Moon could have formed intact, reshaping our view of its birth",
+  "keywords": [
+    "moon formation",
+    "material strength",
+    "giant impact"
+  ],
+  "hashtags": [
+    "#moon",
+    "#planetaryscience",
+    "#astrophysics",
+    "#gummietech"
+  ],
+  "alt_text": "Carousel explaining how including material strength in simulations shows the Moon could form intact hours after a giant collision",
+  "source_url": "https://www.sciencedaily.com/releases/2026/09/260909231729.htm",
+  "attribution": "Denton et al., The Astrophysical Journal Letters (2026)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "ciencia planetaria",
+    "hook": "La resistencia del material pudo haber permitido que la Luna se formara intacta horas después del impacto",
+    "what_happened": "Las simulaciones SPH con resistencia geológica dependiente de la temperatura mostraron que una Theia caliente pero sólida se captura como una Luna intacta, emergiendo en unas cinco horas",
+    "why_it_matters": "Desafía el modelado de la colisión como fluido puro y sugiere que la formación de la Luna puede estar vinculada a cuán calientes estaban la Tierra y Theia",
+    "the_catch": "En todos los escenarios la Luna proviene mayormente del manto de Theia, por lo que la resistencia no resuelve por qué la Tierra y la Luna coinciden en composición"
+  },
+  "published_at": "2026-09-13"
+}
