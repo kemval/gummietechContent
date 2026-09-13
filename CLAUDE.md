@@ -66,7 +66,7 @@ src/
   gemini.py          Gemini request + free-tier retry policy
   groq_llm.py        Groq request, same interface as gemini.py
   score.py           LLM scoring, batched
-  draft.py           winning item → JSON
+  draft.py           winning item → paper via Crossref → JSON
   render.py          JSON + template → PNGs
   site.py            published posts → static web archive
 feeds/               *.yaml source lists by tier
@@ -118,6 +118,19 @@ that as a required step before wiring a feed into ingest. The `feed-scout`
 agent (`.claude/agents/feed-scout.md`) does the legwork — it runs the
 checker, finds where a dead feed moved, and proposes the corrected YAML with
 evidence — but it only proposes; you still run `verify_feeds.py` and commit.
+
+**`draft.py` drafts from the paper, not the coverage.** Most feeds are news
+*about* papers, and coverage inverts mechanisms, overstates what a result
+overturns, and quotes whoever gave the interview. So before prompting the
+model, `draft.py` scans the fetched page for a DOI — the `citation_doi` meta
+tag first, then the first DOI after a journal-reference heading, then any DOI
+on the page — and asks Crossref (`api.crossref.org/works/<doi>`, free, no key,
+send a contact URL in the User-Agent for the polite pool) who actually wrote
+it. The abstract then goes into the prompt as the primary source with the
+coverage demoted to context. The middle DOI pass is not decoration: an
+aggregator's related-stories rail carries other papers' DOIs. Every step
+degrades to coverage-only drafting with a printed warning — a Crossref outage
+must never fail a draft.
 
 **Secrets** go in `.env` locally and GitHub Actions repo secrets in CI.
 Never commit `.env`, `credentials.json`, or any key.
@@ -207,15 +220,26 @@ It is read-only by design: it reports, and a person applies the edits. Do not
 give it Edit or Write, and do not let it add `published_at`. Layer 5 is the
 point.
 
-Two failure modes it exists to catch, because nothing in code can:
+`draft.py` resolves the paper and takes `attribution` and `peer_reviewed`
+from Crossref, which removes the first two failure modes below at the source.
+The agent still checks them, because that resolution is only ever as good as
+the DOI it found:
 
 - **Citing the wrong author.** News coverage quotes whoever gave the
-  interview, who is usually the senior (last) author. `attribution` must name
-  the paper's first author. Confirm the order against Crossref
-  (`api.crossref.org/works/<doi>`) rather than the article's prose.
+  interview — usually the senior (last) author, and sometimes an outside
+  commentator who is not an author at all. `attribution` must name the paper's
+  first author. Confirm it against Crossref (`api.crossref.org/works/<doi>`)
+  rather than the article's prose, and confirm the DOI is the paper the story
+  is about rather than one picked up from a related-stories rail.
 - **A preprint behind a journal URL.** The `PREPRINT_HOSTS` check in
   `draft.py` sees only the host, so coverage on a news domain reporting
-  preprint work passes it while being wrong.
+  preprint work slips past it. Crossref's `posted-content` type catches that
+  now — but only when a DOI was found at all.
+- **A limitation the paper does not state.** This one no code catches.
+  `the_catch` is drafted from the abstract, and abstracts do not list
+  limitations: those live in the discussion and the appendices. A `the_catch`
+  that reads like a plausible caveat rather than a quoted one is the most
+  likely thing still wrong on a resolved draft.
 
 A source that cannot be read is a hold, not a pass.
 
@@ -244,7 +268,10 @@ A source that cannot be read is a hold, not a pass.
 
 `attribution` and `alt_text` are required. `render.py` should refuse to
 render a record missing either — attribution is a legal and reputational
-requirement, not a nicety.
+requirement, not a nicety. When `draft.py` resolves a DOI it builds
+`attribution` from the Crossref author list and discards the model's version,
+so a wrong attribution on a drafted post means the DOI was wrong, not the
+model.
 
 `domain` is required too — it is in `REQUIRED` in `draft.py`, `drop.html`
 prints it on every slide, and `ES_FIELDS` translates it. It is a short field
