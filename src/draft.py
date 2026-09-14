@@ -83,7 +83,11 @@ CROSSREF_HEADERS = {
 
 # A DOI has no reserved terminator, so the trailing character class is a trim
 # against surrounding markup and punctuation, not a parse of the DOI itself.
-DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>&)\]]+", re.I)
+# ? and # are in it because a DOI is usually scraped out of an href, where a
+# query string or fragment would otherwise be swallowed whole: the citation
+# link .../10.1038/d41586-026-02895-6?format=refman yields a DOI that 404s at
+# Crossref, and the draft silently falls back to the coverage.
+DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>&)\]?#]+", re.I)
 META_DOI_RE = re.compile(r"<meta[^>]*citation_doi[^>]*>", re.I)
 CONTENT_RE = re.compile(r"content=[\"']([^\"']+)[\"']", re.I)
 
@@ -179,33 +183,45 @@ def fetch_article(url: str) -> tuple[str, str, str | None]:
     return article, resp.text, None
 
 
-def find_doi(page: str) -> str | None:
-    """
-    The DOI of the paper a page is about, or None.
+def _trimmed_doi(found: re.Match[str] | None) -> str | None:
+    """A matched DOI with trailing sentence punctuation removed, or None."""
+    return found.group(0).rstrip(".,;:'\"") if found else None
 
-    Three passes, most trustworthy first: the publisher's own citation_doi
-    meta tag, then the first DOI after a journal-reference heading, then the
-    first DOI anywhere. The middle pass is what keeps an aggregator's
-    related-stories rail from supplying somebody else's paper.
+
+def doi_candidates(page: str) -> list[str]:
     """
+    Every DOI on the page, most trustworthy first.
+
+    The same three passes as before — the publisher's citation_doi meta tag,
+    then a DOI after a journal-reference heading, then everything in document
+    order — but collecting all of them instead of returning the first. A news
+    story's meta tag names the story itself, so the leading candidate is
+    routinely the coverage; resolve_paper walks the list until one turns out
+    to be a paper. The pass order is what keeps an aggregator's related-
+    stories rail from jumping the queue.
+    """
+    found: list[str] = []
+
+    def add(doi: str | None) -> None:
+        if doi and doi not in found:
+            found.append(doi)
+
     meta = META_DOI_RE.search(page)
     if meta:
         content = CONTENT_RE.search(meta.group(0))
         if content:
-            found = DOI_RE.search(content.group(1))
-            if found:
-                return found.group(0).rstrip(".,;:'\"")
+            add(_trimmed_doi(DOI_RE.search(content.group(1))))
 
     lowered = page.lower()
     for cue in DOI_CUES:
         at = lowered.find(cue)
         if at != -1:
-            found = DOI_RE.search(page, at)
-            if found:
-                return found.group(0).rstrip(".,;:'\"")
+            add(_trimmed_doi(DOI_RE.search(page, at)))
 
-    found = DOI_RE.search(page)
-    return found.group(0).rstrip(".,;:'\"") if found else None
+    for match in DOI_RE.finditer(page):
+        add(_trimmed_doi(match))
+
+    return found
 
 
 def fetch_crossref(doi: str) -> tuple[dict | None, str | None]:
@@ -281,18 +297,98 @@ def paper_facts(work: dict) -> dict:
     }
 
 
-def resolve_paper(page: str) -> tuple[dict | None, str | None]:
+# A news story carries its own DOI and Crossref files it as a "journal-article"
+# exactly like a paper, so the record type cannot tell them apart. What gives
+# the coverage away is that its record describes the page being read rather
+# than the work the page is about. Matching titles alone are not proof: a
+# journal feed links straight at the paper, where the titles match and the
+# record is precisely the source wanted. The absent abstract is the other
+# half — a news record has none, and without one a resolved DOI contributes
+# nothing but an attribution anyway.
+# Each candidate costs a Crossref round trip, and a reference list can be
+# long. Six is enough for a story's own DOI plus the first few things it
+# cites, which is where the covered paper sits.
+MAX_CROSSREF_LOOKUPS = 6
+TITLE_OVERLAP = 0.9
+MIN_TITLE_WORDS = 4
+
+
+def title_words(title: str) -> set[str]:
+    """The comparable words of a title, case and punctuation discarded."""
+    return set(re.sub(r"[^a-z0-9 ]+", " ", title.lower()).split())
+
+
+def same_title(a: str, b: str) -> bool:
+    """
+    Whether two titles name the same work.
+
+    Containment rather than equality, because a headline picks up the
+    publisher's name on the way out ("... | Nature") and a paper's own title
+    picks up a subtitle. Coverage of a paper never overlaps its title this
+    heavily — it is written to be read by people who have not read it.
+    """
+    x, y = title_words(a), title_words(b)
+    if len(x) < MIN_TITLE_WORDS or len(y) < MIN_TITLE_WORDS:
+        return False            # too short to tell a match from a coincidence
+    return len(x & y) / min(len(x), len(y)) >= TITLE_OVERLAP
+
+
+def is_coverage(facts: dict, headline: str) -> bool:
+    """
+    Whether a Crossref record is the story being read rather than the paper.
+
+    Both halves are needed. A journal feed links straight at the paper, where
+    the titles match and the record is the source wanted; an abstract is what
+    tells that apart from a news item, which has none — and without one a
+    resolved DOI contributes nothing downstream but an attribution anyway.
+    """
+    return not facts["abstract"] and same_title(facts["title"], headline)
+
+
+def resolve_paper(page: str, headline: str) -> tuple[dict | None, str | None]:
     """Return (facts, warning) for the paper a page is covering."""
     if not page:
         return None, None                     # fetch already warned
-    doi = find_doi(page)
-    if not doi:
+    queue = doi_candidates(page)
+    if not queue:
         return None, ("no DOI on the page — drafting from the coverage alone, "
                       "so check the authors and the mechanism against the paper")
-    work, warning = fetch_crossref(doi)
-    if work is None:
-        return None, f"{warning} — drafting from the coverage alone"
-    return paper_facts(work), None
+
+    seen: set[str] = set()
+    coverage: dict | None = None
+    budget = MAX_CROSSREF_LOOKUPS
+
+    while queue and budget > 0:
+        doi = queue.pop(0)
+        if doi in seen:
+            continue
+        seen.add(doi)
+        budget -= 1
+
+        work, warning = fetch_crossref(doi)
+        if work is None:
+            continue                          # dead DOI, try the next one
+
+        facts = paper_facts(work)
+        if not is_coverage(facts, headline):
+            return facts, None
+
+        # The story's own DOI. Its Crossref record lists what it cites, and a
+        # news story cites the paper it covers — usually first, and reachable
+        # even when the page itself is paywalled. Queued behind the remaining
+        # on-page candidates, which are the better evidence when present.
+        if coverage is None:
+            coverage = facts
+            queue += [r["DOI"] for r in work.get("reference") or [] if r.get("DOI")]
+
+    if coverage is not None:
+        return None, ("every DOI here resolves to the story itself or to "
+                      "nothing, and nothing it cites looks like the paper — "
+                      "drafting from the coverage alone, so check the authors "
+                      "and the mechanism against the paper")
+    return None, ("no DOI on the page resolved at Crossref — drafting from "
+                  "the coverage alone, so check the authors and the mechanism "
+                  "against the paper")
 
 
 def citation(facts: dict) -> str:
@@ -432,7 +528,7 @@ def main() -> int:
         print(f"  warning: {warning} — drafting from the feed summary, so "
               "check the slides against the source before posting")
 
-    paper, paper_warning = resolve_paper(page)
+    paper, paper_warning = resolve_paper(page, item["title"])
     if paper_warning:
         print(f"  warning: {paper_warning}")
     elif paper:
