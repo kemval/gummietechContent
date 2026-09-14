@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "brain-computer interface",
+  "colorway": "signal",
+  "hook": "A single implant decodes speech and gestures simultaneously",
+  "what_happened": "Three implanted participants; two drove a virtual avatar, with AI decoding attempted speech into text and gestures into motion from one 253-electrode array",
+  "why_it_matters": "The authors call it a step toward BCIs that restore more natural, expressive communication for people with severe paralysis",
+  "the_catch": "Vocabularies were tiny — at most ten phrases and ten gestures — and the authors say simultaneous decoding remained imperfect across only three participants",
+  "caption": "Imagine speaking and gesturing, all decoded by one brain implant in real time.",
+  "keywords": [
+    "brain-computer interface",
+    "artificial intelligence",
+    "paralysis"
+  ],
+  "hashtags": [
+    "#brainimplant",
+    "#neurotech",
+    "#bci",
+    "#gummietech"
+  ],
+  "alt_text": "Five text slides on a brain-computer interface study: a 253-electrode implant decoding attempted speech and gestures at once in three paralysed participants.",
+  "source_url": "https://doi.org/10.1038/s41593-026-02446-2",
+  "attribution": "Brosler et al., Nature Neuroscience (2026)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "interfaz cerebro-computadora",
+    "hook": "Un solo implante descifra simultáneamente habla y gestos",
+    "what_happened": "Tres participantes con implante; dos controlaron un avatar virtual, con IA que convirtió el habla tentativa en texto y los gestos en movimiento a partir de una sola matriz de 253 electrodos",
+    "why_it_matters": "Los autores lo describen como un paso hacia BCIs que restauren una comunicación más natural y expresiva para personas con parálisis severa",
+    "the_catch": "Los vocabularios eran muy pequeños—máximo diez frases y diez gestos—y los autores afirman que la decodificación simultánea siguió siendo imperfecta en los tres participantes"
+  },
+  "published_at": "2026-09-14"
+}
