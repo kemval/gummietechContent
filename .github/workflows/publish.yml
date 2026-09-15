@@ -1,0 +1,71 @@
+name: publish
+
+# The far side of the human gate. Polls Telegram for the "Posted to
+# Instagram" tap, stamps `published_at` on the post it names, commits that,
+# and asks site.yml to rebuild — which is what puts the post on the archive.
+#
+# Nothing here decides anything: the tap is a person saying the carousel is
+# live, and this only writes down the date.
+
+on:
+  schedule:
+    # Quarter-hourly. GitHub delays scheduled runs 10-30 minutes at peak, so
+    # the real latency between the tap and the site is up to about an hour —
+    # the Telegram message says as much.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+# Two polls at once would both see the same tap and race on the push.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write          # to dispatch site.yml — see the note below
+
+jobs:
+  confirm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # Not requirements.txt: `confirm` imports requests and the standard
+      # library only, and this job runs 96 times a day.
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Look for a publish tap
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
+        run: python src/telegram.py confirm
+
+      - name: Commit and build the archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- posts/; then
+            echo "Nothing to publish."
+            exit 0
+          fi
+          git config user.name  "gummietech"
+          git config user.email "noreply@github.com"
+          git add posts/
+          git commit -m "Publish to the archive" \
+                     -m "$(git diff --cached --name-only)"
+          git pull --rebase
+          git push
+          # A push made with GITHUB_TOKEN does not fire site.yml's push
+          # trigger: GitHub suppresses that to stop workflows triggering
+          # themselves. workflow_dispatch is the documented exception, so ask
+          # for the build by name. --ref master builds the tip, which now
+          # includes the commit above.
+          gh workflow run site.yml --ref master

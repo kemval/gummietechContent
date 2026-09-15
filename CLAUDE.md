@@ -20,7 +20,9 @@ JSON to PNG slides, and queues them for human approval.
 ```
 
 Layer 5 is manual and permanent. Do not propose removing it or building
-an auto-publish path.
+an auto-publish path. It runs over Telegram now (see **The daily run**),
+which moves the gate to a phone but does not automate it: the carousel is
+still uploaded by hand, and the button only records that it happened.
 
 ## Budget: $0/month — hard constraint
 
@@ -58,7 +60,9 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 ```
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
                      (all read-only pre-gate reviewers — see the sections below)
-.github/workflows/   GitHub Actions cron
+.github/workflows/   ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
+                     Telegram, daily) · publish.yml (the publish tap, 15m) ·
+                     site.yml (web archive)
 src/
   verify_feeds.py    checks every feed URL is live
   ingest.py          feeds → Google Sheets
@@ -68,7 +72,9 @@ src/
   score.py           LLM scoring, batched
   draft.py           winning item → paper via Crossref → JSON
   render.py          JSON + template → PNGs
+  proof.py           measures the rendered layout — frame, contrast, flag
   site.py            published posts → static web archive
+  telegram.py        sends a rendered post for approval; reads the tap back
 feeds/               *.yaml source lists by tier
 posts/               drafted post JSON
 templates/
@@ -221,13 +227,37 @@ layout — so a long compound word, a body field a few words over budget, or a
 palette rotation that puts pale ink type on a washed-out field can overflow
 the frame, fail contrast, or clip the preprint flag without any error.
 
-Run the `slide-proof` agent (`.claude/agents/slide-proof.md`) after
-`fact-check` and before the human gate. It renders the post to a scratch
-directory, reads the five slides, and reports BLOCK / FIX / PASS on frame
-containment, hook sizing, colorway rhythm, preprint-flag visibility, contrast,
-and attribution — the things only the rendered image shows. It is read-only:
-it never edits the JSON or renders into `output/`, and it does not check
-claims or wording accuracy — that is `fact-check`'s half.
+`src/proof.py` is the check that runs on every post, including in CI. It
+measures rather than looks: every one of those failures is a number in the DOM
+of the page `render.py` is about to screenshot, so it reads bounding boxes,
+`scrollHeight` and computed colours off the live page and reports
+BLOCK / FIX / PASS. It shares `render.py`'s `open_page()` — a layout checked
+in a differently-built page is a layout nobody checked.
+
+```bash
+python src/proof.py posts/2026-09-15-tides.json      # exits 1 on BLOCK
+```
+
+Two measurement choices that are load-bearing:
+
+- **Collisions are tested against line boxes, not element boxes.** The
+  element box of a left-aligned block spans the full column even when its
+  last line stops short, which made `.source` and `.dots` on slide 5 overlap
+  by a constant 3px in a layout where no glyph is near another — it BLOCKed
+  all 13 existing posts. Range rects are both quieter there and stricter
+  where it matters: a line that really does reach the dots is still caught.
+- **The contrast bar is 4.5:1, from this file's own colorway invariant,**
+  not WCAG's 3:1 for large text. Chrome (`.domain`, `.wordmark`) is held to
+  3.0 instead and only ever reported as FIX, because its `opacity: 0.75` is a
+  locked design decision and pink already sits at 3.26:1 — BLOCKing on it
+  would fail every post every day. Content type is at full opacity and clears
+  4.86:1 at worst, so the strict bar there is real headroom, not luck.
+
+The `slide-proof` agent (`.claude/agents/slide-proof.md`) still exists for
+what a measurement cannot answer — whether the slides *look* wrong. Run it
+locally on a post that matters. It is read-only: it never edits the JSON or
+renders into `output/`, and like `proof.py` it does not check claims or
+wording accuracy — that is `fact-check`'s half.
 
 ## Fact-checking a draft
 
@@ -380,6 +410,79 @@ Two rules:
 `site.py` skips a malformed post with a warning instead of exiting — the
 opposite of `render.py`, which is right to hard-fail the one post it was asked
 to render. One bad draft must not take the whole site down.
+
+## The daily run
+
+`daily.yml` at 12:00 UTC drafts the top-scoring queued row, translates it,
+commits the JSON, renders the slides, and sends them to Telegram.
+`publish.yml` polls every 15 minutes for the reply. Between them sits a
+person, doing what only a person can:
+
+```
+daily.yml ─ draft · translate · commit · fact-check · render · proof ─→ Telegram
+                                                                          │
+                          you read the reports, post the carousel         │
+                          to Instagram, tap the button                    │
+                                                                          ↓
+publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
+```
+
+`src/telegram.py` is both halves — `send` and `confirm` — because both are
+the same boundary, and its docstring holds the API-level reasoning. The
+constraints that shape it:
+
+- **The slides go as documents, not photos.** `sendPhoto` re-encodes to JPEG
+  and downscales past 1280px. The slides are flat colour fields behind a 10px
+  border, which is what JPEG bands worst, and they are about to be recompressed
+  again by Instagram. Never switch the media group to `photo` to get inline
+  previews — Telegram previews a PNG document anyway.
+- **The post stem is the only state between the halves,** carried in the
+  button's `callback_data` (64 bytes; `slugify` caps a stem at 51). That is
+  why `daily.yml` commits the draft *before* sending: `confirm` finds the
+  file by name on master.
+- **`getUpdates` is called without an offset,** so every tap replays on every
+  poll for 24 hours. `confirm` is idempotent against that — it skips a post
+  that already has `published_at` — which is what lets it keep no cursor
+  between runs. Do not add offset tracking; it would buy nothing and add a
+  state file to lose.
+- **`publish.yml` dispatches `site.yml` by name.** A push made with
+  `GITHUB_TOKEN` does not fire another workflow's `push` trigger;
+  `workflow_dispatch` is the documented exception. Removing that line makes
+  the archive silently stop updating.
+- **`publish.yml` installs `requests` alone,** not `requirements.txt` — it
+  runs 96 times a day, and `telegram.py` deliberately does not import
+  `render.py`, which would drag in Playwright.
+
+### Both reviews gate the button
+
+`telegram.py send --review FILE` carries each report into the message, and a
+report containing `BLOCK` or `UNVERIFIED` withholds the approval button
+entirely. That is the gate: a held post cannot be marked live from the phone
+at all, rather than arriving with a warning beside a working button.
+
+- **`proof.py`** runs on every post and needs no credentials.
+- **`fact-check`** runs as a Claude Code agent through
+  `anthropics/claude-code-action`, authenticated with `CLAUDE_CODE_OAUTH_TOKEN`
+  from `claude setup-token`. That bills the **Pro subscription, not the API**,
+  so it stays inside the $0 rule — but it does draw on the same quota as
+  interactive Claude Code sessions, which is why `--max-turns` is capped. The
+  agent's read-only contract is held on the runner by a `settings` block that
+  allows `Write(/tmp/**)` and denies `posts/` and `src/` outright.
+- **No token, no gate change.** With `CLAUDE_CODE_OAUTH_TOKEN` unset the step
+  is skipped and the stand-in report says so *without* the gate words, so the
+  button behaves as it did before fact-checking existed. A step that was
+  configured and then failed writes `UNVERIFIED` instead and does hold the
+  post — a check that broke is an unknown, and `fact-check.md` is explicit
+  that an unverifiable post is a hold, not a pass.
+
+`GATE_RE` matches `BLOCK` and `UNVERIFIED` case-sensitively on word
+boundaries, so `fact-check.md`'s own prose about "a block page" does not trip
+it. A summary line like "0 BLOCK" would, and that is the right direction to
+be wrong in: the cost is opening the report.
+
+Nothing gates a **local** `send` with no `--review` flags — the message says
+plainly that nothing checked the post, but the button still appears, because
+a person sending by hand is already in the loop.
 
 ## Publishing
 

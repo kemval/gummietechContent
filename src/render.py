@@ -21,10 +21,12 @@ import argparse
 import json
 import sys
 import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Page, sync_playwright
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = REPO_ROOT / "templates"
@@ -167,15 +169,21 @@ def render_html(post: dict, colorway: str | None = None) -> str:
     return template.render(context)
 
 
-def shoot(html: str, outdir: Path) -> list[Path]:
-    outdir.mkdir(parents=True, exist_ok=True)
-    written: list[Path] = []
+@contextmanager
+def open_page(html: str) -> Iterator[Page]:
+    """
+    A Chromium page with the slides loaded and the webfonts settled.
 
+    The page has to be loaded from file://, not injected with set_content():
+    Chromium refuses local subresources on an about:blank page ("Not allowed
+    to load local resource"), so the self-hosted fonts drop out silently and
+    the slides render in a fallback face.
+
+    proof.py measures the same page this screenshots, which is the point of
+    it living here: a layout checked in a differently-built page is a layout
+    nobody checked.
+    """
     with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
-        # The page has to be loaded from file://, not injected with set_content():
-        # Chromium refuses local subresources on an about:blank page ("Not allowed
-        # to load local resource"), so the self-hosted fonts drop out silently
-        # and the slides render in a fallback face.
         page_file = Path(tmp) / "slides.html"
         page_file.write_text(html)
 
@@ -186,7 +194,17 @@ def shoot(html: str, outdir: Path) -> list[Path]:
         )
         page.goto(page_file.as_uri(), wait_until="load")
         page.wait_for_timeout(600)          # let webfonts settle
+        try:
+            yield page
+        finally:
+            browser.close()
 
+
+def shoot(html: str, outdir: Path) -> list[Path]:
+    outdir.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+
+    with open_page(html) as page:
         for i, slide_id in enumerate(SLIDE_IDS, start=1):
             el = page.query_selector(f"#{slide_id}")
             if el is None:
@@ -197,7 +215,6 @@ def shoot(html: str, outdir: Path) -> list[Path]:
             written.append(out)
             print(f"  wrote {shown(out)}")
 
-        browser.close()
     return written
 
 
