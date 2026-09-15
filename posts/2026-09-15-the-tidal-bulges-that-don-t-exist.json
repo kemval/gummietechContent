@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "oceanography",
+  "colorway": "orbit",
+  "hook": "The two ocean tidal bulges you were taught in school don’t exist.",
+  "what_happened": "Laplace’s dynamic theory shows tides are shallow-water waves, not static bulges: the ocean cannot keep up with Earth’s rotation.",
+  "why_it_matters": "It corrects the misconception that the ocean forms two high bulges, clarifying that tides are wave phenomena limited by wave speed.",
+  "the_catch": "Newton’s tide-raising force is right; only his static-bulge response is wrong. His gravity is not in question.",
+  "caption": "Tides aren’t static bulges — they’re waves that can’t keep pace with Earth’s rotation.",
+  "keywords": [
+    "tides",
+    "wave dynamics",
+    "oceanography"
+  ],
+  "hashtags": [
+    "#tides",
+    "#oceanwaves",
+    "#physics",
+    "#gummietech"
+  ],
+  "alt_text": "A carousel explaining that the classic picture of two tidal bulges is incorrect and tides are shallow-water waves.",
+  "source_url": "https://physics.stackexchange.com/questions/121830/does-earth-really-have-two-high-tide-bulges-on-opposite-sides",
+  "attribution": "Laplace, dynamic theory of tides (1776)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "oceanografía",
+    "hook": "Las dos protuberancias mareales del océano que aprendiste en la escuela no existen.",
+    "what_happened": "La teoría dinámica de Laplace demuestra que las mareas son ondas de agua poco profunda, no protuberancias estáticas: el océano no puede seguir el giro de la Tierra.",
+    "why_it_matters": "Corrige la idea errónea de que el océano forma dos protuberancias altas, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de la onda.",
+    "the_catch": "La fuerza mareal de Newton es correcta; solo su respuesta de protuberancia estática es errónea. Su gravedad no está en duda."
+  },
+  "published_at": "2026-09-15"
+}
