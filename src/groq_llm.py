@@ -151,6 +151,9 @@ Groq's 429 body is plain JSON with a "message" field, not structured
 QuotaFailure violations. So daily-vs-per-minute is detected by parsing the
 message text and the response headers Groq sends back
 (retry-after, x-ratelimit-*), which is the closest analogue available.
+
+5xx that outlasts the retries is raised as llm_errors.Overloaded rather than
+SystemExit, so llm.py can fail over to Gemini instead of ending the run.
 """
 
 from __future__ import annotations
@@ -162,6 +165,8 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+
+from llm_errors import Overloaded
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -189,9 +194,10 @@ def generate(prompt: str, api_key: str, model: str,
     """
     Send one prompt and return the model's text, asking for JSON output.
 
-    Raises SystemExit on anything retrying cannot fix, with a message that
-    says what to do next. Mirrors gemini.generate()'s contract: same
-    signature, same return type, same fail-fast-on-daily-cap behavior.
+    Raises Overloaded when 5xx outlasts the retries, and SystemExit on
+    anything else retrying cannot fix, with a message that says what to do
+    next. Mirrors gemini.generate()'s contract: same signature, same return
+    type, same fail-fast-on-daily-cap behavior.
     """
     # Groq's JSON mode requires the word "json" to appear in the prompt
     # somewhere, or the API rejects the request outright (400) rather than
@@ -256,7 +262,10 @@ def generate(prompt: str, api_key: str, model: str,
 
         if resp.status_code >= 500:
             if attempt == MAX_RETRIES:
-                raise SystemExit(
+                # Not SystemExit: llm.py answers an exhausted overload by
+                # switching to the other free provider, and turns this back
+                # into SystemExit with this same text when it cannot.
+                raise Overloaded(
                     f"Groq returned HTTP {resp.status_code} on every one of "
                     f"{MAX_RETRIES} attempts — the model is overloaded. Re-run "
                     "later, or set GROQ_MODEL to another model.")

@@ -12,7 +12,8 @@ that varies by model, and the limits apply per project, not per key:
   - a daily-cap 429 stops the run, because backoff cannot refill a quota
     that resets at midnight Pacific
   - 500/503 back off too: the shared capacity sheds load often enough to
-    stall a run otherwise
+    stall a run otherwise, and when the retries run out the exhaustion is
+    raised as llm_errors.Overloaded so llm.py can switch providers
 """
 
 from __future__ import annotations
@@ -24,6 +25,8 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+
+from llm_errors import Overloaded
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -73,8 +76,9 @@ def generate(prompt: str, api_key: str, model: str,
     """
     Send one prompt and return the model's text, asking for JSON output.
 
-    Raises SystemExit on anything retrying cannot fix, with a message that
-    says what to do next.
+    Raises Overloaded when 5xx outlasts the retries — llm.py answers that by
+    switching providers — and SystemExit on anything else retrying cannot
+    fix, with a message that says what to do next.
     """
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -129,7 +133,10 @@ def generate(prompt: str, api_key: str, model: str,
 
         if resp.status_code >= 500:
             if attempt == MAX_RETRIES:
-                raise SystemExit(
+                # Not SystemExit: llm.py answers an exhausted overload by
+                # switching to the other free provider, and turns this back
+                # into SystemExit with this same text when it cannot.
+                raise Overloaded(
                     f"Gemini returned HTTP {resp.status_code} on every one of "
                     f"{MAX_RETRIES} attempts — the model is overloaded. Re-run "
                     "later, or set GEMINI_MODEL to another Flash model.")
