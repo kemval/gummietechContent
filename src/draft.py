@@ -10,6 +10,7 @@ contract in CLAUDE.md. Writes posts/<date>-<slug>.json and marks the row
 Usage:
     python src/draft.py
     python src/draft.py --row 47            # draft a specific sheet row
+    python src/draft.py --url https://...   # draft an evergreen source
     python src/draft.py --dry-run           # print the JSON, write nothing
 
 Environment: same as score.py (LLM_PROVIDER, GEMINI_API_KEY / GROQ_API_KEY,
@@ -44,7 +45,7 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import requests
 
@@ -55,6 +56,7 @@ from verify_feeds import HEADERS, TIMEOUT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
+EVERGREEN_QUEUE = REPO_ROOT / "docs" / "evergreen_queue.md"
 
 ARTICLE_CHARS = 6000
 ABSTRACT_CHARS = 4000
@@ -89,6 +91,8 @@ CROSSREF_HEADERS = {
 # Crossref, and the draft silently falls back to the coverage.
 DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>&)\]?#]+", re.I)
 META_DOI_RE = re.compile(r"<meta[^>]*citation_doi[^>]*>", re.I)
+OG_TITLE_RE = re.compile(r"<meta[^>]*og:title[^>]*>", re.I)
+TITLE_TAG_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
 CONTENT_RE = re.compile(r"content=[\"']([^\"']+)[\"']", re.I)
 
 # Aggregators park the real citation behind one of these headings. Ordered
@@ -152,6 +156,24 @@ URL: {url}
 def slugify(title: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     return slug[:40].rstrip("-") or "post"
+
+
+def page_title(page: str) -> str:
+    """The publisher's own headline for a page, og:title first."""
+    og = OG_TITLE_RE.search(page)
+    if og:
+        content = CONTENT_RE.search(og.group(0))
+        if content:
+            return " ".join(html.unescape(content.group(1)).split())
+    tag = TITLE_TAG_RE.search(page)
+    if tag:
+        return " ".join(html.unescape(TAG_RE.sub(" ", tag.group(1))).split())
+    return ""
+
+
+def outlet(url: str) -> str:
+    """'physics.stackexchange.com' — what the prompt calls the source."""
+    return urlparse(url).netloc.lower().removeprefix("www.") or url
 
 
 def fetch_article(url: str) -> tuple[str, str, str | None]:
@@ -313,6 +335,44 @@ TITLE_OVERLAP = 0.9
 MIN_TITLE_WORDS = 4
 
 
+def venue_key(name: str) -> str:
+    """A venue name flattened for comparison: 'Physics World' -> physicsworld."""
+    return re.sub(r"[^a-z0-9]+", "", name.lower())
+
+
+# The title check below only fires when the record's title still resembles the
+# headline we ingested. A magazine's print title often does not — Scientific
+# American filed "See how gravitational waves warp time and space" as "Ripples
+# in Space and Time" — and nothing structural catches the difference, because
+# Crossref does not distinguish popular science from research. That feature is
+# a "journal-article" with an ISSN, a volume and a page, exactly like a paper,
+# and every field that looks like a tell was checked and is not one:
+#
+#   - no abstract          modern Nature and Cell papers deposit none either
+#   - no references        Nature's own news pieces deposit 1-6, while
+#                          genuine Nature letters deposit 0
+#   - venue matches host   so does a journal's own site, which is the case
+#                          worth keeping
+#
+# So the outlet has to be named. These mint their own DOIs and are not
+# research venues, so a record here is the coverage however it is filed —
+# unconditionally, since Physics World deposits an abstract for every article
+# and an abstract would otherwise wave it through as the primary source.
+# Crediting one puts a magazine's staff writers on the slide as the
+# researchers. Nature News is the gap this cannot close: it is filed under
+# container-title "Nature" like the papers, and only the title check catches
+# it. Add an outlet when one appears; the symptom is an attribution naming a
+# publication where a lab should be.
+COVERAGE_VENUES = frozenset(map(venue_key, (
+    "Scientific American",
+    "New Scientist",
+    "Physics World",
+    "IEEE Spectrum",
+    "Physics Today",
+    "American Scientist",
+)))
+
+
 def title_words(title: str) -> set[str]:
     """The comparable words of a title, case and punctuation discarded."""
     return set(re.sub(r"[^a-z0-9 ]+", " ", title.lower()).split())
@@ -337,11 +397,17 @@ def is_coverage(facts: dict, headline: str) -> bool:
     """
     Whether a Crossref record is the story being read rather than the paper.
 
-    Both halves are needed. A journal feed links straight at the paper, where
-    the titles match and the record is the source wanted; an abstract is what
-    tells that apart from a news item, which has none — and without one a
-    resolved DOI contributes nothing downstream but an attribution anyway.
+    A record from a popular-science outlet is coverage outright — see
+    COVERAGE_VENUES for why nothing about the record itself can say so.
+
+    Otherwise both halves are needed. A journal feed links straight at the
+    paper, where the titles match and the record is the source wanted; an
+    abstract is what tells that apart from a news item, which has none — and
+    without one a resolved DOI contributes nothing downstream but an
+    attribution anyway.
     """
+    if venue_key(facts["journal"]) in COVERAGE_VENUES:
+        return True
     return not facts["abstract"] and same_title(facts["title"], headline)
 
 
@@ -453,9 +519,131 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None) -> tuple[int,
     return n, {name: row[idx] for name, idx in col.items()} | {"score": score}
 
 
-def validate(post: dict, url: str, paper: dict | None) -> dict:
+# Tier 6 evergreen subjects never come through a feed, so there is no page to
+# scrape and no row in the sheet. What there is instead is the queue the
+# evergreen-scout agent writes, where each candidate already carries the hook,
+# the mechanism, the catch and the primary to attribute — the substance a
+# scrape would have had to recover. Drafting from a URL instead throws that
+# away and the model fills the gap from memory: pointed at the tides
+# candidate's sources it produced the two-bulge myth the post exists to
+# debunk, and a Wikipedia history section, whose reference list then supplied
+# a DOI that overwrote the attribution. So the brief is the source text.
+#
+# The agent writes a fixed shape, in score order:
+#
+#   ### 1 · 8.50 · `orbit` — The tidal bulges that don't exist
+#   **Hook** — ...
+#   **Source** — [Physics SE](url) · **attribute to** Laplace's ...
+#   **Settled?** / **Why it matters** / **The catch**
+CANDIDATE_RE = re.compile(
+    r"^### (?P<rank>\d+) [·.] (?P<score>[\d.]+) [·.] `(?P<colorway>\w+)`"
+    r" [—-] (?P<title>.+)$", re.M)
+FIELD_RE = re.compile(r"^\*\*(?P<label>[^*]+)\*\*\s*[—-]?\s*(?P<value>.+)$",
+                      re.M)
+MD_LINK_RE = re.compile(r"\[[^\]]*\]\((https?://[^)\s]+)\)")
+# Seven rows name who to credit, because the page a subject is explained on is
+# rarely the work being credited — a Stack Exchange answer about Laplace's
+# tides, a Wikipedia article about a 2008 review. Left to itself the model
+# credits the page's organisation ("Physics SE"), which is what fact-check
+# BLOCKs on. This cannot be copied into the field verbatim, though: three of
+# the seven are instructions to a person, naming a choice ("the vis-viva
+# result or a NASA mission page") or carrying a second sentence of guidance.
+# So it is hoisted to the top of the brief as binding, and the model resolves
+# it to a citation — then a person checks it at the gate.
+ATTRIBUTE_RE = re.compile(r"\*\*attribute to\*\*\s*(?P<who>[^\n]+)", re.I)
+# A row whose primary is a preprint cites it as a bare "arXiv:2601.04621" and
+# links only the coverage, so taking the first link would put a magazine URL
+# in source_url and leave PREPRINT_HOSTS silent on a preprint. The id is the
+# primary, so it wins — which is what makes the flag fire, as the queue's own
+# preface promises it does.
+ARXIV_RE = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}(?:v\d+)?)", re.I)
+
+
+def evergreen_candidate(rank: int) -> dict:
+    """
+    A row from the evergreen queue as a draftable item, rank 0 meaning the
+    highest-scoring one. The brief becomes the summary, which is what the
+    model drafts from, and the Source line's first link becomes source_url.
+    """
+    if not EVERGREEN_QUEUE.exists():
+        sys.exit(f"No evergreen queue at "
+                 f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)}. Run the "
+                 "evergreen-scout agent to fill it, then draft from it.")
+
+    text = EVERGREEN_QUEUE.read_text()
+    heads = list(CANDIDATE_RE.finditer(text))
+    if not heads:
+        sys.exit(f"No candidates found in "
+                 f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)}. Rows must look "
+                 "like '### 1 · 8.50 · `orbit` — Title'; re-run "
+                 "evergreen-scout if the file has drifted.")
+
+    if rank:
+        picked = next((h for h in heads if int(h["rank"]) == rank), None)
+        if picked is None:
+            ranks = ", ".join(h["rank"] for h in heads)
+            sys.exit(f"No candidate #{rank} in the queue. Available: {ranks}.")
+    else:
+        picked = heads[0]                  # the file is written in score order
+
+    ends = [h.start() for h in heads if h.start() > picked.start()]
+    body = text[picked.end():ends[0] if ends else len(text)]
+    fields = {m["label"].strip().lower(): m["value"].strip()
+              for m in FIELD_RE.finditer(body)}
+
+    missing = [f for f in ("hook", "source", "why it matters", "the catch")
+               if f not in fields]
+    if missing:
+        sys.exit(f"Candidate #{picked['rank']} is missing "
+                 f"{', '.join(missing)}. Fix the row in "
+                 f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)} and re-run.")
+
+    arxiv = ARXIV_RE.search(fields["source"])
+    link = MD_LINK_RE.search(fields["source"])
+    if arxiv:
+        url = f"https://arxiv.org/abs/{arxiv['id']}"
+    elif link:
+        url = link.group(1)
+    else:
+        url = ""
+        print("  warning: the Source line has no URL, so source_url will be "
+              "empty — the web archive prints it, so add one at the gate")
+
+    lines = [f"{label.title()}: {value}" for label, value in fields.items()]
+    credit = ATTRIBUTE_RE.search(fields["source"])
+    if credit:
+        who = credit["who"].strip().rstrip(".")
+        print(f"  credit: the queue says attribute to {who!r} — check the "
+              "field below says that and not the page's publisher")
+        lines.insert(0, f"Attribution to use, overriding every rule below "
+                        f"about organisations: {who}")
+
+    # The scout writes "peer_reviewed: false" into a row that is not settled
+    # science; everything else in the queue is established by the queue's own
+    # entry criterion. The model cannot tell: the brief names no journal, so
+    # it reads that as unpublished and returns False, which would put a
+    # "not yet peer-reviewed" flag on a textbook result.
+    return {
+        "url": url,
+        "source": f"evergreen queue #{picked['rank']}",
+        "title": picked["title"].strip(),
+        "summary": "\n".join(lines),
+        "score": picked["score"],
+        "colorway": picked["colorway"],
+        "peer_reviewed": "peer_reviewed: false" not in body.lower(),
+    }
+
+
+def validate(post: dict, item: dict, paper: dict | None) -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
+    url = item["url"]
     post["source_url"] = url                  # never the model's version
+
+    # An evergreen row settles the preprint flag itself — see
+    # evergreen_candidate for why the model cannot. Retraction has no field in
+    # the contract at all; flag that one by hand at the gate.
+    if "peer_reviewed" in item:
+        post["peer_reviewed"] = item["peer_reviewed"]
 
     # Attribution and the preprint flag come from Crossref when the paper
     # resolved. Both are fields the model gets wrong in a repeatable way:
@@ -508,25 +696,71 @@ def validate(post: dict, url: str, paper: dict | None) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--row", type=int, help="draft this sheet row instead")
+    picked = ap.add_mutually_exclusive_group()
+    picked.add_argument("--row", type=int, help="draft this sheet row instead")
+    picked.add_argument("--url", help="draft this page instead of a sheet row")
+    picked.add_argument("--evergreen", type=int, nargs="?", const=0, metavar="N",
+                        help="draft from docs/evergreen_queue.md: the "
+                             "highest-scoring candidate, or candidate N")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the JSON without writing or marking the row")
     args = ap.parse_args()
 
     api_key, model = llm.config()
-    worksheet = open_sheet()
-    rows = worksheet.get_all_values()
-    if not rows:
-        sys.exit("The sheet is empty. Run `python src/ingest.py` first.")
 
-    col = {name: rows[0].index(name) for name in COLUMNS if name in rows[0]}
-    row_number, item = pick_row(rows, col, args.row)
-    print(f"Drafting row {row_number} · {item['score']} · {item['title'][:60]}")
+    # Neither of the off-sheet paths has a row to mark afterwards, so neither
+    # opens the sheet — which also means they need no Google credentials.
+    if args.evergreen is not None:
+        worksheet, row_number = None, None
+        item = evergreen_candidate(args.evergreen)
+    elif args.url:
+        worksheet, row_number = None, None
+        item = {"url": args.url, "source": outlet(args.url),
+                "title": "", "summary": "", "score": "—"}
+    else:
+        worksheet = open_sheet()
+        rows = worksheet.get_all_values()
+        if not rows:
+            sys.exit("The sheet is empty. Run `python src/ingest.py` first.")
 
-    article, page, warning = fetch_article(item["url"])
+        col = {name: rows[0].index(name) for name in COLUMNS if name in rows[0]}
+        row_number, item = pick_row(rows, col, args.row)
+
+    print(f"Drafting {f'row {row_number}' if row_number else item['source']} · "
+          f"{item['score']} · {item['title'][:60] or item['url']}")
+
+    # An evergreen candidate is drafted from its brief alone. Its Source line
+    # names a general reference rather than a report of one result, and
+    # fetching that is what produced the two wrong drafts described above.
+    if args.evergreen is not None:
+        article, page, warning = "", "", None
+    else:
+        article, page, warning = fetch_article(item["url"])
+
+    # resolve_paper matches a Crossref title against the headline to spot a
+    # record that is the page itself. A --url draft has no feed headline, so
+    # it takes the publisher's own.
+    if not item["title"]:
+        item["title"] = page_title(page) or item["url"]
     if warning:
-        print(f"  warning: {warning} — drafting from the feed summary, so "
-              "check the slides against the source before posting")
+        # Only a feed item has a summary to fall back to; a --url draft that
+        # cannot fetch has nothing, and the guard below stops it.
+        print(f"  warning: {warning} — "
+              + ("drafting from the feed summary, so " if item["summary"] else "")
+              + "check the slides against the source before posting")
+
+    # A feed item always carries a summary, so a blocked fetch still leaves
+    # the model something true to work from. A --url draft does not: with the
+    # page gone there is nothing but the URL, and the model answers from
+    # memory in the confident voice of the prompt. On the tides candidate
+    # that produced the textbook two-bulge myth the post exists to debunk —
+    # the exact inversion of the hook. Refuse instead.
+    if not article and not item["summary"]:
+        sys.exit(f"No source text: {item['url']} gave nothing readable. "
+                 "Drafting from a URL alone makes the model invent the "
+                 "content, so this is a stop. Use a source that is not "
+                 "behind a bot check, or put the passage in the sheet as "
+                 "the summary and draft that row.")
 
     paper, paper_warning = resolve_paper(page, item["title"])
     if paper_warning:
@@ -550,19 +784,22 @@ def main() -> int:
     except json.JSONDecodeError:
         sys.exit(f"The model did not return JSON:\n{reply[:400]}\nRe-run to try again.")
 
-    post = validate(post, item["url"], paper)
+    post = validate(post, item, paper)
     print(json.dumps(post, indent=2, ensure_ascii=False))
 
     if args.dry_run:
-        print("\nDry run — nothing written, row left queued")
+        print("\nDry run — nothing written"
+              + (", row left queued" if row_number else ""))
         return 0
 
     POSTS_DIR.mkdir(exist_ok=True)
     out = POSTS_DIR / f"{date.today():%Y-%m-%d}-{slugify(item['title'])}.json"
     out.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
 
-    # Mark the row so the next run picks a different story.
-    worksheet.update_cell(row_number, col["status"] + 1, "drafted")
+    # Mark the row so the next run picks a different story. An evergreen
+    # draft has no row to mark; the queue doc is edited by hand at the gate.
+    if row_number is not None:
+        worksheet.update_cell(row_number, col["status"] + 1, "drafted")
 
     print(f"\nWrote {out.relative_to(REPO_ROOT)}")
     print(f"Render it:  python src/render.py {out.relative_to(REPO_ROOT)}")

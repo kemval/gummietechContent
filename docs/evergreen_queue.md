@@ -33,7 +33,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 **Hook** — The two tidal bulges you were taught in school do not exist.
 **Source** — [Physics SE, accepted answer](https://physics.stackexchange.com/questions/121830/does-earth-really-have-two-high-tide-bulges-on-opposite-sides) · **attribute to** Laplace's dynamic theory of tides, not the SE user.
 **Settled?** Textbook-settled among oceanographers, and actively mistaught everywhere else.
-**Why it matters** — Tides are a shallow-water wave problem, not a static-shape problem. The bulge would need to travel ~1,700 km/h; shallow-water waves in a 4 km ocean cap near 700 km/h. The ocean can never keep up with the Moon.
+**Why it matters** — Tides are a shallow-water wave problem, not a static-shape problem. The bulge would need to travel ~1,600 km/h; shallow-water waves in a 4 km ocean cap near 700 km/h. The ocean can never keep up with the Moon.
 **The catch** — Newton's *forcing function* is right; only his response model is wrong. Do not let the hook slide into "Newton was wrong about gravity."
 
 ### 2 · 8.25 · `bloom` — Corals stir their own water
