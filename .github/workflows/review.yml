@@ -56,6 +56,7 @@ jobs:
       # can be dispatched with one typed on a phone. Fail here with a sentence
       # rather than three steps later with a stack trace.
       - name: Check the post is on master
+        id: post
         env:
           POST: ${{ inputs.post }}
         run: |
@@ -63,6 +64,9 @@ jobs:
             echo "::error::$POST is not on master. Check the path, or leave the recheck input blank to pick the post still awaiting approval." >&2
             exit 1
           fi
+          # Names the artifact below. A stem has no characters an artifact
+          # name rejects; the full path would, because of the slash.
+          echo "stem=$(basename "$POST" .json)" >> "$GITHUB_OUTPUT"
 
       # The half a measurement cannot do: whether the slides are true. Runs on
       # the Pro subscription via the OAuth token, not API billing, so it stays
@@ -137,6 +141,25 @@ jobs:
       - name: Proof the rendered layout
         continue-on-error: true
         run: python src/proof.py "${{ inputs.post }}" | tee /tmp/proof.md
+
+      # The reports exist in two places, and both are awkward to read later:
+      # /tmp on a runner that is deleted when the job ends, and a phone. When
+      # a post is held it is worth being able to see afterwards what the gate
+      # word actually was, without re-running the check and spending the
+      # quota again. `always()` because the run that most needs its reports
+      # kept is the one where a later step failed — the first send to carry a
+      # real fact-check died on Telegram's message cap and took the only copy
+      # of the report with it.
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ steps.post.outputs.stem }}
+          path: |
+            /tmp/factcheck.md
+            /tmp/proof.md
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: Send to Telegram for approval
         env:
