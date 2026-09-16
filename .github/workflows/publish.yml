@@ -37,10 +37,12 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      # Not requirements.txt: `confirm` imports requests and the standard
-      # library only, and this job runs 96 times a day.
+      # Not requirements.txt: this job runs 96 times a day, and telegram.py
+      # deliberately does not import render.py, which would drag in Playwright.
+      # These two are telegram.py's entire non-stdlib surface — keep them in
+      # step with its imports, or `confirm` dies at module load.
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests python-dotenv
 
       - name: Look for a publish tap
         env:
