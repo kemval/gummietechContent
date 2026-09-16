@@ -159,17 +159,35 @@ def call(token: str, method: str, payload: dict | None = None,
     return body.get("result")
 
 
-def chunks(text: str) -> list[str]:
+def safe_cut(text: str, limit: int) -> int:
+    """The largest cut at or under `limit` that does not split an &entity;.
+
+    Callers chunk text that has already been HTML-escaped, so a blind cut can
+    land inside `&amp;` and send Telegram half an entity.
+    """
+    amp = text.rfind("&", 0, limit)
+    if amp != -1 and ";" not in text[amp:limit]:
+        limit = amp
+    return max(limit, 1)
+
+
+def chunks(text: str, limit: int = MESSAGE_LIMIT) -> list[str]:
     """Split on line boundaries so no message exceeds Telegram's cap."""
     out: list[str] = []
     buf = ""
     for line in text.split("\n"):
         # A single line longer than the cap cannot be split on a newline;
         # hard-cut it rather than sending something Telegram will reject.
-        while len(line) > MESSAGE_LIMIT:
-            out.append(line[:MESSAGE_LIMIT])
-            line = line[MESSAGE_LIMIT:]
-        if len(buf) + len(line) + 1 > MESSAGE_LIMIT:
+        # Flush first: emitting a piece of this line while earlier lines are
+        # still buffered would send the report out of order.
+        while len(line) > limit:
+            if buf:
+                out.append(buf)
+                buf = ""
+            cut = safe_cut(line, limit)
+            out.append(line[:cut])
+            line = line[cut:]
+        if len(buf) + len(line) + 1 > limit:
             out.append(buf)
             buf = line
         else:
@@ -189,6 +207,31 @@ def send_message(token: str, chat_id: str, text: str,
         if markup and i == len(parts) - 1:
             payload["reply_markup"] = json.dumps(markup)
         call(token, "sendMessage", payload)
+
+
+def send_report(token: str, chat_id: str, name: str, body: str) -> None:
+    """Send one review report as messages that are each valid HTML on their own.
+
+    The reports are the longest and least predictable thing in the message. A
+    real fact-check runs to thousands of characters where the stand-in report
+    runs to two lines, which is why this never failed until the OAuth token
+    started working: chunks() splits on line boundaries and knows nothing
+    about markup, so a <pre> that spanned a split arrived with no closing tag
+    and Telegram rejected the whole message with "Can't find end tag".
+
+    Wrapping each chunk in its own <pre> means no tag ever crosses a boundary,
+    whatever the report says or how long it runs.
+    """
+    e = html.escape
+    # Room for the <pre></pre> wrapper and a "(2/3)" heading on its own line.
+    parts = chunks(e(body), MESSAGE_LIMIT - 96)
+    for i, part in enumerate(parts):
+        head = f"<b>{e(name)}</b>"
+        if len(parts) > 1:
+            head += f" ({i + 1}/{len(parts)})"
+        call(token, "sendMessage",
+             {"chat_id": chat_id, "text": f"{head}\n<pre>{part}</pre>",
+              "parse_mode": "HTML", "disable_web_page_preview": "true"})
 
 
 def read_reviews(paths: list[Path]) -> list[tuple[str, str]]:
@@ -257,8 +300,10 @@ def review_text(post: dict, stem: str,
                   if es.get(f)]
 
     if reviews:
-        for name, body in reviews:
-            lines += ["", f"<b>{e(name)}</b>", f"<pre>{e(body)}</pre>"]
+        # The reports go as their own messages, just above this one — see
+        # send_report() for why they cannot ride along inside this one.
+        names = ", ".join(name for name, _ in reviews)
+        lines += ["", f"<b>Reports above:</b> {e(names)}"]
     else:
         lines += ["", "⚠️ No review reports were passed — nothing checked "
                       "these slides or these claims."]
@@ -325,6 +370,12 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         with paths[-1].open("rb") as fh:
             call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})
         print(f"  sent {SIDECAR}")
+
+        # Ahead of the summary, so the button lands on the last message.
+        for name, body in reviews:
+            send_report(token, chat_id, name, body)
+        if reviews:
+            print(f"  sent {len(reviews)} report(s)")
 
         # The gate is the absence of the button, not a warning next to it:
         # a held post cannot be marked published from Telegram at all.
