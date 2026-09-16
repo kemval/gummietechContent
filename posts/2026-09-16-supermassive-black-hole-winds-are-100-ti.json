@@ -1,0 +1,32 @@
+{
+  "post_type": "drop",
+  "domain": "astronomy",
+  "colorway": "orbit",
+  "hook": "Quasar winds are 100× more powerful than thought",
+  "what_happened": "XRISM observed H1821+643, finding Fe XXV line broadening from turbulence 20–100 kpc away",
+  "why_it_matters": "Shows quasar‑mode feedback efficiency >1–10 %, meeting simulation needs and reshaping galaxy‑cluster evolution",
+  "the_catch": "Only one cluster observed; results may not generalize to all quasars",
+  "caption": "Black holes blast energy far beyond their galaxies, reshaping the cosmos.",
+  "keywords": [
+    "quasar",
+    "turbulence",
+    "feedback"
+  ],
+  "hashtags": [
+    "#blackhole",
+    "#quasar",
+    "#xrism",
+    "#gummietech"
+  ],
+  "alt_text": "A carousel explaining how quasar winds are far more powerful than previously thought, with XRISM data showing turbulence in a galaxy cluster.",
+  "source_url": "https://www.sciencedaily.com/releases/2026/09/260914102429.htm",
+  "attribution": "Yamada et al., Nature Astronomy (2026)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "astronomía",
+    "hook": "Los vientos de los cuásares son 100 veces más potentes de lo que se pensaba",
+    "what_happened": "XRISM observó H1821+643, detectando el ensanchamiento de la línea Fe XXV debido a turbulencia a 20–100 kpc de distancia",
+    "why_it_matters": "Demuestra que la eficiencia del feedback en modo cuásar supera el 1–10 %, cumpliendo las necesidades de las simulaciones y cambiando la evolución de los cúmulos galácticos",
+    "the_catch": "Solo se observó un cúmulo; los resultados pueden no generalizarse a todos los cuásares"
+  }
+}
