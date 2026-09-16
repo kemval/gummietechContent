@@ -78,6 +78,11 @@ TIMEOUT = 60             # generous: sendMediaGroup uploads five PNGs
 MESSAGE_LIMIT = 4096     # Telegram's cap on one text message
 CALLBACK_LIMIT = 64      # ...and on callback_data, which carries the stem
 CALLBACK_PREFIX = "pub:"
+# The same tap, made on a post a review held. It carries the stem exactly as
+# `pub:` does and dates the post identically — the difference is that it is a
+# separate button a person has to choose, and it says so in the log, in the
+# reply, and in the commit publish.yml makes. See send() for why it exists.
+OVERRIDE_PREFIX = "held:"
 
 # The workflow a held post offers a link to, under .github/workflows/.
 # recheck_url() says why it is a link and not a button that does the work.
@@ -252,6 +257,15 @@ def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
     return [name for name, body in reviews if GATE_RE.search(body)]
 
 
+def parse_callback(data: str) -> tuple[str, bool] | None:
+    """The post stem a tapped button names, and whether it overrode a hold."""
+    for prefix, overridden in ((CALLBACK_PREFIX, False),
+                               (OVERRIDE_PREFIX, True)):
+        if data.startswith(prefix):
+            return data[len(prefix):], overridden
+    return None
+
+
 def recheck_url() -> str | None:
     """Where a held post goes to be reviewed again, for the link button.
 
@@ -316,10 +330,15 @@ def review_text(post: dict, stem: str,
             # the report says which. The link is offered for the first case.
             "No approval button. If the check itself broke rather than the "
             "post — an exhausted quota holds a post exactly like a real "
-            "finding does — tap <b>Re-run the checks</b> below. If the "
-            "report found something real, fix the post and send it again."
+            "finding does — tap <b>Re-run the checks</b>. If the report "
+            "found something real, fix the post and send it again. If you "
+            "have already posted this to Instagram and the slides are right, "
+            "<b>Posted anyway</b> records that, and says in the log that it "
+            "went out held."
             if retry else
-            "No button: fix the post, re-run, and send it again."
+            "No approval button. Fix the post and send it again — or, if it "
+            "is already on Instagram and the slides are right, <b>Posted "
+            "anyway</b> records that over the hold."
         ]
     else:
         lines += [
@@ -337,7 +356,8 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     held = blocked_by(reviews)
 
     data = CALLBACK_PREFIX + stem
-    if len(data.encode()) > CALLBACK_LIMIT:
+    override_data = OVERRIDE_PREFIX + stem
+    if max(len(data.encode()), len(override_data.encode())) > CALLBACK_LIMIT:
         sys.exit(f"The post filename is too long to carry in a Telegram "
                  f"button ({len(data.encode())} > {CALLBACK_LIMIT} bytes). "
                  f"Shorten {post_path.name} and re-render it.")
@@ -381,11 +401,20 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         # a held post cannot be marked published from Telegram at all.
         retry = recheck_url() if held else None
         if held:
-            markup = ({"inline_keyboard": [[{"text": "🔁 Re-run the checks",
-                                             "url": retry}]]}
-                      if retry else None)
-            note = (f"HELD by {', '.join(held)}, "
-                    + ("re-check link offered" if retry else "no button"))
+            # A hold cannot stop the carousel reaching Instagram — that is
+            # done by hand, outside this. All it can withhold is the record,
+            # and a person who has already posted needs somewhere to say so
+            # or the archive quietly falls out of step with the account. So
+            # the normal green button stays withheld and a second, separate
+            # one records the override as an override.
+            rows = []
+            if retry:
+                rows.append([{"text": "🔁 Re-run the checks", "url": retry}])
+            rows.append([{"text": "⚠️ Posted anyway — record it",
+                          "callback_data": override_data}])
+            markup = {"inline_keyboard": rows}
+            note = (f"HELD by {', '.join(held)}, override button"
+                    + (" + re-check link" if retry else ""))
         else:
             markup = {"inline_keyboard": [[{"text": "✅ Posted to Instagram",
                                             "callback_data": data}]]}
@@ -426,10 +455,12 @@ def confirm() -> int:
 
     for update in updates or []:
         query = update.get("callback_query")
-        if not query or not str(query.get("data", "")).startswith(CALLBACK_PREFIX):
+        if not query:
             continue
-
-        stem = str(query["data"])[len(CALLBACK_PREFIX):]
+        parsed = parse_callback(str(query.get("data", "")))
+        if parsed is None:
+            continue
+        stem, overridden = parsed
         # The stem becomes a path, and it arrives from the network. Anything
         # with a separator in it is not a post filename.
         if "/" in stem or "\\" in stem or stem in ("", ".", ".."):
@@ -455,7 +486,8 @@ def confirm() -> int:
         post["published_at"] = today
         path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
         stamped += 1
-        print(f"  {path.name}: published_at = {today}")
+        held_note = " — over a held review" if overridden else ""
+        print(f"  {path.name}: published_at = {today}{held_note}")
 
         call(token, "answerCallbackQuery",
              {"callback_query_id": query["id"],
@@ -468,11 +500,14 @@ def confirm() -> int:
             call(token, "editMessageReplyMarkup",
                  {"chat_id": message["chat"]["id"],
                   "message_id": message["message_id"]}, strict=False)
+            mark = "⚠️" if overridden else "✅"
+            over = (" Recorded over a held review — the reports above still "
+                    "stand." if overridden else "")
             call(token, "sendMessage",
                  {"chat_id": message["chat"]["id"],
                   "reply_to_message_id": message["message_id"],
-                  "text": f"✅ {stem} — published_at {today}. "
-                          f"Building the archive now."}, strict=False)
+                  "text": f"{mark} {stem} — published_at {today}. "
+                          f"Building the archive now.{over}"}, strict=False)
 
     print(f"{stamped} post(s) newly published." if stamped
           else "No new publish taps.")

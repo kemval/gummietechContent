@@ -480,9 +480,20 @@ constraints that shape it:
 ### Both reviews gate the button
 
 `telegram.py send --review FILE` carries each report into the message, and a
-report containing `BLOCK` or `UNVERIFIED` withholds the approval button
-entirely. That is the gate: a held post cannot be marked live from the phone
-at all, rather than arriving with a warning beside a working button.
+report containing `BLOCK` or `UNVERIFIED` withholds the approval button. That
+is the gate: the ordinary tap that publishes is not offered on a held post.
+
+What a hold cannot do is stop the carousel. Instagram is posted by hand,
+outside all of this, so withholding every button protects nothing about the
+account — it withholds only the *record*, and leaves a person who has already
+posted with nowhere to say so except a hand edit to the JSON, which leaves no
+trace that anything was overridden at all. So a held post carries two buttons
+in place of the green one: **Re-run the checks**, and **Posted anyway —
+record it**. The second dates the post exactly as the green one would; what
+differs is that it carries `held:` rather than `pub:` in its `callback_data`,
+so `confirm` knows it was an override and says so in the run log and in its
+reply in the chat. A visible override is worth more than a gate that is only
+technically unbroken — and the reports stay in the chat above it either way.
 
 - **`proof.py`** runs on every post and needs no credentials.
 - **`fact-check`** runs as a Claude Code agent through
@@ -504,9 +515,10 @@ boundaries, so `fact-check.md`'s own prose about "a block page" does not trip
 it. A summary line like "0 BLOCK" would, and that is the right direction to
 be wrong in: the cost is opening the report.
 
-A held post is not a dead end. In Actions the approval button's place is taken
-by a **link** to `recheck.yml`, so the way back is one tap from the chat the
-hold arrived in. It is a link, and not a button that does the work, because
+Of those two buttons, only one is a real button. **Re-run the checks** is a
+**link** to `recheck.yml`, so the way back from a broken check is one tap from
+the chat the hold arrived in. It is a link, and not a button that does the
+work, because
 `getUpdates` has no offset: a callback tap would replay on every poll for 24
 hours and re-dispatch the review every quarter of an hour — burning the Claude
 quota whose exhaustion is the likeliest reason the post is held at all.
