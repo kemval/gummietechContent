@@ -61,8 +61,10 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
                      (all read-only pre-gate reviewers — see the sections below)
 .github/workflows/   ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
-                     Telegram, daily) · publish.yml (the publish tap, 15m) ·
-                     site.yml (web archive)
+                     commit, daily) · review.yml (fact-check · render · proof
+                     · send — called, never scheduled) · recheck.yml (run
+                     review.yml again on a held post) · publish.yml (the
+                     publish tap, 15m) · site.yml (web archive)
 src/
   verify_feeds.py    checks every feed URL is live
   ingest.py          feeds → Google Sheets
@@ -413,19 +415,41 @@ to render. One bad draft must not take the whole site down.
 
 ## The daily run
 
-`daily.yml` at 12:00 UTC drafts the top-scoring queued row, translates it,
-commits the JSON, renders the slides, and sends them to Telegram.
-`publish.yml` polls every 15 minutes for the reply. Between them sits a
-person, doing what only a person can:
+`daily.yml` at 12:00 UTC drafts the top-scoring queued row, translates it and
+commits the JSON, then calls `review.yml`, which fact-checks, renders, proofs
+and sends to Telegram. `publish.yml` polls every 15 minutes for the reply.
+Between them sits a person, doing what only a person can:
 
 ```
-daily.yml ─ draft · translate · commit · fact-check · render · proof ─→ Telegram
-                                                                          │
-                          you read the reports, post the carousel         │
-                          to Instagram, tap the button                    │
-                                                                          ↓
+daily.yml ─ draft · translate · commit ──┐
+                                         ├─→ review.yml ─ fact-check · render
+recheck.yml ─ resolve the held post ─────┘                · proof · send
+                                                                   │
+                                                                   ↓
+                                                               Telegram
+                                                                   │
+                          you read the reports, post the carousel  │
+                          to Instagram, tap the button             │
+                                                                   ↓
 publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 ```
+
+`review.yml` is a `workflow_call` reusable workflow rather than steps inside
+`daily.yml`, because two callers need it: the daily run, and `recheck.yml`
+when a review breaks rather than finds something. The gate that withholds the
+button therefore lives in one place — a second copy is a second place to
+forget to hold a post. It never drafts, never commits and never dates a post.
+The caller commits first, which is what lets `review.yml` read the post in its
+own checkout, and what lets `recheck.yml` find it again days later.
+
+`recheck.yml` exists because re-running `daily.yml` is not the way back from a
+held post: `draft.py` with no argument takes the *next* queued row, so a
+re-run would skip the held post and spend tomorrow's story. Dispatched with a
+blank `post` input it re-reviews the one awaiting approval — the newest dated
+file in `posts/` without `published_at`. The date-prefix filter there is
+load-bearing rather than tidy: `posts/era.json` is the fixture from the first
+commit, has neither a prefix nor a `published_at`, and sorts after every real
+draft, so unfiltered it would be picked every time.
 
 `src/telegram.py` is both halves — `send` and `confirm` — because both are
 the same boundary, and its docstring holds the API-level reasoning. The
@@ -479,6 +503,18 @@ at all, rather than arriving with a warning beside a working button.
 boundaries, so `fact-check.md`'s own prose about "a block page" does not trip
 it. A summary line like "0 BLOCK" would, and that is the right direction to
 be wrong in: the cost is opening the report.
+
+A held post is not a dead end. In Actions the approval button's place is taken
+by a **link** to `recheck.yml`, so the way back is one tap from the chat the
+hold arrived in. It is a link, and not a button that does the work, because
+`getUpdates` has no offset: a callback tap would replay on every poll for 24
+hours and re-dispatch the review every quarter of an hour — burning the Claude
+quota whose exhaustion is the likeliest reason the post is held at all.
+`confirm` survives that replay only because dating a post twice is a no-op,
+and a re-check has no such marker. `recheck_url()` builds the link from
+`GITHUB_SERVER_URL` and `GITHUB_REPOSITORY` rather than from a constant, so a
+local `send` offers none — whoever ran it by hand is already at a machine that
+can re-run the checks.
 
 Nothing gates a **local** `send` with no `--review` flags — the message says
 plainly that nothing checked the post, but the button still appears, because

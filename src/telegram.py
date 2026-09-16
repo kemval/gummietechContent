@@ -16,7 +16,7 @@ Environment:
     TELEGRAM_CHAT_ID     the chat to send to — send= only
     PUBLISH_TZ           IANA zone the published_at date is taken in (UTC)
 
-Four things that are deliberate:
+Five things that are deliberate:
 
   - **The slides go as documents, not photos.** sendPhoto re-encodes to JPEG
     and downscales past 1280px, and the slides are flat fields of colour
@@ -39,6 +39,14 @@ Four things that are deliberate:
     cron, so by the time it sees a tap the callback id is usually past the
     seconds-long window Telegram allows a bot to answer in. The edit to the
     message is the feedback that matters, and it has no such deadline.
+
+  - **A held post gets a link button, not a working one.** When a review
+    holds the post there is no approval button, and in Actions its place is
+    taken by a link to the re-check workflow. A link precisely because
+    getUpdates has no offset: a callback tap would replay on every poll for
+    24 hours and re-dispatch the review every quarter of an hour, burning
+    the Claude quota whose exhaustion is the likeliest reason the post is
+    held. One extra tap buys statelessness.
 """
 
 from __future__ import annotations
@@ -70,6 +78,10 @@ TIMEOUT = 60             # generous: sendMediaGroup uploads five PNGs
 MESSAGE_LIMIT = 4096     # Telegram's cap on one text message
 CALLBACK_LIMIT = 64      # ...and on callback_data, which carries the stem
 CALLBACK_PREFIX = "pub:"
+
+# The workflow a held post offers a link to, under .github/workflows/.
+# recheck_url() says why it is a link and not a button that does the work.
+RECHECK_WORKFLOW = "recheck.yml"
 
 SLIDES = [f"slide-{i}.png" for i in range(1, 6)]
 SIDECAR = "caption.txt"
@@ -197,8 +209,24 @@ def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
     return [name for name, body in reviews if GATE_RE.search(body)]
 
 
+def recheck_url() -> str | None:
+    """Where a held post goes to be reviewed again, for the link button.
+
+    Assembled from the runner's own environment rather than written down, so
+    it cannot rot if the repo is renamed or forked. Outside Actions both
+    variables are unset and there is no button: whoever ran `send` by hand is
+    already sitting at a machine that can re-run the checks.
+    """
+    server = os.getenv("GITHUB_SERVER_URL", "").strip()
+    repo = os.getenv("GITHUB_REPOSITORY", "").strip()
+    if not (server and repo):
+        return None
+    return f"{server}/{repo}/actions/workflows/{RECHECK_WORKFLOW}"
+
+
 def review_text(post: dict, stem: str,
-                reviews: list[tuple[str, str]] | None = None) -> str:
+                reviews: list[tuple[str, str]] | None = None,
+                retry: str | None = None) -> str:
     """The copy blocks a person needs in hand to post the carousel."""
     e = html.escape
     reviews = reviews or []
@@ -237,10 +265,16 @@ def review_text(post: dict, stem: str,
 
     held = blocked_by(reviews)
     if held:
+        lines += ["", f"🛑 <b>Held by {e(', '.join(held))}.</b>"]
         lines += [
-            "",
-            f"🛑 <b>Held by {e(', '.join(held))}.</b> No button: fix the "
-            f"post, re-run, and send it again.",
+            # A broken check and a real finding both read as a hold, and only
+            # the report says which. The link is offered for the first case.
+            "No approval button. If the check itself broke rather than the "
+            "post — an exhausted quota holds a post exactly like a real "
+            "finding does — tap <b>Re-run the checks</b> below. If the "
+            "report found something real, fix the post and send it again."
+            if retry else
+            "No button: fix the post, re-run, and send it again."
         ]
     else:
         lines += [
@@ -294,13 +328,20 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
 
         # The gate is the absence of the button, not a warning next to it:
         # a held post cannot be marked published from Telegram at all.
-        markup = None if held else {
-            "inline_keyboard": [[{"text": "✅ Posted to Instagram",
-                                  "callback_data": data}]]}
-        send_message(token, chat_id, review_text(post, stem, reviews), markup)
-        print(f"  sent the review message — "
-              + (f"HELD by {', '.join(held)}, no button" if held
-                 else "button offered"))
+        retry = recheck_url() if held else None
+        if held:
+            markup = ({"inline_keyboard": [[{"text": "🔁 Re-run the checks",
+                                             "url": retry}]]}
+                      if retry else None)
+            note = (f"HELD by {', '.join(held)}, "
+                    + ("re-check link offered" if retry else "no button"))
+        else:
+            markup = {"inline_keyboard": [[{"text": "✅ Posted to Instagram",
+                                            "callback_data": data}]]}
+            note = "button offered"
+        send_message(token, chat_id,
+                     review_text(post, stem, reviews, retry), markup)
+        print(f"  sent the review message — {note}")
     except TelegramError as exc:
         sys.exit(str(exc))
 

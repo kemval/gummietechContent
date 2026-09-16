@@ -1,16 +1,16 @@
 name: daily
 
 # Layers 3 through 4b, once a day: draft the top-scoring story, translate it,
-# fact-check it against its source, render the slides, proof the layout, and
-# put the lot in Telegram for approval.
+# commit it, then hand the rest to review.yml — fact-check, render, proof, and
+# a Telegram message for approval.
 #
 # It stops there. The post JSON is committed without `published_at`, so
 # site.py skips it and nothing reaches the web archive or Instagram until a
 # person taps the button in Telegram — publish.yml is what picks that up.
 #
-# Both reviews ride into the Telegram message, and either one saying BLOCK
-# (or fact-check saying UNVERIFIED) withholds the button entirely, so a post
-# that failed review cannot be marked live from the phone at all.
+# The review half is a reusable workflow because recheck.yml calls it too, on
+# a post whose first review broke. The gate that withholds the button lives
+# there, once.
 
 on:
   schedule:
@@ -34,13 +34,12 @@ permissions:
 jobs:
   draft:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
-    env:
-      # Secrets cannot be read in a step `if:`, so presence is hoisted here.
-      # Absent, fact-check is skipped rather than failing the run — see the
-      # stand-in step for what that does to the button.
-      HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+    # review.yml is a separate job and so a separate checkout; the path it
+    # reviews has to be handed across.
+    outputs:
+      post: ${{ steps.draft.outputs.post }}
 
     steps:
       - uses: actions/checkout@v4
@@ -50,13 +49,10 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      # No Chromium here: drafting and translating are HTTP and LLM calls.
+      # The browser download belongs to review.yml, which actually renders.
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      # render.py and proof.py drive a real browser, so unlike site.yml this
-      # one needs the Chromium download and its system libraries.
-      - name: Install Chromium
-        run: python -m playwright install --with-deps chromium
 
       - name: Write service account credentials
         env:
@@ -98,7 +94,9 @@ jobs:
 
       # Committed before the slides are sent, and deliberately: the button in
       # Telegram carries only the filename, so the file has to be on master
-      # before publish.yml can date it. Undated, site.py skips it.
+      # before publish.yml can date it. Undated, site.py skips it. It is also
+      # what lets review.yml run in its own checkout, and what lets
+      # recheck.yml find the post again days later.
       - name: Commit the draft
         run: |
           git config user.name  "gummietech"
@@ -108,83 +106,9 @@ jobs:
           git pull --rebase
           git push
 
-      # The half a measurement cannot do: whether the slides are true. Runs on
-      # the Pro subscription via the OAuth token, not API billing, so it stays
-      # inside the $0 rule — `claude setup-token` mints it.
-      #
-      # The agent is read-only by contract (.claude/agents/fact-check.md), and
-      # the settings below hold that on the runner too: it may write its report
-      # under /tmp and nothing else. It reports; a person applies the edits.
-      - name: Fact-check the draft against its source
-        id: factcheck
-        if: env.HAS_CLAUDE == 'true'
-        continue-on-error: true
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            Use the fact-check agent defined in .claude/agents/fact-check.md
-            to verify the post at ${{ steps.draft.outputs.post }} against the
-            source it cites. Follow that file's instructions exactly,
-            including its BLOCK / FIX / PASS report format.
-
-            Write the complete report to /tmp/factcheck.md. Do not modify any
-            file in posts/, do not render, and do not add published_at.
-          claude_args: |
-            --max-turns 30
-            --allowedTools "Task,Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
-          settings: |
-            {
-              "permissions": {
-                "allow": ["Write(/tmp/**)"],
-                "deny": ["Write(posts/**)", "Edit(posts/**)",
-                         "Write(src/**)", "Edit(src/**)"]
-              }
-            }
-
-      # Three outcomes, and only one of them is "reviewed".
-      #   skipped  — no token configured yet. Say so without the gate words,
-      #              so the button still works as it did before this existed.
-      #   failed   — configured and broken, or it wrote nothing. That is an
-      #              unknown, and fact-check.md is explicit that an
-      #              unverifiable post is a hold: UNVERIFIED withholds the
-      #              button.
-      - name: Stand in for a fact-check that did not report
-        run: |
-          if [ -s /tmp/factcheck.md ]; then
-            echo "fact-check reported."
-            exit 0
-          fi
-          if [ "${{ steps.factcheck.outcome }}" = "skipped" ]; then
-            cat > /tmp/factcheck.md <<'TXT'
-          Not configured — no claim on this post has been checked against its source.
-          Run `claude setup-token` locally and add the result as the repo secret
-          CLAUDE_CODE_OAUTH_TOKEN to turn this on. Until then, open the source
-          link above and read the slides against it yourself.
-          TXT
-          else
-            cat > /tmp/factcheck.md <<'TXT'
-          UNVERIFIED — fact-check was configured but produced no report.
-          See the workflow run log. An unverifiable post is a hold, not a pass.
-          TXT
-          fi
-
-      - name: Render the slides
-        run: python src/render.py "${{ steps.draft.outputs.post }}"
-
-      # Measures the page render.py just screenshotted: frame containment,
-      # overflow, contrast, the preprint flag, the colorway rhythm. Exits 1 on
-      # BLOCK, which is a finding to carry into the message rather than a
-      # reason to abandon the run.
-      - name: Proof the rendered layout
-        continue-on-error: true
-        run: python src/proof.py "${{ steps.draft.outputs.post }}" | tee /tmp/proof.md
-
-      - name: Send to Telegram for approval
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python src/telegram.py send "${{ steps.draft.outputs.post }}" \
-            --review /tmp/factcheck.md \
-            --review /tmp/proof.md
+  review:
+    needs: draft
+    uses: ./.github/workflows/review.yml
+    with:
+      post: ${{ needs.draft.outputs.post }}
+    secrets: inherit

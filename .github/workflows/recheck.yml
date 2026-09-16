@@ -1,0 +1,112 @@
+name: recheck
+
+# The way back from a held post, from a phone.
+#
+# When a review breaks rather than finds something — fact-check exhausting the
+# Claude quota is the case that will actually recur — daily.yml holds the post
+# and telegram.py puts a link to this workflow where the approval button would
+# have been. Run it, and the same review runs again on the same post; if it
+# passes this time a fresh message arrives with a working button.
+#
+# It re-reviews a post that already exists and never drafts a new one. That is
+# the whole reason it is not just "re-run daily.yml": draft.py with no argument
+# takes the next queued row and marks it drafted, so re-running daily would
+# skip past the held post and burn the next story instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      post:
+        description: 'Post JSON path. Leave blank for the one awaiting approval.'
+        required: false
+        type: string
+
+# Two re-checks at once would send two messages for one post.
+concurrency:
+  group: recheck
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write         # claude-code-action's default GitHub App auth
+
+jobs:
+  # Typing a 52-character filename on a phone is not a workflow. Blank input
+  # means "the post that is waiting", which is the only one there ever is in
+  # normal running.
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      post: ${{ steps.pick.outputs.post }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick the post to re-review
+        id: pick
+        env:
+          POST: ${{ inputs.post }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+          import sys
+
+          asked = os.environ.get("POST", "").strip()
+          out = pathlib.Path(os.environ["GITHUB_OUTPUT"])
+
+          if asked:
+              if not pathlib.Path(asked).is_file():
+                  sys.exit(f"::error::{asked} is not on master. Check the "
+                           f"path, or leave the input blank to pick the post "
+                           f"awaiting approval.")
+              out.write_text(f"post={asked}\n")
+              print(f"Re-reviewing the post given: {asked}")
+              raise SystemExit(0)
+
+          # Every draft.py post is named YYYY-MM-DD-<slug>.json, so the date
+          # prefix sorts chronologically. The filter is not decoration:
+          # posts/era.json is the hand-built fixture from the first commit,
+          # has neither a prefix nor a published_at, and sorts after every
+          # real draft — unfiltered it would be picked every single time.
+          dated = re.compile(r"\d{4}-\d{2}-\d{2}-")
+          waiting = []
+          for path in sorted(pathlib.Path("posts").glob("*.json")):
+              if not dated.match(path.name):
+                  continue
+              try:
+                  post = json.loads(path.read_text())
+              except (OSError, json.JSONDecodeError) as exc:
+                  # site.py skips a malformed draft rather than dying on it,
+                  # and one bad file must not block re-checking a good one.
+                  print(f"::warning::skipping {path}: {exc}")
+                  continue
+              if not post.get("published_at"):
+                  waiting.append(path)
+
+          if not waiting:
+              sys.exit("::error::No post is awaiting approval — every dated "
+                       "draft in posts/ already has published_at.")
+
+          if len(waiting) > 1:
+              # Normal running leaves exactly one. More means a post was held
+              # and never resolved, and silently picking the newest would bury
+              # the older one for good.
+              others = ", ".join(str(p) for p in waiting[:-1])
+              print(f"::warning::{len(waiting)} posts are awaiting approval. "
+                    f"Re-reviewing the newest; still waiting: {others}")
+
+          out.write_text(f"post={waiting[-1]}\n")
+          print(f"Re-reviewing the post awaiting approval: {waiting[-1]}")
+          PY
+
+  review:
+    needs: resolve
+    uses: ./.github/workflows/review.yml
+    with:
+      post: ${{ needs.resolve.outputs.post }}
+    secrets: inherit

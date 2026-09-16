@@ -1,0 +1,148 @@
+name: review
+
+# Layers 3b through 4b for a post that already exists on master: fact-check it
+# against its source, render the slides, proof the layout, and put the lot in
+# Telegram for approval.
+#
+# It lives in its own file because two callers need it and the gate below must
+# not drift between them. `daily.yml` runs it on the post it has just drafted;
+# `recheck.yml` runs it again on a post whose first review broke. A second copy
+# of the gate would be a second place to forget to hold a post.
+#
+# It never drafts, never commits and never dates a post. The caller commits
+# first, deliberately: the Telegram button carries only the filename, so the
+# file has to be on master before publish.yml can find it.
+
+on:
+  workflow_call:
+    inputs:
+      post:
+        description: Path to the post JSON, relative to the repo root.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write         # claude-code-action's default GitHub App auth
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      # Secrets cannot be read in a step `if:`, so presence is hoisted here.
+      # Absent, fact-check is skipped rather than failing the run — see the
+      # stand-in step for what that does to the button.
+      HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # render.py and proof.py drive a real browser, so unlike site.yml this
+      # one needs the Chromium download and its system libraries.
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      # daily.yml always passes a path it has just committed, but recheck.yml
+      # can be dispatched with one typed on a phone. Fail here with a sentence
+      # rather than three steps later with a stack trace.
+      - name: Check the post is on master
+        env:
+          POST: ${{ inputs.post }}
+        run: |
+          if [ ! -f "$POST" ]; then
+            echo "::error::$POST is not on master. Check the path, or leave the recheck input blank to pick the post still awaiting approval." >&2
+            exit 1
+          fi
+
+      # The half a measurement cannot do: whether the slides are true. Runs on
+      # the Pro subscription via the OAuth token, not API billing, so it stays
+      # inside the $0 rule — `claude setup-token` mints it. That token shares
+      # its quota with interactive Claude Code sessions, which is why
+      # --max-turns is capped and why recheck.yml exists at all.
+      #
+      # The agent is read-only by contract (.claude/agents/fact-check.md), and
+      # the settings below hold that on the runner too: it may write its report
+      # under /tmp and nothing else. It reports; a person applies the edits.
+      - name: Fact-check the draft against its source
+        id: factcheck
+        if: env.HAS_CLAUDE == 'true'
+        continue-on-error: true
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Use the fact-check agent defined in .claude/agents/fact-check.md
+            to verify the post at ${{ inputs.post }} against the
+            source it cites. Follow that file's instructions exactly,
+            including its BLOCK / FIX / PASS report format.
+
+            Write the complete report to /tmp/factcheck.md. Do not modify any
+            file in posts/, do not render, and do not add published_at.
+          claude_args: |
+            --max-turns 30
+            --allowedTools "Task,Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
+          settings: |
+            {
+              "permissions": {
+                "allow": ["Write(/tmp/**)"],
+                "deny": ["Write(posts/**)", "Edit(posts/**)",
+                         "Write(src/**)", "Edit(src/**)"]
+              }
+            }
+
+      # Three outcomes, and only one of them is "reviewed".
+      #   skipped  — no token configured yet. Say so without the gate words,
+      #              so the button still works as it did before this existed.
+      #   failed   — configured and broken, or it wrote nothing. That is an
+      #              unknown, and fact-check.md is explicit that an
+      #              unverifiable post is a hold: UNVERIFIED withholds the
+      #              button.
+      - name: Stand in for a fact-check that did not report
+        run: |
+          if [ -s /tmp/factcheck.md ]; then
+            echo "fact-check reported."
+            exit 0
+          fi
+          if [ "${{ steps.factcheck.outcome }}" = "skipped" ]; then
+            cat > /tmp/factcheck.md <<'TXT'
+          Not configured — no claim on this post has been checked against its source.
+          Run `claude setup-token` locally and add the result as the repo secret
+          CLAUDE_CODE_OAUTH_TOKEN to turn this on. Until then, open the source
+          link above and read the slides against it yourself.
+          TXT
+          else
+            cat > /tmp/factcheck.md <<'TXT'
+          UNVERIFIED — fact-check was configured but produced no report.
+          See the workflow run log. An unverifiable post is a hold, not a pass.
+          TXT
+          fi
+
+      - name: Render the slides
+        run: python src/render.py "${{ inputs.post }}"
+
+      # Measures the page render.py just screenshotted: frame containment,
+      # overflow, contrast, the preprint flag, the colorway rhythm. Exits 1 on
+      # BLOCK, which is a finding to carry into the message rather than a
+      # reason to abandon the run.
+      - name: Proof the rendered layout
+        continue-on-error: true
+        run: python src/proof.py "${{ inputs.post }}" | tee /tmp/proof.md
+
+      - name: Send to Telegram for approval
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python src/telegram.py send "${{ inputs.post }}" \
+            --review /tmp/factcheck.md \
+            --review /tmp/proof.md
