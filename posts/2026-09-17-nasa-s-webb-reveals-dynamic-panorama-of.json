@@ -24,9 +24,9 @@
   "peer_reviewed": true,
   "es": {
     "domain": "astronomía",
-    "hook": "JWST descubre 39 nuevos enanos marrones en IC 348",
-    "what_happened": "Luhman y Alves de Oliveira emplearon JWST NIRCam y NIRSpec para identificar 39 candidatos, 15 espectros y nueve miembros subestelares confirmados",
-    "why_it_matters": "Demuestra que existen enanos marrones de menor masa (~2 M_Jup), reduciendo el mínimo del IMF y revelando discos que forman planetas",
-    "the_catch": "Solo se obtuvieron 15 espectros; los resultados se limitan al campo de IC 348 y a la sensibilidad actual"
+    "hook": "JWST encuentra 39 candidatos de enanos marrones en IC 348",
+    "what_happened": "Luhman y Alves de Oliveira usaron JWST NIRCam y NIRSpec para identificar 39 candidatos, 15 espectros, nueve miembros subestelares confirmados",
+    "why_it_matters": "Muestra que existen enanos marrones de menor masa (~2 M_Jup), estrechando el mínimo del IMF y revelando discos que forman planetas",
+    "the_catch": "Solo 15 de los 39 candidatos obtuvieron espectros (la máscara de NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0.05 M☉ carecen de verificaciones dinámicas y podrían contener errores significativos"
   }
 }
