@@ -65,3 +65,14 @@ jobs:
 
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      # A single job, so one failure step covers the build and the deploy.
+      # This one is the quietest failure in the repo: the archive just stops
+      # updating, and every link in the bio keeps working, on yesterday's
+      # posts.
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}

@@ -1,0 +1,57 @@
+name: Notify failure
+description: >
+  Say in Telegram that this run broke, with a link to its log. Called from a
+  step guarded by `if: failure()`.
+
+# One definition, four callers — the same reasoning that put the gate in
+# review.yml. A copy per workflow is four places to forget when the message,
+# the link or the throttle changes.
+#
+# Failures here were silent: they showed up only when somebody opened the
+# Actions tab, and a dead ingest is invisible until the queue dries up and a
+# *different* workflow fails the next morning for a reason two days old. The
+# bot already carries the gate, so a break belongs in the same chat.
+#
+# With the secrets unset the request goes nowhere and exits clean: this must
+# never turn a real failure into a second, more confusing one.
+
+inputs:
+  bot_token:
+    description: TELEGRAM_BOT_TOKEN. Absent, the call is a harmless no-op.
+    required: true
+  chat_id:
+    description: TELEGRAM_CHAT_ID.
+    required: true
+  hourly:
+    description: >
+      Speak only in the first quarter of each hour. For publish.yml, which
+      polls 96 times a day: a persistent break would send 96 identical
+      messages and teach a person to mute the bot, which costs more than the
+      alert is worth.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        BOT_TOKEN: ${{ inputs.bot_token }}
+        CHAT_ID: ${{ inputs.chat_id }}
+        HOURLY: ${{ inputs.hourly }}
+        WORKFLOW: ${{ github.workflow }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        if [ "$HOURLY" = "true" ] && [ "$(date -u +%M)" -ge 15 ]; then
+          echo "Failed, but staying quiet: not the first poll of the hour."
+          exit 0
+        fi
+        if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+          echo "No Telegram credentials — nothing to notify."
+          exit 0
+        fi
+        curl -sS --max-time 20 -o /dev/null \
+          "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+          --data-urlencode "chat_id=$CHAT_ID" \
+          --data-urlencode "text=⚠️ $WORKFLOW failed. Nothing was published. $RUN_URL" \
+          || echo "Could not reach Telegram; the run log is the only record."

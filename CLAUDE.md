@@ -60,6 +60,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 ```
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
                      (all read-only pre-gate reviewers — see the sections below)
+.github/actions/     notify-failure (one definition of "this run broke",
+                     called by every scheduled workflow)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, daily) · review.yml (fact-check · render · proof
@@ -564,6 +566,18 @@ wrong SHA, a provider's 429. Green is not safe, it is only "nothing obvious".
 Note that commits pushed by the workflows themselves use `GITHUB_TOKEN`, which
 by design does not trigger other workflows, so a bot-committed draft is not
 checked. A hand correction at the gate is pushed by a person, and is.
+
+**A failed run says so in Telegram.** `.github/actions/notify-failure` is a
+composite action called from an `if: failure()` step at the end of every
+scheduled workflow, and it posts the run URL to the same chat the gate uses.
+It lives in one file for the reason `review.yml` does. Two details:
+
+- **`publish.yml` passes `hourly: 'true'`.** It polls 96 times a day, so a
+  persistent break would send 96 identical messages and teach a person to mute
+  the bot — which costs more than the alert is worth. Only the first poll of
+  each hour speaks.
+- **Missing credentials are a no-op, not a second failure.** The point is to
+  make a break visible, never to add one on top of it.
 
 ## Publishing
 

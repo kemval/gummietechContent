@@ -106,6 +106,15 @@ jobs:
           git pull --rebase
           git push
 
+      # A failed run is silent unless somebody opens the Actions tab. See
+      # .github/actions/notify-failure for why that is the thing to fix.
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+
   review:
     needs: draft
     uses: ./.github/workflows/review.yml
