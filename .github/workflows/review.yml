@@ -85,6 +85,14 @@ jobs:
       # The agent is read-only by contract (.claude/agents/fact-check.md), and
       # the settings below hold that on the runner too: it may write its report
       # under /tmp and nothing else. It reports; a person applies the edits.
+      #
+      # No Task in the allowlist, deliberately. Asked to "use the fact-check
+      # agent", Claude delegated to a subagent, backgrounded it, and ended the
+      # turn with "it is now running — I'll write the report once it finishes".
+      # The step exited successful after 12 seconds with /tmp/factcheck.md
+      # never written, and the stand-in below held the post as UNVERIFIED: a
+      # gate doing its job around a check that had not happened. The agent file
+      # is instructions, and this session can follow them itself.
       - name: Fact-check the draft against its source
         id: factcheck
         if: env.HAS_CLAUDE == 'true'
@@ -93,13 +101,16 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Use the fact-check agent defined in .claude/agents/fact-check.md
-            to verify the post at ${{ inputs.post }} against the
-            source it cites. Follow that file's instructions exactly,
-            including its BLOCK / FIX / PASS report format.
+            Read .claude/agents/fact-check.md and follow its instructions
+            yourself, on the post at ${{ inputs.post }}: re-fetch the source,
+            find the paper behind the coverage, check every slide claim, and
+            report in that file's BLOCK / FIX / PASS format.
 
-            Write the complete report to /tmp/factcheck.md. Do not modify any
-            file in posts/, do not render, and do not add published_at.
+            Do the work in this session. Do not start a subagent for it.
+
+            Write the complete report to /tmp/factcheck.md before you finish.
+            Do not modify any file in posts/, do not render, and do not add
+            published_at.
           # The step above is continue-on-error, so a fact-check that breaks
           # leaves a green run and an empty report, and the log says only that
           # the action failed. This is what makes it say why: every Claude
@@ -111,7 +122,7 @@ jobs:
           show_full_output: true
           claude_args: |
             --max-turns 30
-            --allowedTools "Task,Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
+            --allowedTools "Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
           settings: |
             {
               "permissions": {
