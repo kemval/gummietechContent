@@ -1,0 +1,33 @@
+name: alert-test
+
+# TEMPORARY, and deleted in the commit right after this one. It exists to
+# prove that .github/actions/notify-failure actually reaches Telegram, because
+# a notifier is only ever exercised by the failures it is there to report — a
+# typo in it would stay invisible until the first real break, which is the one
+# moment it must work. Nothing schedules it.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fail-on-purpose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fail on purpose
+        run: |
+          echo "Nothing is wrong. This step exists to fail."
+          exit 1
+
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
