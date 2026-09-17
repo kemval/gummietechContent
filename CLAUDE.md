@@ -60,7 +60,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 ```
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
                      (all read-only pre-gate reviewers — see the sections below)
-.github/workflows/   ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
+.github/workflows/   check.yml (on push: the offline half, no secrets) ·
+                     ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, daily) · review.yml (fact-check · render · proof
                      · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · publish.yml (the
@@ -540,6 +541,29 @@ can re-run the checks.
 Nothing gates a **local** `send` with no `--review` flags — the message says
 plainly that nothing checked the post, but the button still appears, because
 a person sending by hand is already in the loop.
+
+## When something breaks
+
+Two pieces, because the failures divide in two.
+
+**`check.yml` runs on every push** and exercises the half of the pipeline
+that needs no secret, no network and no LLM call: every module in `src/` is
+loaded by path, `posts/era.json` is rendered and proofed, the whole archive is
+built, and `translate.py --check` confirms no post's Spanish is older than its
+English. A second job installs *only* the two packages `publish.yml` installs
+and loads `telegram.py` under them — that list is maintained by hand against
+`telegram.py`'s imports, and the day it fell behind, `confirm` died at module
+load on every poll for a day.
+
+It is deliberately not a test suite. It catches the class of break that used
+to surface at 06:17 — a missing dependency, an import cycle, a template that
+stops rendering, Spanish left behind by a correction. It cannot catch anything
+that needs a real run: Telegram's message cap, a checkout resolving to the
+wrong SHA, a provider's 429. Green is not safe, it is only "nothing obvious".
+
+Note that commits pushed by the workflows themselves use `GITHUB_TOKEN`, which
+by design does not trigger other workflows, so a bot-committed draft is not
+checked. A hand correction at the gate is pushed by a person, and is.
 
 ## Publishing
 

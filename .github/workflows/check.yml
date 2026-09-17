@@ -1,0 +1,116 @@
+name: check
+
+# The half of the pipeline that can be exercised without secrets, without the
+# network and without spending an LLM call — run on every push, so it breaks
+# here instead of at 06:17 in front of a person with a phone.
+#
+# It exists because of what the first fortnight actually failed on: a package
+# publish.yml did not install, a fixture that stopped rendering, Spanish left
+# behind by a correction. Every one of those was found in production, hours
+# after the commit that caused it.
+#
+# What it does NOT cover, so nobody mistakes green for safe: anything that
+# needs a real run — the Telegram message cap, a checkout resolving to the
+# wrong SHA, a provider's 429. Those still fail where they happen.
+#
+# Commits pushed by the workflows themselves use GITHUB_TOKEN, which by design
+# does not trigger other workflows, so a bot-committed draft is not checked
+# here. A hand correction at the gate is pushed by a person, and is.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: render, proof and archive the fixture
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      # Loaded by path, not by name: `import site` would find the standard
+      # library's and silently never touch src/site.py. Executing each module
+      # catches a missing dependency, a syntax error and an import cycle —
+      # the class of break that otherwise surfaces as a 3am ModuleNotFoundError.
+      - name: Every module still loads
+        run: |
+          python - <<'PY'
+          import importlib.util, pathlib, sys
+          sys.path.insert(0, "src")
+          failed = []
+          for f in sorted(pathlib.Path("src").glob("*.py")):
+              spec = importlib.util.spec_from_file_location(f"smoke_{f.stem}", f)
+              try:
+                  spec.loader.exec_module(importlib.util.module_from_spec(spec))
+                  print(f"  ok    {f}")
+              except BaseException as exc:
+                  print(f"  FAIL  {f}: {type(exc).__name__}: {exc}")
+                  failed.append(f)
+          sys.exit(f"::error::{len(failed)} module(s) failed to load" if failed else 0)
+          PY
+
+      # posts/era.json is the fixture from the first commit: undated, so the
+      # archive never publishes it, which is what makes it safe to render on
+      # every push. Fonts and templates are local, so this is entirely offline.
+      - name: Render the fixture
+        run: python src/render.py posts/era.json --outdir /tmp/smoke
+
+      - name: Proof the fixture
+        run: python src/proof.py posts/era.json
+
+      # Builds every published post, so a template change that breaks one page
+      # shows up here rather than on the live archive.
+      - name: Build the web archive
+        run: python src/site.py --outdir /tmp/site
+
+      # Makes no LLM call. Red means a post's English moved after it was
+      # translated — which is exactly what the gate does to it — and the
+      # Spanish on its permalink would still be saying the old thing.
+      - name: No post carries stale Spanish
+        run: python src/translate.py --check
+
+  publish-deps:
+    name: telegram.py under publish.yml's two packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    # publish.yml installs `requests python-dotenv` rather than
+    # requirements.txt, because it runs 96 times a day and telegram.py stays
+    # clear of Playwright. That list is kept by hand against telegram.py's
+    # imports, and the day it fell behind, `confirm` died at module load on
+    # every poll until somebody opened the Actions tab. This is that exact
+    # environment: do not add an install step here, the emptiness is the test.
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install what publish.yml installs
+        run: pip install requests python-dotenv
+
+      - name: telegram.py loads and parses its arguments
+        run: |
+          python src/telegram.py --help
+          python src/telegram.py send --help
+          python src/telegram.py confirm --help
