@@ -505,10 +505,24 @@ def source_text(facts: dict | None, article: str, summary: str) -> str:
               "quoted here may not be an author.\n" + coverage)
 
 
-def pick_row(rows: list[list[str]], col: dict, wanted: int | None) -> tuple[int, dict]:
-    """The highest-scoring queued row, or the one the caller asked for."""
+# Each rejected candidate costs a page fetch and a Crossref call inside a job
+# with a 15-minute timeout, so the guard gives up rather than walking a queue
+# of 1440 rows. Five is enough for a story covered by every feed at once.
+MAX_DUPLICATE_SKIPS = 5
+
+
+def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
+             skip: set[int] = frozenset()) -> tuple[int, dict]:
+    """The highest-scoring queued row, or the one the caller asked for.
+
+    `skip` holds rows this run has already rejected as duplicates. Their
+    status is updated in the sheet too, but `rows` is the snapshot read
+    before that, so without this the next pass would pick the same one.
+    """
     candidates = []
     for n, row in enumerate(rows[1:], start=2):
+        if n in skip:
+            continue
         if wanted and n != wanted:
             continue
         if not wanted and row[col["status"]] != "queued":
@@ -643,6 +657,49 @@ def evergreen_candidate(rank: int) -> dict:
     }
 
 
+def covered_papers() -> dict[str, str]:
+    """Every paper posts/ already covers, keyed by DOI and by citation.
+
+    The sheet is deduplicated by URL, and a story is not a URL: 45 feeds
+    cover one press release, each copy arrives as its own row with its own
+    score, and the siblings of the one that gets drafted stay queued
+    forever. On 2026-09-17 the highest-scoring row in a queue of 1440 was
+    the paper published that same morning, and another was a story from two
+    weeks earlier.
+
+    Older posts carry no `doi` — it was not written until this guard needed
+    it — so the citation is the key that works on all of them. Both come
+    from the same Crossref record, so they agree.
+    """
+    seen: dict[str, str] = {}
+    for path in sorted(POSTS_DIR.glob("*.json")):
+        try:
+            post = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue          # site.py skips a malformed post; so does this
+        for key in (post.get("doi"), post.get("attribution")):
+            if key and str(key).strip():
+                seen.setdefault(" ".join(str(key).lower().split()), path.name)
+    return seen
+
+
+def already_covered(paper: dict | None, seen: dict[str, str]) -> str | None:
+    """The post that already covers this paper, if there is one.
+
+    Only a resolved paper can be matched. Coverage with no DOI is left to
+    the fact-check agent, which reads posts/ and can see a duplicate the
+    keys cannot.
+    """
+    if not paper:
+        return None
+    for key in (paper.get("doi"), citation(paper)):
+        if key:
+            hit = seen.get(" ".join(str(key).lower().split()))
+            if hit:
+                return hit
+    return None
+
+
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
     url = item["url"]
@@ -667,6 +724,9 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
                       f"using Crossref's {cite!r}")
             post["attribution"] = cite
         post["peer_reviewed"] = not paper["is_preprint"]
+        # Written for covered_papers() above, and for a person reading the
+        # JSON at the gate. The model never supplies it.
+        post["doi"] = paper["doi"]
 
     # A preprint host can only ever force the flag down. A reader on arxiv.org
     # is reading a preprint whatever Crossref says about a later version.
@@ -699,7 +759,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
 
     ordered = ["post_type", "domain", "colorway", "hook", "what_happened", "why_it_matters",
                "the_catch", "caption", "keywords", "hashtags", "alt_text",
-               "source_url", "code_url", "attribution", "peer_reviewed"]
+               "source_url", "code_url", "doi", "attribution", "peer_reviewed"]
     return {k: post[k] for k in ordered if k in post}
 
 
@@ -717,69 +777,101 @@ def main() -> int:
 
     api_key, model = llm.config()
 
+    # Read once, before the loop: what posts/ already covers.
+    seen = covered_papers()
+
     # Neither of the off-sheet paths has a row to mark afterwards, so neither
     # opens the sheet — which also means they need no Google credentials.
-    if args.evergreen is not None:
-        worksheet, row_number = None, None
-        item = evergreen_candidate(args.evergreen)
-    elif args.url:
-        worksheet, row_number = None, None
-        item = {"url": args.url, "source": outlet(args.url),
-                "title": "", "summary": "", "score": "—"}
-    else:
+    worksheet, row_number, rows, col = None, None, [], {}
+    if args.evergreen is None and not args.url:
         worksheet = open_sheet()
         rows = worksheet.get_all_values()
         if not rows:
             sys.exit("The sheet is empty. Run `python src/ingest.py` first.")
-
         col = {name: rows[0].index(name) for name in COLUMNS if name in rows[0]}
-        row_number, item = pick_row(rows, col, args.row)
 
-    print(f"Drafting {f'row {row_number}' if row_number else item['source']} · "
-          f"{item['score']} · {item['title'][:60] or item['url']}")
+    # The loop is the duplicate guard: a candidate is only settled once its
+    # paper has been resolved, which is after the page has been fetched, so
+    # rejecting one means going back for another. Each pass costs one fetch
+    # and one Crossref call, and no LLM call — the model is not reached until
+    # a candidate survives.
+    skipped: set[int] = set()
+    while True:
+        if args.evergreen is not None:
+            item = evergreen_candidate(args.evergreen)
+        elif args.url:
+            item = {"url": args.url, "source": outlet(args.url),
+                    "title": "", "summary": "", "score": "—"}
+        else:
+            row_number, item = pick_row(rows, col, args.row, skipped)
 
-    # An evergreen candidate is drafted from its brief alone. Its Source line
-    # names a general reference rather than a report of one result, and
-    # fetching that is what produced the two wrong drafts described above.
-    if args.evergreen is not None:
-        article, page, warning = "", "", None
-    else:
-        article, page, warning = fetch_article(item["url"])
+        print(f"Drafting {f'row {row_number}' if row_number else item['source']} · "
+              f"{item['score']} · {item['title'][:60] or item['url']}")
 
-    # resolve_paper matches a Crossref title against the headline to spot a
-    # record that is the page itself. A --url draft has no feed headline, so
-    # it takes the publisher's own.
-    if not item["title"]:
-        item["title"] = page_title(page) or item["url"]
-    if warning:
-        # Only a feed item has a summary to fall back to; a --url draft that
-        # cannot fetch has nothing, and the guard below stops it.
-        print(f"  warning: {warning} — "
-              + ("drafting from the feed summary, so " if item["summary"] else "")
-              + "check the slides against the source before posting")
+        # An evergreen candidate is drafted from its brief alone. Its Source line
+        # names a general reference rather than a report of one result, and
+        # fetching that is what produced the two wrong drafts described above.
+        if args.evergreen is not None:
+            article, page, warning = "", "", None
+        else:
+            article, page, warning = fetch_article(item["url"])
 
-    # A feed item always carries a summary, so a blocked fetch still leaves
-    # the model something true to work from. A --url draft does not: with the
-    # page gone there is nothing but the URL, and the model answers from
-    # memory in the confident voice of the prompt. On the tides candidate
-    # that produced the textbook two-bulge myth the post exists to debunk —
-    # the exact inversion of the hook. Refuse instead.
-    if not article and not item["summary"]:
-        sys.exit(f"No source text: {item['url']} gave nothing readable. "
-                 "Drafting from a URL alone makes the model invent the "
-                 "content, so this is a stop. Use a source that is not "
-                 "behind a bot check, or put the passage in the sheet as "
-                 "the summary and draft that row.")
+        # resolve_paper matches a Crossref title against the headline to spot a
+        # record that is the page itself. A --url draft has no feed headline, so
+        # it takes the publisher's own.
+        if not item["title"]:
+            item["title"] = page_title(page) or item["url"]
+        if warning:
+            # Only a feed item has a summary to fall back to; a --url draft that
+            # cannot fetch has nothing, and the guard below stops it.
+            print(f"  warning: {warning} — "
+                  + ("drafting from the feed summary, so " if item["summary"] else "")
+                  + "check the slides against the source before posting")
 
-    paper, paper_warning = resolve_paper(page, item["title"])
-    if paper_warning:
-        print(f"  warning: {paper_warning}")
-    elif paper:
-        print(f"  paper: {citation(paper) or paper['doi']}  [{paper['doi']}]")
-        if not paper["abstract"]:
-            print("  warning: Crossref has no abstract for that DOI — the "
-                  "attribution is the paper's, the slides are the coverage's, "
-                  "so check the mechanism before posting")
+        # A feed item always carries a summary, so a blocked fetch still leaves
+        # the model something true to work from. A --url draft does not: with the
+        # page gone there is nothing but the URL, and the model answers from
+        # memory in the confident voice of the prompt. On the tides candidate
+        # that produced the textbook two-bulge myth the post exists to debunk —
+        # the exact inversion of the hook. Refuse instead.
+        if not article and not item["summary"]:
+            sys.exit(f"No source text: {item['url']} gave nothing readable. "
+                     "Drafting from a URL alone makes the model invent the "
+                     "content, so this is a stop. Use a source that is not "
+                     "behind a bot check, or put the passage in the sheet as "
+                     "the summary and draft that row.")
+
+        paper, paper_warning = resolve_paper(page, item["title"])
+        if paper_warning:
+            print(f"  warning: {paper_warning}")
+        elif paper:
+            print(f"  paper: {citation(paper) or paper['doi']}  [{paper['doi']}]")
+            if not paper["abstract"]:
+                print("  warning: Crossref has no abstract for that DOI — the "
+                      "attribution is the paper's, the slides are the coverage's, "
+                      "so check the mechanism before posting")
+
+        covered = already_covered(paper, seen)
+        if not covered:
+            break
+
+        # A --row, a --url and an evergreen brief were all chosen by a person.
+        # Say the post exists and draft it anyway: overriding is the point of
+        # naming a candidate by hand.
+        if row_number is None or args.row:
+            print(f"  warning: {covered} already covers this paper")
+            break
+
+        print(f"  skipping row {row_number}: {covered} already covers "
+              f"{citation(paper) or paper['doi']}")
+        if not args.dry_run:
+            worksheet.update_cell(row_number, col["status"] + 1, "duplicate")
+        skipped.add(row_number)
+        if len(skipped) >= MAX_DUPLICATE_SKIPS:
+            sys.exit(f"Skipped {len(skipped)} duplicate rows in a row and gave "
+                     "up — the queue's top scores are all stories already "
+                     "posted. Run `python src/ingest.py` for fresh items, or "
+                     "pass --row to draft a specific one anyway.")
 
     reply = llm.generate(
         PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,

@@ -152,6 +152,19 @@ agent (`.claude/agents/feed-scout.md`) does the legwork — it runs the
 checker, finds where a dead feed moved, and proposes the corrected YAML with
 evidence — but it only proposes; you still run `verify_feeds.py` and commit.
 
+**The queue is deduplicated by URL, and a story is not a URL.** Forty-five
+feeds cover one press release; each copy is its own row with its own score,
+and the siblings of the row that gets drafted stay queued forever. On
+2026-09-17 the top row of a 1440-row queue was the paper published that same
+morning. So `draft.py` resolves each candidate's paper *before* the LLM call
+and skips a row whose DOI or Crossref citation already appears in `posts/`,
+marking it `duplicate` in the sheet. It gives up after `MAX_DUPLICATE_SKIPS`
+fetches rather than walking the queue inside a 15-minute job. A candidate
+named by hand — `--row`, `--url`, an evergreen brief — warns and drafts
+anyway, because naming one is the override. Coverage with no resolvable DOI
+cannot be matched at all: that is the `fact-check` agent's step 8, which reads
+`posts/` and can see what a key cannot.
+
 **`draft.py` drafts from the paper, not the coverage.** Most feeds are news
 *about* papers, and coverage inverts mechanisms, overstates what a result
 overturns, and quotes whoever gave the interview. So before prompting the
@@ -329,6 +342,10 @@ requirement, not a nicety. When `draft.py` resolves a DOI it builds
 `attribution` from the Crossref author list and discards the model's version,
 so a wrong attribution on a drafted post means the DOI was wrong, not the
 model.
+
+`doi` is not part of the contract either: `draft.py` writes it when Crossref
+resolved the paper, so `covered_papers()` can tell whether a queued row is a
+story already posted. The model never supplies it, and `render.py` ignores it.
 
 `domain` is required too — it is in `REQUIRED` in `draft.py`, `drop.html`
 prints it on every slide, and `ES_FIELDS` translates it. It is a short field

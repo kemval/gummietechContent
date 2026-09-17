@@ -122,6 +122,19 @@ host check in `draft.py` cannot see that, so only you will catch it.
 - `code_url`, if present, must resolve (`curl -sS -o /dev/null -w '%{http_code}\n'`)
   and belong to this work.
 
+### 8. Check the account has not already posted this
+
+Grep `posts/` for the paper: the DOI, the attribution, and the distinctive
+words of the hook. `draft.py` skips a queued row whose paper is already
+covered, but that guard only works when a DOI resolves, and the same story
+reaches the feeds as a dozen different URLs — so two posts about one result,
+written from two outlets' coverage, are a thing only a reader of `posts/` can
+see. That is you.
+
+An already-covered story is a **BLOCK**, and the only one that is not about
+the post being wrong: every claim can be true and it still must not go out.
+Name the file that already covers it.
+
 ## Report
 
 **The first line of the report is the verdict, alone, in exactly this form:**
