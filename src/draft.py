@@ -101,6 +101,12 @@ CONTENT_RE = re.compile(r"content=[\"']([^\"']+)[\"']", re.I)
 DOI_CUES = ("journal reference", "more information", "cite this",
             "citation", "doi:")
 
+# The alt_text line is specific about what the slides are not, because the
+# model otherwise writes what a science post's images would normally be —
+# "JWST images of IC 348 with highlighted candidates and spectra" — and
+# drop.html has no <img> and no background-image. That is a screen-reader user
+# being told about a photograph that is not there, and it had to be corrected
+# by hand (3c1b29d) before this line existed.
 PROMPT = """You write posts for @gummietech, an Instagram account explaining \
 science, technology and engineering to a smart non-expert audience.
 
@@ -126,7 +132,10 @@ never overstate it>",
   "caption": "<one sentence for the Instagram caption>",
   "keywords": ["<3 short topic keywords>"],
   "hashtags": ["#<4 hashtags, lowercase, last one #gummietech>"],
-  "alt_text": "<one sentence describing the carousel for screen readers>",
+  "alt_text": "<one sentence describing the carousel for screen readers. \
+The slides carry no photographs, charts or diagrams: each one is a flat \
+colour field with the post's own words on it. Say what the carousel says, \
+never what it depicts>",
   "attribution": "<'Surname et al., Journal (Year)' if the text names authors \
 and a journal; otherwise the publishing organisation's name. Use only names \
 that appear in the text below. Never guess>",
