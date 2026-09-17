@@ -1,0 +1,32 @@
+{
+  "post_type": "drop",
+  "domain": "astronomy",
+  "colorway": "orbit",
+  "hook": "JWST finds 39 new brown dwarfs in IC 348",
+  "what_happened": "Luhman and Alves de Oliveira used JWST NIRCam and NIRSpec to identify 39 candidates, 15 spectra, nine confirmed substellar members",
+  "why_it_matters": "Shows the lowest mass brown dwarfs (~2 M_Jup) exist, tightening the IMF minimum and revealing planet‑forming disks",
+  "the_catch": "Only 15 spectra obtained; results limited to IC 348 field and current sensitivity",
+  "caption": "Newly discovered brown dwarfs push the limits of star‑formation science.",
+  "keywords": [
+    "brown dwarf",
+    "IMF",
+    "hydrocarbon"
+  ],
+  "hashtags": [
+    "#jwst",
+    "#brown_dwarf",
+    "#starformation",
+    "#gummietech"
+  ],
+  "alt_text": "Carousel showing JWST images of IC 348 with highlighted brown dwarf candidates and spectra.",
+  "source_url": "https://science.nasa.gov/missions/webb/nasas-webb-reveals-dynamic-panorama-of-star-formation/",
+  "attribution": "Luhman and Alves de Oliveira, The Astrophysical Journal Letters (2025)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "astronomía",
+    "hook": "JWST descubre 39 nuevos enanos marrones en IC 348",
+    "what_happened": "Luhman y Alves de Oliveira emplearon JWST NIRCam y NIRSpec para identificar 39 candidatos, 15 espectros y nueve miembros subestelares confirmados",
+    "why_it_matters": "Demuestra que existen enanos marrones de menor masa (~2 M_Jup), reduciendo el mínimo del IMF y revelando discos que forman planetas",
+    "the_catch": "Solo se obtuvieron 15 espectros; los resultados se limitan al campo de IC 348 y a la sensibilidad actual"
+  }
+}
