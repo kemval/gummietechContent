@@ -37,7 +37,15 @@ jobs:
       HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
 
     steps:
+      # Explicitly the branch tip, not the default `github.sha`. For a
+      # reusable workflow that SHA is the caller's *triggering* commit — for
+      # daily.yml's schedule, master as it stood at 12:17 UTC, which is
+      # before the draft job committed the post this run is here to review.
+      # The default checkout therefore never sees the file and the step
+      # below fails with "is not on master" on every scheduled run.
       - uses: actions/checkout@v4
+        with:
+          ref: master
 
       - uses: actions/setup-python@v5
         with:
