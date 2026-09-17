@@ -393,11 +393,20 @@ Two things that are deliberate:
 - **The toggle is only rendered when the page has Spanish**, and only
   revealed by JavaScript. A button that rearranges the furniture around
   unchanged English advertises an edition the archive does not have.
+- **A translation records the English it came from.** `translate.py` stamps
+  the `es` block with a hash of the fields it translated, under `_en` — not a
+  field any page renders, so `site.py` and `telegram.py` never show it. A post
+  whose English is corrected at the gate is then re-translated by an ordinary
+  `python src/translate.py`, rather than skipped as already translated while
+  its Spanish goes on saying the old thing. A block written before the stamp
+  existed carries none, and counts as unknown rather than stale: it is skipped
+  as it always was, so nothing already reviewed is silently rewritten.
 
 Machine-written Spanish on a permalink is the same credibility risk as an
 unlabelled preprint, so it goes through Layer 5 like everything else: run
 `python src/translate.py` and read what it prints **before** adding
-`published_at`.
+`published_at`. `python src/translate.py --check` answers "is any of this
+stale?" without an LLM call, and is what `check.yml` runs on every push.
 
 Two rules:
 

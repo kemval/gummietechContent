@@ -9,14 +9,16 @@ the fields the page renders, and writes them back onto the same file as an
 
     "es": {
       "domain": "...", "hook": "...", "what_happened": "...",
-      "why_it_matters": "...", "the_catch": "..."
+      "why_it_matters": "...", "the_catch": "...",
+      "_en": "<fingerprint of the English it was made from>"
     }
 
 Usage:
-    python src/translate.py                      # every post missing "es"
+    python src/translate.py                      # every post that needs it
     python src/translate.py posts/2026-09-11-*.json
     python src/translate.py --force              # re-translate existing ones
     python src/translate.py --dry-run            # print, write nothing
+    python src/translate.py --check             # what is stale; no LLM call
 
 Environment: same as draft.py (LLM_PROVIDER, GEMINI_API_KEY / GROQ_API_KEY).
 
@@ -40,6 +42,7 @@ reach the site on its own.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -54,6 +57,17 @@ POSTS_DIR = REPO_ROOT / "posts"
 REQUIRED = tuple(f for f in ES_FIELDS if f != "domain")
 
 SLEEP_BETWEEN_CALLS = 5          # seconds; the free tier allows ~12/minute
+
+# The `es` block records a fingerprint of the English it was made from, under
+# a key that is not a renderable field — site.py's `spanish()` copies only the
+# fields the page shows, so this never reaches a template.
+#
+# Without it nothing relates a translation to its source. The gate exists to
+# change the English: a fact-check finds a wrong number, a person fixes the
+# slide, and the Spanish underneath still says the old thing. Re-running this
+# file would skip that post as "already translated", so the only thing between
+# stale Spanish and a permalink was somebody remembering to pass --force.
+SOURCE_KEY = "_en"
 
 PROMPT = """Translate this @gummietech post into neutral Latin American \
 Spanish for the account's web archive.
@@ -81,20 +95,80 @@ Post:
 {post}"""
 
 
-def needs_translation(post: dict) -> bool:
-    """True when the post has no usable `es` block. Mirrors site.py's
-    check, from the writing side: a block missing a field is as unusable
-    as no block at all."""
+def source_fields(post: dict) -> dict:
+    """The English a translation is made from: the fields the page renders,
+    minus the ones this post leaves empty."""
+    return {f: str(post[f]) for f in ES_FIELDS if str(post.get(f, "")).strip()}
+
+
+def fingerprint(post: dict) -> str:
+    """A stable hash of that English. Truncated because it is read by eye in
+    a diff, and a collision here costs a re-translation, not a wrong page."""
+    blob = json.dumps(source_fields(post), sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+
+
+def stale_reason(post: dict) -> str:
+    """Why this post needs translating, or "" when it does not.
+
+    The first two checks mirror site.py's, from the writing side: a block
+    missing a field is as unusable as no block at all. The third is the one
+    site.py cannot make — a complete block whose English has moved on.
+    """
     es = post.get("es")
     if not isinstance(es, dict):
-        return True
-    return any(not str(es.get(f, "")).strip() for f in REQUIRED)
+        return "no Spanish yet"
+    if any(not str(es.get(f, "")).strip() for f in REQUIRED):
+        return "the es block is incomplete"
+    stamp = str(es.get(SOURCE_KEY, "")).strip()
+    if stamp and stamp != fingerprint(post):
+        return "the English changed after it was translated"
+    # No stamp means it was translated before this file recorded one. That is
+    # unknown, not stale: treating it as stale would re-translate every older
+    # post on the next run, spend a day's calls, and overwrite Spanish a
+    # person has already read at the gate.
+    return ""
+
+
+def check(paths: list[Path]) -> int:
+    """Report what needs translating, without calling the model.
+
+    The half that does not depend on somebody reading a report: CI runs this
+    on every push, so a post whose English was corrected at the gate turns
+    the build red instead of quietly keeping Spanish that says the old thing.
+    Needs no API key, which is why it returns before main() asks for one.
+    """
+    stale: list[Path] = []
+    for path in paths:
+        try:
+            post = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"  {path.name}: unreadable ({exc})")
+            stale.append(path)
+            continue
+        english = [f for f in REQUIRED if not str(post.get(f, "")).strip()]
+        if english:
+            # Not translatable at all, and not this file's problem to report:
+            # render.py refuses the same record. Say so and move on.
+            print(f"  {path.name}: missing {', '.join(english)} in English")
+            continue
+        reason = stale_reason(post)
+        if reason:
+            print(f"  {path.name}: {reason}")
+            stale.append(path)
+
+    if not stale:
+        print(f"All {len(paths)} up to date.")
+        return 0
+    print(f"\n{len(stale)} post{'s' * (len(stale) != 1)} to translate:\n"
+          "  python src/translate.py " + " ".join(shown(p) for p in stale))
+    return 1
 
 
 def translate(post: dict, api_key: str, model: str) -> dict:
     """Ask for the Spanish block and refuse anything the page cannot show."""
-    fields = [f for f in ES_FIELDS if str(post.get(f, "")).strip()]
-    source = {f: post[f] for f in fields}
+    source = source_fields(post)
+    fields = list(source)
 
     reply = llm.generate(
         PROMPT.format(keys=", ".join(f'"{f}"' for f in fields),
@@ -134,11 +208,13 @@ def process(path: Path, api_key: str, model: str, force: bool,
         print(f"  skipped {path.name}: missing {', '.join(missing)}")
         return False
 
-    if not force and not needs_translation(post):
+    reason = stale_reason(post)
+    if not force and not reason:
         print(f"  skipped {path.name}: already translated (--force to redo)")
         return False
 
-    print(f"\n{path.name}")
+    again = isinstance(post.get("es"), dict) and reason
+    print(f"\n{path.name}" + (f" — re-translating: {reason}" if again else ""))
     es = translate(post, api_key, model)
     for field, text in es.items():
         print(f"  {field}: {text}")
@@ -148,8 +224,10 @@ def process(path: Path, api_key: str, model: str, force: bool,
 
     # `es` goes last so the English contract keeps the order draft.py wrote
     # and a diff shows the Spanish as an addition rather than a reshuffle.
+    # The fingerprint goes in last, and is of the English as it stands right
+    # now — the text that was actually sent to the model above.
     post.pop("es", None)
-    post["es"] = es
+    post["es"] = {**es, SOURCE_KEY: fingerprint(post)}
     path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
     print(f"  wrote {shown(path)}")
     return True
@@ -164,6 +242,9 @@ def main() -> int:
                     help="re-translate posts that already have an es block")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the Spanish without writing it back")
+    ap.add_argument("--check", action="store_true",
+                    help="report posts that need translating and exit 1, "
+                         "making no LLM call (what CI runs)")
     args = ap.parse_args()
 
     paths = args.posts or sorted(POSTS_DIR.glob("*.json"))
@@ -173,6 +254,10 @@ def main() -> int:
     missing = [p for p in paths if not p.is_file()]
     if missing:
         sys.exit("No such file: " + ", ".join(str(p) for p in missing))
+
+    if args.check:
+        print(f"Checking {len(paths)} post{'s' * (len(paths) != 1)}")
+        return check(paths)
 
     api_key, model = llm.config()
     print(f"Translating {len(paths)} post{'s' * (len(paths) != 1)} → Spanish")
