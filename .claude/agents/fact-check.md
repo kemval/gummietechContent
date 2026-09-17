@@ -124,7 +124,20 @@ host check in `draft.py` cannot see that, so only you will catch it.
 
 ## Report
 
-Report per post, most severe first. Use exactly three verdicts:
+**The first line of the report is the verdict, alone, in exactly this form:**
+
+```
+FACT-CHECK · BLOCK
+FACT-CHECK · FIX
+FACT-CHECK · PASS
+```
+
+That line is what withholds the approval button in Telegram — `telegram.py`
+reads it the same way it reads `proof.py`'s `PROOF · <verdict>`. Everything
+below it is for a person. A report with no such first line is treated as an
+unknown, which holds the post.
+
+Then, per post, most severe first. Use exactly three verdicts:
 
 - **BLOCK** — do not render or publish. A dead or wrong link, a fabricated
   number, an unsupported claim, a wrong citation, a mislabelled preprint.
@@ -134,7 +147,12 @@ Report per post, most severe first. Use exactly three verdicts:
 
 For every claim you checked, show the field, the verdict, and the quoted
 source sentence that settles it. Then close with one line: either
-`Safe to render` or `Hold — <n> BLOCK, <m> FIX`, followed by the list of edits.
+`Safe to render` or `Hold — <n> to fix`, followed by the list of edits.
+
+Do not write the word BLOCK anywhere in that closing line unless you are
+blocking the post. A tally like "0 BLOCK, 0 FIX" reads as a hold to anything
+scanning the text, and a clean post held every day teaches a person to
+override without reading.
 
 Say plainly when you could not verify something rather than passing it. An
 unchecked claim reported as verified is worse than no check at all.

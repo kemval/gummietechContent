@@ -91,17 +91,24 @@ RECHECK_WORKFLOW = "recheck.yml"
 SLIDES = [f"slide-{i}.png" for i in range(1, 6)]
 SIDECAR = "caption.txt"
 
-# A review that says either of these words withholds the approval button, so
-# the post cannot be marked live from the phone at all. Matched case-
-# sensitively and on word boundaries: fact-check writes "**BLOCK**" and
-# proof.py writes "PROOF · BLOCK", while prose like "a block page" — which
-# fact-check.md uses to describe a failed fetch — must not trip it.
-# UNVERIFIED counts because fact-check.md is explicit that an unverifiable
-# post is a hold, not a pass.
+# Both checkers state their verdict on the report's first line — proof.py
+# prints "PROOF · PASS", fact-check.md requires "FACT-CHECK · PASS" — and that
+# line is what the gate reads. A verdict of BLOCK withholds the approval
+# button, so the post cannot be marked live from the phone at all.
 #
-# A summary line like "0 BLOCK, 0 FIX" would also match and withhold the
-# button. That is the right direction to be wrong in: the cost is opening
-# the report, and the alternative is a gate that opens when it should not.
+# Reading the header rather than scanning the prose is not tidiness. The first
+# real fact-check to reach this gate ended "Safe to render — 0 BLOCK, 0
+# required FIX" and was held by its own summary of having found nothing. A
+# clean post held every day is worse than no gate: it teaches a person to tap
+# the override without reading.
+VERDICT_RE = re.compile(r"^(?:PROOF|FACT-CHECK) · (BLOCK|FIX|PASS)\s*$", re.M)
+
+# A report with no verdict line has not said anything a machine can act on, so
+# the words themselves still decide — which is what holds the stand-in report
+# review.yml writes when a configured fact-check produced nothing. Matched
+# case-sensitively and on word boundaries, so fact-check.md's own prose about
+# "a block page" does not trip it, and the "not configured" stand-in, which
+# deliberately contains neither word, still leaves the button in place.
 GATE_RE = re.compile(r"\b(BLOCK|UNVERIFIED)\b")
 
 
@@ -253,8 +260,22 @@ def read_reviews(paths: list[Path]) -> list[tuple[str, str]]:
 
 
 def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
-    """The reports that withhold the approval button."""
-    return [name for name, body in reviews if GATE_RE.search(body)]
+    """The reports that withhold the approval button.
+
+    The verdict line wins where there is one; the last, in case a report
+    quotes the format while explaining it. Without one, fall back to the
+    words.
+    """
+    held = []
+    for name, body in reviews:
+        verdicts = VERDICT_RE.findall(body)
+        if verdicts:
+            withheld = verdicts[-1] == "BLOCK"
+        else:
+            withheld = bool(GATE_RE.search(body))
+        if withheld:
+            held.append(name)
+    return held
 
 
 def parse_callback(data: str) -> tuple[str, bool] | None:

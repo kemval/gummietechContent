@@ -522,10 +522,19 @@ technically unbroken — and the reports stay in the chat above it either way.
   post — a check that broke is an unknown, and `fact-check.md` is explicit
   that an unverifiable post is a hold, not a pass.
 
-`GATE_RE` matches `BLOCK` and `UNVERIFIED` case-sensitively on word
-boundaries, so `fact-check.md`'s own prose about "a block page" does not trip
-it. A summary line like "0 BLOCK" would, and that is the right direction to
-be wrong in: the cost is opening the report.
+**The gate reads a verdict line, not the prose.** Both checkers state their
+finding on the report's first line — `PROOF · PASS`, `FACT-CHECK · PASS` — and
+`BLOCK` there is what withholds the button. The first real fact-check to reach
+this gate closed with "Safe to render — 0 BLOCK, 0 required FIX" and was held
+by its own summary of having found nothing; a clean post held every day is
+worse than no gate, because it teaches a person to tap the override without
+reading.
+
+A report with no verdict line still falls back to `GATE_RE`, which matches
+`BLOCK` and `UNVERIFIED` case-sensitively on word boundaries. That is what
+holds the stand-in review.yml writes when a configured fact-check produces
+nothing, and what leaves the button alone for the "not configured" one, which
+contains neither word.
 
 Of those two buttons, only one is a real button. **Re-run the checks** is a
 **link** to `recheck.yml`, so the way back from a broken check is one tap from
