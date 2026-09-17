@@ -43,11 +43,11 @@ jobs:
       # before the draft job committed the post this run is here to review.
       # The default checkout therefore never sees the file and the step
       # below fails with "is not on master" on every scheduled run.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: master
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -169,7 +169,7 @@ jobs:
       # of the report with it.
       - name: Keep the reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: reports-${{ steps.post.outputs.stem }}
           path: |
