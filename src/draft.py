@@ -219,23 +219,29 @@ def _trimmed_doi(found: re.Match[str] | None) -> str | None:
     return found.group(0).rstrip(".,;:'\"") if found else None
 
 
-def doi_candidates(page: str) -> list[str]:
+def doi_candidates(page: str) -> tuple[list[str], list[str]]:
     """
-    Every DOI on the page, most trustworthy first.
+    The DOIs on a page, split by what the page claims about them.
 
-    The same three passes as before — the publisher's citation_doi meta tag,
-    then a DOI after a journal-reference heading, then everything in document
-    order — but collecting all of them instead of returning the first. A news
-    story's meta tag names the story itself, so the leading candidate is
-    routinely the coverage; resolve_paper walks the list until one turns out
-    to be a paper. The pass order is what keeps an aggregator's related-
-    stories rail from jumping the queue.
+    `named` are the ones the page states are the work it reports: the
+    publisher's citation_doi meta tag, then the first DOI after a
+    journal-reference heading. A news story's meta tag names the story
+    itself, so the leading named candidate is routinely the coverage;
+    resolve_paper walks past it.
+
+    `mentioned` is every other DOI in document order. On a news page that is
+    the reference list, and a reference list is what a story cites rather
+    than what it is about — which is why resolve_paper will not credit one
+    without corroboration. Kept because an aggregator that uses no cue
+    heading leaves the paper's DOI nowhere else.
     """
-    found: list[str] = []
+    named: list[str] = []
+    mentioned: list[str] = []
 
-    def add(doi: str | None) -> None:
-        if doi and doi not in found:
-            found.append(doi)
+    def add(doi: str | None, into: list[str] | None = None) -> None:
+        into = named if into is None else into
+        if doi and doi not in named and doi not in mentioned:
+            into.append(doi)
 
     meta = META_DOI_RE.search(page)
     if meta:
@@ -250,9 +256,9 @@ def doi_candidates(page: str) -> list[str]:
             add(_trimmed_doi(DOI_RE.search(page, at)))
 
     for match in DOI_RE.finditer(page):
-        add(_trimmed_doi(match))
+        add(_trimmed_doi(match), mentioned)
 
-    return found
+    return named, mentioned
 
 
 def fetch_crossref(doi: str) -> tuple[dict | None, str | None]:
@@ -329,19 +335,12 @@ def paper_facts(work: dict) -> dict:
 
 
 # A news story carries its own DOI and Crossref files it as a "journal-article"
-# exactly like a paper, so the record type cannot tell them apart. What gives
-# the coverage away is that its record describes the page being read rather
-# than the work the page is about. Matching titles alone are not proof: a
-# journal feed links straight at the paper, where the titles match and the
-# record is precisely the source wanted. The absent abstract is the other
-# half — a news record has none, and without one a resolved DOI contributes
-# nothing but an attribution anyway.
+# exactly like a paper, so nothing about the record's shape tells them apart.
+# Only the identifier does — see COVERAGE_VENUES and NATURE_NEWS_DOI_RE.
 # Each candidate costs a Crossref round trip, and a reference list can be
 # long. Six is enough for a story's own DOI plus the first few things it
 # cites, which is where the covered paper sits.
 MAX_CROSSREF_LOOKUPS = 6
-TITLE_OVERLAP = 0.9
-MIN_TITLE_WORDS = 4
 
 
 def venue_key(name: str) -> str:
@@ -349,29 +348,25 @@ def venue_key(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", name.lower())
 
 
-# The title check below only fires when the record's title still resembles the
-# headline we ingested. A magazine's print title often does not — Scientific
-# American filed "See how gravitational waves warp time and space" as "Ripples
-# in Space and Time" — and nothing structural catches the difference, because
-# Crossref does not distinguish popular science from research. That feature is
-# a "journal-article" with an ISSN, a volume and a page, exactly like a paper,
-# and every field that looks like a tell was checked and is not one:
+# Crossref does not distinguish popular science from research. A magazine
+# feature is a "journal-article" with an ISSN, a volume and a page, exactly
+# like a paper, and every field that looks like a tell was checked and is not
+# one:
 #
 #   - no abstract          modern Nature and Cell papers deposit none either
 #   - no references        Nature's own news pieces deposit 1-6, while
 #                          genuine Nature letters deposit 0
 #   - venue matches host   so does a journal's own site, which is the case
 #                          worth keeping
+#   - one author           so is a solo-authored paper
 #
 # So the outlet has to be named. These mint their own DOIs and are not
 # research venues, so a record here is the coverage however it is filed —
 # unconditionally, since Physics World deposits an abstract for every article
 # and an abstract would otherwise wave it through as the primary source.
 # Crediting one puts a magazine's staff writers on the slide as the
-# researchers. Nature News is the gap this cannot close: it is filed under
-# container-title "Nature" like the papers, and only the title check catches
-# it. Add an outlet when one appears; the symptom is an attribution naming a
-# publication where a lab should be.
+# researchers. Add an outlet when one appears; the symptom is an attribution
+# naming a publication where a lab should be.
 COVERAGE_VENUES = frozenset(map(venue_key, (
     "Scientific American",
     "New Scientist",
@@ -382,59 +377,77 @@ COVERAGE_VENUES = frozenset(map(venue_key, (
 )))
 
 
-def title_words(title: str) -> set[str]:
-    """The comparable words of a title, case and punctuation discarded."""
-    return set(re.sub(r"[^a-z0-9 ]+", " ", title.lower()).split())
+# Nature's own magazine — news, features, comment, careers — is the outlet
+# COVERAGE_VENUES cannot name, because Crossref files it under container-title
+# "Nature" like the papers. The DOI is what separates them: Springer Nature
+# mints d-prefixed suffixes for editorial content (10.1038/d41586-026-02895-6,
+# "'Multifunctional' brain implant translates speech and gestures in real
+# time", by a reporter) and s-prefixed or legacy short ones for research
+# (10.1038/s41586-026-10968-9, nmat4089). No research article carries a d.
+NATURE_NEWS_DOI_RE = re.compile(r"^10\.1038/d\d{4,5}-", re.I)
 
 
-def same_title(a: str, b: str) -> bool:
-    """
-    Whether two titles name the same work.
-
-    Containment rather than equality, because a headline picks up the
-    publisher's name on the way out ("... | Nature") and a paper's own title
-    picks up a subtitle. Coverage of a paper never overlaps its title this
-    heavily — it is written to be read by people who have not read it.
-    """
-    x, y = title_words(a), title_words(b)
-    if len(x) < MIN_TITLE_WORDS or len(y) < MIN_TITLE_WORDS:
-        return False            # too short to tell a match from a coincidence
-    return len(x & y) / min(len(x), len(y)) >= TITLE_OVERLAP
-
-
-def is_coverage(facts: dict, headline: str) -> bool:
+def is_coverage(facts: dict) -> bool:
     """
     Whether a Crossref record is the story being read rather than the paper.
 
-    A record from a popular-science outlet is coverage outright — see
-    COVERAGE_VENUES for why nothing about the record itself can say so.
+    Only the identifier can answer it; see COVERAGE_VENUES for why nothing
+    about the record itself can.
 
-    Otherwise both halves are needed. A journal feed links straight at the
-    paper, where the titles match and the record is the source wanted; an
-    abstract is what tells that apart from a news item, which has none — and
-    without one a resolved DOI contributes nothing downstream but an
-    attribution anyway.
+    This also used to reject a record that carried no abstract and shared the
+    headline we ingested, on the reasoning that a news item has neither an
+    abstract nor a title distinct from the page's. Both halves are equally
+    true of a paper read from its publisher's own feed: Nature deposits no
+    abstracts at all, and a journal feed's headline *is* the paper's title.
+    On 2026-09-18 that threw away 10.1038/s41586-026-10968-9 — the paper, on
+    the paper's own page — walked into its reference list and credited the
+    slides to the first thing it cited, Wegst et al. (2014), twelve years and
+    one subject apart. A title that matches is evidence a record is the work,
+    not evidence against it.
     """
-    if venue_key(facts["journal"]) in COVERAGE_VENUES:
-        return True
-    return not facts["abstract"] and same_title(facts["title"], headline)
+    return (venue_key(facts["journal"]) in COVERAGE_VENUES
+            or bool(NATURE_NEWS_DOI_RE.match(facts["doi"])))
 
 
-def resolve_paper(page: str, headline: str) -> tuple[dict | None, str | None]:
+# What a page merely mentions is only ever a guess at the paper, so it has to
+# corroborate itself, and the one thing every candidate carries is a year. A
+# story is drafted within days of the work it reports — the queue is scored
+# and drafted the same week — while a reference list is years of background.
+# One year of slack rather than none, because a story ingested in January
+# covers a paper published in December.
+#
+# The case this is here for: nature.com/articles/d41586-026-02705-z is a
+# Research Briefing whose paper is linked by URL and appears on the page as no
+# DOI at all. Its five reference DOIs are all it mentions, and the first of
+# them — Building and Environment (2012) — was about to be credited on the
+# slides of a 2026 story about charged droplets.
+GUESS_MAX_AGE = 1
+
+
+def is_recent(facts: dict) -> bool:
+    """Whether a record is new enough to be the paper a story is reporting."""
+    return bool(facts["year"]) and facts["year"] >= date.today().year - GUESS_MAX_AGE
+
+
+def resolve_paper(page: str) -> tuple[dict | None, str | None]:
     """Return (facts, warning) for the paper a page is covering."""
     if not page:
         return None, None                     # fetch already warned
-    queue = doi_candidates(page)
-    if not queue:
+    named, mentioned = doi_candidates(page)
+    if not (named or mentioned):
         return None, ("no DOI on the page — drafting from the coverage alone, "
                       "so check the authors and the mechanism against the paper")
 
+    # (doi, named) — a named DOI is the page's own statement of what it
+    # reports and is taken at its word; everything else has to be recent.
+    queue = [(doi, True) for doi in named] + [(doi, False) for doi in mentioned]
     seen: set[str] = set()
     coverage: dict | None = None
+    stale: dict | None = None
     budget = MAX_CROSSREF_LOOKUPS
 
     while queue and budget > 0:
-        doi = queue.pop(0)
+        doi, was_named = queue.pop(0)
         if doi in seen:
             continue
         seen.add(doi)
@@ -445,17 +458,30 @@ def resolve_paper(page: str, headline: str) -> tuple[dict | None, str | None]:
             continue                          # dead DOI, try the next one
 
         facts = paper_facts(work)
-        if not is_coverage(facts, headline):
+        if is_coverage(facts):
+            # The story's own DOI. Its Crossref record lists what it cites,
+            # and a news story cites the paper it covers — usually first, and
+            # reachable even when the page itself is paywalled. Queued behind
+            # the remaining on-page candidates, and as guesses: a reference
+            # list read from the record is no better evidence than the same
+            # list read off the page.
+            if coverage is None:
+                coverage = facts
+                queue += [(r["DOI"], False)
+                          for r in work.get("reference") or [] if r.get("DOI")]
+            continue
+
+        if was_named or is_recent(facts):
             return facts, None
 
-        # The story's own DOI. Its Crossref record lists what it cites, and a
-        # news story cites the paper it covers — usually first, and reachable
-        # even when the page itself is paywalled. Queued behind the remaining
-        # on-page candidates, which are the better evidence when present.
-        if coverage is None:
-            coverage = facts
-            queue += [r["DOI"] for r in work.get("reference") or [] if r.get("DOI")]
+        stale = stale or facts                # remember the first, to name it
 
+    if stale is not None:
+        return None, (f"every paper this page only mentions is older than "
+                      f"the story — the first is {citation(stale)} — so they "
+                      f"are what it cites, not what it reports. Drafting from "
+                      f"the coverage alone, so check the authors and the "
+                      f"mechanism against the paper")
     if coverage is not None:
         return None, ("every DOI here resolves to the story itself or to "
                       "nothing, and nothing it cites looks like the paper — "
@@ -816,9 +842,8 @@ def main() -> int:
         else:
             article, page, warning = fetch_article(item["url"])
 
-        # resolve_paper matches a Crossref title against the headline to spot a
-        # record that is the page itself. A --url draft has no feed headline, so
-        # it takes the publisher's own.
+        # The headline names the post file and goes into the prompt. A --url
+        # draft has no feed headline, so it takes the publisher's own.
         if not item["title"]:
             item["title"] = page_title(page) or item["url"]
         if warning:
@@ -841,7 +866,7 @@ def main() -> int:
                      "behind a bot check, or put the passage in the sheet as "
                      "the summary and draft that row.")
 
-        paper, paper_warning = resolve_paper(page, item["title"])
+        paper, paper_warning = resolve_paper(page)
         if paper_warning:
             print(f"  warning: {paper_warning}")
         elif paper:
