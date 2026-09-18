@@ -1,0 +1,99 @@
+name: Resolve the post
+description: >
+  The post a phone-dispatched workflow should act on: the one it was given,
+  or the one awaiting approval. Outputs `post` (a path) and `stem`.
+
+# One definition, two callers — recheck.yml and fix.yml, which are the two
+# ways back from a held post and must never disagree about which post is
+# held. The same reasoning that put the gate in review.yml and the alert in
+# notify-failure.
+#
+# Typing a 52-character filename on a phone is not a workflow, so a blank
+# input means "the post that is waiting", which is the only one there ever is
+# in normal running.
+
+inputs:
+  post:
+    description: A post path, or blank to pick the one awaiting approval.
+    required: false
+    default: ''
+
+outputs:
+  post:
+    description: Path to the post JSON, relative to the repo root.
+    value: ${{ steps.pick.outputs.post }}
+  stem:
+    description: >
+      Its filename without .json — names artifacts and rides in the Telegram
+      button's callback_data. A stem has no character an artifact name
+      rejects; the full path would, because of the slash.
+    value: ${{ steps.pick.outputs.stem }}
+
+runs:
+  using: composite
+  steps:
+    - id: pick
+      shell: bash
+      env:
+        POST: ${{ inputs.post }}
+      run: |
+        python3 <<'PY'
+        import json
+        import os
+        import pathlib
+        import re
+        import sys
+
+        asked = os.environ.get("POST", "").strip()
+
+        def emit(path: pathlib.Path | str) -> None:
+            # Appended, never written whole: GITHUB_OUTPUT is shared with
+            # every other step of the composite and of its caller.
+            path = pathlib.Path(path)
+            with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                fh.write(f"post={path}\nstem={path.stem}\n")
+
+        if asked:
+            if not pathlib.Path(asked).is_file():
+                sys.exit(f"::error::{asked} is not on master. Check the path, "
+                         f"or leave the input blank to pick the post awaiting "
+                         f"approval.")
+            emit(asked)
+            print(f"Acting on the post given: {asked}")
+            raise SystemExit(0)
+
+        # Every draft.py post is named YYYY-MM-DD-<slug>.json, so the date
+        # prefix sorts chronologically. The filter is not decoration:
+        # posts/era.json is the hand-built fixture from the first commit, has
+        # neither a prefix nor a published_at, and sorts after every real
+        # draft — unfiltered it would be picked every single time.
+        dated = re.compile(r"\d{4}-\d{2}-\d{2}-")
+        waiting = []
+        for path in sorted(pathlib.Path("posts").glob("*.json")):
+            if not dated.match(path.name):
+                continue
+            try:
+                post = json.loads(path.read_text())
+            except (OSError, json.JSONDecodeError) as exc:
+                # site.py skips a malformed draft rather than dying on it, and
+                # one bad file must not block acting on a good one.
+                print(f"::warning::skipping {path}: {exc}")
+                continue
+            if not post.get("published_at"):
+                waiting.append(path)
+
+        if not waiting:
+            sys.exit("::error::No post is awaiting approval — every dated "
+                     "draft in posts/ already has published_at.")
+
+        if len(waiting) > 1:
+            # Normal running leaves exactly one. More means a post was held
+            # and never resolved, and silently picking the newest would bury
+            # the older one for good.
+            others = ", ".join(str(p) for p in waiting[:-1])
+            print(f"::warning::{len(waiting)} posts are awaiting approval. "
+                  f"Taking the newest; still waiting: {others}")
+
+        emit(waiting[-1])
+        print(f"Acting on the post awaiting approval: {waiting[-1]}")
+        PY

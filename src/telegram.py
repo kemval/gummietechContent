@@ -40,13 +40,15 @@ Five things that are deliberate:
     seconds-long window Telegram allows a bot to answer in. The edit to the
     message is the feedback that matters, and it has no such deadline.
 
-  - **A held post gets a link button, not a working one.** When a review
-    holds the post there is no approval button, and in Actions its place is
-    taken by a link to the re-check workflow. A link precisely because
-    getUpdates has no offset: a callback tap would replay on every poll for
-    24 hours and re-dispatch the review every quarter of an hour, burning
-    the Claude quota whose exhaustion is the likeliest reason the post is
-    held. One extra tap buys statelessness.
+  - **A held post gets link buttons, not working ones.** When a review holds
+    the post there is no approval button, and in Actions its place is taken
+    by links to the two workflows that are the way back: `fix.yml`, which
+    applies the fact-check and re-reviews, and `recheck.yml`, which just runs
+    the review again. Links precisely because getUpdates has no offset: a
+    callback tap would replay on every poll for 24 hours and re-dispatch the
+    work every quarter of an hour, burning the Claude quota whose exhaustion
+    is the likeliest reason the post is held. One extra tap buys
+    statelessness.
 """
 
 from __future__ import annotations
@@ -84,9 +86,18 @@ CALLBACK_PREFIX = "pub:"
 # reply, and in the commit publish.yml makes. See send() for why it exists.
 OVERRIDE_PREFIX = "held:"
 
-# The workflow a held post offers a link to, under .github/workflows/.
-# recheck_url() says why it is a link and not a button that does the work.
+# The two workflows a held post offers links to, under .github/workflows/.
+# workflow_url() says why they are links and not buttons that do the work.
+#
+# They answer the two reasons a post is held. recheck.yml runs the same review
+# again, for when the check itself broke — an exhausted quota holds a post
+# exactly like a real finding does. fix.yml applies what the fact-check asked
+# for and sends the corrected post back through the same review, for when the
+# finding was real. Only the second is about the fact-check specifically, so
+# only a fact-check hold offers it.
 RECHECK_WORKFLOW = "recheck.yml"
+FIX_WORKFLOW = "fix.yml"
+FACTCHECK_REPORT = "factcheck"
 
 SLIDES = [f"slide-{i}.png" for i in range(1, 6)]
 SIDECAR = "caption.txt"
@@ -287,24 +298,24 @@ def parse_callback(data: str) -> tuple[str, bool] | None:
     return None
 
 
-def recheck_url() -> str | None:
-    """Where a held post goes to be reviewed again, for the link button.
+def workflow_url(workflow: str) -> str | None:
+    """Where a held post goes to be repaired, for the link buttons.
 
     Assembled from the runner's own environment rather than written down, so
     it cannot rot if the repo is renamed or forked. Outside Actions both
-    variables are unset and there is no button: whoever ran `send` by hand is
-    already sitting at a machine that can re-run the checks.
+    variables are unset and there are no links: whoever ran `send` by hand is
+    already sitting at a machine that can run either workflow.
     """
     server = os.getenv("GITHUB_SERVER_URL", "").strip()
     repo = os.getenv("GITHUB_REPOSITORY", "").strip()
     if not (server and repo):
         return None
-    return f"{server}/{repo}/actions/workflows/{RECHECK_WORKFLOW}"
+    return f"{server}/{repo}/actions/workflows/{workflow}"
 
 
 def review_text(post: dict, stem: str,
                 reviews: list[tuple[str, str]] | None = None,
-                retry: str | None = None) -> str:
+                retry: str | None = None, fix: str | None = None) -> str:
     """The copy blocks a person needs in hand to post the carousel."""
     e = html.escape
     reviews = reviews or []
@@ -346,21 +357,31 @@ def review_text(post: dict, stem: str,
     held = blocked_by(reviews)
     if held:
         lines += ["", f"🛑 <b>Held by {e(', '.join(held))}.</b>"]
-        lines += [
-            # A broken check and a real finding both read as a hold, and only
-            # the report says which. The link is offered for the first case.
-            "No approval button. If the check itself broke rather than the "
-            "post — an exhausted quota holds a post exactly like a real "
-            "finding does — tap <b>Re-run the checks</b>. If the report "
-            "found something real, fix the post and send it again. If you "
-            "have already posted this to Instagram and the slides are right, "
-            "<b>Posted anyway</b> records that, and says in the log that it "
-            "went out held."
-            if retry else
-            "No approval button. Fix the post and send it again — or, if it "
-            "is already on Instagram and the slides are right, <b>Posted "
-            "anyway</b> records that over the hold."
-        ]
+        # A broken check and a real finding both read as a hold, and only the
+        # report says which. Each link answers one of them; both are offered
+        # because from a phone the report is the only way to tell them apart.
+        if retry or fix:
+            what = ["No approval button."]
+            if fix:
+                what.append("If the report found something real, tap "
+                            "<b>Apply the fixes</b> — it makes the edits it "
+                            "asked for and sends the post back through the "
+                            "same checks, undated.")
+            if retry:
+                what.append("If the check itself broke rather than the post "
+                            "— an exhausted quota holds a post exactly like a "
+                            "real finding does — tap <b>Re-run the "
+                            "checks</b>.")
+            what.append("If you have already posted this to Instagram and the "
+                        "slides are right, <b>Posted anyway</b> records that, "
+                        "and says in the log that it went out held.")
+            lines += [" ".join(what)]
+        else:
+            lines += [
+                "No approval button. Fix the post and send it again — or, if "
+                "it is already on Instagram and the slides are right, "
+                "<b>Posted anyway</b> records that over the hold."
+            ]
     else:
         lines += [
             "",
@@ -420,7 +441,13 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
 
         # The gate is the absence of the button, not a warning next to it:
         # a held post cannot be marked published from Telegram at all.
-        retry = recheck_url() if held else None
+        retry = workflow_url(RECHECK_WORKFLOW) if held else None
+        # Only a fact-check hold. fix.yml applies a fact-check report and has
+        # nothing to say about a layout that proof.py measured and rejected —
+        # offering it there would send a person to a workflow that will read
+        # the report, find nothing it can act on, and change nothing.
+        fix = (workflow_url(FIX_WORKFLOW)
+               if FACTCHECK_REPORT in held else None)
         if held:
             # A hold cannot stop the carousel reaching Instagram — that is
             # done by hand, outside this. All it can withhold is the record,
@@ -429,19 +456,23 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
             # the normal green button stays withheld and a second, separate
             # one records the override as an override.
             rows = []
+            if fix:
+                rows.append([{"text": "🛠 Apply the fixes", "url": fix}])
             if retry:
                 rows.append([{"text": "🔁 Re-run the checks", "url": retry}])
             rows.append([{"text": "⚠️ Posted anyway — record it",
                           "callback_data": override_data}])
             markup = {"inline_keyboard": rows}
+            links = ", ".join(n for n, on in (("fix", fix), ("re-check", retry))
+                              if on)
             note = (f"HELD by {', '.join(held)}, override button"
-                    + (" + re-check link" if retry else ""))
+                    + (f" + {links} link(s)" if links else ""))
         else:
             markup = {"inline_keyboard": [[{"text": "✅ Posted to Instagram",
                                             "callback_data": data}]]}
             note = "button offered"
         send_message(token, chat_id,
-                     review_text(post, stem, reviews, retry), markup)
+                     review_text(post, stem, reviews, retry, fix), markup)
         print(f"  sent the review message — {note}")
     except TelegramError as exc:
         sys.exit(str(exc))

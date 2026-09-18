@@ -1,0 +1,227 @@
+name: fix
+
+# The other way back from a held post, from a phone.
+#
+# recheck.yml runs the same review again, which is the answer when the *check*
+# broke. This one is the answer when the check was right: it applies what the
+# fact-check asked for, commits, and sends the corrected post back through
+# review.yml for a fresh, independent fact-check. Both are links in the held
+# message, so neither needs a laptop.
+#
+# Three things it does not do, and must not start doing:
+#
+#   - It never adds published_at. Layer 5 is untouched: the corrected slides
+#     come back to the chat for approval exactly like the first draft, and the
+#     carousel still goes to Instagram by hand.
+#   - It never grades its own work. The applier writes the edits; the
+#     fact-check that decides whether the post is now true is the one
+#     review.yml runs afterwards, in a session that never saw the applier.
+#   - It never invents. The report either supplies a replacement or the claim
+#     comes out — see the prompt. The failure mode being repaired here is a
+#     model writing a fluent caveat the paper does not state, and a repair
+#     that is free to write a new one is not a repair.
+#
+# It is dispatched by tap, never scheduled. Some BLOCKs are the checker being
+# wrong rather than the post, and spending a Claude run on every one of those
+# would burn the quota that the checking itself needs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      post:
+        description: 'Post JSON path. Leave blank for the one awaiting approval.'
+        required: false
+        type: string
+
+# Two fixes at once would race on the same file and push over each other.
+concurrency:
+  group: fix
+  cancel-in-progress: false
+
+permissions:
+  contents: write         # commits the corrected post
+  actions: read           # reads the held run's report artifact
+  id-token: write         # claude-code-action's default GitHub App auth
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    outputs:
+      post: ${{ steps.pick.outputs.post }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+
+      - id: pick
+        uses: ./.github/actions/resolve-post
+        with:
+          post: ${{ inputs.post }}
+
+      # Without the token there is no applier, and the action's own failure
+      # would read as a broken workflow rather than an unconfigured one.
+      # review.yml skips its fact-check in this case and says so; here there
+      # is nothing to skip to, so say it and stop.
+      - name: Check there is an applier to run
+        env:
+          HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: |
+          if [ "$HAS_CLAUDE" != "true" ]; then
+            echo "::error::CLAUDE_CODE_OAUTH_TOKEN is not set, so nothing can apply the report. Run \`claude setup-token\` and add it as a repo secret, or edit the post by hand." >&2
+            exit 1
+          fi
+
+      # The report the person actually read before tapping, not a fresh one.
+      # review.yml uploads it as reports-<stem> on every run, `always()`, for
+      # exactly this. Retention is 14 days; a post held longer than that is one
+      # to re-check rather than to repair blind.
+      - name: Fetch the fact-check that held this post
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STEM: ${{ steps.pick.outputs.stem }}
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100&name=reports-$STEM" \
+                 --jq '[.artifacts[] | select(.expired | not)] | sort_by(.created_at) | last | .id')
+          if [ -z "$id" ] || [ "$id" = "null" ]; then
+            echo "::error::No surviving report for $STEM. Its artifact has expired, or this post has never been reviewed. Tap 'Re-run the checks' first, then fix." >&2
+            exit 1
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > /tmp/reports.zip
+          unzip -o -q /tmp/reports.zip -d /tmp/reports
+          if [ ! -s /tmp/reports/factcheck.md ]; then
+            echo "::error::The report for $STEM has no factcheck.md in it. Tap 'Re-run the checks' first." >&2
+            exit 1
+          fi
+          echo "Report from artifact $id:"
+          head -3 /tmp/reports/factcheck.md
+
+      # Writes the edits, and only the edits. The read-only contract on
+      # .claude/agents/fact-check.md is unchanged and this is deliberately not
+      # that agent: the checker and the repairer are different sessions so that
+      # neither is marking its own homework.
+      - name: Apply what the fact-check asked for
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /tmp/reports/factcheck.md is a fact-check report on the post at
+            ${{ steps.pick.outputs.post }}. Apply it.
+
+            Edit only ${{ steps.pick.outputs.post }}, and only the fields the
+            report marks BLOCK or a required FIX. Leave anything it marks PASS
+            exactly as it is.
+
+            For each finding:
+              - If the report gives a suggested replacement, use that wording.
+              - If it does not, delete the unsupported claim and leave the
+                sentence shorter. Do NOT write a new claim of your own and do
+                NOT go to the source to compose one. A caveat the paper does
+                not state is the exact failure this repairs; inventing a
+                different one repeats it.
+              - If a finding cannot be repaired by editing the JSON — the
+                source URL is the wrong paper, the whole post is about
+                something the paper does not say — change nothing and explain
+                why. A post that needs re-drafting is not a post to patch.
+
+            The fields are prose on a slide: keep the hook within 12 words and
+            what_happened, why_it_matters and the_catch within 25 each.
+
+            Do not touch the `es` block — it is regenerated after you. Do not
+            add `published_at` under any circumstance; nothing here publishes.
+            Do not edit any other file.
+
+            Finish by printing the old and new text of every field you changed.
+          show_full_output: true
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Read,Edit,Write,Grep,Glob"
+          settings: |
+            {
+              "permissions": {
+                "allow": ["Read(//tmp/reports/**)", "Edit(posts/**)",
+                          "Write(posts/**)"],
+                "deny": ["Write(src/**)", "Edit(src/**)",
+                         "Write(.github/**)", "Edit(.github/**)",
+                         "Write(templates/**)", "Edit(templates/**)"]
+              }
+            }
+
+      # The settings block above is the applier's contract; this is the part
+      # that does not depend on the applier honouring it. A prompt is an
+      # instruction, a diff is a fact.
+      - name: Check it changed that post and nothing else
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+        run: |
+          changed=$(git diff --name-only)
+          if [ -z "$changed" ]; then
+            echo "::error::The applier changed nothing. Read its output in this log: either the report needed no edit, or it judged the post un-patchable and said why. Neither is fixed by running this again." >&2
+            exit 1
+          fi
+          if [ "$changed" != "$POST" ]; then
+            echo "::error::Expected only $POST to change, got: $(echo $changed). Nothing has been committed." >&2
+            git checkout -- .
+            exit 1
+          fi
+          if python3 -c "import json,sys,os; sys.exit(0 if not json.load(open(os.environ['POST'])).get('published_at') else 1)"; then
+            echo "Changed $POST only, still undated."
+          else
+            echo "::error::The applier added published_at. That is the human gate and it is not the applier's to give. Nothing has been committed." >&2
+            git checkout -- .
+            exit 1
+          fi
+          git --no-pager diff
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # No `playwright install` here: translate.py imports render.py for
+      # ES_FIELDS, which needs the playwright package but not its browsers.
+      # review.yml downloads Chromium when it renders.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # The English just changed, so the Spanish on the archive is now stale.
+      # translate.py knows that from the `_en` stamp and re-translates only
+      # what moved — this is the corrected-at-the-gate case that stamp exists
+      # for. Its output is read at the gate like any other translation.
+      - name: Re-translate the Spanish
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: python src/translate.py "${{ steps.pick.outputs.post }}"
+
+      # Before review.yml, which reads the post from its own checkout of
+      # master — the same reason daily.yml commits before it calls review.
+      - name: Commit the correction
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$POST"
+          git commit -m "Apply the fact-check to $(basename "$POST" .json)" \
+                     -m "Applied by .github/workflows/fix.yml from the report that held the post. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
+          git push origin HEAD:master
+
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+  # The independent grade. A fresh fact-check, a fresh proof, a fresh message.
+  review:
+    needs: apply
+    uses: ./.github/workflows/review.yml
+    with:
+      post: ${{ needs.apply.outputs.post }}
+    secrets: inherit

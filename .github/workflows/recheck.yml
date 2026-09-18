@@ -31,9 +31,8 @@ permissions:
   id-token: write         # claude-code-action's default GitHub App auth
 
 jobs:
-  # Typing a 52-character filename on a phone is not a workflow. Blank input
-  # means "the post that is waiting", which is the only one there ever is in
-  # normal running.
+  # Which post is held is a question recheck.yml and fix.yml must never answer
+  # differently, so they ask the same composite action.
   resolve:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -44,65 +43,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Pick the post to re-review
-        id: pick
-        env:
-          POST: ${{ inputs.post }}
-        run: |
-          python3 <<'PY'
-          import json
-          import os
-          import pathlib
-          import re
-          import sys
-
-          asked = os.environ.get("POST", "").strip()
-          out = pathlib.Path(os.environ["GITHUB_OUTPUT"])
-
-          if asked:
-              if not pathlib.Path(asked).is_file():
-                  sys.exit(f"::error::{asked} is not on master. Check the "
-                           f"path, or leave the input blank to pick the post "
-                           f"awaiting approval.")
-              out.write_text(f"post={asked}\n")
-              print(f"Re-reviewing the post given: {asked}")
-              raise SystemExit(0)
-
-          # Every draft.py post is named YYYY-MM-DD-<slug>.json, so the date
-          # prefix sorts chronologically. The filter is not decoration:
-          # posts/era.json is the hand-built fixture from the first commit,
-          # has neither a prefix nor a published_at, and sorts after every
-          # real draft — unfiltered it would be picked every single time.
-          dated = re.compile(r"\d{4}-\d{2}-\d{2}-")
-          waiting = []
-          for path in sorted(pathlib.Path("posts").glob("*.json")):
-              if not dated.match(path.name):
-                  continue
-              try:
-                  post = json.loads(path.read_text())
-              except (OSError, json.JSONDecodeError) as exc:
-                  # site.py skips a malformed draft rather than dying on it,
-                  # and one bad file must not block re-checking a good one.
-                  print(f"::warning::skipping {path}: {exc}")
-                  continue
-              if not post.get("published_at"):
-                  waiting.append(path)
-
-          if not waiting:
-              sys.exit("::error::No post is awaiting approval — every dated "
-                       "draft in posts/ already has published_at.")
-
-          if len(waiting) > 1:
-              # Normal running leaves exactly one. More means a post was held
-              # and never resolved, and silently picking the newest would bury
-              # the older one for good.
-              others = ", ".join(str(p) for p in waiting[:-1])
-              print(f"::warning::{len(waiting)} posts are awaiting approval. "
-                    f"Re-reviewing the newest; still waiting: {others}")
-
-          out.write_text(f"post={waiting[-1]}\n")
-          print(f"Re-reviewing the post awaiting approval: {waiting[-1]}")
-          PY
+      - id: pick
+        uses: ./.github/actions/resolve-post
+        with:
+          post: ${{ inputs.post }}
 
   review:
     needs: resolve

@@ -61,13 +61,15 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
                      (all read-only pre-gate reviewers — see the sections below)
 .github/actions/     notify-failure (one definition of "this run broke",
-                     called by every scheduled workflow)
+                     called by every scheduled workflow) · resolve-post
+                     (one definition of "the post that is waiting")
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, daily) · review.yml (fact-check · render · proof
                      · send — called, never scheduled) · recheck.yml (run
-                     review.yml again on a held post) · publish.yml (the
-                     publish tap, 15m) · site.yml (web archive)
+                     review.yml again on a held post) · fix.yml (apply the
+                     fact-check to a held post, then review.yml again) ·
+                     publish.yml (the publish tap, 15m) · site.yml (archive)
 src/
   verify_feeds.py    checks every feed URL is live
   ingest.py          feeds → Google Sheets
@@ -286,9 +288,16 @@ it — it re-fetches `source_url`, finds the paper behind the news coverage, and
 checks each slide claim against it, reporting BLOCK / FIX / PASS with the
 supporting sentence.
 
-It is read-only by design: it reports, and a person applies the edits. Do not
-give it Edit or Write, and do not let it add `published_at`. Layer 5 is the
-point.
+It is read-only by design: it reports, and something else applies the edits.
+Do not give it Edit or Write, and do not let it add `published_at`. Layer 5 is
+the point.
+
+What applies them is `fix.yml`, tapped from the chat — a separate Claude Code
+session that reads the report and writes the JSON, so that the checker is never
+marking its own homework. It may edit one post file and nothing else, it may
+not add `published_at`, and a guard step on the diff enforces both rather than
+trusting the prompt. Its output then goes back through `review.yml` for a fresh
+fact-check that never saw it. See **The daily run**.
 
 `draft.py` resolves the paper and takes `attribution` and `peer_reviewed`
 from Crossref, which removes the first two failure modes below at the source.
@@ -451,8 +460,8 @@ Between them sits a person, doing what only a person can:
 
 ```
 daily.yml ─ draft · translate · commit ──┐
-                                         ├─→ review.yml ─ fact-check · render
-recheck.yml ─ resolve the held post ─────┘                · proof · send
+recheck.yml ─ re-run the checks ─────────┤─→ review.yml ─ fact-check · render
+fix.yml ─ apply the report · commit ─────┘                · proof · send
                                                                    │
                                                                    ↓
                                                                Telegram
@@ -478,7 +487,36 @@ blank `post` input it re-reviews the one awaiting approval — the newest dated
 file in `posts/` without `published_at`. The date-prefix filter there is
 load-bearing rather than tidy: `posts/era.json` is the fixture from the first
 commit, has neither a prefix nor a `published_at`, and sorts after every real
-draft, so unfiltered it would be picked every time.
+draft, so unfiltered it would be picked every time. That picking lives in
+`.github/actions/resolve-post`, because `fix.yml` has to answer "which post is
+held" identically or the two ways back repair different posts.
+
+`fix.yml` is the other way back, and the two divide by *why* a post is held.
+`recheck.yml` runs the same review again, which is the answer when the check
+broke. `fix.yml` is the answer when the check was right: it fetches the
+`reports-<stem>` artifact the holding run uploaded — the report the person
+actually read, not a fresh one — applies it, re-translates, commits, and calls
+`review.yml`. It is dispatched by tap and never scheduled, because some BLOCKs
+are the checker being wrong rather than the post, and a Claude run spent on
+every one of those burns the quota the checking itself needs. It never dates a
+post: the corrected slides come back to the chat for approval exactly like the
+first draft. Three limits hold it to repairing rather than rewriting:
+
+- **It applies, it does not compose.** Where the report suggests replacement
+  wording it uses that; where it does not, the unsupported claim comes out and
+  the sentence runs shorter. The failure being repaired is a model writing a
+  caveat the paper does not state, and a repair free to write a new one is not
+  a repair. A finding that cannot be fixed by editing — the wrong paper, a
+  post about something the source does not say — changes nothing and says why,
+  because a post that needs re-drafting is not a post to patch.
+- **A guard step on the diff, not the prompt, is what enforces that.** After
+  the applier runs, `git diff --name-only` must name exactly the one post and
+  the JSON must still have no `published_at`, or the run fails having
+  committed nothing. The `settings` block is the contract; the diff is the
+  proof.
+- **It never grades itself.** The fact-check that decides whether the post is
+  now true is the one `review.yml` runs afterwards, in a session that never
+  saw the applier.
 
 `src/telegram.py` is both halves — `send` and `confirm` — because both are
 the same boundary, and its docstring holds the API-level reasoning. The
@@ -516,13 +554,20 @@ What a hold cannot do is stop the carousel. Instagram is posted by hand,
 outside all of this, so withholding every button protects nothing about the
 account — it withholds only the *record*, and leaves a person who has already
 posted with nowhere to say so except a hand edit to the JSON, which leaves no
-trace that anything was overridden at all. So a held post carries two buttons
-in place of the green one: **Re-run the checks**, and **Posted anyway —
-record it**. The second dates the post exactly as the green one would; what
+trace that anything was overridden at all. So a held post carries three
+buttons in place of the green one: **Apply the fixes**, **Re-run the checks**,
+and **Posted anyway — record it**. The last dates the post as the green one
+would; what
 differs is that it carries `held:` rather than `pub:` in its `callback_data`,
 so `confirm` knows it was an override and says so in the run log and in its
 reply in the chat. A visible override is worth more than a gate that is only
 technically unbroken — and the reports stay in the chat above it either way.
+
+**Apply the fixes** is offered only when the *fact-check* is what held the
+post. `fix.yml` applies a fact-check report and has nothing to say about a
+layout `proof.py` measured and rejected, so offering it on a proof hold would
+send a person to a workflow that reads the report, finds nothing it can act
+on, and changes nothing.
 
 - **`proof.py`** runs on every post and needs no credentials.
 - **`fact-check`** runs as a Claude Code agent through
@@ -553,17 +598,18 @@ holds the stand-in review.yml writes when a configured fact-check produces
 nothing, and what leaves the button alone for the "not configured" one, which
 contains neither word.
 
-Of those two buttons, only one is a real button. **Re-run the checks** is a
-**link** to `recheck.yml`, so the way back from a broken check is one tap from
-the chat the hold arrived in. It is a link, and not a button that does the
-work, because
+Of those three buttons, only one is a real button. **Apply the fixes** and
+**Re-run the checks** are **links** to `fix.yml` and `recheck.yml`, so the way
+back from either kind of hold is one tap from the chat it arrived in. They are
+links, and not buttons that do the work, because
 `getUpdates` has no offset: a callback tap would replay on every poll for 24
-hours and re-dispatch the review every quarter of an hour — burning the Claude
+hours and re-dispatch the work every quarter of an hour — burning the Claude
 quota whose exhaustion is the likeliest reason the post is held at all.
 `confirm` survives that replay only because dating a post twice is a no-op,
-and a re-check has no such marker. `recheck_url()` builds the link from
-`GITHUB_SERVER_URL` and `GITHUB_REPOSITORY` rather than from a constant, so a
-local `send` offers none — whoever ran it by hand is already at a machine that
+and neither a re-check nor a repair has such a marker. `workflow_url()` builds
+both from `GITHUB_SERVER_URL` and `GITHUB_REPOSITORY` rather than from
+constants, so a local `send` offers neither — whoever ran it by hand is
+already at a machine that
 can re-run the checks.
 
 Nothing gates a **local** `send` with no `--review` flags — the message says
