@@ -86,6 +86,12 @@ or sharpen anything. "the_catch" is the credibility line — a hedge that moves 
 is a factual error.
 - Leave proper nouns, institutions, journal names, units and numbers exactly \
 as they are.
+- Scientific terms take their established Spanish form. If you are not \
+certain of the accepted term, keep the English word rather than coin a \
+Spanish-looking one: a reader can look up an English term, but a word that \
+does not exist tells them nothing and discredits the rest. "semi-crystalline" \
+is "semicristalino" — it came back once as "semicuadráticos", which means \
+"semi-quadratic" and is not a word.
 - Keep each field to roughly the English length. These render in a fixed \
 layout, and a field that doubles overflows it.
 - "domain" is a 2-3 word field label. Translate it as well — it is shown to \

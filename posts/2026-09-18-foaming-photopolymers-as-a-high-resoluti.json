@@ -27,8 +27,8 @@
     "domain": "materiales",
     "hook": "Los fotopolímeros espumosos permiten impresión sin tinta a 20 000 dpi",
     "what_happened": "Los investigadores emplearon luz UV‑A para provocar la espuma en una lámina de polímero, creando poros controlados y un patrón blanco de alta resolución",
-    "why_it_matters": "Elimina la necesidad de tinta y posibilita la impresión a escala micrométrica de características ópticas y de adherencia",
-    "the_catch": "Hasta ahora solo se ha demostrado en polímeros amorfos y semicuadráticos",
+    "why_it_matters": "Elimina la necesidad de tinta y posibilita la impresión a escala micrométrica de características ópticas y de humectación",
+    "the_catch": "Hasta ahora solo se ha demostrado en polímeros amorfos y semicristalinos",
     "_en": "1dc71eb4176721d8"
   },
   "published_at": "2026-09-18"

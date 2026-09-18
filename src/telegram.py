@@ -340,10 +340,23 @@ def review_text(post: dict, stem: str,
 
     es = post.get("es") or {}
     if es:
-        lines += ["", "<b>Español — goes on the web archive</b>"]
-        lines += [f"· {e(str(es[f]))}" for f in
-                  ("hook", "what_happened", "why_it_matters", "the_catch")
-                  if es.get(f)]
+        # Paired with the English rather than listed alone, because this is
+        # the one thing in the message that nothing has checked. proof.py
+        # measures the slides and the fact-check reads the English; `es` goes
+        # from a free-tier model onto a permalink with only a person in
+        # between. That model coins technical terms — "semi-crystalline" came
+        # back once as "semicuadráticos", which means "semi-quadratic" and is
+        # not a word — and a wrong one is invisible next to nothing. The
+        # English it is supposed to mirror is otherwise only in the slide
+        # images further up the chat, which is not something to compare
+        # against on a phone.
+        lines += ["", "<b>Español — goes on the web archive</b>",
+                  "<i>machine-written; you are the only thing checking it</i>"]
+        for f in ("hook", "what_happened", "why_it_matters", "the_catch"):
+            if es.get(f) and str(post.get(f, "")).strip():
+                lines += [f"<b>{e(f)}</b>",
+                          f"EN {e(str(post[f]))}",
+                          f"ES {e(str(es[f]))}"]
 
     if reviews:
         # The reports go as their own messages, just above this one — see
