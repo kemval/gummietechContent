@@ -121,6 +121,18 @@ jobs:
                 NOT go to the source to compose one. A caveat the paper does
                 not state is the exact failure this repairs; inventing a
                 different one repeats it.
+              - One finding often objects to several things in one field.
+                Address every one of them. The first run of this workflow
+                read a the_catch finding that rejected both "relies on a weak
+                solvent" (mechanism restated as a caveat) and "has not been
+                tested beyond the laboratory scale" (in no source), deleted
+                only the second, and the re-check blocked the survivor. Half
+                an edit costs a whole round.
+              - hook, what_happened, why_it_matters and the_catch are
+                required and cannot end up empty. If applying a finding in
+                full would empty one and the report offers no usable
+                replacement for it, change nothing at all and say the post
+                needs re-drafting.
               - If a finding cannot be repaired by editing the JSON — the
                 source URL is the wrong paper, the whole post is about
                 something the paper does not say — change nothing and explain
