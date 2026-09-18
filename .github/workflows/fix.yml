@@ -200,16 +200,24 @@ jobs:
 
       # Before review.yml, which reads the post from its own checkout of
       # master — the same reason daily.yml commits before it calls review.
+      #
+      # Pushed over an explicitly authenticated remote, unlike daily.yml's
+      # plain `git push`, because claude-code-action replaces the credential
+      # actions/checkout installs: the first run of this workflow applied the
+      # report, passed the guard, made the commit and then died on "Password
+      # authentication is not supported for Git operations". daily.yml has no
+      # agent step before its push, which is why it has never needed this.
       - name: Commit the correction
         env:
           POST: ${{ steps.pick.outputs.post }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$POST"
           git commit -m "Apply the fact-check to $(basename "$POST" .json)" \
                      -m "Applied by .github/workflows/fix.yml from the report that held the post. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
-          git push origin HEAD:master
+          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
 
       - name: Say so in Telegram if this run broke
         if: failure()
