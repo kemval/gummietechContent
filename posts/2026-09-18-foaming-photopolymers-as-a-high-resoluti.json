@@ -1,0 +1,34 @@
+{
+  "post_type": "drop",
+  "domain": "materials",
+  "colorway": "ember",
+  "hook": "Foaming photopolymers enable 20,000 dpi inkless printing",
+  "what_happened": "Researchers used UV‑A light to trigger foaming in a polymer film, creating controlled pores and a white, high‑resolution pattern",
+  "why_it_matters": "It removes the need for ink and allows sub‑micron printing of optical and mechanical features",
+  "the_catch": "The method relies on a weak solvent and has not been tested beyond the laboratory scale",
+  "caption": "New foam‑based photolithography prints at 20,000 dpi without ink – a step toward bio‑inspired, high‑resolution manufacturing",
+  "keywords": [
+    "photolithography",
+    "foam",
+    "biomimetic"
+  ],
+  "hashtags": [
+    "#photopolymer",
+    "#additivemanufacturing",
+    "#bioinspired",
+    "#gummietech"
+  ],
+  "alt_text": "A five‑slide carousel explaining how UV‑induced foaming in photopolymers creates high‑resolution, inkless printing, highlighting the process, benefits, and limitations",
+  "source_url": "https://www.nature.com/articles/s41586-026-10968-9",
+  "doi": "10.1038/nmat4089",
+  "attribution": "Wegst et al., Nature Materials (2014)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "materiales",
+    "hook": "Los fotopolímeros espumosos permiten impresión sin tinta a 20 000 dpi",
+    "what_happened": "Los investigadores emplearon luz UV‑A para provocar la espuma en una película de polímero, creando poros controlados y un patrón blanco de alta resolución",
+    "why_it_matters": "Elimina la necesidad de tinta y permite la impresión submicrométrica de características ópticas y mecánicas",
+    "the_catch": "El método depende de un disolvente débil y no se ha probado más allá de la escala de laboratorio",
+    "_en": "92dcd31bb55e9e86"
+  }
+}
