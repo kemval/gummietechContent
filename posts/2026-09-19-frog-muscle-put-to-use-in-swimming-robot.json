@@ -1,0 +1,34 @@
+{
+  "post_type": "drop",
+  "domain": "biohybrid robotics",
+  "colorway": "ember",
+  "hook": "Bullfrog muscle powers a wireless manta‑ray robot",
+  "what_happened": "Researchers isolated a frog gracilis muscle, wired it to a near‑infrared laser‑powered neural stimulator, and drove a manta‑ray‑shaped robot to swim",
+  "why_it_matters": "It shows native muscle can deliver 6.5 N force, overcoming the weak output of engineered tissues and enabling high‑mobility biohybrid robots",
+  "the_catch": "The muscle stayed responsive for only 11 days and the robot could only move in water, not on rigid ground",
+  "caption": "A frog’s leg becomes a high‑performance actuator for a wireless manta‑ray robot",
+  "keywords": [
+    "biohybrid",
+    "muscle actuator",
+    "robotics"
+  ],
+  "hashtags": [
+    "#biohybrid",
+    "#robotics",
+    "#muscleactuator",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides explaining how a frog muscle was used to power a wireless manta‑ray robot, highlighting the muscle’s force, the laser‑driven stimulation, the robot’s speed, its limitations, and the breakthrough it represents",
+  "source_url": "https://newatlas.com/robotics/frog-muscle-swimming-robotic-manta-ray/",
+  "doi": "10.1002/adfm.77713",
+  "attribution": "Zhang et al., Advanced Functional Materials (2026)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "robotica biohibrida",
+    "hook": "El músculo de la rana bullfrog impulsa un robot manta sin cable",
+    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser infrarrojo cercano y dirigieron un robot con forma de manta para que nadara",
+    "why_it_matters": "Demuestra que el músculo nativo puede generar 6.5 N de fuerza, superando la baja potencia de los tejidos artificiales y permitiendo robots biohíbridos de alta movilidad",
+    "the_catch": "El músculo permaneció activo solo 11 días y el robot solo podía moverse en agua, no sobre terreno sólido",
+    "_en": "e2bba4abf7dcbaae"
+  }
+}
