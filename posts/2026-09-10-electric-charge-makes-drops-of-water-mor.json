@@ -30,5 +30,8 @@
     "why_it_matters": "Este mecanismo pasado por alto puede contribuir al desgaste de edificios, barcos y automóviles, y señala la necesidad de recubrimientos que resistan el daño inducido por carga",
     "the_catch": "El modelo de ruptura es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor",
     "_en": "e5537661fcfc0095"
+  },
+  "metrics": {
+    "asked_at": "2026-09-20"
   }
 }
