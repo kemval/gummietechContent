@@ -124,8 +124,17 @@ jobs:
           # agent only ever reads posts/ and the public source it checks
           # against. Turn it off if that stops being true.
           show_full_output: true
+          # 60, not 30: a Signal is five sources, five Crossref lookups and a
+          # duplicate grep against posts/, so it spends roughly five times a
+          # Drop's turns on a cap that was set for a Drop. Week 38's Signal
+          # finished on turn 31 on 2026-09-20 — the report was written and the
+          # post reached the gate, but one turn the other way would have left
+          # no report at all, and the stand-in below would have held a post
+          # whose every claim had just been verified. The cap is a quota
+          # guard, not a budget: it exists so a runaway session cannot drain
+          # the Pro quota, and 60 is still well short of that.
           claude_args: |
-            --max-turns 30
+            --max-turns 60
             --allowedTools "Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
           settings: |
             {
