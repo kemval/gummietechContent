@@ -30,5 +30,8 @@
     "why_it_matters": "Este enfoque imprime estructuras de hielo complejas sin infraestructura criogénica, materiales de soporte ni refrigeración externa.",
     "the_catch": "Las estructuras de hielo impresas son estables solo bajo condiciones de baja presión; una vez eliminado el vacío, se derriten de nuevo en agua.",
     "_en": "d56b593fc507c582"
+  },
+  "metrics": {
+    "asked_at": "2026-09-20"
   }
 }
