@@ -612,11 +612,15 @@ ATTRIBUTE_RE = re.compile(r"\*\*attribute to\*\*\s*(?P<who>[^\n]+)", re.I)
 ARXIV_RE = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}(?:v\d+)?)", re.I)
 
 
-def evergreen_candidate(rank: int) -> dict:
+def evergreen_candidate(rank: int, skip: frozenset[int] = frozenset()) -> dict:
     """
     A row from the evergreen queue as a draftable item, rank 0 meaning the
-    highest-scoring one. The brief becomes the summary, which is what the
+    highest-scoring one left. The brief becomes the summary, which is what the
     model drafts from, and the Source line's first link becomes source_url.
+
+    `skip` holds ranks this run rejected as already covered. It applies to
+    rank 0 only: asking for a numbered candidate is naming one by hand, and a
+    named candidate is drafted whatever posts/ says.
     """
     if not EVERGREEN_QUEUE.exists():
         sys.exit(f"No evergreen queue at "
@@ -637,7 +641,15 @@ def evergreen_candidate(rank: int) -> dict:
             ranks = ", ".join(h["rank"] for h in heads)
             sys.exit(f"No candidate #{rank} in the queue. Available: {ranks}.")
     else:
-        picked = heads[0]                  # the file is written in score order
+        # The file is written in score order, so the first candidate this run
+        # has not rejected is the best one still worth drafting.
+        picked = next((h for h in heads if int(h["rank"]) not in skip), None)
+        if picked is None:
+            sys.exit(f"Every candidate in "
+                     f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)} is already "
+                     f"covered by a post in posts/. Run the evergreen-scout "
+                     f"agent to refill the queue, or pass --evergreen N to "
+                     f"draft one of them anyway.")
 
     ends = [h.start() for h in heads if h.start() > picked.start()]
     body = text[picked.end():ends[0] if ends else len(text)]
@@ -678,6 +690,7 @@ def evergreen_candidate(rank: int) -> dict:
     # "not yet peer-reviewed" flag on a textbook result.
     return {
         "url": url,
+        "rank": int(picked["rank"]),
         "source": f"evergreen queue #{picked['rank']}",
         "title": picked["title"].strip(),
         "summary": "\n".join(lines),
@@ -688,7 +701,7 @@ def evergreen_candidate(rank: int) -> dict:
 
 
 def covered_papers() -> dict[str, str]:
-    """Every paper posts/ already covers, keyed by DOI and by citation.
+    """Every paper posts/ already covers, keyed by DOI, citation and URL.
 
     The sheet is deduplicated by URL, and a story is not a URL: 45 feeds
     cover one press release, each copy arrives as its own row with its own
@@ -700,6 +713,16 @@ def covered_papers() -> dict[str, str]:
     Older posts carry no `doi` — it was not written until this guard needed
     it — so the citation is the key that works on all of them. Both come
     from the same Crossref record, so they agree.
+
+    `source_url` is the third key, and it is the only one an evergreen
+    candidate has. That path never fetches a page, so resolve_paper gets
+    nothing to work with and neither of the other two keys can ever be
+    formed — which meant `--evergreen` would happily re-draft a subject
+    already posted. The tides candidate is still #1 in the queue and was
+    published on 2026-09-15; before this key it came back up clean. Matched
+    as written, so a URL that differs by a query string or a trailing slash
+    is a miss — the fact-check agent reads posts/ and catches what a key
+    cannot.
     """
     seen: dict[str, str] = {}
     for path in sorted(POSTS_DIR.glob("*.json")):
@@ -707,22 +730,26 @@ def covered_papers() -> dict[str, str]:
             post = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue          # site.py skips a malformed post; so does this
-        for key in (post.get("doi"), post.get("attribution")):
+        for key in (post.get("doi"), post.get("attribution"),
+                    post.get("source_url")):
             if key and str(key).strip():
                 seen.setdefault(" ".join(str(key).lower().split()), path.name)
     return seen
 
 
-def already_covered(paper: dict | None, seen: dict[str, str]) -> str | None:
-    """The post that already covers this paper, if there is one.
+def already_covered(paper: dict | None, url: str,
+                    seen: dict[str, str]) -> str | None:
+    """The post that already covers this candidate, if there is one.
 
-    Only a resolved paper can be matched. Coverage with no DOI is left to
-    the fact-check agent, which reads posts/ and can see a duplicate the
-    keys cannot.
+    The paper's own keys first, then the URL the candidate came from — which
+    is all an evergreen brief ever has, since that path fetches no page and
+    so resolves no paper. Coverage with no DOI and a URL nobody has posted
+    from is left to the fact-check agent, which reads posts/ and can see a
+    duplicate the keys cannot.
     """
-    if not paper:
-        return None
-    for key in (paper.get("doi"), citation(paper)):
+    keys = [paper.get("doi"), citation(paper)] if paper else []
+    keys.append(url)
+    for key in keys:
         if key:
             hit = seen.get(" ".join(str(key).lower().split()))
             if hit:
@@ -825,10 +852,17 @@ def main() -> int:
     # rejecting one means going back for another. Each pass costs one fetch
     # and one Crossref call, and no LLM call — the model is not reached until
     # a candidate survives.
+    # Rows, and evergreen ranks, this run has already rejected as covered.
     skipped: set[int] = set()
+    skipped_ranks: set[int] = set()
+    # `--evergreen` with no number asks for the best candidate left, which is
+    # a question this loop can ask again after a rejection. `--evergreen N`
+    # names one, and naming one is the override.
+    auto_evergreen = args.evergreen == 0
+
     while True:
         if args.evergreen is not None:
-            item = evergreen_candidate(args.evergreen)
+            item = evergreen_candidate(args.evergreen, frozenset(skipped_ranks))
         elif args.url:
             item = {"url": args.url, "source": outlet(args.url),
                     "title": "", "summary": "", "score": "—"}
@@ -880,19 +914,32 @@ def main() -> int:
                       "attribution is the paper's, the slides are the coverage's, "
                       "so check the mechanism before posting")
 
-        covered = already_covered(paper, seen)
+        covered = already_covered(paper, item["url"], seen)
         if not covered:
             break
 
-        # A --row, a --url and an evergreen brief were all chosen by a person.
-        # Say the post exists and draft it anyway: overriding is the point of
-        # naming a candidate by hand.
+        # An evergreen candidate is matched on its URL alone — see
+        # covered_papers — and the queue keeps a subject listed after it has
+        # been posted, so a hit here is the expected case rather than a
+        # surprise. Walking on costs nothing: this path fetches no page and
+        # calls no API, so there is no budget to spend and no cap to respect.
+        if auto_evergreen:
+            print(f"  skipping evergreen #{item['rank']}: {covered} already "
+                  f"covers it")
+            skipped_ranks.add(item["rank"])
+            continue
+
+        # A --row, a --url and a numbered evergreen candidate were all chosen
+        # by a person. Say the post exists and draft it anyway: overriding is
+        # the point of naming a candidate by hand.
         if row_number is None or args.row:
-            print(f"  warning: {covered} already covers this paper")
+            print(f"  warning: {covered} already covers this")
             break
 
+        # `paper` is None when the match came from the URL rather than from a
+        # resolved DOI, which is why this names the post and not the citation.
         print(f"  skipping row {row_number}: {covered} already covers "
-              f"{citation(paper) or paper['doi']}")
+              f"{citation(paper) if paper else item['url']}")
         if not args.dry_run:
             worksheet.update_cell(row_number, col["status"] + 1, "duplicate")
         skipped.add(row_number)
