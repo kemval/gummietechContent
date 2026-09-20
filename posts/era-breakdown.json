@@ -1,0 +1,43 @@
+{
+  "post_type": "breakdown",
+  "domain": "Oceanography",
+  "colorway": "orbit",
+  "hook": "The two tidal bulges you were taught in school do not exist.",
+  "the_question": "If the Moon pulls the ocean toward it, why is there also a high tide on the far side of the Earth?",
+  "the_intuition": "The textbook answer is two static bulges: one under the Moon, one opposite it, with the Earth rotating beneath them.",
+  "mechanism": [
+    "For a bulge to stay under the Moon it would have to travel around the Earth at roughly 1,600 km/h.",
+    "Shallow-water waves in a 4 km ocean cap out near 700 km/h. The water can never keep up with the Moon."
+  ],
+  "why_it_matters": "Tides are a shallow-water wave problem, not a static-shape problem — the ocean sloshes in basins rather than bulging.",
+  "the_catch": "Newton's forcing function is right; only his response model is wrong. This is not 'Newton was wrong about gravity'.",
+  "caption": "The two tidal bulges in every textbook diagram are not what the ocean actually does. Which piece of school science surprised you most when it turned out to be wrong?",
+  "keywords": [
+    "tides",
+    "oceanography",
+    "fluid dynamics"
+  ],
+  "hashtags": [
+    "#science",
+    "#oceanography",
+    "#physics",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining why the two static tidal bulges taught in school do not exist, and why tides are a shallow-water wave problem instead.",
+  "source_url": "https://physics.stackexchange.com/questions/121830/does-earth-really-have-two-high-tide-bulges-on-opposite-sides",
+  "attribution": "Laplace's dynamic theory of tides",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "oceanografía",
+    "hook": "Los dos abultamientos de marea que te enseñaron en la escuela no existen.",
+    "the_question": "Si la Luna atrae el océano hacia ella, ¿por qué hay también marea alta en el lado opuesto de la Tierra?",
+    "the_intuition": "La respuesta de los libros son dos abultamientos estáticos: uno bajo la Luna, otro enfrente, con la Tierra girando debajo.",
+    "mechanism": [
+      "Para quedarse bajo la Luna, un abultamiento tendría que recorrer la Tierra a unos 1.600 km/h.",
+      "Las ondas en aguas someras de un océano de 4 km se topan cerca de 700 km/h. El agua nunca alcanza a la Luna."
+    ],
+    "why_it_matters": "Las mareas son un problema de ondas en aguas someras, no de forma estática: el océano oscila en cuencas en vez de abultarse.",
+    "the_catch": "La función forzante de Newton es correcta; solo su modelo de respuesta es erróneo. Esto no es \"Newton se equivocó sobre la gravedad\".",
+    "_en": "3452d3a8627065b2"
+  }
+}

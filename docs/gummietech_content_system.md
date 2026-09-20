@@ -70,9 +70,25 @@ Slides 3 and 4 are the entire competitive advantage. Anyone can rewrite a headli
 
 Cover → the question → the intuition → the mechanism (2–3 slides) → the surprising implication → the limits → recap → CTA.
 
+Built 2026-09-19 as `templates/breakdown.html`. The slide count follows the post: `mechanism` is a list with one slide per step, and the recap is optional. Eight slides is two mechanism steps and no recap, ten is three steps and a recap.
+
+**The recap is off by default.** The cover is already the one-line summary, so a recap repeats it — and it is one more synthesised sentence for the fact-check to verify against the source, which is where drafted posts go wrong most often. Where it earns its slide is save-ability, which is a claim to test rather than assume: turn it on for a post or two and let `src/learn.py` compare. That is the §8 decision this section has always asked for.
+
+The limits slide is the dark one either way. With a recap it moves back a place, because the limits are half of what this section calls the competitive advantage and they are not a slide to render in a field colour.
+
+A Breakdown is drafted by hand rather than by `draft.py` — §4 splits the work by stakes and this is the format where the explanation has to be excellent. Everything after drafting is identical: render, proof, fact-check, the gate, the archive.
+
 ### The Signal — weekly
 
 Five items, one slide each, ranked. Highest save rate of the three formats because it functions as a reference.
+
+Built 2026-09-19 as `templates/signal.html`: cover + one slide per item + CTA, so five items is seven slides and the count follows the post.
+
+**It is the format that least resembles the other two.** A roundup has five sources, so `attribution`, `source_url` and `peer_reviewed` belong to each item rather than to the post — §7.3 is not satisfied by crediting one of five, and §7.2 is not satisfied by one preprint label for five claims. Each item slide therefore carries its own credit line, and its own flag when it needs one.
+
+**It has no dark slide.** The dark slide is where a post's caveat goes; a roundup has five caveats or none, and making one item dark would say something about that item the post does not say.
+
+Where the items come from is the cheap part: the scoring queue already holds far more rows above the ≥7 threshold than get drafted, and every one that is not picked stays there. A Signal is a week of those.
 
 ---
 

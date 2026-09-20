@@ -70,11 +70,25 @@ jobs:
       # posts/era.json is the fixture from the first commit: undated, so the
       # archive never publishes it, which is what makes it safe to render on
       # every push. Fonts and templates are local, so this is entirely offline.
-      - name: Render the fixture
-        run: python src/render.py posts/era.json --outdir /tmp/smoke
+      # One fixture per carousel format: era.json is a five-slide Drop,
+      # era-breakdown.json an eight-slide Breakdown, era-signal.json a
+      # seven-slide Signal with five sources. All three are undated, so the
+      # archive never publishes them, which is what makes them safe to render
+      # on every push. A format with no fixture here is a format nothing
+      # exercises until a person is waiting for it at the gate — which is
+      # exactly how signal.html shipped its first layout with the credit line
+      # sitting on top of the wordmark.
+      - name: Render every format
+        run: |
+          for post in era era-breakdown era-signal; do
+            python src/render.py "posts/$post.json" --outdir "/tmp/smoke-$post"
+          done
 
-      - name: Proof the fixture
-        run: python src/proof.py posts/era.json
+      - name: Proof every format
+        run: |
+          for post in era era-breakdown era-signal; do
+            python src/proof.py "posts/$post.json"
+          done
 
       # Builds every published post, so a template change that breaks one page
       # shows up here rather than on the live archive.

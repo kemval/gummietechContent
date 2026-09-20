@@ -68,6 +68,11 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import requests
 from dotenv import load_dotenv
 
+# Standard library only, and deliberately not render.py — see formats.py for
+# why the table lives in its own module and this file may not reach for the
+# one that imports Playwright.
+from formats import body_text, es_fields, pieces, sections
+
 # Defined here rather than imported from render.py on purpose: `confirm` runs
 # every quarter hour and needs nothing but requests, and render.py imports
 # playwright at module level.
@@ -76,7 +81,7 @@ POSTS_DIR = REPO_ROOT / "posts"
 OUTPUT_DIR = REPO_ROOT / "output"
 
 API = "https://api.telegram.org/bot{token}/{method}"
-TIMEOUT = 60             # generous: sendMediaGroup uploads five PNGs
+TIMEOUT = 60             # generous: sendMediaGroup uploads a whole carousel
 MESSAGE_LIMIT = 4096     # Telegram's cap on one text message
 CALLBACK_LIMIT = 64      # ...and on callback_data, which carries the stem
 CALLBACK_PREFIX = "pub:"
@@ -99,8 +104,13 @@ RECHECK_WORKFLOW = "recheck.yml"
 FIX_WORKFLOW = "fix.yml"
 FACTCHECK_REPORT = "factcheck"
 
-SLIDES = [f"slide-{i}.png" for i in range(1, 6)]
+SLIDE_RE = re.compile(r"^slide-(\d+)\.png$")
 SIDECAR = "caption.txt"
+
+# Telegram's cap on one sendMediaGroup. No format reaches it today — a
+# Breakdown is the longest at eight — but how many slides a post has is the
+# template's business, so this file does not get to assume ten is enough.
+MEDIA_GROUP_LIMIT = 10
 
 # Both checkers state their verdict on the report's first line — proof.py
 # prints "PROOF · PASS", fact-check.md requires "FACT-CHECK · PASS" — and that
@@ -352,11 +362,22 @@ def review_text(post: dict, stem: str,
         # against on a phone.
         lines += ["", "<b>Español — goes on the web archive</b>",
                   "<i>machine-written; you are the only thing checking it</i>"]
-        for f in ("hook", "what_happened", "why_it_matters", "the_catch"):
-            if es.get(f) and str(post.get(f, "")).strip():
-                lines += [f"<b>{e(f)}</b>",
-                          f"EN {e(str(post[f]))}",
-                          f"ES {e(str(es[f]))}"]
+        # The fields come from the post's own format, so a Breakdown shows
+        # its question, its mechanism steps and its limits rather than the
+        # three a Drop happens to have. A field this format does not carry
+        # is simply absent, not empty.
+        for section in ("hook", *sections(post)):
+            field = section if isinstance(section, str) else section.field
+            english = (body_text(post, field) if isinstance(section, str)
+                       else pieces(post, section))
+            spanish = body_text(es, field)
+            if not (english and spanish):
+                continue
+            for n, (en_piece, es_piece) in enumerate(zip(english, spanish), 1):
+                label = f"{field}[{n}]" if len(english) > 1 else field
+                lines += [f"<b>{e(label)}</b>",
+                          f"EN {e(en_piece)}",
+                          f"ES {e(es_piece)}"]
 
     if reviews:
         # The reports go as their own messages, just above this one — see
@@ -404,6 +425,43 @@ def review_text(post: dict, stem: str,
     return "\n".join(lines)
 
 
+def rendered_slides(outdir: Path) -> list[Path]:
+    """Every slide render.py wrote for this post, in order.
+
+    Discovered rather than counted to five. How many slides a post has is the
+    template's business — render.py finds them with querySelectorAll and a
+    Breakdown has eight — and a fixed slide-1..5 list here sent the first five
+    of them, reported "sent 5 slides", and left a person approving a carousel
+    they had seen half of. Sorted by the number rather than the name, because
+    slide-10 sorts before slide-2 as text.
+
+    Returns [] when there are no slides, and also when the numbering has a
+    hole in it: a gap is a render that stopped partway, and a partial carousel
+    is exactly what must not reach the gate.
+    """
+    found: dict[int, Path] = {}
+    for path in outdir.glob("slide-*.png"):
+        match = SLIDE_RE.match(path.name)
+        if match:
+            found[int(match.group(1))] = path
+    if sorted(found) != list(range(1, len(found) + 1)):
+        return []
+    return [found[i] for i in sorted(found)]
+
+
+def slide_groups(slides: list[Path]) -> list[list[Path]]:
+    """The slides split into media groups Telegram will accept.
+
+    sendMediaGroup takes 2–10 items, so a format longer than ten arrives in
+    more than one message. The groups are evened out instead of filled to ten
+    and remaindered: eleven slides as 10 + 1 would have Telegram reject the
+    second group, which takes two items at a minimum.
+    """
+    groups = -(-len(slides) // MEDIA_GROUP_LIMIT)
+    size = -(-len(slides) // groups) if groups else 0
+    return [slides[i:i + size] for i in range(0, len(slides), size)] if size else []
+
+
 def send(post_path: Path, review_paths: list[Path]) -> int:
     token, chat_id = config(need_chat=True)
     stem = post_path.stem
@@ -423,26 +481,29 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         sys.exit(f"Cannot read {post_path}: {exc}")
 
     outdir = OUTPUT_DIR / stem
-    paths = [outdir / name for name in SLIDES] + [outdir / SIDECAR]
-    missing = [p.name for p in paths if not p.exists()]
+    slides = rendered_slides(outdir)
+    sidecar = outdir / SIDECAR
+    missing = ([] if slides else ["an unbroken slide-1..N.png sequence"]) + \
+              ([] if sidecar.exists() else [SIDECAR])
     if missing:
-        sys.exit(f"{outdir} is missing {', '.join(missing)}. Run "
+        sys.exit(f"{outdir} is missing {' and '.join(missing)}. Run "
                  f"`python src/render.py {post_path.relative_to(REPO_ROOT)}` "
                  f"first.")
 
     print(f"Sending {stem} to Telegram")
     try:
         # Documents, not photos — see the module docstring.
-        with contextlib.ExitStack() as stack:
-            slides = paths[:-1]
-            media = [{"type": "document", "media": f"attach://{p.stem}"}
-                     for p in slides]
-            files = {p.stem: stack.enter_context(p.open("rb")) for p in slides}
-            call(token, "sendMediaGroup",
-                 {"chat_id": chat_id, "media": json.dumps(media)}, files)
-        print("  sent 5 slides")
+        for group in slide_groups(slides):
+            with contextlib.ExitStack() as stack:
+                media = [{"type": "document", "media": f"attach://{p.stem}"}
+                         for p in group]
+                files = {p.stem: stack.enter_context(p.open("rb"))
+                         for p in group}
+                call(token, "sendMediaGroup",
+                     {"chat_id": chat_id, "media": json.dumps(media)}, files)
+        print(f"  sent {len(slides)} slides")
 
-        with paths[-1].open("rb") as fh:
+        with sidecar.open("rb") as fh:
             call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})
         print(f"  sent {SIDECAR}")
 

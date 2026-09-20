@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Signal</title>
+<style>
+{% include 'slides.css' %}
+
+/* ---------- particular to the Signal ----------
+   A roundup is a reference, not an argument: docs §1 gives it the highest
+   save rate of the three formats for exactly that reason. So each item slide
+   carries its own rank, its own claim and its own credit, and nothing else.
+
+   The credit is on the slide rather than only on the last one because there
+   are five of them. §7.3 makes attribution mandatory per source, and a
+   reader saving one item has to be able to see whose work it is. */
+/* The rank is a position marker, the same family as .dots, and proof.py
+   holds it to the chrome contrast bar rather than the content one. It was
+   drafted at opacity 0.28, which measured 1.5:1 and would have shipped as a
+   watermark nobody could read. 0.75 is the same value the wordmark and the
+   domain carry, and it is the lowest that clears 3:1 on every field in the
+   palette — pink is the worst at 3.26:1. */
+.rank {
+  font-family: var(--display); font-weight: 800;
+  font-size: 150px; line-height: 0.8;
+  letter-spacing: -0.04em; opacity: 0.75;
+  margin-bottom: 16px;
+}
+.item-claim {
+  font-family: var(--display); font-weight: 800;
+  font-size: 66px; line-height: 1.02; letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+/* Full opacity, and 96px of bottom margin to clear the wordmark — the same
+   defence .hook carries in drop.html, and for the same reason. It was
+   drafted at 0.85 and with no margin, which overlapped .wordmark by 18px on
+   every item slide. §7.3 makes the credit mandatory; an unreadable one does
+   not satisfy it. */
+.item-source {
+  border-top: 6px solid currentColor;
+  margin-top: 34px; padding-top: 22px;
+  margin-bottom: 96px;
+  font-family: var(--body); font-weight: 500;
+  font-size: 30px; line-height: 1.4;
+}
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})">
+{#
+   docs §1: five items, one slide each, ranked. Cover + items + CTA, so the
+   count follows the post rather than being written down here.
+
+   rhythm(n, 0) — no catch. The dark slide is where a post's caveat goes and
+   a roundup has five sources, so it has five caveats or none; forcing one
+   item to go dark would say something about that item that is not true.
+   formats.py declares this with `catch=False` and proof.py holds the post
+   to it.
+#}
+{% set n = 2 + items|length %}
+{% set fields = rhythm(n, 0) %}
+
+{% macro dots(at) %}
+  <div class="dots">{% for i in range(1, n + 1) %}<i class="{{ 'on' if i == at else '' }}"></i>{% endfor %}</div>
+{% endmacro %}
+
+<!-- 1. COVER — the Drop's hook styling, so all three pillars read as one account -->
+<div class="slide {{ fields[0] }}" id="slide-1"><div class="frame">
+  <div class="domain">{{ domain }}</div>
+  <div class="hook {{ hook_size }}">{{ hook }}</div>
+  <div class="wordmark">@gummietech</div>
+  {{ dots(1) }}
+</div></div>
+
+<!-- 2..n-1. THE ITEMS -->
+{% for item in items %}
+{% set at = loop.index + 1 %}
+<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
+  <div class="rank">{{ "%02d"|format(loop.index) }}</div>
+  {% if not item.peer_reviewed %}<div class="flag">Preprint — not yet peer-reviewed</div>{% endif %}
+  <div class="item-claim">{{ item.claim }}</div>
+  <div class="spacer"></div>
+  <div class="item-source">{{ item.attribution }}</div>
+  <div class="wordmark">@gummietech</div>
+  {{ dots(at) }}
+</div></div>
+{% endfor %}
+
+<!-- n. CTA + SOURCES -->
+<div class="slide {{ fields[n - 1] }}" id="slide-{{ n }}"><div class="frame">
+  <div class="spacer"></div>
+  <div class="cta-handle">Follow<br>@gummietech</div>
+  <div class="cta-line">Science, technology and engineering —<br>explained by someone whose code also crashes.</div>
+  <div class="source">
+    <b>{{ items|length }} sources</b>, all linked<br>
+    Full sources → link in bio
+  </div>
+  {{ dots(n) }}
+</div></div>
+
+</body>
+</html>

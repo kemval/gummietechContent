@@ -1,0 +1,63 @@
+{
+  "post_type": "signal",
+  "domain": "This week",
+  "colorway": "signal",
+  "hook": "5 things you missed this week",
+  "items": [
+    {
+      "claim": "A single brain implant decodes speech and gestures at the same time.",
+      "attribution": "Kunz et al., Nature (2026)",
+      "source_url": "https://www.nature.com/articles/s41586-026-10968-9",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Quasar winds carry 100× more power than anyone had measured.",
+      "attribution": "Fischer et al., ApJ Letters (2026)",
+      "source_url": "https://iopscience.iop.org/journal/2041-8205",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Ice structures can now be 3D printed at room temperature.",
+      "attribution": "Zhang et al., Advanced Materials (2026)",
+      "source_url": "https://onlinelibrary.wiley.com/journal/15214095",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Artificial beaver dams lifted juvenile coho survival from 8% to 60%.",
+      "attribution": "Bouwes et al., Scientific Reports (2026)",
+      "source_url": "https://www.nature.com/srep/",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Bunsen burners do not sterilize a bench — they can make contamination worse.",
+      "attribution": "Sanders, Journal of Microbiology & Biology Education (2026)",
+      "source_url": "https://journals.asm.org/journal/jmbe",
+      "peer_reviewed": true
+    }
+  ],
+  "caption": "Five results from this week worth knowing about. Which one surprised you most?",
+  "keywords": [
+    "weekly roundup",
+    "science news",
+    "research"
+  ],
+  "hashtags": [
+    "#science",
+    "#research",
+    "#technology",
+    "#gummietech"
+  ],
+  "alt_text": "A seven-slide carousel listing five research results from the week, each with its source, from a brain implant that decodes speech to why Bunsen burners do not sterilize a bench.",
+  "es": {
+    "domain": "esta semana",
+    "hook": "5 cosas que te perdiste esta semana",
+    "items": [
+      "Un solo implante cerebral descodifica habla y gestos a la vez.",
+      "Los vientos de los cuásares llevan 100 veces más potencia de la medida hasta ahora.",
+      "Ya se pueden imprimir estructuras de hielo en 3D a temperatura ambiente.",
+      "Presas de castor artificiales subieron la supervivencia del coho juvenil del 8% al 60%.",
+      "Los mecheros Bunsen no esterilizan una mesa de laboratorio: pueden empeorar la contaminación."
+    ],
+    "_en": "ab16cb3157c13418"
+  }
+}

@@ -49,12 +49,10 @@ import time
 from pathlib import Path
 
 import llm                       # forwards to gemini or groq per LLM_PROVIDER
-from render import ES_FIELDS, REPO_ROOT, shown
+from formats import es_fields, pieces, sections
+from render import REPO_ROOT, shown
 
 POSTS_DIR = REPO_ROOT / "posts"
-
-# `domain` is optional in the JSON; the rest are what post.html always shows.
-REQUIRED = tuple(f for f in ES_FIELDS if f != "domain")
 
 SLEEP_BETWEEN_CALLS = 5          # seconds; the free tier allows ~12/minute
 
@@ -96,15 +94,54 @@ is "semicristalino" — it came back once as "semicuadráticos", which means \
 layout, and a field that doubles overflows it.
 - "domain" is a 2-3 word field label. Translate it as well — it is shown to \
 the reader — lowercase unless it contains a proper noun.
+- A field whose English value is a LIST comes back as a list of the same \
+length, in the same order, one translated string per entry. Each entry is its \
+own slide; do not merge, split or reorder them.
 
 Post:
 {post}"""
 
 
+def value(post: dict, field: str) -> str | list[str] | None:
+    """A field's translatable content: a string, a list of them, or None.
+
+    A Breakdown's `mechanism` is a list with one slide per step, so both
+    shapes have to survive being fingerprinted, sent and checked.
+    """
+    raw = post.get(field)
+    if isinstance(raw, list):
+        return [str(v).strip() for v in raw if str(v).strip()] or None
+    return str(raw or "").strip() or None
+
+
+def required(post: dict) -> tuple[str, ...]:
+    """The fields this post's Spanish must carry to be usable.
+
+    `domain` is optional in the JSON, so a post without one is not missing a
+    translation; everything else on the page is required, because a block
+    short of a field is dropped whole.
+    """
+    return tuple(f for f in es_fields(post) if f != "domain")
+
+
 def source_fields(post: dict) -> dict:
-    """The English a translation is made from: the fields the page renders,
-    minus the ones this post leaves empty."""
-    return {f: str(post[f]) for f in ES_FIELDS if str(post.get(f, "")).strip()}
+    """The English a translation is made from: the fields this post's format
+    puts on the page, minus the ones it leaves empty.
+
+    A section whose entries are objects — a Signal's items — contributes only
+    its prose. The source, the URL and the peer-review flag beside it are not
+    translated: a journal name and a DOI are the same in both languages, and
+    a translated one would be wrong.
+    """
+    out: dict = {}
+    for field in ("domain", "hook"):
+        if (v := value(post, field)) is not None:
+            out[field] = v
+    for section in sections(post):
+        prose = pieces(post, section)
+        if prose:
+            out[section.field] = prose if section.many else prose[0]
+    return out
 
 
 def fingerprint(post: dict) -> str:
@@ -124,7 +161,7 @@ def stale_reason(post: dict) -> str:
     es = post.get("es")
     if not isinstance(es, dict):
         return "no Spanish yet"
-    if any(not str(es.get(f, "")).strip() for f in REQUIRED):
+    if any(value(es, f) is None for f in required(post)):
         return "the es block is incomplete"
     stamp = str(es.get(SOURCE_KEY, "")).strip()
     if stamp and stamp != fingerprint(post):
@@ -136,6 +173,23 @@ def stale_reason(post: dict) -> str:
     return ""
 
 
+def unstamped(post: dict) -> bool:
+    """Whether a complete `es` block carries no record of the English it came
+    from.
+
+    These were translated before this file stamped its work, so nothing can
+    tell whether their Spanish still matches. stale_reason() deliberately
+    leaves them alone, for the reason given there — but silence is not
+    agreement, and a summary that counted them as up to date claimed a check
+    that never ran. They are named instead, and clearing one is a --force
+    re-translation, which writes the stamp.
+    """
+    es = post.get("es")
+    return (isinstance(es, dict)
+            and all(value(es, f) is not None for f in required(post))
+            and not str(es.get(SOURCE_KEY, "")).strip())
+
+
 def check(paths: list[Path]) -> int:
     """Report what needs translating, without calling the model.
 
@@ -143,8 +197,17 @@ def check(paths: list[Path]) -> int:
     on every push, so a post whose English was corrected at the gate turns
     the build red instead of quietly keeping Spanish that says the old thing.
     Needs no API key, which is why it returns before main() asks for one.
+
+    Only a post whose stamp still matches is reported as up to date. An
+    unstamped one is neither stale nor verified, so it is counted apart: it
+    does not fail the build, because nothing about it has changed and failing
+    would make every push red until a day's calls were spent, but it is not
+    folded into the number that says everything is fine either.
     """
     stale: list[Path] = []
+    unverifiable: list[Path] = []
+    verified = 0
+
     for path in paths:
         try:
             post = json.loads(path.read_text())
@@ -152,7 +215,7 @@ def check(paths: list[Path]) -> int:
             print(f"  {path.name}: unreadable ({exc})")
             stale.append(path)
             continue
-        english = [f for f in REQUIRED if not str(post.get(f, "")).strip()]
+        english = [f for f in required(post) if value(post, f) is None]
         if english:
             # Not translatable at all, and not this file's problem to report:
             # render.py refuses the same record. Say so and move on.
@@ -162,13 +225,27 @@ def check(paths: list[Path]) -> int:
         if reason:
             print(f"  {path.name}: {reason}")
             stale.append(path)
+        elif unstamped(post):
+            unverifiable.append(path)
+        else:
+            verified += 1
 
-    if not stale:
-        print(f"All {len(paths)} up to date.")
-        return 0
-    print(f"\n{len(stale)} post{'s' * (len(stale) != 1)} to translate:\n"
-          "  python src/translate.py " + " ".join(shown(p) for p in stale))
-    return 1
+    if stale:
+        print(f"\n{len(stale)} post{'s' * (len(stale) != 1)} to translate:\n"
+              "  python src/translate.py " + " ".join(shown(p) for p in stale))
+    else:
+        print(f"All {verified} up to date.")
+
+    if unverifiable:
+        n = len(unverifiable)
+        print(f"\n{n} post{'s' * (n != 1)} carr{'y' if n != 1 else 'ies'} "
+              f"Spanish written before the {SOURCE_KEY} stamp existed, so "
+              f"nothing can tell whether it still matches the English.\n"
+              f"Re-translate and read what it prints to clear them:\n"
+              "  python src/translate.py --force "
+              + " ".join(shown(p) for p in unverifiable))
+
+    return 1 if stale else 0
 
 
 def translate(post: dict, api_key: str, model: str) -> dict:
@@ -190,14 +267,25 @@ def translate(post: dict, api_key: str, model: str) -> dict:
         sys.exit(f"The model returned {type(es).__name__}, not a JSON object. "
                  "Re-run to try again.")
 
-    missing = [f for f in fields if not str(es.get(f, "")).strip()]
+    missing = [f for f in fields if value(es, f) is None]
     if missing:
         sys.exit(f"Refusing to write. The model left these empty: "
                  f"{', '.join(missing)}. Re-run to try again.")
 
+    # A list field has to come back the same length: each entry is a slide,
+    # and a translation one short would silently drop one.
+    for f in fields:
+        if isinstance(source[f], list):
+            got = value(es, f)
+            if not isinstance(got, list) or len(got) != len(source[f]):
+                sys.exit(f"Refusing to write. {f!r} has {len(source[f])} "
+                         f"entries in English and came back with "
+                         f"{len(got) if isinstance(got, list) else 'not a list'}"
+                         f". Each one is a slide. Re-run to try again.")
+
     # Keys the page does not render are dropped rather than stored: an
     # unrendered translation is one nobody proofreads at the gate.
-    return {f: str(es[f]).strip() for f in fields}
+    return {f: value(es, f) for f in fields}
 
 
 def process(path: Path, api_key: str, model: str, force: bool,

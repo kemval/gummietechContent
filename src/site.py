@@ -39,7 +39,9 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from render import ES_FIELDS, REPO_ROOT, REQUIRED, slide_fields
+from formats import (body_text, entries, es_fields, missing_from_entries,
+                     pieces, required, sections, spec)
+from render import REPO_ROOT, colorway_pair
 
 POSTS_DIR = REPO_ROOT / "posts"
 TEMPLATE_DIR = REPO_ROOT / "templates"
@@ -79,14 +81,40 @@ def spanish(post: dict, name: str) -> dict:
             print(f"  warning: {name}: `es` is not an object — ignoring it")
         return {}
 
-    wanted = [f for f in ES_FIELDS if str(post.get(f, "")).strip()]
-    missing = [f for f in wanted if not str(es.get(f, "")).strip()]
+    wanted = [f for f in es_fields(post) if post.get(f)]
+    missing = [f for f in wanted if not es.get(f)]
     if missing:
         print(f"  warning: {name}: `es` is missing {', '.join(missing)} — "
               "the page stays English. Run `python src/translate.py "
               f"posts/{name}` to fill it in")
         return {}
     return {f: es[f] for f in wanted}
+
+
+def body_sections(post: dict, es_block: dict) -> list[dict]:
+    """Each body section as {label, pieces}, English paired with Spanish.
+
+    A section's label is only translated when the post's Spanish survived
+    validation: a Spanish heading over an English paragraph is the mixed
+    edition spanish() exists to prevent.
+    """
+    out = []
+    for section in sections(post):
+        english = pieces(post, section)
+        spanish_pieces = es_block.get(section.field) if es_block else None
+        if isinstance(spanish_pieces, str):
+            spanish_pieces = [spanish_pieces]
+        # A length mismatch means a translation lost or gained a slide.
+        # translate.py refuses to write one, so this is belt and braces: pair
+        # what lines up and leave the rest English rather than misalign them.
+        if not spanish_pieces or len(spanish_pieces) != len(english):
+            spanish_pieces = [""] * len(english)
+        out.append({
+            "en": section.en,
+            "es": section.es if es_block else "",
+            "pieces": list(zip(english, spanish_pieces)),
+        })
+    return out
 
 
 def t(en: str, es: str = "") -> Markup:
@@ -157,16 +185,21 @@ def load_posts() -> tuple[list[dict], int]:
             skipped += 1
             continue
 
-        missing = [f for f in REQUIRED if not post.get(f)]
+        missing = ([f for f in required(post) if post.get(f) is None
+                    or (f != "peer_reviewed" and not post.get(f))]
+                   + missing_from_entries(post))
         if missing:
             print(f"  skipped {path.name}: missing {', '.join(missing)}")
             skipped += 1
             continue
 
         # Never defaulted. An unlabelled preprint is the same credibility
-        # risk here as it is on slide 4, so the post stays off the site
-        # until someone says which it is.
-        if not isinstance(post.get("peer_reviewed"), bool):
+        # risk here as it is on the dark slide, so the post stays off the
+        # site until someone says which it is — per item for a Signal, whose
+        # five sources answer independently.
+        flags = [e.get("peer_reviewed") for e in entries(post)] \
+            or [post.get("peer_reviewed")]
+        if not all(isinstance(f, bool) for f in flags):
             print(f"  skipped {path.name}: peer_reviewed is not true or "
                   "false — an unlabelled preprint is a credibility risk")
             skipped += 1
@@ -174,7 +207,12 @@ def load_posts() -> tuple[list[dict], int]:
 
         # Same allowlist the slides use, so the page carries the post's
         # topic hue and an invented family name degrades identically.
-        lead, _ = slide_fields(post.get("colorway"))
+        lead, _ = colorway_pair(post.get("colorway"))
+
+        # Resolved before the body is built, because the body pairs each
+        # English piece with its Spanish and must use the block that passed
+        # validation rather than the raw one that may have just failed it.
+        es_block = spanish(post, path.name)
 
         post.update(
             slug=path.stem,
@@ -182,8 +220,29 @@ def load_posts() -> tuple[list[dict], int]:
             published=published,
             published_on=human_date(published),
             published_on_es=human_date_es(published),
-            es=spanish(post, path.name),
-            source_host=source_host(post["source_url"]),
+            es=es_block,
+            # The body in reading order, already paired with its Spanish, so
+            # post.html prints a Breakdown's six sections and a Drop's three
+            # from one loop. A section holds a list of pieces because a
+            # Breakdown's mechanism is one entry per slide.
+            body=body_sections(post, es_block),
+            # One list for every format: a Drop and a Breakdown have a
+            # single source, a Signal has one per item. §7.3 makes credit
+            # mandatory per source, so the page prints them all.
+            sources=[{"attribution": e["attribution"],
+                      "url": e["source_url"],
+                      "host": source_host(e["source_url"]),
+                      "peer_reviewed": e["peer_reviewed"]}
+                     for e in entries(post)]
+                    or [{"attribution": post["attribution"],
+                         "url": post["source_url"],
+                         "host": source_host(post["source_url"]),
+                         "peer_reviewed": post["peer_reviewed"]}],
+            # The hero flag is a claim about the whole post, so it is only
+            # shown where the whole post has one source. A Signal labels its
+            # preprints beside the items they belong to.
+            preprint=(not post.get("peer_reviewed", True)
+                      if not entries(post) else False),
             code_href=absolute(post["code_url"]) if post.get("code_url") else "",
             domain=post.get("domain", ""),
         )

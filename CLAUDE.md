@@ -71,6 +71,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      fact-check to a held post, then review.yml again) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive)
 src/
+  formats.py         what each carousel format is made of — the one table
   verify_feeds.py    checks every feed URL is live
   ingest.py          feeds → Google Sheets
   llm.py             picks the scoring backend from LLM_PROVIDER
@@ -185,9 +186,16 @@ Never commit `.env`, `credentials.json`, or any key.
 
 ## Rendering
 
-Slides render at **1080×1350** (4:5). Each slide is a `.slide` div with a
-unique id inside `templates/drop.html`; screenshot each individually with
-Playwright rather than capturing the page.
+Slides render at **1080×1350** (4:5). Each slide is a `.slide` div inside the
+template its `post_type` names — `templates/<post_type>.html`, falling back to
+`drop.html` with a warning; screenshot each individually with Playwright
+rather than capturing the page.
+
+**How many slides a format has is the template's business.** `render.py`
+discovers them with `querySelectorAll('.slide')` in document order rather than
+listing ids, so adding a format is adding a template. It refuses a template
+rendering fewer than `MIN_SLIDES` (4): below that there is nowhere to put the
+bookends, the rest slide and the catch.
 
 Design tokens are locked — do not change them or propose alternatives.
 They live in `templates/tokens.css`, which both `drop.html` and
@@ -216,7 +224,7 @@ field colour in the template — address colour by role (`--field`,
 set the hue, or the dark slide breaks the moment the palette rotates.
 
 `COLORWAYS` in `src/render.py` is the single source of truth. Each family is
-a `(lead, support)` pair, and every post renders
+a `(lead, support)` pair, and a five-slide Drop renders
 `lead · cream · support · dark · lead`:
 
 | family | topics | lead | support |
@@ -226,17 +234,29 @@ a `(lead, support)` pair, and every post renders
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
 | `ember` | energy, materials, engineering, chemistry | amber | pink |
 
-Invariants that keep the grid recognizable, and that a new family must respect:
+Invariants that keep the grid recognizable, and that a new family or a new
+format must respect. `render.rhythm()` is these rules as code, which is why a
+longer format needs no new palette decision:
 
 - `--ink` is the type, the frame and the dots on every light slide.
 - Slide 2 is always `--cream` — the rest slide.
-- Slide 4 (the catch) always drops to `--ink`; its frame and preprint flag
-  carry the post's lead hue.
-- Slides 1 and 5 share a field — the hook and CTA bookend the post.
-- A new lead or support hue must clear 4.5:1 against `--ink`.
+- **The catch is the second-to-last slide** and always drops to `--ink`; its
+  frame and preprint flag carry the post's lead hue. `proof.py` finds it by
+  its field rather than by its id, because it is slide 4 of a Drop and some
+  other number of a Breakdown.
+- **The first and last slides share a field** — the hook and CTA bookend the
+  post.
+- Everything between the rest slide and the catch alternates support and
+  lead. A longer format only ever extends that middle, which is the only part
+  it adds.
+- A new lead or support hue must clear 4.5:1 against `--ink`. `tests/` asserts
+  this for all five current hues rather than trusting it.
 
 `draft.py` picks the family and `render.py` resolves it, so an invented name
-falls back to `signal` with a warning rather than reaching the CSS.
+falls back to `signal` with a warning rather than reaching the CSS. A template
+asks for its own rhythm with `{% set fields = rhythm(5) %}`: the template is
+what knows how many slides it has, `render.py` is what knows what colour they
+go in, and neither has to be edited when the other changes.
 `render.py --colorway <name>` overrides the JSON at the human gate.
 
 ### Proofing the render
@@ -258,7 +278,18 @@ in a differently-built page is a layout nobody checked.
 python src/proof.py posts/2026-09-15-tides.json      # exits 1 on BLOCK
 ```
 
-Two measurement choices that are load-bearing:
+Three measurement choices that are load-bearing:
+
+- **What gets measured is decided by shape, not by a list of class names.**
+  It used to be a CSS selector naming every class, and a template with new
+  ones was simply not measured: `templates/signal.html` shipped its credit
+  line overlapping the wordmark by 18px on five slides, and a rank numeral
+  at 1.5:1, and this file reported PASS. Now every element inside the frame
+  that carries text and has no texted children is measured, so a new format
+  is covered without anyone remembering to register it. `CHROME` is still a
+  list, and that is fine: a class missing from *it* is merely held to the
+  stricter bar and says so loudly. Silence is the failure worth engineering
+  against.
 
 - **Collisions are tested against line boxes, not element boxes.** The
   element box of a left-aligned block spans the full column even when its
@@ -367,10 +398,54 @@ cosmetic miss, and failing the draft over it would waste the LLM call.
 `es` is not part of the contract either. `translate.py` adds it, `render.py`
 ignores it — the slides are English only. See **Web archive** below.
 
+**The body fields above are the Drop's.** `post_type` decides which set a
+record carries, and `src/formats.py` is the one table that says so — a
+Breakdown wants `the_question`, `the_intuition` and a `mechanism` list
+instead of `what_happened`, and an optional `recap`. It shares
+`why_it_matters` and `the_catch` with the Drop rather than inventing
+synonyms: the job of those two slides is identical, and sharing the names is
+what lets `site.py`, `translate.py` and the gate treat every format the same.
+
+**A Signal does not fit that shape at all, and the table says so.** It is
+five items with five sources, so `attribution`, `source_url` and
+`peer_reviewed` are properties of an entry rather than of the post — §7.3
+makes credit mandatory per source and §7.2 makes the preprint label
+mandatory, and one of five carrying them satisfies neither. `Format.entries`
+lists what each item must have and `missing_from_entries()` names the one
+that is short. Two consequences worth knowing before touching it:
+
+- **`peer_reviewed` is tested for presence, not truth.** `False` is the
+  whole point of the field, and a truthiness test would report a correctly
+  labelled preprint as missing one.
+- **A Signal has no catch, so it has no dark slide.** The dark slide is
+  where a post's caveat goes, and a roundup has five of them or none;
+  forcing one item to go dark would say something about that item that is
+  not true. `Format.catch` declares it and `proof.py` holds the render to
+  whatever the format claims.
+
+`formats.py` is its own module for the reason `llm_errors.py` is. Six places
+need the answer — `render.py` refuses a record missing a field, `proof.py`
+measures the word budget, `translate.py` knows what to translate, `site.py`
+what to print, `telegram.py` what to show at the gate, and the template what
+to lay out — and one of them cannot pay for it: `telegram.py` runs 96 times a
+day under `requests` and `python-dotenv` alone and must never import
+`render.py`. Do not put the table back there, and do not keep a second copy.
+
+Only the Drop is drafted by the pipeline. `docs` §4 splits the work by
+stakes — free-tier LLM for routine Drops, this Claude project for Breakdowns
+— so `draft.py` emits `post_type: "drop"` and a Breakdown is written by hand
+and rendered, proofed, fact-checked and gated exactly like any other post.
+
 `published_at` is not part of the contract and `draft.py` never emits it. It
 is added by hand, as `YYYY-MM-DD`, when the post actually goes live on
 Instagram, and it is the only thing that lets a post onto the public archive.
 `render.py` ignores it. See **Web archive** below.
+
+`metrics` is not part of the contract either. `telegram.py` writes it after
+the post is live — `asked_at` when it asks for the numbers, then `saves`,
+`shares`, `profile_visits` and `recorded_at` when you reply. `render.py` and
+`site.py` both ignore it, so nothing it holds reaches a slide or a page. See
+**Measuring** below.
 
 When `peer_reviewed` is false, the template must show the
 "Preprint — not yet peer-reviewed" flag. Enforce this in code, not by
@@ -527,6 +602,14 @@ constraints that shape it:
   border, which is what JPEG bands worst, and they are about to be recompressed
   again by Instagram. Never switch the media group to `photo` to get inline
   previews — Telegram previews a PNG document anyway.
+- **How many slides it sends is discovered, not counted.** `rendered_slides()`
+  globs `slide-*.png` and orders by the number, because how many slides a post
+  has is the template's business here exactly as it is in `render.py`. A fixed
+  `slide-1..5` list sent five of a Breakdown's eight and printed "sent 5
+  slides", which puts a person one tap from approving a carousel they saw half
+  of. A hole in the numbering sends nothing: that is a render that stopped
+  partway. `sendMediaGroup` takes 2–10 items, so a format longer than ten goes
+  in evened-out groups rather than 10 + a remainder Telegram would reject.
 - **The post stem is the only state between the halves,** carried in the
   button's `callback_data` (64 bytes; `slugify` caps a stem at 51). That is
   why `daily.yml` commits the draft *before* sending: `confirm` finds the

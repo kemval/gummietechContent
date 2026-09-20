@@ -35,8 +35,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from render import (COLORWAYS, HOOK_WORD_LIMIT, REPO_ROOT, WORD_LIMIT,
-                    load_post, open_page, render_html, slide_fields)
+from formats import preprint_claims, spec
+from render import (COLORWAYS, MIN_SLIDES, REPO_ROOT, colorway_pair,
+                    load_post, open_page, render_html, rhythm, word_budget)
 
 # The project's own invariant, from CLAUDE.md: "A new lead or support hue
 # must clear 4.5:1 against --ink." WCAG would allow 3:1 for text this large,
@@ -60,9 +61,18 @@ EPSILON = 0.5
 
 # Text the post supplies, as opposed to the fixed chrome. These are the ones
 # a draft can make too long and a colorway can make unreadable.
-CONTENT = ("hook", "slide-title", "slide-body", "flag",
-           "cta-handle", "cta-line", "source")
-CHROME = ("domain", "wordmark", "dots")
+# Chrome is the fixed furniture — the handle, the field label, the position
+# markers — held to a lower contrast bar because its `opacity: 0.75` is a
+# locked design decision and pink already sits at 3.26:1 there.
+#
+# This is still a list, and the list of what to *measure* was just removed
+# for being one. The difference is which way each fails: a class missing
+# from the old list was never measured at all, so signal.html shipped an
+# 18px overlap and a 1.5:1 watermark and this file said PASS. A class
+# missing from this one is merely held to the stricter bar and says so
+# loudly. Silence is the failure worth engineering against; a false BLOCK
+# gets fixed the morning it appears.
+CHROME = ("domain", "wordmark", "dots", "rank", "step-mark")
 
 # Absolutely positioned, and the only things flow content can collide with.
 # .hook carries `margin-bottom: 96px` in the template with the comment
@@ -92,9 +102,21 @@ MEASURE = """
     const fr = frame.getBoundingClientRect();
     const bw = px(getComputedStyle(frame).borderTopWidth);
 
-    const els = [...frame.querySelectorAll(
-      '.domain,.hook,.slide-title,.slide-body,.flag,.wordmark,.dots,' +
-      '.cta-handle,.cta-line,.source')].map(el => {
+    // Everything that carries text, found by shape rather than by a list of
+    // class names. The list was the bug: a new template's classes were
+    // simply not measured, so templates/signal.html shipped .item-source
+    // overlapping the wordmark on five slides and this file reported PASS.
+    // A format nobody has to remember to register is a format that cannot
+    // be forgotten.
+    //
+    // Leaves only. An element whose text is all in its children is a
+    // wrapper, and measuring it would re-report its children's geometry as
+    // its own. .dots carries no text and is included by name because it is
+    // a fixture everything else has to clear.
+    const texted = el => el.textContent.trim().length > 0;
+    const els = [...frame.querySelectorAll('*')].filter(el =>
+        (texted(el) && ![...el.children].some(texted)) ||
+        el.classList.contains('dots')).map(el => {
       const cs = getComputedStyle(el);
       // The element box of a left-aligned block spans the full column even
       // when its last line stops far short, so a block box is the wrong
@@ -211,14 +233,35 @@ class Report:
         return f"PROOF · {self.verdict}\n{body}" if body else "PROOF · PASS"
 
 
-def check_rhythm(slides: list[dict], expected: list[str], report: Report) -> None:
-    """lead · cream · support · dark · lead, or the grid stops reading as
-    one account. render.py resolves the names; this confirms they landed."""
+def check_rhythm(slides: list[dict], lead: str, support: str,
+                 has_catch: bool, report: Report) -> None:
+    """The rhythm rule, checked against the length the template rendered.
+
+    Where the catch falls is the format's business — a Drop ends catch then
+    CTA, a Breakdown with a recap slide ends catch, recap, CTA, and a Signal
+    has none — so the dark slide is located in the page and the rest of the
+    rhythm is checked against the rule *for that position*. What is not the
+    format's business, and is asserted here, is that the format has as many
+    dark slides as it says it does, that slide 2 is the cream rest slide,
+    that the bookends share the lead field, and that no two neighbours share
+    a field. Get any of those wrong and the grid stops reading as one
+    account.
+    """
     actual = [s["field"] for s in slides]
+    dark = [n for n, field in enumerate(actual, start=1) if field == "dark"]
+    wanted = 1 if has_catch else 0
+    if len(dark) != wanted:
+        report.block("colorway",
+                     f"{len(dark)} slide(s) drop to ink, expected {wanted}: "
+                     f"the dark slide is the catch, and this format "
+                     f"{'has one' if has_catch else 'has none'}")
+        return
+
+    expected = rhythm(lead, support, len(actual), dark[0] if dark else 0)
     if actual != expected:
         report.block("colorway",
                      f"slide fields are {' · '.join(actual)}, expected "
-                     f"{' · '.join(expected)}")
+                     f"{' · '.join(expected)} for a catch on slide {dark[0]}")
 
 
 def check_slide(slide: dict, report: Report) -> None:
@@ -242,12 +285,12 @@ def check_slide(slide: dict, report: Report) -> None:
         if out > EPSILON:
             report.block(where, f".{kind} crosses the ink frame by "
                                 f"{out:.0f}px — {el['text']!r}")
-        elif -out < TIGHT and kind in CONTENT:
+        elif -out < TIGHT and kind not in CHROME:
             report.fix(where, f".{kind} clears the frame by only "
                               f"{-out:.0f}px (want {TIGHT:.0f})")
 
         # Flow text against the absolutely positioned chrome.
-        if kind in CONTENT:
+        if kind not in CHROME:
             for name, fixture in fixtures.items():
                 if fixture["rect"]["w"] <= 0:
                     continue
@@ -260,65 +303,71 @@ def check_slide(slide: dict, report: Report) -> None:
                                       f"{clear:.0f}px (want {TIGHT:.0f})")
 
         ratio = contrast(el["color"], el["bg"], el["opacity"])
-        floor = MIN_CONTRAST if kind in CONTENT else MIN_CHROME_CONTRAST
+        floor = MIN_CONTRAST if kind not in CHROME else MIN_CHROME_CONTRAST
         if ratio < floor:
-            note = report.block if kind in CONTENT else report.fix
+            note = report.block if kind not in CHROME else report.fix
             note(where, f".{kind} is {ratio:.1f}:1 against its field "
                         f"(want {floor}:1) — this colorway is not readable")
 
 
-def check_preprint(slides: list[dict], peer_reviewed: bool,
-                   report: Report) -> None:
+def check_preprint(slides: list[dict], wanted: int, report: Report) -> None:
     """
     The flag is the one thing on the slides that is a claim about the source
     rather than about the subject, so its absence is never cosmetic.
     """
-    catch = next((s for s in slides if s["id"] == "slide-4"), None)
-    if catch is None:
-        report.block("slide-4", "missing from the render")
-        return
+    # Counted, not located. §7.2 is a per-claim rule, not a per-post one: a
+    # Drop and a Breakdown have one source and so at most one flag, and a
+    # Signal has five items with five independent answers. Counting is the
+    # check that reads the same for all of them, and it catches the failure
+    # that matters either way — a preprint that reached a slide unlabelled.
+    visible = [s for s in slides
+               if any(e["kind"] == "flag" and e["rect"]["w"] > 0
+                      and e["rect"]["h"] > 0 for e in s["els"])]
+    rendered = [s for s in slides
+                if any(e["kind"] == "flag" for e in s["els"])]
 
-    flag = next((e for e in catch["els"] if e["kind"] == "flag"), None)
-    if not peer_reviewed:
-        if flag is None:
-            report.block("slide-4", "peer_reviewed is false but no preprint "
-                                    "flag rendered")
-        elif flag["rect"]["w"] <= 0 or flag["rect"]["h"] <= 0:
-            report.block("slide-4", "the preprint flag rendered with no size")
-        else:
-            report.note("slide-4", "preprint flag present and visible")
-    elif flag is not None:
-        report.block("slide-4", "peer_reviewed is true but a preprint flag "
-                                "rendered anyway")
+    if len(rendered) != wanted:
+        report.block("preprint",
+                     f"{wanted} source(s) are not peer-reviewed but "
+                     f"{len(rendered)} slide(s) carry the flag")
+        return
+    if len(visible) != len(rendered):
+        report.block("preprint", "a preprint flag rendered with no size, so "
+                                 "it is on the slide but not on the screen")
+        return
+    if wanted:
+        where = ", ".join(s["id"] or "?" for s in visible)
+        report.note("preprint", f"{wanted} flag(s) present and visible "
+                                f"on {where}")
 
 
 def check_words(post: dict, report: Report) -> None:
     """render.py already warns on these; a warning in a log nobody reads is
     not a gate, so they ride into the report too."""
-    for field, limit in (("hook", HOOK_WORD_LIMIT),
-                         ("what_happened", WORD_LIMIT),
-                         ("why_it_matters", WORD_LIMIT),
-                         ("the_catch", WORD_LIMIT)):
-        count = len(str(post.get(field, "")).split())
+    for where, count, limit in word_budget(post):
         if count > limit:
-            report.fix("copy", f"{field} is {count} words (limit {limit})")
+            report.fix("copy", f"{where} is {count} words (limit {limit})")
 
 
 def proof(post: dict, colorway: str | None) -> Report:
     report = Report()
-    _, expected = slide_fields(colorway or post.get("colorway"))
 
     html = render_html(post, colorway)
     with open_page(html) as page:
         slides: list[dict[str, Any]] = page.evaluate(MEASURE)
 
-    if len(slides) != len(expected):
-        report.block("template", f"{len(slides)} slides rendered, expected "
-                                 f"{len(expected)}")
+    # The expected rhythm follows the rendered count, because the template
+    # owns how many slides a format has. What is checked is that the fields
+    # follow the rule for that many — a Drop of five and a Breakdown of nine
+    # are both wrong in the same way if they do not.
+    if len(slides) < MIN_SLIDES:
+        report.block("template", f"{len(slides)} slide(s) rendered; a post "
+                                 f"needs at least {MIN_SLIDES}")
         return report
+    lead, support = colorway_pair(colorway or post.get("colorway"))
 
-    check_rhythm(slides, expected, report)
-    check_preprint(slides, bool(post.get("peer_reviewed")), report)
+    check_rhythm(slides, lead, support, spec(post).catch, report)
+    check_preprint(slides, preprint_claims(post), report)
     for slide in slides:
         check_slide(slide, report)
     check_words(post, report)
