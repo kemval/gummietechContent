@@ -765,9 +765,30 @@ constants, so a local `send` offers neither — whoever ran it by hand is
 already at a machine that
 can re-run the checks.
 
+A third link, **Record it now**, sits under every publish button — the green
+one and the override alike — and points at `publish.yml`'s
+`workflow_dispatch`. It exists because a publish tap cannot be answered when
+it is made: `confirm` runs on the cron, so by the time it sees the tap the
+callback id is long past the seconds Telegram allows a bot to answer in, and
+the message edit that *is* the acknowledgement is a couple of hours away.
+Nothing visibly happens in between, which reads exactly like a bot that has
+stopped working rather than one that is asleep.
+
+So the fix is in two halves, and the copy is the larger one. `waiting_note()`
+says in the message, before the tap, that nothing will appear to happen, how
+long that lasts, and what the end of it looks like — a person who knows the
+silence is normal does not need it shortened. The link is for when they want
+it shortened anyway: two taps runs the poll, and the tap lands in under a
+minute. It is safe to tap early, twice, or with nothing tapped at all, for the
+same reason every other poll is — `confirm` is idempotent and a tap replays
+for 24 hours.
+
 Nothing gates a **local** `send` with no `--review` flags — the message says
 plainly that nothing checked the post, but the button still appears, because
-a person sending by hand is already in the loop.
+a person sending by hand is already in the loop. A local send offers no
+**Record it now** either, for `workflow_url()`'s reason above, and the
+waiting note drops its last sentence rather than pointing at a link that is
+not there.
 
 ## Measuring
 

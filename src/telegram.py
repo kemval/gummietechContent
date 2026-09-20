@@ -114,6 +114,19 @@ RECHECK_WORKFLOW = "recheck.yml"
 FIX_WORKFLOW = "fix.yml"
 FACTCHECK_REPORT = "factcheck"
 
+# The poll itself, offered beside every publish button as a third link.
+#
+# A tap cannot be answered when it is made: confirm runs on a cron, so by the
+# time it sees the tap the callback id is long past the seconds Telegram gives
+# a bot to answer in — see the note at the top of this file. Nothing visibly
+# happens, for up to a couple of hours, and a person who cannot tell a slow
+# pipeline from a broken one learns to distrust the button. The message now
+# says that outright, and this link is the way out of the wait: publish.yml
+# takes a plain workflow_dispatch, so running it is two taps from the chat and
+# the tap is picked up in under a minute. Idempotent like every other poll —
+# running it early, or twice, or with nothing tapped, does nothing at all.
+PUBLISH_WORKFLOW = "publish.yml"
+
 SLIDE_RE = re.compile(r"^slide-(\d+)\.png$")
 SIDECAR = "caption.txt"
 
@@ -333,9 +346,30 @@ def workflow_url(workflow: str) -> str | None:
     return f"{server}/{repo}/actions/workflows/{workflow}"
 
 
+def waiting_note(poll: str | None) -> str:
+    """What a publish tap does and does not look like, said before it is made.
+
+    The gap this closes is not latency, it is silence. confirm answers a tap
+    by editing the message, and it cannot do so until the cron next runs — so
+    for up to a couple of hours the button sits there looking unhandled, which
+    reads exactly like a bot that has stopped working. Saying so in advance is
+    most of the fix; the link is the rest.
+    """
+    note = ("Nothing visible happens when you tap — nothing is listening at "
+            "that moment, and that is normal. The button stays put until the "
+            "next poll, usually within a couple of hours; then it disappears "
+            "and a \u2705 with the date replies here. Tapping again while you "
+            "wait changes nothing.")
+    if poll:
+        note += (" To skip the wait, tap <b>Record it now</b> after the "
+                 "button above and run that poll yourself.")
+    return note
+
+
 def review_text(post: dict, stem: str,
                 reviews: list[tuple[str, str]] | None = None,
-                retry: str | None = None, fix: str | None = None) -> str:
+                retry: str | None = None, fix: str | None = None,
+                poll: str | None = None) -> str:
     """The copy blocks a person needs in hand to post the carousel."""
     e = html.escape
     reviews = reviews or []
@@ -419,19 +453,18 @@ def review_text(post: dict, stem: str,
             what.append("If you have already posted this to Instagram and the "
                         "slides are right, <b>Posted anyway</b> records that, "
                         "and says in the log that it went out held.")
+            what.append(waiting_note(poll))
             lines += [" ".join(what)]
         else:
             lines += [
                 "No approval button. Fix the post and send it again — or, if "
                 "it is already on Instagram and the slides are right, "
-                "<b>Posted anyway</b> records that over the hold."
+                "<b>Posted anyway</b> records that over the hold. "
+                + waiting_note(poll)
             ]
     else:
-        lines += [
-            "",
-            "Tap the button once it is live on Instagram. The archive picks "
-            "it up on its next poll, usually within a couple of hours.",
-        ]
+        lines += ["", "Tap the button once it is live on Instagram. "
+                      + waiting_note(poll)]
     return "\n".join(lines)
 
 
@@ -532,6 +565,9 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         # the report, find nothing it can act on, and change nothing.
         fix = (workflow_url(FIX_WORKFLOW)
                if FACTCHECK_REPORT in held else None)
+        # Offered on both keyboards, because both end in a tap nobody answers
+        # for a couple of hours. See PUBLISH_WORKFLOW.
+        poll = workflow_url(PUBLISH_WORKFLOW)
         if held:
             # A hold cannot stop the carousel reaching Instagram — that is
             # done by hand, outside this. All it can withhold is the record,
@@ -546,17 +582,22 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                 rows.append([{"text": "🔁 Re-run the checks", "url": retry}])
             rows.append([{"text": "⚠️ Posted anyway — record it",
                           "callback_data": override_data}])
+            if poll:
+                rows.append([{"text": "⏱ Record it now", "url": poll}])
             markup = {"inline_keyboard": rows}
-            links = ", ".join(n for n, on in (("fix", fix), ("re-check", retry))
-                              if on)
+            links = ", ".join(n for n, on in (("fix", fix), ("re-check", retry),
+                                              ("poll", poll)) if on)
             note = (f"HELD by {', '.join(held)}, override button"
                     + (f" + {links} link(s)" if links else ""))
         else:
-            markup = {"inline_keyboard": [[{"text": "✅ Posted to Instagram",
-                                            "callback_data": data}]]}
-            note = "button offered"
+            rows = [[{"text": "✅ Posted to Instagram",
+                      "callback_data": data}]]
+            if poll:
+                rows.append([{"text": "⏱ Record it now", "url": poll}])
+            markup = {"inline_keyboard": rows}
+            note = "button offered" + (" + poll link" if poll else "")
         send_message(token, chat_id,
-                     review_text(post, stem, reviews, retry, fix), markup)
+                     review_text(post, stem, reviews, retry, fix, poll), markup)
         print(f"  sent the review message — {note}")
     except TelegramError as exc:
         sys.exit(str(exc))
