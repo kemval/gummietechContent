@@ -210,6 +210,20 @@ def pieces(record: dict, section: Section) -> list[str]:
     return body_text(record, section.field, section.key)
 
 
+def post_preprint_flag(post: dict) -> bool:
+    """Whether the post itself carries one "not yet peer-reviewed" label.
+
+    False for a Signal whatever its items say, because a Signal has no
+    post-level `peer_reviewed` at all — `record` moved it onto the entries,
+    and `post.get("peer_reviewed", False)` on a record that never had the
+    field reads as an unreviewed post. render.py handed that straight to the
+    templates, so every Signal set the global flag and announced "preprint
+    flag ON (peer_reviewed is false)" at the gate about five peer-reviewed
+    papers. Only signal.html ignoring the variable kept it off the slides.
+    """
+    return not spec(post).entries and not post.get("peer_reviewed", False)
+
+
 def preprint_claims(post: dict) -> int:
     """How many slides must carry a "not yet peer-reviewed" label.
 
@@ -219,7 +233,7 @@ def preprint_claims(post: dict) -> int:
     """
     if spec(post).entries:
         return sum(1 for e in entries(post) if e.get("peer_reviewed") is False)
-    return 0 if post.get("peer_reviewed", False) else 1
+    return int(post_preprint_flag(post))
 
 
 def es_fields(post: dict) -> tuple[str, ...]:

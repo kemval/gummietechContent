@@ -254,6 +254,31 @@ def test_a_single_source_format_claims_one_flag_or_none():
                                    "peer_reviewed": True}) == 0
 
 
+def test_a_signal_has_no_post_level_preprint_flag():
+    """A Signal's record has no `peer_reviewed`, so reading one off the post
+    defaults to absent and reads as unreviewed.
+
+    render.py passed `not post.get("peer_reviewed", False)` to every
+    template, so a Signal of five peer-reviewed papers set the global flag
+    and announced "preprint flag ON" at the gate. Only signal.html ignoring
+    the variable kept the label off the slides — the first format to read it
+    would have shipped one.
+    """
+    assert render.post_preprint_flag(SIGNAL) is False
+    reviewed = {**SIGNAL,
+                "items": [{**SIGNAL["items"][0]}, {**SIGNAL["items"][1],
+                                                   "peer_reviewed": True}]}
+    assert render.post_preprint_flag(reviewed) is False
+    assert render.preprint_claims(reviewed) == 0
+
+
+def test_a_single_source_format_still_carries_its_own_flag():
+    assert render.post_preprint_flag({"post_type": "drop",
+                                      "peer_reviewed": False}) is True
+    assert render.post_preprint_flag({"post_type": "breakdown",
+                                      "peer_reviewed": True}) is False
+
+
 def test_only_the_claim_of_an_item_is_prose():
     """The source and the flag beside it are not translated or measured: a
     journal name is the same in both languages and a translated DOI is

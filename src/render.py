@@ -39,7 +39,8 @@ from playwright.sync_api import Page, sync_playwright
 # is where the rest of the shared vocabulary already lives.
 from formats import (DEFAULT_FORMAT, FORMATS, RECORD, Format, Section,
                      body_text, entries, es_fields, format_name,
-                     missing_from_entries, pieces, preprint_claims, required,
+                     missing_from_entries, pieces, post_preprint_flag,
+                     preprint_claims, required,
                      sections, spec, template_for)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -250,7 +251,10 @@ def render_html(post: dict, colorway: str | None = None) -> str:
     # "got multiple values for keyword argument".
     context = dict(post)
     context.update(
-        show_preprint_flag=not post.get("peer_reviewed", False),
+        # Not `not post["peer_reviewed"]`: a Signal has no such field,
+        # and formats.py is what knows that a roundup's flags belong to
+        # its items. signal.html never reads this.
+        show_preprint_flag=post_preprint_flag(post),
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
@@ -337,8 +341,11 @@ def main() -> int:
         outdir = REPO_ROOT / outdir
 
     print(f"Rendering {post_path.name} → {outdir}")
-    if not post.get("peer_reviewed"):
-        print("  preprint flag ON (peer_reviewed is false)")
+    # How many slides, not whether: a Signal flags per item, so "ON" alone
+    # said nothing about which of five claims is unreviewed.
+    if flags := preprint_claims(post):
+        print(f"  preprint flag ON — {flags} slide{'s' * (flags != 1)} "
+              f"must carry it")
 
     written = shoot(render_html(post, args.colorway), outdir)
 
