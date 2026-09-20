@@ -60,6 +60,7 @@ jobs:
         uses: ./.github/actions/resolve-post
         with:
           post: ${{ inputs.post }}
+          token: ${{ github.token }}
 
       # Without the token there is no applier, and the action's own failure
       # would read as a broken workflow rather than an unconfigured one.

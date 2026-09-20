@@ -28,6 +28,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read           # resolve-post reads which post the gate last sent
   id-token: write         # claude-code-action's default GitHub App auth
 
 jobs:
@@ -47,6 +48,7 @@ jobs:
         uses: ./.github/actions/resolve-post
         with:
           post: ${{ inputs.post }}
+          token: ${{ github.token }}
 
   review:
     needs: resolve

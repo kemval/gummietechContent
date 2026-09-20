@@ -558,11 +558,22 @@ own checkout, and what lets `recheck.yml` find it again days later.
 `recheck.yml` exists because re-running `daily.yml` is not the way back from a
 held post: `draft.py` with no argument takes the *next* queued row, so a
 re-run would skip the held post and spend tomorrow's story. Dispatched with a
-blank `post` input it re-reviews the one awaiting approval — the newest dated
-file in `posts/` without `published_at`. The date-prefix filter there is
-load-bearing rather than tidy: `posts/era.json` is the fixture from the first
-commit, has neither a prefix nor a `published_at`, and sorts after every real
-draft, so unfiltered it would be picked every time. That picking lives in
+blank `post` input it re-reviews the one awaiting approval.
+
+Which post that is used to mean the newest dated file in `posts/` without
+`published_at`, and the cadence decision made that answer wrong: at 3×/week,
+drafted ahead and buffered from the evergreen queue, several undated posts are
+the normal state rather than the broken one, and the newest of them is a
+buffered draft rather than the post a person is looking at. So the question is
+no longer "which draft is newest" but "which post is the person looking at",
+and the chat answers it — `review.yml` uploads a `reports-<stem>` artifact for
+every post it sends, so the newest surviving one names the post the gate last
+spoke about, which is the post whose message carries the buttons. It needs
+`actions: read` to ask; without a token it falls back to the old pick, which
+is right only while there is one undated draft. The date-prefix filter in that
+fallback is load-bearing rather than tidy: the `posts/era*.json` fixtures have
+neither a prefix nor a `published_at`, and sort after every real draft, so
+unfiltered one of them would be picked every time. That picking lives in
 `.github/actions/resolve-post`, because `fix.yml` has to answer "which post is
 held" identically or the two ways back repair different posts.
 

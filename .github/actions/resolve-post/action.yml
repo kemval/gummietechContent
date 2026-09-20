@@ -1,7 +1,7 @@
 name: Resolve the post
 description: >
   The post a phone-dispatched workflow should act on: the one it was given,
-  or the one awaiting approval. Outputs `post` (a path) and `stem`.
+  or the one the gate last spoke about. Outputs `post` (a path) and `stem`.
 
 # One definition, two callers — recheck.yml and fix.yml, which are the two
 # ways back from a held post and must never disagree about which post is
@@ -9,12 +9,35 @@ description: >
 # notify-failure.
 #
 # Typing a 52-character filename on a phone is not a workflow, so a blank
-# input means "the post that is waiting", which is the only one there ever is
-# in normal running.
+# input means "the post that is waiting".
+#
+# What "waiting" means changed on 2026-09-19. It used to mean the newest
+# dated post with no published_at, which worked because normal running left
+# exactly one. Then the cadence decision — The Drop 3x/week, drafted ahead
+# and buffered from the evergreen queue — made several undated posts the
+# normal state rather than the broken one. Under that, the newest is the
+# wrong answer: a buffered draft written after a post was held would steal
+# both ways back from the post the person is actually looking at, and the
+# "more than one waiting" warning would fire on every dispatch until it
+# meant nothing.
+#
+# So the question is no longer "which draft is newest" but "which post is the
+# person looking at", and the chat answers it: review.yml uploads a
+# reports-<stem> artifact for every post it sends, so the newest surviving
+# one names the post the gate last spoke about. That is the post whose
+# message carries the buttons. fix.yml already reads these artifacts to get
+# the report itself; this reads only their names.
 
 inputs:
   post:
     description: A post path, or blank to pick the one awaiting approval.
+    required: false
+    default: ''
+  token:
+    description: >
+      A token with `actions: read`, used to ask which post the gate last
+      reported on. Omit it and the pick falls back to the newest undated
+      draft, which is right only while there is one.
     required: false
     default: ''
 
@@ -36,7 +59,26 @@ runs:
       shell: bash
       env:
         POST: ${{ inputs.post }}
+        GH_TOKEN: ${{ inputs.token }}
       run: |
+        # Stems the gate has reported on, newest first, one per line. Any
+        # failure here — no token, no `actions: read`, GitHub down — leaves
+        # this blank and the pick falls back, because a missing hint must
+        # never be worse than not having asked. per_page=100 is not a
+        # window that can miss the current gate: the endpoint returns the
+        # newest artifacts first, and the run in question is minutes old.
+        GATE_STEMS=""
+        if [ -n "$GH_TOKEN" ]; then
+          GATE_STEMS=$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '[.artifacts[]
+                   | select(.expired | not)
+                   | select(.name | startswith("reports-"))]
+                  | sort_by(.created_at) | reverse | .[].name' \
+            2>/dev/null | sed 's/^reports-//') || GATE_STEMS=""
+        fi
+        export GATE_STEMS
+
         python3 <<'PY'
         import json
         import os
@@ -86,14 +128,31 @@ runs:
             sys.exit("::error::No post is awaiting approval — every dated "
                      "draft in posts/ already has published_at.")
 
+        # The gate's own answer, when it has one: the newest reported stem
+        # that is still undated. A stem whose post has since been published
+        # is skipped rather than ending the search — the buttons on an older
+        # message stay meaningful for as long as that post is unresolved.
+        by_stem = {p.stem: p for p in waiting}
+        for stem in os.environ.get("GATE_STEMS", "").split():
+            if stem in by_stem:
+                emit(by_stem[stem])
+                print(f"Acting on the post the gate last reported on: "
+                      f"{by_stem[stem]}")
+                if len(waiting) > 1:
+                    rest = ", ".join(str(p) for p in waiting
+                                     if p is not by_stem[stem])
+                    print(f"{len(waiting) - 1} other draft(s) undated, which "
+                          f"is the buffer, not a fault: {rest}")
+                raise SystemExit(0)
+
         if len(waiting) > 1:
-            # Normal running leaves exactly one. More means a post was held
-            # and never resolved, and silently picking the newest would bury
-            # the older one for good.
+            # No usable hint, so this is the old heuristic and the old
+            # warning: picking the newest can bury an older held post.
             others = ", ".join(str(p) for p in waiting[:-1])
-            print(f"::warning::{len(waiting)} posts are awaiting approval. "
+            print(f"::warning::{len(waiting)} posts are awaiting approval and "
+                  f"no surviving report says which one the gate last sent. "
                   f"Taking the newest; still waiting: {others}")
 
         emit(waiting[-1])
-        print(f"Acting on the post awaiting approval: {waiting[-1]}")
+        print(f"Acting on the newest post awaiting approval: {waiting[-1]}")
         PY
