@@ -25,3 +25,4 @@ site/
 
 # Generated output
 graphify-out/
+.mypy_cache/

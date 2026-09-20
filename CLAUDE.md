@@ -82,8 +82,12 @@ src/
   render.py          JSON + template → PNGs
   proof.py           measures the rendered layout — frame, contrast, flag
   site.py            published posts → static web archive
-  telegram.py        sends a rendered post for approval; reads the tap back
+  telegram.py        sends a rendered post for approval; reads the tap back,
+                     and asks a settled post for its Instagram numbers
+  learn.py           the metrics report — what to cut, what to double
 feeds/               *.yaml source lists by tier
+tests/               pytest over the pure functions; every case is a
+                     post-mortem — see **When something breaks**
 posts/               drafted post JSON
 templates/
   tokens.css         the locked palette and type stack — included by both
@@ -767,11 +771,34 @@ and loads `telegram.py` under them — that list is maintained by hand against
 `telegram.py`'s imports, and the day it fell behind, `confirm` died at module
 load on every poll for a day.
 
-It is deliberately not a test suite. It catches the class of break that used
-to surface at 06:17 — a missing dependency, an import cycle, a template that
-stops rendering, Spanish left behind by a correction. It cannot catch anything
-that needs a real run: Telegram's message cap, a checkout resolving to the
-wrong SHA, a provider's 429. Green is not safe, it is only "nothing obvious".
+That job is deliberately not a test suite: it asks whether the pipeline still
+runs end to end, and it catches the class of break that used to surface at
+06:17 — a missing dependency, an import cycle, a template that stops
+rendering, Spanish left behind by a correction.
+
+**The test suite is a third job**, `tests`, over `tests/` with pytest. It asks
+a different question — does this function still do what the post-mortem says
+it must — which is why it is a job of its own rather than more steps in
+`smoke`: a red there names a stage, a red here names a behaviour. Run it with
+`python -m pytest`; `requirements-dev.txt` pulls in `requirements.txt` and
+adds pytest, and nothing in it touches the network, an LLM or a browser.
+
+Every test in it is a case this repository has already got wrong once. That
+is the entry criterion, and it is what keeps the suite from growing into
+something nobody reads:
+
+- `resolve_paper` walking into a paper's own reference list and crediting
+  Wegst et al. (2014) on a 2026 story (2026-09-18).
+- A fact-check held by its own closing summary of having found nothing.
+- Spanish reported as up to date on fifteen posts nothing could check.
+- `--evergreen` re-drafting the tides post, still #1 in the queue.
+- A metrics reply silently dropped because the mark moved behind an emoji.
+- Five of a Breakdown's eight slides sent to the gate, reported as five.
+
+What none of the three jobs can catch, so nobody mistakes green for safe:
+anything that needs a real run — Telegram's message cap, a checkout resolving
+to the wrong SHA, a provider's 429. Green is not safe, it is only "nothing
+obvious".
 
 Note that commits pushed by the workflows themselves use `GITHUB_TOKEN`, which
 by design does not trigger other workflows, so a bot-committed draft is not

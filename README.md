@@ -121,6 +121,17 @@ block, machine-written by `translate.py` on the same free LLM tier as
 scoring, so read it before the post goes live — it lands on a permalink.
 Posts without a complete `es` block simply stay English.
 
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+Offline and fast — no network, no LLM, no browser. Every test is a case the
+pipeline has already got wrong once, which is the bar for adding one. CI runs
+them on every push alongside the end-to-end smoke check.
+
 ## Verify feeds
 
 Feed URLs move. Check which ones are live before relying on them:

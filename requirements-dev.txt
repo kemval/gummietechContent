@@ -1,0 +1,4 @@
+# Test-only. The pipeline never installs this: requirements.txt is the
+# runtime surface, and publish.yml installs a hand-kept subset of that.
+-r requirements.txt
+pytest>=8.3.0
