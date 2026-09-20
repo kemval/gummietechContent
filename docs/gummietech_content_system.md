@@ -268,12 +268,42 @@ Most expose RSS at `/news/feed`, `/rss`, or `/feed`. Verify each URL loads befor
 
 ### Tier 2 — Preprints (genuinely ahead of the news cycle)
 
-- **arXiv API** — free, no key. Categories: `cs.AI`, `cs.LG`, `cs.RO`, `quant-ph`, `cond-mat.mtrl-sci`, `astro-ph`. Sort by `submittedDate`.
-- **bioRxiv / medRxiv API** — free, JSON.
-- **Papers with Code** and **Hugging Face Daily Papers** — free, pre-filtered for traction, cuts arXiv's noise.
-- **Semantic Scholar API** — free key, exposes citation velocity to spot papers suddenly getting picked up.
+Built 2026-09-19 as `feeds/tier2_preprints.yaml`: seven arXiv categories and
+three bioRxiv subjects. This is the tier where the plan and the build diverge
+most, so what follows is what was wired in and why — the measurements behind
+each choice are in the feed file's header and are not repeated here.
+
+- **arXiv, over `rss.arxiv.org`, not the API.** The API this section
+  originally named (`export.arxiv.org/api/query`, `sortBy=submittedDate`) was
+  tried first and abandoned: every category query came back `HTTP 429 Rate
+  exceeded` or tarpitted to the timeout, and it stayed throttled across a
+  five-minute gap, so it is a penalty an unattended 2-hourly job cannot
+  carry. The daily announcement feed is static, answers in under a second,
+  and costs nothing but the weekend — arXiv announces nothing Saturday or
+  Sunday and says so in `<skipDays>`.
+- **Categories: `cs.RO`, `cond-mat.mtrl-sci`, `quant-ph`, `astro-ph.EP`,
+  `astro-ph.SR`, `physics.app-ph`, `physics.bio-ph`.** Not `cs.AI` and
+  `cs.LG`, which this section named first. They are 241 submissions a day
+  between them, Tier 1 already carries seven AI feeds from the labs
+  themselves, and they are the worst fit for the `visual` scoring axis. What
+  preprints usefully add is the half Tier 1 covers worst: materials, planets,
+  applied physics, robots and biophysics.
+- **bioRxiv, three subjects, not `subject=all`.** Bioengineering, biophysics
+  and synthetic biology. The subject slug is the volume control; `all` is two
+  days of mostly molecular biology with nothing to photograph.
+- **medRxiv is deliberately not wired in.** It is unreviewed clinical
+  research, and a wrong medical claim on a public slide is the highest-harm
+  mistake this account can make. Layer 3b verifies a post against its source;
+  here the source itself is the thing that has not been checked.
+- **Not yet wired in:** Papers with Code and Hugging Face Daily Papers (free,
+  pre-filtered for traction, would cut arXiv's noise) and the Semantic
+  Scholar API (free key, exposes citation velocity). Both remain worth
+  adding; neither is a feed, so each is code rather than a YAML entry.
 
 ⚠️ **Preprints are not peer-reviewed.** Always label them as such on-slide. See §7.
+Every host in this tier is in `draft.py`'s `PREPRINT_HOSTS`, so an item from
+it is `peer_reviewed: false` whatever Crossref or the model says, and the
+template is required to show the flag.
 
 ### Tier 3 — Community signal (where things go viral first)
 

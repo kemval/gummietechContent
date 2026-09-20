@@ -133,13 +133,35 @@ Offline and fast — no network, no LLM, no browser. Every test is a case the
 pipeline has already got wrong once, which is the bar for adding one. CI runs
 them on every push alongside the end-to-end smoke check.
 
-## Verify feeds
+## Feeds
 
-Feed URLs move. Check which ones are live before relying on them:
+Three tiers in `feeds/`, by how close a source is to where news is born
+(`docs` §3):
+
+| File | Sources | What it is |
+|---|---|---|
+| `tier1_primary.yaml` | 51 | Labs, agencies, company newsrooms, journal press feeds |
+| `tier2_preprints.yaml` | 10 | arXiv and bioRxiv — papers, not coverage of them |
+| `tier3_signal.yaml` | 2 | Where a story is already being reacted to |
+
+Tier 2 is the one that pays for `draft.py` twice over: every item is the
+paper itself, so there is no news article to get behind, and every host is in
+`PREPRINT_HOSTS` — the post is `peer_reviewed: false` whatever Crossref says
+and the slide must carry the flag. It arrives over `rss.arxiv.org`, the daily
+announcement, rather than the arXiv API, which throttled every category query
+past what an unattended 2-hourly job can absorb. Nothing is announced at a
+weekend, so those seven feeds legitimately verify as 0 entries on a Saturday
+or a Sunday. The feed file's header carries the measurements.
+
+Feed URLs move constantly. Check which ones are live before relying on them,
+and always after editing a tier:
 
 ```bash
-python src/verify_feeds.py
+python src/verify_feeds.py            # -v for every URL, not just the failures
 ```
+
+The `feed-scout` agent finds where a dead feed moved and proposes the
+corrected YAML; you still run the checker and commit.
 
 ## Budget
 
