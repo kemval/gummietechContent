@@ -864,10 +864,19 @@ composite action called from an `if: failure()` step at the end of every
 scheduled workflow, and it posts the run URL to the same chat the gate uses.
 It lives in one file for the reason `review.yml` does. Two details:
 
-- **`publish.yml` passes `hourly: 'true'`.** It polls 96 times a day, so a
-  persistent break would send 96 identical messages and teach a person to mute
-  the bot — which costs more than the alert is worth. Only the first poll of
-  each hour speaks.
+- **It speaks on every failed run, `publish.yml`'s poll included.** It used
+  to take an `hourly: 'true'` from `publish.yml`, which silenced any run
+  starting after minute 15 — the throttle that kept a quarter-hourly cron
+  from sending 96 identical messages a day and teaching a person to mute the
+  bot. That check was a proxy for "the first poll of the hour", and it was
+  only ever equivalent while the polls landed on :00/:15/:30/:45. At the
+  cadence the free tier actually delivers (above) the runs land at whatever
+  minute they like, and six of the eight measured would have been silenced —
+  a one-off failure as readily as a persistent one. An action that exists
+  because failures were invisible cannot drop three alerts in four, and the
+  spam it insured against is now capped by the platform at about eight
+  messages a day. A stateless step cannot tell a repeat from a first
+  sighting, so the throttle is gone rather than rebuilt.
 - **Missing credentials are a no-op, not a second failure.** The point is to
   make a break visible, never to add one on top of it.
 

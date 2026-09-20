@@ -4,8 +4,8 @@ description: >
   step guarded by `if: failure()`.
 
 # One definition, four callers — the same reasoning that put the gate in
-# review.yml. A copy per workflow is four places to forget when the message,
-# the link or the throttle changes.
+# review.yml. A copy per workflow is six places to forget when the message
+# or the link changes.
 #
 # Failures here were silent: they showed up only when somebody opened the
 # Actions tab, and a dead ingest is invisible until the queue dries up and a
@@ -14,6 +14,20 @@ description: >
 #
 # With the secrets unset the request goes nowhere and exits clean: this must
 # never turn a real failure into a second, more confusing one.
+#
+# It speaks on every failed run, including publish.yml's poll. It used to
+# carry an `hourly` input that silenced any run starting after minute 15,
+# because publish.yml asked for a quarter-hourly cron and a persistent break
+# would then have sent 96 identical messages a day. That check was a proxy
+# for "the first poll of the hour" and only ever matched while the polls
+# really landed on :00/:15/:30/:45. The free tier delivers roughly one run
+# every two hours at whatever minute it likes (CLAUDE.md measures eight in
+# 19.5 hours: 06:04, 10:52, 14:01, 17:15, 19:24, 21:31, 23:30, 01:36 UTC),
+# so the throttle silenced six of those eight — and it silenced a one-off
+# failure exactly as readily as a persistent one. An action that exists
+# because failures were invisible must not drop three alerts in four. The
+# spam it guarded against is now capped by the platform at about eight
+# messages a day, which is the alert working rather than the alert shouting.
 
 inputs:
   bot_token:
@@ -22,14 +36,6 @@ inputs:
   chat_id:
     description: TELEGRAM_CHAT_ID.
     required: true
-  hourly:
-    description: >
-      Speak only in the first quarter of each hour. For publish.yml, which
-      polls 96 times a day: a persistent break would send 96 identical
-      messages and teach a person to mute the bot, which costs more than the
-      alert is worth.
-    required: false
-    default: 'false'
 
 runs:
   using: composite
@@ -38,14 +44,9 @@ runs:
       env:
         BOT_TOKEN: ${{ inputs.bot_token }}
         CHAT_ID: ${{ inputs.chat_id }}
-        HOURLY: ${{ inputs.hourly }}
         WORKFLOW: ${{ github.workflow }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
-        if [ "$HOURLY" = "true" ] && [ "$(date -u +%M)" -ge 15 ]; then
-          echo "Failed, but staying quiet: not the first poll of the hour."
-          exit 0
-        fi
         if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
           echo "No Telegram credentials — nothing to notify."
           exit 0
