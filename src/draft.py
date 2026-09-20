@@ -129,7 +129,11 @@ bottleneck it removes or the assumption it breaks>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
 source: sample size, conditions, what was not tested. Never invent one, and \
 never overstate it>",
-  "caption": "<one sentence for the Instagram caption>",
+  "caption": "<two sentences. The first states the finding and carries the \
+words a reader would actually search for, spelled out in plain prose — \
+Instagram indexes caption text, so the keywords earn their place here and \
+not only in the hashtags. The second is a question to the reader about the \
+finding, and the caption ends on it>",
   "keywords": ["<3 short topic keywords>"],
   "hashtags": ["#<4 hashtags, lowercase, last one #gummietech>"],
   "alt_text": "<one sentence describing the carousel for screen readers. \
