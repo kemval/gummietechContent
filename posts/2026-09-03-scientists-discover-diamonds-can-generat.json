@@ -29,5 +29,8 @@
     "what_happened": "Investigadores de la Universidad de Hong Kong emplearon exfoliación de borde para crear membranas de diamante policristalino flexibles que generan electricidad al doblarse.",
     "why_it_matters": "Rompe la suposición centenaria de que el diamante no es piezoeléctrico, convirtiéndolo de un soporte estructural pasivo a un material eléctrico activo.",
     "the_catch": "El voltaje proviene de los límites entre los pequeños cristales, no de la propia estructura del diamante, por lo que se requieren membranas policristalinas y aún no existe un dispositivo funcional."
+  },
+  "metrics": {
+    "asked_at": "2026-09-20"
   }
 }
