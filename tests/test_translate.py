@@ -103,3 +103,35 @@ def test_check_separates_verified_from_unverifiable(posts_dir, capsys):
     assert code == 0                       # nothing is stale, so CI stays green
     assert "All 1 up to date" in out       # not "All 2"
     assert "1 post carries Spanish written before" in out
+
+
+def test_process_reaches_the_model_on_a_post_that_needs_it(posts_dir,
+                                                           monkeypatch):
+    """`translate.py <file>` ran its own guard against a name that had moved
+    into formats.py, so it raised NameError on the first post of every run.
+
+    --check kept CI green — it has its own copy of that loop — while the
+    drafting run's translate step and fix.yml's re-translate step had not
+    worked since (a22c022). Nothing else here calls process(), which is how
+    a guard that never returned went a week unnoticed.
+    """
+    _, write = posts_dir
+    path = write("2026-09-20-x.json", **post())
+
+    monkeypatch.setattr(translate, "translate",
+                        lambda p, k, m: {f: f"es-{f}"
+                                         for f in translate.source_fields(p)})
+    assert translate.process(path, "key", "model", force=False, dry_run=True)
+
+
+def test_process_skips_a_post_whose_english_is_short(posts_dir, capsys):
+    """A list field is a list of slides: `str(post.get(f))` called an empty
+    `mechanism` present, because `str([])` is truthy-looking prose."""
+    _, write = posts_dir
+    path = write("2026-09-20-y.json",
+                 **post(post_type="breakdown", the_question="Q?",
+                        the_intuition="I.", mechanism=[]))
+
+    assert not translate.process(path, "key", "model", force=False,
+                                 dry_run=True)
+    assert "missing mechanism in English" in capsys.readouterr().out

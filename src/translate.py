@@ -297,9 +297,15 @@ def process(path: Path, api_key: str, model: str, force: bool,
         print(f"  skipped {path.name}: not valid JSON ({exc})")
         return False
 
-    missing = [f for f in REQUIRED if not str(post.get(f, "")).strip()]
+    # The same question check() asks, through the same helpers: a list field
+    # is a list of slides, not a string, so `str(post.get(f))` would call a
+    # Breakdown's populated `mechanism` present and an empty one present too.
+    # This read the module-level REQUIRED that moved into formats.py as
+    # required(), and raised NameError on the first post of every run for as
+    # long as it did — --check has its own copy of the loop and stayed green.
+    missing = [f for f in required(post) if value(post, f) is None]
     if missing:
-        print(f"  skipped {path.name}: missing {', '.join(missing)}")
+        print(f"  skipped {path.name}: missing {', '.join(missing)} in English")
         return False
 
     reason = stale_reason(post)
