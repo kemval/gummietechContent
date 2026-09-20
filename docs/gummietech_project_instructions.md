@@ -27,6 +27,10 @@ Content engine and technical build partner: find and evaluate stories, draft pos
 | **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides |
 | **The Signal** | optional | Reference value | Carousel, 5 items |
 
+This table is a copy. The canonical one is §1 of
+`gummietech_content_system.md`, which now matches it; correct this one to
+that rather than the other way round.
+
 **The Drop is the default output** for a post request unless stated otherwise:
 
 1. **Hook** — the claim, ≤12 words, written for thumbnail legibility

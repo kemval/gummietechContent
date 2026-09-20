@@ -34,13 +34,29 @@ Lock these before automating anything. Automation amplifies whatever format it i
 
 ### Post types
 
-| Type | Frequency | Purpose | Format |
-|---|---|---|---|
-| **The Drop** | 4–5×/week | Breaking news, fast | Carousel, 5 slides |
-| **The Breakdown** | 1–2×/week | Explain a concept behind a recent story | Carousel, 8–10 slides |
-| **The Signal** | 1×/week | Weekly roundup: "5 things you missed" | Carousel or Reel |
+This table is canonical. `gummietech_project_instructions.md` carries a copy
+because it is pasted into a project's Instructions field; if the two ever
+disagree again, this one wins and the other is corrected to match.
 
-### The Drop — 5-slide template (the daily engine)
+| Type | Frequency | Purpose | Format | Made by |
+|---|---|---|---|---|
+| **The Drop** | 3×/week | Reach | Carousel, 5 slides | pipeline |
+| **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | by hand |
+| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | pipeline |
+| **The Signal** | optional | Reference value | Carousel, 5 items | pipeline |
+
+Fixed 2026-09-19, replacing a 4–5×/week Drop with no Build at all. The account
+is an inbound-demand funnel for software and AI-automation build services
+(see `gummietech_project_instructions.md`), and The Build is the only pillar
+whose job is conversion rather than reach — a science feed that never shows
+the work behind it is a magazine, which is the thing this is explicitly not.
+
+**The Build is deliberately outside the pipeline.** It is video: recorded,
+cut and captioned by a person. Nothing in `src/` will ever produce one, and
+the automation's job is to cost so little attention that the two reels a week
+are affordable.
+
+### The Drop — 5-slide template (the reach engine)
 
 1. **Hook** — the claim in huge type, one visual. *"A robot just learned to fold laundry from watching 3 videos."*
 2. **What happened** — 25 words maximum.
