@@ -176,7 +176,36 @@ a { color: inherit; }
   margin-bottom: 14px;
 }
 
-.foot { margin-top: 60px; font-size: 15px; opacity: 0.7; }
+/* ---------- the pitch ----------
+   The archive is the one link Instagram makes clickable, so it is also the
+   only place a reader can find out who makes this and ask for something to
+   be built. Borrowed from the slides on purpose: the 10px ink frame and the
+   44px radius are the account's signature element, so the block reads as
+   part of the same thing rather than an ad bolted to the bottom.
+
+   Fixed prose in the template, the same on every page. Nothing here is per
+   post, which is what keeps §6b's "not a blog" rule intact. */
+.pitch {
+  margin-top: 64px;
+  border: 10px solid var(--ink); border-radius: 44px;
+  padding: 30px 32px;
+}
+.pitch h2 {
+  font-family: var(--display); font-weight: 800;
+  font-size: 26px; letter-spacing: -0.025em; margin-bottom: 10px;
+}
+.pitch p { max-width: 52ch; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.cta {
+  display: inline-block;
+  background: var(--ink); color: var(--cream);
+  font-family: var(--body); font-weight: 700;
+  font-size: 15px; padding: 11px 20px; border-radius: 999px;
+  text-decoration: none;
+}
+.cta.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 3px var(--ink); }
+
+.foot { margin-top: 40px; font-size: 15px; opacity: 0.7; }
 
 @media (min-width: 560px) {
   .hero .hook { font-size: 50px; }
@@ -205,6 +234,20 @@ a { color: inherit; }
 {% endif %}
   </header>
 {% block content %}{% endblock %}
+{% block pitch %}
+  <aside class="pitch">
+    <h2>{{ t("This archive builds itself.",
+             translated and "Este archivo se construye solo.") }}</h2>
+    <p>{{ t("Every page here is written by a pipeline: it reads research feeds every two hours, scores them with a language model, drafts the slides from the paper rather than the press release, checks each claim against the source, renders the carousel, and holds the whole thing until a person approves it.",
+            translated and "Cada página de aquí la escribe un pipeline: lee fuentes de investigación cada dos horas, las puntúa con un modelo de lenguaje, redacta las diapositivas a partir del paper y no del comunicado de prensa, contrasta cada afirmación con la fuente, renderiza el carrusel y lo retiene hasta que una persona lo aprueba.") }}</p>
+    <p class="row">
+      <a class="cta" href="{{ base }}about/">{{ t("How it works",
+           translated and "Cómo funciona") }}</a>
+      <a class="cta ghost" href="https://www.instagram.com/gummietech/">{{ t("Have one built",
+           translated and "Que te construyan uno") }}</a>
+    </p>
+  </aside>
+{% endblock %}
   <p class="foot">
     <a href="https://www.instagram.com/gummietech/">@gummietech</a> —
     {{ t("science, technology and engineering, explained by someone whose code also crashes.",

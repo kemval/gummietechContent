@@ -292,6 +292,19 @@ def build(posts: list[dict], outdir: Path) -> None:
     )
     print(f"  wrote index.html ({len(posts)} post{'s' * (len(posts) != 1)})")
 
+    # The one page that is not a post. §6b keeps every page a pure function
+    # of the drafting JSON so that publishing costs no prose; this one costs
+    # it once, in the template, and does not grow with posts/. It is here
+    # because the archive is the only link Instagram makes clickable, so it
+    # is the only place a reader can reach anything but the paper.
+    about = outdir / "about"
+    about.mkdir()
+    (about / "index.html").write_text(
+        env.get_template("about.html").render(
+            base="../", translated=bool(translated))
+    )
+    print("  wrote about/index.html")
+
     post_template = env.get_template("post.html")
     for post in posts:
         page = outdir / post["slug"]

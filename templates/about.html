@@ -1,0 +1,76 @@
+{% extends 'site_base.html' %}
+
+{#
+   The one page on the archive that is not a post.
+
+   §6b's rule is that a page must be a pure function of the drafting JSON,
+   so that no post costs prose to publish. This page costs prose exactly
+   once: it is fixed text in the template, it does not grow with posts/,
+   and nothing here is written per carousel. What it is for is the other
+   half of §6 — the archive is the only link Instagram makes clickable, so
+   it is the only place a reader can find out what built the thing they
+   just read and ask for one.
+
+   Every claim below is a description of the pipeline in this repository.
+   Keep it that way: an account whose whole asset is credibility cannot
+   advertise a capability it does not have.
+#}
+
+{% block title %}How this runs — gummietech{% endblock %}
+{% block description %}The automated pipeline that researches, writes, fact-checks and renders every @gummietech carousel.{% endblock %}
+
+{# This page is the pitch, so it does not also carry the footer version. #}
+{% block pitch %}{% endblock %}
+
+{% block masthead %}
+    <a class="back" href="{{ base }}">{{ t("← all posts", "← todos los posts") }}</a>
+{% endblock %}
+
+{% block content %}
+  <article>
+    <div class="hero panel" style="--accent: var(--pink)">
+      <h1 class="hook">{{ t("A carousel a day, written by a pipeline and approved by a person.",
+                            translated and "Un carrusel al día, escrito por un pipeline y aprobado por una persona.") }}</h1>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("What it does", translated and "Qué hace") }}</h2>
+      <p>{{ t("Every two hours it reads dozens of research feeds — university newsrooms, journal press offices, lab blogs — and drops the funding rounds and partnership announcements before they cost anything. What survives is scored by a language model on four axes: is it new, can it be explained in five slides, is there anything to look at, and does it break an intuition.",
+              translated and "Cada dos horas lee decenas de fuentes de investigación — gabinetes de prensa universitarios, oficinas de revistas, blogs de laboratorio — y descarta las rondas de financiación y los anuncios de alianzas antes de que cuesten nada. Lo que sobrevive lo puntúa un modelo de lenguaje en cuatro ejes: si es nuevo, si se puede explicar en cinco diapositivas, si hay algo que mirar y si rompe una intuición.") }}</p>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("It reads the paper, not the press release", translated and "Lee el paper, no el comunicado") }}</h2>
+      <p>{{ t("Most feeds are news about papers, and news coverage inverts mechanisms, overstates what a result overturns, and quotes whoever gave the interview. So before writing anything, the pipeline digs the DOI out of the page, asks Crossref who actually wrote the work, and drafts from the abstract — with the coverage demoted to context and the first author, not the press office, on the credit line.",
+              translated and "La mayoría de las fuentes son noticias sobre papers, y la cobertura invierte mecanismos, exagera lo que un resultado derriba y cita a quien dio la entrevista. Así que antes de escribir nada, el pipeline extrae el DOI de la página, pregunta a Crossref quién firmó realmente el trabajo y redacta desde el resumen — con la cobertura relegada a contexto y el primer autor, no el gabinete de prensa, en el crédito.") }}</p>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("Then it tries to prove itself wrong", translated and "Después intenta demostrarse equivocado") }}</h2>
+      <p>{{ t("A draft is re-fetched and checked claim by claim against its source: every number and name has to appear there, the limitation on slide four has to be one the paper states about itself, and the researchers' hedges have to survive onto the slide. A second check measures the rendered image — text crossing the frame, contrast under 4.5 to 1, a preprint label pushed out of view. A source that cannot be read is a hold, not a pass.",
+              translated and "Cada borrador se vuelve a descargar y se contrasta afirmación por afirmación con su fuente: cada cifra y cada nombre tienen que aparecer ahí, la limitación de la cuarta diapositiva tiene que ser una que el propio paper declare, y las cautelas de quienes investigan tienen que sobrevivir hasta la diapositiva. Una segunda revisión mide la imagen renderizada: texto que cruza el marco, contraste por debajo de 4,5 a 1, una etiqueta de preprint desplazada fuera de vista. Una fuente que no se puede leer se retiene, no se aprueba.") }}</p>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("A person still says yes", translated and "Una persona sigue diciendo que sí") }}</h2>
+      <p>{{ t("The finished slides and both reports arrive as a message. Nothing publishes until someone reads them and taps the button, and a post either check held does not get offered one. In science writing a single confidently wrong post costs more than ten good ones earn, so that step is permanent — it is not a stage on the way to full automation.",
+              translated and "Las diapositivas terminadas y ambos informes llegan como un mensaje. Nada se publica hasta que alguien los lee y pulsa el botón, y un post retenido por cualquiera de las dos revisiones ni siquiera lo recibe. En divulgación científica, un solo post equivocado con seguridad cuesta más de lo que ganan diez buenos, así que ese paso es permanente: no es una etapa camino de la automatización total.") }}</p>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("Built to cost nothing", translated and "Construido para no costar nada") }}</h2>
+      <p>{{ t("Python, scheduled jobs, a spreadsheet for a database, free-tier language models, a headless browser turning HTML into slides, and static hosting for this archive. No subscriptions, no per-seat pricing, no vendor to renew with. That is the interesting constraint, and it is usually the one that matters to a business too.",
+              translated and "Python, tareas programadas, una hoja de cálculo como base de datos, modelos de lenguaje de tier gratuito, un navegador headless que convierte HTML en diapositivas y alojamiento estático para este archivo. Sin suscripciones, sin precio por usuario, sin proveedor al que renovar. Esa es la restricción interesante, y suele ser también la que le importa a un negocio.") }}</p>
+    </div>
+
+    <div class="section">
+      <h2>{{ t("Want one of these", translated and "Quieres uno de estos") }}</h2>
+      <p>{{ t("This account is the working demo. The same shape — read the sources nobody has time to read, judge them, draft, verify, and put a person at the one step that needs judgement — is what most manual back-office work actually looks like. If that sounds like something you are doing by hand, send a message.",
+              translated and "Esta cuenta es la demo funcionando. La misma forma — leer las fuentes que nadie tiene tiempo de leer, juzgarlas, redactar, verificar y poner a una persona en el único paso que exige criterio — es lo que en realidad parece casi todo el trabajo manual de oficina. Si eso se parece a algo que estás haciendo a mano, escribe.") }}</p>
+      <p class="row">
+        <a class="cta" href="https://www.instagram.com/gummietech/">{{ t("Message @gummietech",
+             translated and "Escribe a @gummietech") }}</a>
+      </p>
+    </div>
+  </article>
+{% endblock %}
