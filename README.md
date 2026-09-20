@@ -1,7 +1,7 @@
 # gummietech
 
-Content pipeline for @gummietech — daily science, technology, and engineering
-posts on Instagram.
+Content pipeline for @gummietech — science, technology, and engineering posts
+on Instagram.
 
 Strategy and source map: `docs/gummietech_content_system.md`
 
@@ -33,10 +33,11 @@ pip install -r requirements.txt
 cp .env.example .env              # then fill in keys
 ```
 
-## Daily run
+## The drafting run
 
-`daily.yml` drafts, translates and renders one post a day, then sends the
-five slides and `caption.txt` to Telegram. You post the carousel to Instagram
+`daily.yml` drafts, translates and renders one post on Monday, Wednesday and
+Friday — the three Drops the cadence is fixed at — then sends the slides and
+`caption.txt` to Telegram. You post the carousel to Instagram
 yourself and tap **Posted to Instagram**; `publish.yml` sees the tap within
 the hour, stamps `published_at`, and rebuilds the archive.
 

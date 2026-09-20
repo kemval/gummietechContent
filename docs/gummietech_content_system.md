@@ -38,12 +38,20 @@ This table is canonical. `gummietech_project_instructions.md` carries a copy
 because it is pasted into a project's Instructions field; if the two ever
 disagree again, this one wins and the other is corrected to match.
 
-| Type | Frequency | Purpose | Format | Made by |
+| Type | Frequency | Purpose | Format | Drafted by |
 |---|---|---|---|---|
-| **The Drop** | 3×/week | Reach | Carousel, 5 slides | pipeline |
-| **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | by hand |
-| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | pipeline |
-| **The Signal** | optional | Reference value | Carousel, 5 items | pipeline |
+| **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
+| **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
+| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
+| **The Signal** | optional | Reference value | Carousel, 5 items | a person, then the pipeline |
+
+**The column is about the words, not the rest of the work.** §4 splits
+drafting by stakes: the free LLM tier writes the routine Drops, and a person
+writes the two formats where the explanation has to be excellent. Everything
+after drafting is identical for all three carousels — render, proof,
+fact-check, the gate, the archive — so "a person, then the pipeline" means a
+hand-written JSON file going through exactly the machinery a Drop does. The
+Build is the one row that never touches `src/` at any stage.
 
 Fixed 2026-09-19, replacing a 4–5×/week Drop with no Build at all. The account
 is an inbound-demand funnel for software and AI-automation build services

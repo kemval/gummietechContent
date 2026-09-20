@@ -20,7 +20,7 @@ JSON to PNG slides, and queues them for human approval.
 ```
 
 Layer 5 is manual and permanent. Do not propose removing it or building
-an auto-publish path. It runs over Telegram now (see **The daily run**),
+an auto-publish path. It runs over Telegram now (see **The drafting run**),
 which moves the gate to a phone but does not automate it: the carousel is
 still uploaded by hand, and the button only records that it happened.
 
@@ -65,8 +65,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      (one definition of "the post that is waiting")
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
-                     commit, daily) · review.yml (fact-check · render · proof
-                     · send — called, never scheduled) · recheck.yml (run
+                     commit, Mon/Wed/Fri) · review.yml (fact-check · render
+                     · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive)
@@ -332,7 +332,7 @@ session that reads the report and writes the JSON, so that the checker is never
 marking its own homework. It may edit one post file and nothing else, it may
 not add `published_at`, and a guard step on the diff enforces both rather than
 trusting the prompt. Its output then goes back through `review.yml` for a fresh
-fact-check that never saw it. See **The daily run**.
+fact-check that never saw it. See **The drafting run**.
 
 `draft.py` resolves the paper and takes `attribution` and `peer_reviewed`
 from Crossref, which removes the first two failure modes below at the source.
@@ -530,11 +530,16 @@ Two rules:
 opposite of `render.py`, which is right to hard-fail the one post it was asked
 to render. One bad draft must not take the whole site down.
 
-## The daily run
+## The drafting run
 
-`daily.yml` at 12:00 UTC drafts the top-scoring queued row, translates it and
-commits the JSON, then calls `review.yml`, which fact-checks, renders, proofs
-and sends to Telegram. `publish.yml` polls every 15 minutes for the reply.
+`daily.yml` on Monday, Wednesday and Friday at 12:17 UTC — the three Drops
+`docs` §1 fixes the cadence at — drafts the top-scoring queued row, translates
+it and commits the JSON, then calls `review.yml`, which fact-checks, renders,
+proofs and sends to Telegram. It ran daily until 2026-09-19 against a
+three-a-week pillar, and the four surplus drafts a week each spent a draft
+call, a translate call, a `fact-check` run on the Claude quota and a message
+in the chat, while the buffer of undated drafts grew with nothing deciding how
+deep it should get. `publish.yml` polls every 15 minutes for the reply.
 Between them sits a person, doing what only a person can:
 
 ```
@@ -552,7 +557,7 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 ```
 
 `review.yml` is a `workflow_call` reusable workflow rather than steps inside
-`daily.yml`, because two callers need it: the daily run, and `recheck.yml`
+`daily.yml`, because two callers need it: the drafting run, and `recheck.yml`
 when a review breaks rather than finds something. The gate that withholds the
 button therefore lives in one place — a second copy is a second place to
 forget to hold a post. It never drafts, never commits and never dates a post.

@@ -14,12 +14,25 @@ name: daily
 
 on:
   schedule:
+    # Monday, Wednesday, Friday — the three Drops §1 fixes the cadence at.
+    # It ran every day until 2026-09-19, against a three-a-week pillar, and
+    # the four surplus drafts a week were not free: each one spends a Gemini
+    # draft call, a translate call, a review.yml run whose fact-check draws on
+    # the same Claude quota as an interactive session, a render, and a message
+    # in the approval chat. Nothing decided how deep the buffer of undated
+    # drafts should get, so it grew by four a week for as long as it ran.
+    #
+    # Drafting on the days the Drop goes out keeps the buffer at roughly one
+    # post, which is what resolve-post's fallback is right for. The other
+    # three pillars need no cron: The Build is video and never touches src/,
+    # and the Breakdown and the Signal are drafted by hand and dispatched.
+    #
     # 12:17 UTC = 06:17 in America/Costa_Rica, which does not observe DST, so
     # this does not drift across the year. The offset minute is deliberate:
     # the top of the hour is the most contended slot on GitHub's scheduler.
     # Runs are still delayed 10-30 minutes at peak, so the message lands
     # around 06:30 local. Change the hour here to move it.
-    - cron: '17 12 * * *'
+    - cron: '17 12 * * 1,3,5'
   workflow_dispatch:
 
 # Two drafts in flight would race on the sheet row and on the push.
