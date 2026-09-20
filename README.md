@@ -8,8 +8,8 @@ Strategy and source map: `docs/gummietech_content_system.md`
 ## Pipeline
 
 ```
-[1] INGEST → [2] SCORE → [3] DRAFT → [4] DESIGN → [5] HUMAN GATE → [6] PUBLISH
-  every 2h    Gemini      LLM         HTML→PNG      10 min/day      Business Suite
+[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] RENDER → [4b] PROOF → [5] HUMAN GATE → [6] PUBLISH → [7] LEARN
+  every 2h    Gemini      LLM         against source    HTML→PNG     the slides   10 min/day      Business Suite   saves/shares
 ```
 
 ## Layout
@@ -77,6 +77,25 @@ the button, so a bad post cannot be marked live from your phone:
 For a post that really matters, draft locally and run the `slide-proof` agent
 too: it judges how the slides *look*, which is the part no measurement
 answers.
+
+## Measuring
+
+Three days after a post goes live, the same poll that watches for the publish
+tap asks that post for its numbers in the approval chat. Reply with three
+integers — saves, shares, profile visits — and they land in the post's own
+JSON:
+
+```bash
+python src/learn.py               # medians by format, colorway, domain, weekday
+```
+
+Saves and shares are the growth metrics, profile visits the funnel one; likes
+are deliberately not tracked. `learn.py` holds back any group under three
+posts rather than ranking noise, and says so until there are thirty measured
+posts, which is where the cut-the-weakest-format decision belongs.
+
+The asking half needs `TELEGRAM_CHAT_ID` in the `publish` workflow. Leave it
+unset and nothing is asked; the publish tap is unaffected.
 
 ## Web archive
 

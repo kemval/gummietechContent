@@ -15,8 +15,8 @@ feeds, scores items with an LLM, drafts post copy as JSON, renders that
 JSON to PNG slides, and queues them for human approval.
 
 ```
-[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] RENDER → [4b] PROOF → [5] HUMAN GATE → [6] PUBLISH
-  every 2h    Gemini      LLM         against source    HTML→PNG     the slides   manual          Business Suite
+[1] INGEST → [2] SCORE → [3] DRAFT → [3b] FACT-CHECK → [4] RENDER → [4b] PROOF → [5] HUMAN GATE → [6] PUBLISH → [7] LEARN
+  every 2h    Gemini      LLM         against source    HTML→PNG     the slides   manual          Business Suite   saves/shares
 ```
 
 Layer 5 is manual and permanent. Do not propose removing it or building
@@ -698,6 +698,50 @@ can re-run the checks.
 Nothing gates a **local** `send` with no `--review` flags — the message says
 plainly that nothing checked the post, but the button still appears, because
 a person sending by hand is already in the loop.
+
+## Measuring
+
+Layer 7. `docs` §9 makes saves the primary measure and shares the second,
+`profile_visits` is the funnel one, and likes are explicitly not a metric.
+§8 sets the decision it exists for: after thirty posts, cut the weakest
+format and double the winner.
+
+Instagram's numbers sit behind the Professional-account API that §4 rules out
+on cost, so they are read by eye. The only design question is where a person
+types three numbers with the least ceremony, and the answer is the chat the
+gate already lives in.
+
+`confirm` therefore does two jobs on the same quarter-hourly poll: it stamps
+the taps, and three days after a post went live it asks that post's numbers
+and writes the reply into the post JSON. Four things hold it together:
+
+- **The ask writes the block, not the answer.** `metrics: {asked_at}` is
+  written when the question goes out, because that block is also what stops
+  the question being asked again fifteen minutes later. An unanswered ask is
+  a block with no numbers in it, which `learn.py` reports as unanswered
+  rather than as a zero — those are very different facts.
+- **The answer is a reply, not a button.** Three integers do not fit in
+  `callback_data` and no keyboard can carry an arbitrary number, so `confirm`
+  asks Telegram for `message` updates as well as taps and reads the stem back
+  out of `reply_to_message`. Nothing new is stored to link the two.
+- **It survives the missing offset like `published_at` does.** Recording a
+  number is a set, not an increment, so a reply replayed for 24 hours writes
+  what is already there. Two replies that disagree are a correction, and
+  `getUpdates` returns them oldest first, so the later one lands last.
+- **A numbers-only poll does not rebuild the archive.** `site.py` ignores
+  `metrics`, so a rebuild would produce identical HTML. `confirm` reports
+  `published=true|false` on `GITHUB_OUTPUT` and `publish.yml` dispatches
+  `site.yml` on that. Do not go back to reading it off the diff: writing a
+  metrics block next to `published_at` puts a comma on that line, so the diff
+  claims a publish on a poll that published nothing.
+
+`python src/learn.py` is the report — medians by `post_type`, `colorway`,
+`domain` and weekday, then every measured post ranked by saves. It holds back
+a group under three posts rather than ranking noise, and says outright that
+§8 puts the format decision at thirty. It computes no rate: saves per
+impression would be the honest measure and Instagram does not give
+impressions away, so a ratio built from these three numbers would look
+rigorous and mean nothing.
 
 ## When something breaks
 

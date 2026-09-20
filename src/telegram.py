@@ -11,6 +11,10 @@ JSON, which is the only thing that lets site.py build the post.
     python src/telegram.py send posts/2026-09-15-the-tidal-bulges.json
     python src/telegram.py confirm
 
+`confirm` also carries Layer 7: it asks for a post's Instagram numbers once
+the post has settled, and writes back the reply. See the metrics section
+below for why that lives here rather than in a script of its own.
+
 Environment:
     TELEGRAM_BOT_TOKEN   from @BotFather
     TELEGRAM_CHAT_ID     the chat to send to — send= only
@@ -40,6 +44,12 @@ Five things that are deliberate:
     seconds-long window Telegram allows a bot to answer in. The edit to the
     message is the feedback that matters, and it has no such deadline.
 
+  - **The metrics answer is an ordinary reply, not a button.** Three numbers
+    do not fit in callback_data and no keyboard can carry an arbitrary
+    integer, so the question goes out as a message and the reply comes back
+    as one. That is also why `confirm` now asks Telegram for `message`
+    updates as well as taps.
+
   - **A held post gets link buttons, not working ones.** When a review holds
     the post there is no approval button, and in Actions its place is taken
     by links to the two workflows that are the way back: `fix.yml`, which
@@ -60,7 +70,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -554,6 +564,187 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     return 0
 
 
+# ---------- metrics · Layer 7 ----------
+#
+# §9 of the content system makes saves and shares the primary measures and
+# likes explicitly not one, and §2's Layer 7 asks for them weekly so that the
+# weakest format can be cut after thirty posts. Instagram's own numbers sit
+# behind a Professional-account API gated by app review, so under the $0 rule
+# they are read by eye — which leaves only one real question: where does a
+# person type three numbers with the least ceremony. In the chat the gate
+# already lives in, on a phone that is already open.
+#
+# Both halves ride on machinery that exists. The question goes out from
+# confirm(), which already polls every quarter hour and already writes to
+# posts/; the answer lands in the post JSON beside published_at, which is
+# where every other fact about a post has accumulated. No sheet, no service,
+# no second place to look.
+#
+# Idempotent against getUpdates' missing offset for the same reason
+# published_at is: recording a number is a set, not an increment, so a reply
+# replayed for twenty-four hours writes what is already there and changes
+# nothing. When two replies disagree — someone correcting a typo — getUpdates
+# returns them oldest first and the later one lands last, which is the one
+# they meant.
+METRICS_KEY = "metrics"
+METRICS_FIELDS = ("saves", "shares", "profile_visits")
+# Long enough that the numbers have stopped moving, short enough that the post
+# is still recognisable in the chat when the question arrives.
+METRICS_AFTER_DAYS = 3
+# One question per poll, so a backlog trickles instead of arriving at once.
+# There is always a backlog the first time this runs — every post already
+# published is instantly due — and fifteen questions in one burst teaches a
+# person to ignore the bot, which costs more than the answers are worth. The
+# same reasoning as notify-failure's `hourly`. At a quarter-hourly poll a
+# backlog of fifteen drains in under four hours, and one at a time is how
+# they get answered anyway.
+METRICS_ASK_PER_POLL = 1
+# The question carries the stem, and the reply carries it back by being a
+# reply — reply_to_message.text is the rendered message, so the stem is read
+# out of it rather than tracked anywhere. Telegram strips the <code> tags
+# before storing that text, which is what makes this match.
+METRICS_MARK = "metrics ·"
+# Not anchored at the start of the line: the question opens with an emoji,
+# so the mark itself is the anchor and $ closes it at the line end.
+METRICS_ASK_RE = re.compile(rf"{re.escape(METRICS_MARK)} (\S+)$", re.M)
+# "120 14 33", "120/14/33", "120, 14, 33" — three numbers, any separator.
+# A reply that is not three numbers is ignored in silence, deliberately:
+# answering it would replay that answer every fifteen minutes for a day.
+METRICS_REPLY_RE = re.compile(r"^\D*(\d+)\D+(\d+)\D+(\d+)\D*$")
+
+
+def read_post(path: Path) -> dict | None:
+    """A post record, or None having said why it could not be read."""
+    try:
+        return json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"  warning: {path.name} is unreadable ({exc}) — left alone")
+        return None
+
+
+def write_post(path: Path, post: dict) -> None:
+    """Write a post back in the shape draft.py wrote it."""
+    path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
+
+
+def post_for_stem(stem: str) -> Path | None:
+    """The post a stem names, or None having said why not.
+
+    The stem becomes a path and it arrives from the network, so anything
+    carrying a separator is not a post filename.
+    """
+    if "/" in stem or "\\" in stem or stem in ("", ".", ".."):
+        print(f"  ignored a message carrying {stem!r}")
+        return None
+    path = POSTS_DIR / f"{stem}.json"
+    if not path.exists():
+        print(f"  ignored {stem}: no such post in posts/")
+        return None
+    return path
+
+
+def due_for_metrics(today: str) -> list[tuple[Path, dict]]:
+    """Published posts old enough to have settled and never asked about."""
+    due: list[tuple[Path, dict]] = []
+    for path in sorted(POSTS_DIR.glob("*.json")):
+        post = read_post(path)
+        if post is None:
+            continue
+        published = str(post.get("published_at", "")).strip()
+        if not published or post.get(METRICS_KEY):
+            continue
+        try:
+            age = (date.fromisoformat(today)
+                   - date.fromisoformat(published)).days
+        except ValueError:
+            print(f"  warning: {path.name} has published_at {published!r}, "
+                  f"which is not YYYY-MM-DD — not asking about it")
+            continue
+        if age >= METRICS_AFTER_DAYS:
+            due.append((path, post))
+    return due
+
+
+def ask_metrics(token: str, chat_id: str, today: str) -> int:
+    """Ask for the Insights numbers on every post that has settled.
+
+    The `metrics` block is written when the question goes out rather than when
+    it is answered, because that block is also what stops the question being
+    asked again fifteen minutes later. An unanswered ask is therefore a post
+    with a metrics block and no numbers in it — which learn.py reports as
+    unanswered rather than as a zero, since those are very different things.
+    """
+    due = due_for_metrics(today)
+    if not due:
+        return 0
+    if not chat_id:
+        print(f"  {len(due)} post(s) have settled, but TELEGRAM_CHAT_ID is "
+              f"not set so nothing was asked. Taps are unaffected.")
+        return 0
+
+    if len(due) > METRICS_ASK_PER_POLL:
+        print(f"  {len(due)} post(s) have settled; asking about "
+              f"{METRICS_ASK_PER_POLL} this poll, the rest on the next ones.")
+
+    asked = 0
+    for path, post in due[:METRICS_ASK_PER_POLL]:
+        hook = str(post.get("hook", "")).strip()
+        send_message(
+            token, chat_id,
+            f"📊 {METRICS_MARK} <code>{html.escape(path.stem)}</code>\n\n"
+            f"<i>{html.escape(hook)}</i>\n"
+            f"Published {html.escape(str(post['published_at']))}.\n\n"
+            f"Reply to <b>this</b> message with three numbers from Instagram "
+            f"Insights — <b>saves shares profile-visits</b>, like "
+            f"<code>120 14 33</code>.")
+        post[METRICS_KEY] = {"asked_at": today}
+        write_post(path, post)
+        asked += 1
+        print(f"  {path.name}: asked for its numbers")
+    return asked
+
+
+def record_metrics(token: str, updates: list, today: str) -> int:
+    """Write back every reply that answers one of those questions."""
+    recorded = 0
+    for update in updates:
+        message = update.get("message") or {}
+        replied_to = message.get("reply_to_message") or {}
+        named = METRICS_ASK_RE.search(str(replied_to.get("text", "")))
+        if not named:
+            continue
+        numbers = METRICS_REPLY_RE.match(str(message.get("text", "")).strip())
+        if not numbers:
+            continue
+
+        path = post_for_stem(named.group(1))
+        if path is None:
+            continue
+        post = read_post(path)
+        if post is None:
+            continue
+
+        values = dict(zip(METRICS_FIELDS, (int(n) for n in numbers.groups())))
+        current = post.get(METRICS_KEY) or {}
+        if all(current.get(field) == value for field, value in values.items()):
+            continue          # the same reply, replayed — the expected case
+
+        post[METRICS_KEY] = {**current, **values, "recorded_at": today}
+        write_post(path, post)
+        recorded += 1
+        print(f"  {path.name}: "
+              + " · ".join(f"{f.replace('_', ' ')} {v}"
+                           for f, v in values.items()))
+
+        chat = message.get("chat") or {}
+        if chat.get("id") and message.get("message_id"):
+            call(token, "sendMessage",
+                 {"chat_id": chat["id"],
+                  "reply_to_message_id": message["message_id"],
+                  "text": "📊 Logged."}, strict=False)
+    return recorded
+
+
 def publish_date() -> str:
     """Today, in the zone the account actually posts from."""
     name = os.getenv("PUBLISH_TZ", "UTC").strip() or "UTC"
@@ -567,12 +758,18 @@ def publish_date() -> str:
 
 
 def confirm() -> int:
-    """Stamp published_at on every post whose button has been tapped."""
-    token, _ = config(need_chat=False)
+    """Stamp published_at on tapped posts, and keep the metrics log up.
+
+    Both halves read the same poll. `message` joins `callback_query` in
+    allowed_updates because the Layer 7 answer is a reply typed by hand —
+    see the metrics section above for why it cannot be a button.
+    """
+    token, chat_id = config(need_chat=False)
     try:
         updates = call(token, "getUpdates",
                        {"timeout": 0,
-                        "allowed_updates": json.dumps(["callback_query"])})
+                        "allowed_updates": json.dumps(["callback_query",
+                                                       "message"])})
     except TelegramError as exc:
         sys.exit(str(exc))
 
@@ -587,21 +784,12 @@ def confirm() -> int:
         if parsed is None:
             continue
         stem, overridden = parsed
-        # The stem becomes a path, and it arrives from the network. Anything
-        # with a separator in it is not a post filename.
-        if "/" in stem or "\\" in stem or stem in ("", ".", ".."):
-            print(f"  ignored a button carrying {stem!r}")
-            continue
 
-        path = POSTS_DIR / f"{stem}.json"
-        if not path.exists():
-            print(f"  ignored {stem}: no such post in posts/")
+        path = post_for_stem(stem)
+        if path is None:
             continue
-
-        try:
-            post = json.loads(path.read_text())
-        except (OSError, json.JSONDecodeError) as exc:
-            print(f"  warning: {path.name} is unreadable ({exc}) — left alone")
+        post = read_post(path)
+        if post is None:
             continue
 
         if post.get("published_at"):
@@ -610,7 +798,7 @@ def confirm() -> int:
             continue
 
         post["published_at"] = today
-        path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
+        write_post(path, post)
         stamped += 1
         held_note = " — over a held review" if overridden else ""
         print(f"  {path.name}: published_at = {today}{held_note}")
@@ -637,6 +825,23 @@ def confirm() -> int:
 
     print(f"{stamped} post(s) newly published." if stamped
           else "No new publish taps.")
+
+    # Whether the archive has anything new to show. The caller cannot read
+    # this off the diff: writing a metrics block next to published_at puts a
+    # comma on that line, so it shows up as changed on a poll that published
+    # nothing. Appended, never written whole — GITHUB_OUTPUT is shared with
+    # every other step of the job.
+    github_output = os.getenv("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as fh:
+            fh.write(f"published={'true' if stamped else 'false'}\n")
+
+    # Recorded before asking, so a post answered in this same poll is not
+    # also asked about in it.
+    recorded = record_metrics(token, updates or [], today)
+    asked = ask_metrics(token, chat_id, today)
+    if recorded or asked:
+        print(f"{recorded} post(s) got numbers, {asked} asked for theirs.")
     return 0
 
 

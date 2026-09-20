@@ -44,24 +44,44 @@ jobs:
       - name: Install dependencies
         run: pip install requests python-dotenv
 
-      - name: Look for a publish tap
+      # Also Layer 7: the same poll asks a settled post for its Instagram
+      # numbers and writes back the reply. The chat id is needed for that
+      # half only — a tap answers in the chat it came from, a question has
+      # to be started in one. Leave it unset and taps still work.
+      - id: poll
+        name: Look for a publish tap, and for the numbers
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
         run: python src/telegram.py confirm
 
-      - name: Commit and build the archive
+      - name: Commit, and build the archive if anything on it changed
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet -- posts/; then
-            echo "Nothing to publish."
+            echo "Nothing to record."
             exit 0
+          fi
+          # published_at is the only thing here that reaches a page — site.py
+          # ignores the metrics block entirely — so a numbers-only poll must
+          # not ask for a rebuild that would produce byte-identical HTML.
+          # The answer comes from the step above rather than from the diff:
+          # a metrics block written next to published_at puts a comma on that
+          # line, so the diff says "published" on a poll that published
+          # nothing.
+          if [ "${{ steps.poll.outputs.published }}" = true ]; then
+            subject="Publish to the archive"
+            rebuild=yes
+          else
+            subject="Log the Instagram numbers"
+            rebuild=no
           fi
           git config user.name  "gummietech"
           git config user.email "noreply@github.com"
           git add posts/
-          git commit -m "Publish to the archive" \
+          git commit -m "$subject" \
                      -m "$(git diff --cached --name-only)"
           git pull --rebase
           git push
@@ -70,7 +90,14 @@ jobs:
           # themselves. workflow_dispatch is the documented exception, so ask
           # for the build by name. --ref master builds the tip, which now
           # includes the commit above.
-          gh workflow run site.yml --ref master
+          # An `if`, not `[ ... ] && ...`: this is the last command in the
+          # step and the runner uses `bash -e`, so a false test would exit
+          # non-zero and fail a poll that did exactly what it should.
+          if [ "$rebuild" = yes ]; then
+            gh workflow run site.yml --ref master
+          else
+            echo "Numbers only — the archive is unchanged, not rebuilding."
+          fi
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.
