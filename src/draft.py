@@ -7,10 +7,21 @@ article, resolves the paper behind it, and asks the LLM for the strict JSON
 contract in CLAUDE.md. Writes posts/<date>-<slug>.json and marks the row
 "drafted".
 
+`--signal` walks five rows instead of one and writes a Signal — the weekly
+roundup. It is the same walk, the same Crossref detour and the same code
+ownership of the credit and the preprint flag, applied per item rather than
+per post, and one LLM call writes all five claims. The queue is where those
+items come from because it already holds far more rows above the scoring
+threshold than ever get drafted, and every one that is not picked stays
+there (docs §1, The Signal). The order the sources go into the prompt is
+the queue's score order and the model is told not to change it: that index
+is the only thing tying a claim to its attribution.
+
 Usage:
     python src/draft.py
     python src/draft.py --row 47            # draft a specific sheet row
     python src/draft.py --url https://...   # draft an evergreen source
+    python src/draft.py --signal            # the weekly roundup, top 5 rows
     python src/draft.py --dry-run           # print the JSON, write nothing
 
 Environment: same as score.py (LLM_PROVIDER, GEMINI_API_KEY / GROQ_API_KEY,
@@ -43,6 +54,7 @@ import html
 import json
 import re
 import sys
+from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
 from urllib.parse import quote, urlparse
@@ -50,8 +62,11 @@ from urllib.parse import quote, urlparse
 import requests
 
 import llm                       # forwards to gemini or groq per LLM_PROVIDER
+from formats import entries as format_entries
+from formats import missing_from_entries, required as format_required
 from ingest import COLUMNS, open_sheet
-from render import COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT
+from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
+                    warn_on_length)
 from verify_feeds import HEADERS, TIMEOUT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -61,13 +76,34 @@ EVERGREEN_QUEUE = REPO_ROOT / "docs" / "evergreen_queue.md"
 ARTICLE_CHARS = 6000
 ABSTRACT_CHARS = 4000
 
+# docs §1: five items, one slide each. A Signal is five sources in one
+# prompt, so each gets a fraction of a Drop's budget — one sentence per item
+# needs the result, not the whole article, and five full ones would be 30k
+# characters against a free tier for five lines of output.
+SIGNAL_ITEMS = 5
+SIGNAL_SOURCE_CHARS = 1500
+# An item claim is a hook, not a body field: signal.html sets it in 66px
+# display type, where WORD_LIMIT's 25 words overflow the frame. proof.py
+# measures the rendered box either way; this is what keeps the model from
+# writing past it in the first place.
+CLAIM_WORD_LIMIT = HOOK_WORD_LIMIT
+
 # peer_reviewed is False for these no matter what Crossref or the model says.
 PREPRINT_HOSTS = ("arxiv.org", "biorxiv.org", "medrxiv.org", "chemrxiv.org",
                   "ssrn.com", "researchsquare.com", "preprints.org",
                   "osf.io", "hal.science")
 
-REQUIRED = ["post_type", "domain", "hook", "what_happened", "why_it_matters",
-            "the_catch", "caption", "alt_text", "attribution"]
+# What a *draft* needs on top of what render.py will refuse to render
+# without. formats.py owns the rest, per format, and is asked for it —
+# this used to name a Drop's body fields, which made it a fourth copy of
+# that table and the reason a Signal could not come out of this file at all.
+#
+#   domain   — required here though formats.py has it optional: drop.html
+#              prints it on every slide and the archive translates it, so a
+#              drafted post without one is a post with a hole in it.
+#   caption  — needed to *post*, not to render. render.py is right not to
+#              care; this is the file that writes caption.txt.
+DRAFTED = ("post_type", "domain", "caption")
 
 PARA_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.S | re.I)
 SCRIPT_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.S | re.I)
@@ -164,6 +200,86 @@ Title: {title}
 URL: {url}
 
 {text}"""
+
+
+SIGNAL_PROMPT = """You write posts for @gummietech, an Instagram account \
+explaining science, technology and engineering to a smart non-expert audience.
+
+Write this week's Signal: a ranked roundup of {count} results, one slide \
+each. Return ONLY a JSON object, no prose and no code fences, with exactly \
+these keys:
+
+{{
+  "domain": "<2-3 word label for the carousel as a whole, e.g. This week, \
+Research roundup>",
+  "colorway": "<the palette family matching the week's dominant subject: \
+signal (AI, computing, software, robotics), orbit (space, astronomy, \
+physics), bloom (biology, medicine, climate, ecology), ember (energy, \
+materials, engineering, chemistry)>",
+  "hook": "<the cover line, {hook_limit} words maximum, naming the number: \
+e.g. '{count} results you missed this week'>",
+  "items": [
+    {{"claim": "<the result in one sentence, {claim_limit} words maximum>",
+      "attribution": "<who did the work: 'Surname et al., Journal (year)'>"}}
+  ],
+  "caption": "<2-3 sentences for the Instagram caption, ending in a question>",
+  "keywords": ["<3-5 search terms>"],
+  "hashtags": ["#<5-8 tags, mixing broad and niche>"],
+  "alt_text": "<one sentence describing the carousel for a screen reader. \
+It is text on flat colour fields — there are no photographs, charts or \
+diagrams on these slides. Describe what the slides say, not what a science \
+post's images would normally be.>"
+}}
+
+Rules:
+- "items" must have exactly {count} entries, in the SAME ORDER as the \
+sources below. Do not reorder, merge, drop or add. Item 1 is source 1.
+- Each claim is one specific result, in plain words, with the number in it \
+where there is one. "A brain implant decoded speech and gesture from one \
+253-electrode array", not "researchers made progress on brain implants".
+- No claim may overstate what its source says. This is a reference carousel; \
+a reader saves it to look something up later.
+- Write "attribution" from the source text as 'Surname et al., Journal \
+(year)'. Never invent one — if the text does not say who did the work, name \
+the outlet instead.
+- Do not write a caveat slide. This format has no catch slide; a roundup has \
+five caveats or none.
+
+{sources}"""
+
+
+def signal_sources(picks: list[dict]) -> str:
+    """The numbered source block a Signal is drafted from.
+
+    Numbered because the index is the only thing tying a claim back to its
+    credit and its URL — validate_signal refuses a reply of the wrong length
+    for the same reason. The paper comes first where Crossref resolved one,
+    exactly as it does for a Drop, and is trimmed hard: this is one prompt
+    carrying five sources and it buys five sentences.
+    """
+    blocks = []
+    for n, pick in enumerate(picks, start=1):
+        item = pick["item"]
+        text = source_text(pick["paper"], pick["article"], item["summary"])
+        blocks.append(f"--- SOURCE {n} ---\n"
+                      f"Outlet: {item['source']}\n"
+                      f"Headline: {item['title']}\n"
+                      f"URL: {item['url']}\n\n"
+                      f"{text[:SIGNAL_SOURCE_CHARS]}")
+    return "\n\n".join(blocks)
+
+
+def parsed(reply: str) -> dict:
+    """The model's JSON, or a stop that says to re-run."""
+    try:
+        post = json.loads(reply.strip())
+    except json.JSONDecodeError:
+        sys.exit(f"The model did not return JSON:\n{reply[:400]}\n"
+                 "Re-run to try again.")
+    if not isinstance(post, dict):
+        sys.exit(f"The model returned {type(post).__name__}, not a JSON "
+                 "object. Re-run to try again.")
+    return post
 
 
 def slugify(title: str) -> str:
@@ -730,10 +846,18 @@ def covered_papers() -> dict[str, str]:
             post = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue          # site.py skips a malformed post; so does this
-        for key in (post.get("doi"), post.get("attribution"),
-                    post.get("source_url")):
-            if key and str(key).strip():
-                seen.setdefault(" ".join(str(key).lower().split()), path.name)
+        # A Signal carries none of these at the top level: its record moves
+        # all three onto its five items. Without the second loop a roundup
+        # covered five stories that this guard could not see, and the next
+        # Signal would have picked the same rows straight back out of the
+        # queue — which is the whole failure this function exists for.
+        records = [post, *format_entries(post)]
+        for record in records:
+            for key in (record.get("doi"), record.get("attribution"),
+                        record.get("source_url")):
+                if key and str(key).strip():
+                    seen.setdefault(" ".join(str(key).lower().split()),
+                                    path.name)
     return seen
 
 
@@ -757,39 +881,36 @@ def already_covered(paper: dict | None, url: str,
     return None
 
 
-def validate(post: dict, item: dict, paper: dict | None) -> dict:
-    """Fill the fields we own, then refuse anything render.py would reject."""
-    url = item["url"]
-    post["source_url"] = url                  # never the model's version
+def peer_review_flag(paper: dict | None, url: str,
+                     fallback: bool | None = None) -> bool | None:
+    """Whether a source is peer-reviewed.
 
-    # An evergreen row settles the preprint flag itself — see
-    # evergreen_candidate for why the model cannot. Retraction has no field in
-    # the contract at all; flag that one by hand at the gate.
-    if "peer_reviewed" in item:
-        post["peer_reviewed"] = item["peer_reviewed"]
+    Crossref's record type first — it catches a preprint reported on a news
+    domain, which the host check below cannot see — then the host, which can
+    only ever force the flag down: a reader on arxiv.org is reading a
+    preprint whatever Crossref says about a later version.
 
-    # Attribution and the preprint flag come from Crossref when the paper
-    # resolved. Both are fields the model gets wrong in a repeatable way:
-    # coverage quotes whoever gave the interview, who may be the senior
-    # author or — as in the Moon-formation draft that prompted this — an
-    # outside commentator who did not write the paper at all.
+    `fallback` is what stands when neither of those knows: the model's own
+    answer for a Drop, an evergreen row's for a named candidate, and None
+    for a Signal item — which is not a value but a question, and
+    settled_candidates rejects the candidate rather than letting the model
+    answer it. Returning None rather than guessing is what makes that
+    possible.
+    """
+    flag = fallback
     if paper:
-        cite = citation(paper)
-        if cite:
-            if post.get("attribution") and post["attribution"] != cite:
-                print(f"  attribution: model wrote {post['attribution']!r}, "
-                      f"using Crossref's {cite!r}")
-            post["attribution"] = cite
-        post["peer_reviewed"] = not paper["is_preprint"]
-        # Written for covered_papers() above, and for a person reading the
-        # JSON at the gate. The model never supplies it.
-        post["doi"] = paper["doi"]
-
-    # A preprint host can only ever force the flag down. A reader on arxiv.org
-    # is reading a preprint whatever Crossref says about a later version.
+        flag = not paper["is_preprint"]
     if any(host in url.lower() for host in PREPRINT_HOSTS):
-        post["peer_reviewed"] = False
+        flag = False
+    return flag
 
+
+def finish(post: dict, order: list[str]) -> dict:
+    """The checks every format shares, then the key order.
+
+    Everything in here reads formats.py rather than a list of a Drop's
+    fields, which is what lets a Signal come out of the same function.
+    """
     # A colour that does not suit the topic is a cosmetic miss, not a
     # credibility one, so an invented family name falls back instead of
     # killing a draft that is otherwise fine.
@@ -799,68 +920,161 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
                   f"{post['colorway']!r} — using {DEFAULT_COLORWAY}")
         post["colorway"] = DEFAULT_COLORWAY
 
-    missing = [f for f in REQUIRED if not str(post.get(f, "")).strip()]
+    # render.py's own rule, from the same table: presence for peer_reviewed,
+    # because False is the whole point of the field, and truthiness for the
+    # rest. A Signal's record carries none of the three source fields, so
+    # this asks about `items` there and about the entries below.
+    wanted = (*DRAFTED, *format_required(post))
+    missing = [f for f in wanted
+               if post.get(f) is None or (f != "peer_reviewed"
+                                          and not post.get(f))]
+    missing += missing_from_entries(post)
     if missing:
         sys.exit(f"Refusing to write. The model left these empty: "
                  f"{', '.join(missing)}. Re-run to try again.")
-    if not isinstance(post.get("peer_reviewed"), bool):
+    if "peer_reviewed" in wanted and not isinstance(post["peer_reviewed"], bool):
         sys.exit("Refusing to write. peer_reviewed came back as "
                  f"{post.get('peer_reviewed')!r}, not true or false. "
                  "An unlabelled preprint is a credibility risk.")
 
-    for field, limit in [("hook", HOOK_WORD_LIMIT), ("what_happened", WORD_LIMIT),
-                         ("why_it_matters", WORD_LIMIT), ("the_catch", WORD_LIMIT)]:
-        count = len(str(post[field]).split())
-        if count > limit:
-            print(f"  warning: {field} is {count} words (limit {limit})")
-
-    ordered = ["post_type", "domain", "colorway", "hook", "what_happened", "why_it_matters",
-               "the_catch", "caption", "keywords", "hashtags", "alt_text",
-               "source_url", "code_url", "doi", "attribution", "peer_reviewed"]
-    return {k: post[k] for k in ordered if k in post}
+    warn_on_length(post)
+    return {k: post[k] for k in order if k in post}
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    picked = ap.add_mutually_exclusive_group()
-    picked.add_argument("--row", type=int, help="draft this sheet row instead")
-    picked.add_argument("--url", help="draft this page instead of a sheet row")
-    picked.add_argument("--evergreen", type=int, nargs="?", const=0, metavar="N",
-                        help="draft from docs/evergreen_queue.md: the "
-                             "highest-scoring candidate, or candidate N")
-    ap.add_argument("--dry-run", action="store_true",
-                    help="print the JSON without writing or marking the row")
-    args = ap.parse_args()
+DROP_KEYS = ["post_type", "domain", "colorway", "hook", "what_happened",
+             "why_it_matters", "the_catch", "caption", "keywords", "hashtags",
+             "alt_text", "source_url", "code_url", "doi", "attribution",
+             "peer_reviewed"]
 
-    api_key, model = llm.config()
 
-    # Read once, before the loop: what posts/ already covers.
-    seen = covered_papers()
+def validate(post: dict, item: dict, paper: dict | None) -> dict:
+    """Fill the fields we own, then refuse anything render.py would reject."""
+    url = item["url"]
+    post["source_url"] = url                  # never the model's version
 
-    # Neither of the off-sheet paths has a row to mark afterwards, so neither
-    # opens the sheet — which also means they need no Google credentials.
-    worksheet, row_number, rows, col = None, None, [], {}
-    if args.evergreen is None and not args.url:
-        worksheet = open_sheet()
-        rows = worksheet.get_all_values()
-        if not rows:
-            sys.exit("The sheet is empty. Run `python src/ingest.py` first.")
-        col = {name: rows[0].index(name) for name in COLUMNS if name in rows[0]}
+    # An evergreen row settles the preprint flag itself — see
+    # evergreen_candidate for why the model cannot. Retraction has no field in
+    # the contract at all; flag that one by hand at the gate.
+    post["peer_reviewed"] = peer_review_flag(
+        paper, url,
+        item["peer_reviewed"] if "peer_reviewed" in item
+        else post.get("peer_reviewed"))
 
-    # The loop is the duplicate guard: a candidate is only settled once its
-    # paper has been resolved, which is after the page has been fetched, so
-    # rejecting one means going back for another. Each pass costs one fetch
-    # and one Crossref call, and no LLM call — the model is not reached until
-    # a candidate survives.
-    # Rows, and evergreen ranks, this run has already rejected as covered.
+    # Attribution comes from Crossref when the paper resolved. It is a field
+    # the model gets wrong in a repeatable way: coverage quotes whoever gave
+    # the interview, who may be the senior author or — as in the
+    # Moon-formation draft that prompted this — an outside commentator who
+    # did not write the paper at all.
+    if paper:
+        cite = citation(paper)
+        if cite:
+            if post.get("attribution") and post["attribution"] != cite:
+                print(f"  attribution: model wrote {post['attribution']!r}, "
+                      f"using Crossref's {cite!r}")
+            post["attribution"] = cite
+        # Written for covered_papers() above, and for a person reading the
+        # JSON at the gate. The model never supplies it.
+        post["doi"] = paper["doi"]
+
+    return finish(post, DROP_KEYS)
+
+
+SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
+               "keywords", "hashtags", "alt_text"]
+ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed"]
+
+
+def validate_signal(post: dict, picks: list[dict]) -> dict:
+    """Same idea as validate(), once per item.
+
+    `picks` is the candidate list in the order it went into the prompt, and
+    the model is told not to reorder. That order is the only thing tying a
+    claim to its source, so a reply of the wrong length is refused outright
+    rather than zipped against whatever happens to line up: silently pairing
+    claim 3 with paper 4 would credit the wrong authors on a public slide,
+    which is the single worst thing this file can emit.
+    """
+    post["post_type"] = "signal"
+    items = post.get("items")
+    if not isinstance(items, list) or len(items) != len(picks):
+        sys.exit(f"Refusing to write. {len(picks)} sources went in and "
+                 f"{len(items) if isinstance(items, list) else 'not a list'} "
+                 "came back. The order is the only thing that links a claim "
+                 "to its credit. Re-run to try again.")
+
+    out = []
+    for item, pick in zip(items, picks):
+        paper, url = pick["paper"], pick["item"]["url"]
+        built = {"claim": str(item.get("claim", "")).strip(),
+                 "attribution": str(item.get("attribution", "")).strip(),
+                 "source_url": url,
+                 "peer_reviewed": peer_review_flag(paper, url)}
+        if paper:
+            if cite := citation(paper):
+                built["attribution"] = cite
+            built["doi"] = paper["doi"]
+        elif built["peer_reviewed"] is None:
+            # settled_candidates(labelled_only=True) rejects these before the
+            # model is reached, so getting here means the picks did not come
+            # from that walk. Still a stop: §7.2 is a per-claim rule, and an
+            # unlabelled claim on a slide is the risk the rule exists for.
+            sys.exit(
+                f"Refusing to write. Nothing could settle peer_reviewed for "
+                f"{url} — no DOI resolved and the host is not a known "
+                "preprint server. An unlabelled claim on a slide is a "
+                "credibility risk.")
+        out.append({k: built[k] for k in ITEM_KEYS if k in built})
+
+    post["items"] = out
+    return finish(post, SIGNAL_KEYS)
+
+
+def check_budget(rejected: int, wanted: int) -> None:
+    """Give up rather than walking a 1440-row queue inside a 15-minute job.
+
+    Each rejected candidate costs a page fetch and a Crossref call. Five is
+    enough for a story covered by every feed at once, and a Signal asking
+    for five items gets five times the rope for the same reason.
+    """
+    if rejected < MAX_DUPLICATE_SKIPS * wanted:
+        return
+    sys.exit(f"Rejected {rejected} rows in a row and gave up — the queue's "
+             "top scores are all stories already posted, or sources nothing "
+             "can resolve. Run `python src/ingest.py` for fresh items, or "
+             "pass --row to draft a specific one anyway.")
+
+
+def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
+                       seen: dict[str, str], wanted: int,
+                       labelled_only: bool = False) -> Iterator[dict]:
+    """Candidates that survive the duplicate guard, in queue order.
+
+    A candidate is only settled once its paper has been resolved, which is
+    after the page has been fetched, so rejecting one means going back for
+    another. Each pass costs one fetch and one Crossref call and no LLM
+    call — the model is not reached until `wanted` of them survive.
+
+    A Drop asks for one and a Signal for five, and the walk down the queue is
+    the same either way, which is why it is one function rather than two.
+    Only the plain sheet path ever asks for more than one: --row, --url and
+    --evergreen each name a single candidate, and naming one is the override.
+
+    Yields {"row", "item", "article", "paper"}.
+    """
+    # Rows this run has rejected as duplicates or already handed out, and
+    # evergreen ranks likewise. pick_row reads a snapshot taken before any of
+    # them were marked, so without this it would return the same one again.
     skipped: set[int] = set()
     skipped_ranks: set[int] = set()
+    rejected = 0
     # `--evergreen` with no number asks for the best candidate left, which is
     # a question this loop can ask again after a rejection. `--evergreen N`
     # names one, and naming one is the override.
     auto_evergreen = args.evergreen == 0
+    found = 0
 
-    while True:
+    while found < wanted:
+        row_number = None
         if args.evergreen is not None:
             item = evergreen_candidate(args.evergreen, frozenset(skipped_ranks))
         elif args.url:
@@ -869,8 +1083,10 @@ def main() -> int:
         else:
             row_number, item = pick_row(rows, col, args.row, skipped)
 
-        print(f"Drafting {f'row {row_number}' if row_number else item['source']} · "
-              f"{item['score']} · {item['title'][:60] or item['url']}")
+        where = f"row {row_number}" if row_number else item["source"]
+        print(f"{'Item ' + str(found + 1) if wanted > 1 else 'Drafting'} "
+              f"{where} · {item['score']} · "
+              f"{item['title'][:60] or item['url']}")
 
         # An evergreen candidate is drafted from its brief alone. Its Source line
         # names a general reference rather than a report of one result, and
@@ -914,9 +1130,36 @@ def main() -> int:
                       "attribution is the paper's, the slides are the coverage's, "
                       "so check the mechanism before posting")
 
+        settled = {"row": row_number, "item": item, "article": article,
+                   "paper": paper}
+
+        # A Signal picks five from a queue of a thousand, so it can afford to
+        # want every item labelled by Crossref or by its host rather than by
+        # the model. A Drop cannot: it must draft the row it was handed, and
+        # its own peer_reviewed comes back in the reply. That is the whole
+        # difference, and it is why this is a skip rather than a stop — the
+        # row stays queued, because an unresolvable paper is still a fine
+        # Drop tomorrow.
+        if labelled_only and peer_review_flag(paper, item["url"]) is None:
+            print(f"  skipping {where}: no DOI resolved and "
+                  f"{outlet(item['url'])} is not a preprint host, so nothing "
+                  f"but the model could label it peer-reviewed")
+            if row_number is not None:
+                skipped.add(row_number)
+            rejected += 1
+            check_budget(rejected, wanted)
+            continue
+
         covered = already_covered(paper, item["url"], seen)
+
         if not covered:
-            break
+            yield settled
+            found += 1
+            # Taken, not rejected: it must not come back on the next pass of
+            # a Signal, and it is not a duplicate so it does not count as one.
+            if row_number is not None:
+                skipped.add(row_number)
+            continue
 
         # An evergreen candidate is matched on its URL alone — see
         # covered_papers — and the queue keeps a subject listed after it has
@@ -934,7 +1177,9 @@ def main() -> int:
         # the point of naming a candidate by hand.
         if row_number is None or args.row:
             print(f"  warning: {covered} already covers this")
-            break
+            yield settled
+            found += 1
+            continue
 
         # `paper` is None when the match came from the URL rather than from a
         # resolved DOI, which is why this names the post and not the citation.
@@ -943,39 +1188,87 @@ def main() -> int:
         if not args.dry_run:
             worksheet.update_cell(row_number, col["status"] + 1, "duplicate")
         skipped.add(row_number)
-        if len(skipped) >= MAX_DUPLICATE_SKIPS:
-            sys.exit(f"Skipped {len(skipped)} duplicate rows in a row and gave "
-                     "up — the queue's top scores are all stories already "
-                     "posted. Run `python src/ingest.py` for fresh items, or "
-                     "pass --row to draft a specific one anyway.")
+        rejected += 1
+        check_budget(rejected, wanted)
 
-    reply = llm.generate(
-        PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
-                      source=item["source"], title=item["title"],
-                      url=item["url"],
-                      text=source_text(paper, article, item["summary"])),
-        api_key, model, temperature=0.4)
 
-    try:
-        post = json.loads(reply.strip())
-    except json.JSONDecodeError:
-        sys.exit(f"The model did not return JSON:\n{reply[:400]}\nRe-run to try again.")
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    picked = ap.add_mutually_exclusive_group()
+    picked.add_argument("--row", type=int, help="draft this sheet row instead")
+    picked.add_argument("--url", help="draft this page instead of a sheet row")
+    picked.add_argument("--evergreen", type=int, nargs="?", const=0, metavar="N",
+                        help="draft from docs/evergreen_queue.md: the "
+                             "highest-scoring candidate, or candidate N")
+    picked.add_argument("--signal", type=int, nargs="?", const=SIGNAL_ITEMS,
+                        metavar="N",
+                        help=f"draft a Signal — the weekly roundup — from the "
+                             f"top {SIGNAL_ITEMS} queued rows, or the top N")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the JSON without writing or marking the row")
+    args = ap.parse_args()
 
-    post = validate(post, item, paper)
+    if args.signal is not None and args.signal < 2:
+        sys.exit(f"--signal {args.signal} is not a roundup. "
+                 f"docs §1 says five items; two is the fewest that reads as "
+                 f"a list.")
+
+    api_key, model = llm.config()
+
+    # Read once, before the loop: what posts/ already covers.
+    seen = covered_papers()
+
+    # Neither of the off-sheet paths has a row to mark afterwards, so neither
+    # opens the sheet — which also means they need no Google credentials.
+    worksheet, rows, col = None, [], {}
+    if args.evergreen is None and not args.url:
+        worksheet = open_sheet()
+        rows = worksheet.get_all_values()
+        if not rows:
+            sys.exit("The sheet is empty. Run `python src/ingest.py` first.")
+        col = {name: rows[0].index(name) for name in COLUMNS if name in rows[0]}
+
+    wanted = args.signal or 1
+    picks = list(settled_candidates(args, rows, col, worksheet, seen, wanted,
+                                    labelled_only=bool(args.signal)))
+
+    if args.signal:
+        reply = llm.generate(
+            SIGNAL_PROMPT.format(count=len(picks),
+                                 hook_limit=HOOK_WORD_LIMIT,
+                                 claim_limit=CLAIM_WORD_LIMIT,
+                                 sources=signal_sources(picks)),
+            api_key, model, temperature=0.4)
+        post = validate_signal(parsed(reply), picks)
+        title = f"signal-week-{date.today().isocalendar().week:02d}"
+    else:
+        pick = picks[0]
+        item, paper = pick["item"], pick["paper"]
+        reply = llm.generate(
+            PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
+                          source=item["source"], title=item["title"],
+                          url=item["url"],
+                          text=source_text(paper, pick["article"],
+                                           item["summary"])),
+            api_key, model, temperature=0.4)
+        post = validate(parsed(reply), item, paper)
+        title = slugify(item["title"])
+
     print(json.dumps(post, indent=2, ensure_ascii=False))
 
+    marks = [p["row"] for p in picks if p["row"] is not None]
     if args.dry_run:
         print("\nDry run — nothing written"
-              + (", row left queued" if row_number else ""))
+              + (f", {len(marks)} row(s) left queued" if marks else ""))
         return 0
 
     POSTS_DIR.mkdir(exist_ok=True)
-    out = POSTS_DIR / f"{date.today():%Y-%m-%d}-{slugify(item['title'])}.json"
+    out = POSTS_DIR / f"{date.today():%Y-%m-%d}-{title}.json"
     out.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
 
-    # Mark the row so the next run picks a different story. An evergreen
+    # Mark the rows so the next run picks different stories. An evergreen
     # draft has no row to mark; the queue doc is edited by hand at the gate.
-    if row_number is not None:
+    for row_number in marks:
         worksheet.update_cell(row_number, col["status"] + 1, "drafted")
 
     print(f"\nWrote {out.relative_to(REPO_ROOT)}")

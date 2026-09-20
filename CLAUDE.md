@@ -78,7 +78,8 @@ src/
   gemini.py          Gemini request + free-tier retry policy
   groq_llm.py        Groq request, same interface as gemini.py
   score.py           LLM scoring, batched
-  draft.py           winning item → paper via Crossref → JSON
+  draft.py           winning item → paper via Crossref → JSON;
+                     --signal walks five rows for the weekly roundup
   render.py          JSON + template → PNGs
   proof.py           measures the rendered layout — frame, contrast, flag
   site.py            published posts → static web archive
@@ -431,14 +432,51 @@ that is short. Two consequences worth knowing before touching it:
 need the answer — `render.py` refuses a record missing a field, `proof.py`
 measures the word budget, `translate.py` knows what to translate, `site.py`
 what to print, `telegram.py` what to show at the gate, and the template what
-to lay out — and one of them cannot pay for it: `telegram.py` runs 96 times a
-day under `requests` and `python-dotenv` alone and must never import
-`render.py`. Do not put the table back there, and do not keep a second copy.
+to lay out — and one of them cannot pay for it: `telegram.py` runs on
+`publish.yml`'s poll under `requests` and `python-dotenv` alone and must
+never import `render.py`. Do not put the table back there, and do not keep a second copy.
 
-Only the Drop is drafted by the pipeline. `docs` §4 splits the work by
-stakes — free-tier LLM for routine Drops, this Claude project for Breakdowns
-— so `draft.py` emits `post_type: "drop"` and a Breakdown is written by hand
-and rendered, proofed, fact-checked and gated exactly like any other post.
+The Breakdown is the one format the pipeline does not draft. `docs` §4
+splits the work by stakes — free-tier LLM for routine posts, this Claude
+project where the explanation has to be excellent — and a Breakdown is
+written by hand, then rendered, proofed, fact-checked and gated exactly like
+any other post.
+
+**A Signal is drafted, by `draft.py --signal`.** It is the same walk down
+the queue as a Drop, five times, and the same code ownership of the credit
+and the preprint flag applied per item rather than per post; one LLM call
+writes all five claims. It moved off the hand-written side because a roundup
+is not where the explanation lives — its per-item claim is a hook, not a
+mechanism — and because the sourcing a person would do by hand is exactly
+what `resolve_paper` already does. Four things make it different from
+drafting five Drops:
+
+- **The order the sources go into the prompt is the only thing tying a claim
+  to its credit.** The model is told not to reorder, and a reply of the
+  wrong length is refused outright rather than zipped against whatever lines
+  up — silently pairing claim 3 with paper 4 puts the wrong authors' names
+  under a result on a public slide.
+- **It rejects what it cannot label, before the model is reached.** A Drop
+  must draft the row it was handed and takes `peer_reviewed` from the reply
+  where Crossref is silent; a Signal picks five from a queue of a thousand,
+  so it can afford to want every item settled by Crossref or by a preprint
+  host. The row stays queued — an unresolvable paper is still a fine Drop
+  tomorrow — and the walk goes on rather than spending the LLM call and
+  failing after it.
+- **`covered_papers()` reads a Signal's items, not just its top level.** A
+  roundup keeps `doi`, `attribution` and `source_url` per item and none on
+  the post, so without that the five stories it covered were invisible to
+  the duplicate guard and the next Signal would have picked them straight
+  back out of the queue.
+- **One budget, two reasons to walk on.** `check_budget` gives up after
+  `MAX_DUPLICATE_SKIPS` rejections per item wanted, so a Drop still gives up
+  after five and a Signal gets five times the rope for five times the work.
+
+`draft.py`'s own `DRAFTED` names only what a *draft* needs beyond what
+`render.py` will refuse to render — `post_type`, `domain`, `caption`.
+Everything else it checks comes from `formats.required()`. It used to list a
+Drop's body fields, which made it a fourth copy of the `formats.py` table
+and the reason a Signal could not come out of this file at all.
 
 `published_at` is not part of the contract and `draft.py` never emits it. It
 is added by hand, as `YYYY-MM-DD`, when the post actually goes live on

@@ -1,0 +1,71 @@
+{
+  "post_type": "signal",
+  "domain": "This week",
+  "colorway": "signal",
+  "hook": "5 results you missed this week",
+  "items": [
+    {
+      "claim": "In simulation, water-filled aluminum eggshell arrays cut debris impact speed 65% — a flat plate managed 51%",
+      "attribution": "Wang et al., Journal of Applied Physics (2026)",
+      "source_url": "https://arstechnica.com/science/2026/09/how-eggshells-can-protect-spacecraft-from-space-debris/",
+      "doi": "10.1063/5.0324502",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Weft‑knitted textiles can snap into multistable shapes for soft switches",
+      "attribution": "Mahadevan et al., Advanced Functional Materials (2026)",
+      "source_url": "https://www.sciencedaily.com/releases/2026/09/260901070543.htm",
+      "doi": "10.1002/adfm.76385",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Janelia mapped every neuron in the male fruit fly nervous system — 166,000 of them",
+      "attribution": "Berg et al., Cell (2026)",
+      "source_url": "https://research.google/blog/a-connectomics-milestone-mapping-the-complete-male-fruit-fly-brain/",
+      "doi": "10.1016/j.cell.2026.08.015",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Simulations put the first planetesimals around low-mass stars just 100 Myr after the Big Bang",
+      "attribution": "Vorobyov et al., The Astrophysical Journal Letters (2026)",
+      "source_url": "https://www.sciencenews.org/article/universe-rocky-planets-formed-early",
+      "doi": "10.3847/2041-8213/ae907c",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "An origami torus with only 8 vertices is the most efficient design",
+      "attribution": "Schwartz, Proceedings of the National Academy of Sciences (2026)",
+      "source_url": "https://www.scientificamerican.com/article/mathematician-discovers-how-to-fold-the-smallest-origami-doughnut/",
+      "doi": "10.1073/pnas.2523301123",
+      "peer_reviewed": true
+    }
+  ],
+  "caption": "From eggshells to origami, science keeps surprising us. Which breakthrough do you find most mind‑blowing?",
+  "keywords": [
+    "spacecraft protection",
+    "smart textiles",
+    "connectomics",
+    "early planet formation",
+    "origami mathematics"
+  ],
+  "hashtags": [
+    "#ScienceNews",
+    "#TechTrends",
+    "#SpaceTech",
+    "#SmartFabric",
+    "#Origami"
+  ],
+  "alt_text": "A seven-slide carousel of five science results from this week, one per slide with its citation, on flat colour backgrounds: eggshell-shaped armour for spacecraft, knitted fabric that snaps between shapes, a complete map of the male fruit fly nervous system, planetesimals forming 100 million years after the Big Bang, and the smallest possible origami doughnut.",
+  "es": {
+    "domain": "esta semana",
+    "hook": "5 resultados que perdiste esta semana",
+    "items": [
+      "En simulación, las matrices de cáscaras de huevo de aluminio llenas de agua redujeron la velocidad de impacto de escombros en un 65 % — una placa plana logró un 51 %",
+      "El tejido de punto por trama crea láminas elásticas multiestables que saltan de forma para interruptores blandos",
+      "Janelia mapeó cada neurona del sistema nervioso de la mosca de la fruta macho — 166 000 de ellas",
+      "Las simulaciones sitúan los primeros planetesimales alrededor de estrellas de baja masa apenas 100 Myr después del Big Bang",
+      "Un toro de origami con solo 8 vértices es el diseño más eficiente"
+    ],
+    "_en": "910c2b67d39a0197"
+  }
+}

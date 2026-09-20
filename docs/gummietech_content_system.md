@@ -43,15 +43,23 @@ disagree again, this one wins and the other is corrected to match.
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
 | **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
-| **The Signal** | optional | Reference value | Carousel, 5 items | a person, then the pipeline |
+| **The Signal** | optional | Reference value | Carousel, 5 items | `draft.py --signal` |
 
 **The column is about the words, not the rest of the work.** §4 splits
-drafting by stakes: the free LLM tier writes the routine Drops, and a person
-writes the two formats where the explanation has to be excellent. Everything
-after drafting is identical for all three carousels — render, proof,
-fact-check, the gate, the archive — so "a person, then the pipeline" means a
-hand-written JSON file going through exactly the machinery a Drop does. The
-Build is the one row that never touches `src/` at any stage.
+drafting by stakes: the free LLM tier writes the formats whose sentences are
+hooks, and a person writes the one where the explanation has to be
+excellent. Everything after drafting is identical for all three carousels —
+render, proof, fact-check, the gate, the archive — so "a person, then the
+pipeline" means a hand-written JSON file going through exactly the machinery
+a Drop does. The Build is the one row that never touches `src/` at any
+stage.
+
+The Signal moved from "a person, then the pipeline" to `draft.py --signal`
+on 2026-09-19. A roundup is not where the explanation lives — its per-item
+claim is a hook, not a mechanism — and the sourcing a person would do by
+hand for five items is exactly what `resolve_paper` already does for one.
+The Breakdown stays hand-written; that is the row §4's split is actually
+about.
 
 Fixed 2026-09-19, replacing a 4–5×/week Drop with no Build at all. The account
 is an inbound-demand funnel for software and AI-automation build services
@@ -97,6 +105,8 @@ Built 2026-09-19 as `templates/signal.html`: cover + one slide per item + CTA, s
 **It has no dark slide.** The dark slide is where a post's caveat goes; a roundup has five caveats or none, and making one item dark would say something about that item the post does not say.
 
 Where the items come from is the cheap part: the scoring queue already holds far more rows above the ≥7 threshold than get drafted, and every one that is not picked stays there. A Signal is a week of those.
+
+Built 2026-09-19 as `draft.py --signal`, which is that paragraph as code: it walks the queue five times instead of once, resolves each candidate's paper through Crossref exactly as a Drop's is resolved, and takes each item's `attribution` and `peer_reviewed` from that record rather than from the model. One LLM call writes all five claims. The index into the prompt is the only thing tying a claim to its credit, so the model is told not to reorder and a reply of the wrong length is refused rather than zipped. Because it is choosing five from a thousand rather than drafting the row it was handed, it also skips any candidate whose peer-review status nothing but the model could settle — the row stays queued, since an unresolvable paper is still a fine Drop tomorrow.
 
 ---
 

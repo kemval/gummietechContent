@@ -12,6 +12,46 @@ Strategy and source map: `docs/gummietech_content_system.md`
   every 2h    Gemini      LLM         against source    HTML→PNG     the slides   10 min/day      Business Suite   saves/shares
 ```
 
+## Post formats
+
+Four content pillars (`docs` §1). Three of them are carousels and go through
+every stage of the pipeline above; the fourth never touches `src/` at all.
+
+| Format | Cadence | Slides | Written by | Template |
+|---|---|---|---|---|
+| **The Drop** | 3×/week | 5 | `draft.py`, on a cron | `templates/drop.html` |
+| **The Breakdown** | 1×/week | 8–10 | a person | `templates/breakdown.html` |
+| **The Signal** | optional | 5 items | `draft.py --signal` | `templates/signal.html` |
+| **The Build** | 2×/week | — | a person, start to finish | reel, not a carousel |
+
+"Written by" is about the words only. A hand-written Breakdown is a JSON file
+in `posts/` that goes through exactly the machinery a Drop does — render,
+proof, fact-check, Telegram, the archive. It is hand-written because that is
+the format where the explanation has to be excellent (`docs` §4); a Signal's
+per-item claim is a hook rather than a mechanism, so the pipeline writes it:
+
+```bash
+python src/draft.py --signal      # the top five queued rows nobody drafted
+```
+
+That walks the queue five times instead of once, resolves each item's paper
+through Crossref for its own `attribution` and `peer_reviewed`, and spends
+one LLM call on the five claims. The order the sources go into the prompt is
+the only thing tying a claim to its credit, so a reply of the wrong length is
+refused rather than zipped against whatever lines up.
+
+`src/formats.py` is the one table that says what each format is made of, and
+every other module asks it rather than branching on `post_type`. A Breakdown
+takes `the_question`, `the_intuition` and a `mechanism` list where a Drop
+takes `what_happened`; a Signal takes `items`, five objects that each carry
+their own `attribution`, `source_url` and `peer_reviewed`, because a roundup
+has five sources and crediting one of them credits none. How many slides a
+format has is its template's business: `render.py` counts `.slide` divs, so
+adding a format is adding a template.
+
+`posts/era.json`, `posts/era-breakdown.json` and `posts/era-signal.json` are
+the fixtures CI renders — one per format, no date prefix, never published.
+
 ## Layout
 
 | Path | Purpose |

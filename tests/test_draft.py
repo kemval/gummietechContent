@@ -10,6 +10,8 @@ each test hands it the records it would have fetched.
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import draft
@@ -184,3 +186,80 @@ def test_a_preprint_carries_its_server_where_a_journal_would_be():
     facts = draft.paper_facts(record)
     assert facts["is_preprint"]
     assert "bioRxiv" in draft.citation(facts)
+
+
+# --- the Signal: five sources in one prompt -------------------------------
+#
+# A roundup moves attribution, source_url and peer_reviewed onto each item,
+# so everything draft.py owns in code it now has to own five times over. The
+# index into the prompt is the only thing relating a claim to its credit.
+
+def pick(url, paper=None, row=1):
+    return {"row": row, "article": "text", "paper": paper,
+            "item": {"url": url, "source": "example.org", "title": "A story",
+                     "summary": "A summary.", "score": 8}}
+
+
+def reply(n, **over):
+    return {"domain": "This week", "colorway": "orbit",
+            "hook": f"{n} results you missed", "caption": "Which one?",
+            "keywords": ["science"], "hashtags": ["#science"],
+            "alt_text": "A roundup of results.",
+            "items": [{"claim": f"Result {i}.", "attribution": f"Model {i}"}
+                      for i in range(1, n + 1)]} | over
+
+
+PAPER = {"doi": "10.1000/real", "authors": ["Alvarez", "Bo", "Chen"],
+         "journal": "Nature", "year": "2026", "is_preprint": False,
+         "abstract": "", "title": "The real paper"}
+
+
+def test_crossref_overrides_the_models_credit_per_item():
+    """The same override a Drop gets, applied to the item rather than the
+    post — coverage quotes whoever gave the interview."""
+    post = draft.validate_signal(
+        reply(1), [pick("https://example.org/a", PAPER)])
+    assert post["items"][0]["attribution"] == "Alvarez et al., Nature (2026)"
+    assert post["items"][0]["doi"] == "10.1000/real"
+
+
+def test_a_preprint_host_forces_one_items_flag_down_and_not_the_others():
+    """§7.2 is a per-claim rule. One arXiv link among four journal papers
+    labels one slide, not all five and not none."""
+    post = draft.validate_signal(
+        reply(2), [pick("https://arxiv.org/abs/2609.00001"),
+                   pick("https://example.org/b", PAPER, row=2)])
+    assert [i["peer_reviewed"] for i in post["items"]] == [False, True]
+
+
+def test_a_reply_of_the_wrong_length_is_refused_not_zipped():
+    """Order is the only link between a claim and its credit. Zipping a
+    short reply against the picks would put someone else's name under a
+    result on a public slide."""
+    with pytest.raises(SystemExit, match="2 sources went in and 1 came back"):
+        draft.validate_signal(reply(1), [pick("https://example.org/a", PAPER),
+                                         pick("https://example.org/b", PAPER)])
+
+
+def test_an_item_nothing_can_label_is_a_stop():
+    """No DOI and not a preprint host means nothing in code knows, and the
+    model is not allowed to decide this one."""
+    with pytest.raises(SystemExit, match="Nothing could settle peer_reviewed"):
+        draft.validate_signal(reply(1), [pick("https://example.org/a")])
+
+
+def test_a_signals_items_register_in_the_duplicate_guard(tmp_path,
+                                                         monkeypatch):
+    """covered_papers read only the top level, where a Signal keeps nothing.
+    Five stories went into a roundup that the next --signal run could not
+    see, and would have picked straight back out of the queue."""
+    monkeypatch.setattr(draft, "POSTS_DIR", tmp_path)
+    (tmp_path / "2026-09-20-signal-week-38.json").write_text(json.dumps({
+        "post_type": "signal", "hook": "h", "alt_text": "a",
+        "items": [{"claim": "c", "attribution": "Alvarez et al., Nature (2026)",
+                   "source_url": "https://example.org/a", "doi": "10.1000/real",
+                   "peer_reviewed": True}]}))
+
+    seen = draft.covered_papers()
+    assert draft.already_covered(PAPER, "https://elsewhere.test/x", seen)
+    assert draft.already_covered(None, "https://example.org/a", seen)
