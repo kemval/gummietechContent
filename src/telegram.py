@@ -84,7 +84,7 @@ from dotenv import load_dotenv
 from formats import body_text, es_fields, pieces, sections
 
 # Defined here rather than imported from render.py on purpose: `confirm` runs
-# every quarter hour and needs nothing but requests, and render.py imports
+# on publish.yml's poll and needs nothing but requests, and render.py imports
 # playwright at module level.
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
@@ -430,7 +430,7 @@ def review_text(post: dict, stem: str,
         lines += [
             "",
             "Tap the button once it is live on Instagram. The archive picks "
-            "it up within the hour.",
+            "it up on its next poll, usually within a couple of hours.",
         ]
     return "\n".join(lines)
 
@@ -575,7 +575,7 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
 # already lives in, on a phone that is already open.
 #
 # Both halves ride on machinery that exists. The question goes out from
-# confirm(), which already polls every quarter hour and already writes to
+# confirm(), which already polls on publish.yml's cron and already writes to
 # posts/; the answer lands in the post JSON beside published_at, which is
 # where every other fact about a post has accumulated. No sheet, no service,
 # no second place to look.
@@ -594,9 +594,10 @@ METRICS_AFTER_DAYS = 3
 # One question per poll, so a backlog trickles instead of arriving at once.
 # There is always a backlog the first time this runs — every post already
 # published is instantly due — and fifteen questions in one burst teaches a
-# person to ignore the bot, which costs more than the answers are worth. The
-# same reasoning as notify-failure's `hourly`. At a quarter-hourly poll a
-# backlog of fifteen drains in under four hours, and one at a time is how
+# person to ignore the bot, which costs more than the answers are worth.
+# The cron asks for a poll every fifteen minutes and the free tier delivers
+# roughly one every two hours (see CLAUDE.md), so a backlog of fifteen drains
+# over a day or so rather than an afternoon. Slow, but one at a time is how
 # they get answered anyway.
 METRICS_ASK_PER_POLL = 1
 # The question carries the stem, and the reply carries it back by being a
@@ -609,7 +610,7 @@ METRICS_MARK = "metrics ·"
 METRICS_ASK_RE = re.compile(rf"{re.escape(METRICS_MARK)} (\S+)$", re.M)
 # "120 14 33", "120/14/33", "120, 14, 33" — three numbers, any separator.
 # A reply that is not three numbers is ignored in silence, deliberately:
-# answering it would replay that answer every fifteen minutes for a day.
+# answering it would replay that answer on every poll for a day.
 METRICS_REPLY_RE = re.compile(r"^\D*(\d+)\D+(\d+)\D+(\d+)\D*$")
 
 
@@ -670,7 +671,7 @@ def ask_metrics(token: str, chat_id: str, today: str) -> int:
 
     The `metrics` block is written when the question goes out rather than when
     it is answered, because that block is also what stops the question being
-    asked again fifteen minutes later. An unanswered ask is therefore a post
+    asked again on the next poll. An unanswered ask is therefore a post
     with a metrics block and no numbers in it — which learn.py reports as
     unanswered rather than as a zero, since those are very different things.
     """

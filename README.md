@@ -78,8 +78,10 @@ cp .env.example .env              # then fill in keys
 `daily.yml` drafts, translates and renders one post on Monday, Wednesday and
 Friday — the three Drops the cadence is fixed at — then sends the slides and
 `caption.txt` to Telegram. You post the carousel to Instagram
-yourself and tap **Posted to Instagram**; `publish.yml` sees the tap within
-the hour, stamps `published_at`, and rebuilds the archive.
+yourself and tap **Posted to Instagram**; `publish.yml` sees the tap on its
+next poll, stamps `published_at`, and rebuilds the archive. That poll asks
+for every 15 minutes and the free tier gives it about every two hours, so
+allow a couple of hours rather than minutes.
 
 Set up once:
 

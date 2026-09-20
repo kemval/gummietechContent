@@ -145,7 +145,8 @@ jobs:
     timeout-minutes: 5
 
     # publish.yml installs `requests python-dotenv` rather than
-    # requirements.txt, because it runs 96 times a day and telegram.py stays
+    # requirements.txt, because it is the most frequently run workflow here
+    # and telegram.py stays
     # clear of Playwright. That list is kept by hand against telegram.py's
     # imports, and the day it fell behind, `confirm` died at module load on
     # every poll until somebody opened the Actions tab. This is that exact

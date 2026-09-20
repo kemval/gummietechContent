@@ -234,7 +234,7 @@ def test_what_is_not_an_answer_is_left_alone(posts, quiet, update):
 
 
 def test_a_reply_that_is_not_three_numbers_is_ignored_in_silence(posts, quiet):
-    """Answering it would replay that answer every fifteen minutes for a day."""
+    """Answering it would replay that answer on every poll for a day."""
     posts("2026-09-15-x.json", hook="h", published_at="2026-09-15",
           metrics={"asked_at": "2026-09-20"})
     assert tg.record_metrics("tok", [reply_update("2026-09-15-x", "no idea yet")],

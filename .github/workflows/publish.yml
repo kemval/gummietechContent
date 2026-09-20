@@ -9,9 +9,16 @@ name: publish
 
 on:
   schedule:
-    # Quarter-hourly. GitHub delays scheduled runs 10-30 minutes at peak, so
-    # the real latency between the tap and the site is up to about an hour —
-    # the Telegram message says as much.
+    # This asks for quarter-hourly and does not get it. A cron on the free
+    # tier is a request, not a promise: measured on 2026-09-20 this workflow
+    # ran eight times in 19.5 hours — 06:04, 10:52, 14:01, 17:15, 19:24,
+    # 21:31, 23:30, 01:36 UTC. So the real latency between the tap and the
+    # site is a couple of hours, which is what the Telegram message says.
+    # The request stays at */15 because asking for less would only make the
+    # delivered cadence sparser; nothing here is correctness-dependent on it
+    # (`confirm` is idempotent, and a tap replays for 24 hours), but anything
+    # rate-limited to one per poll drains about eight times slower than this
+    # line suggests.
     - cron: '*/15 * * * *'
   workflow_dispatch:
 
@@ -37,7 +44,8 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      # Not requirements.txt: this job runs 96 times a day, and telegram.py
+      # Not requirements.txt: this job runs on the most frequent cron here,
+      # and telegram.py
       # deliberately does not import render.py, which would drag in Playwright.
       # These two are telegram.py's entire non-stdlib surface — keep them in
       # step with its imports, or `confirm` dies at module load.

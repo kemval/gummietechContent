@@ -153,6 +153,17 @@ peak and disables scheduled workflows after 60 days of repo inactivity.
 Neither matters for a 2-hour cycle, but do not build anything that assumes
 punctual execution.
 
+**It also does not honour a high-frequency cron, and a cron is a request
+rather than a promise.** `publish.yml` asks for `*/15 * * * *` and gets
+roughly one run every two hours: measured on 2026-09-20, eight runs across
+19.5 hours — 06:04, 10:52, 14:01, 17:15, 19:24, 21:31, 23:30, 01:36 UTC.
+Read every "every 15 minutes" in this file as "a handful of times a day, on
+GitHub's terms". What that changes: a tap is recorded within a couple of
+hours rather than minutes, and anything rate-limited to one per poll drains
+about eight times slower than the cron suggests. What it does not change:
+nothing here is correctness-dependent on the interval — `confirm` is
+idempotent, and a tap replays for 24 hours whatever the cadence.
+
 **Feed URLs move constantly.** Never hardcode a URL from memory. Run
 `python src/verify_feeds.py -v` after any change to `feeds/`, and treat
 that as a required step before wiring a feed into ingest. The `feed-scout`
@@ -577,7 +588,8 @@ proofs and sends to Telegram. It ran daily until 2026-09-19 against a
 three-a-week pillar, and the four surplus drafts a week each spent a draft
 call, a translate call, a `fact-check` run on the Claude quota and a message
 in the chat, while the buffer of undated drafts grew with nothing deciding how
-deep it should get. `publish.yml` polls every 15 minutes for the reply.
+deep it should get. `publish.yml` polls for the reply on a 15-minute cron
+that the free tier actually delivers about every two hours.
 Between them sits a person, doing what only a person can:
 
 ```
@@ -681,9 +693,9 @@ constraints that shape it:
   `GITHUB_TOKEN` does not fire another workflow's `push` trigger;
   `workflow_dispatch` is the documented exception. Removing that line makes
   the archive silently stop updating.
-- **`publish.yml` installs `requests` alone,** not `requirements.txt` — it
-  runs 96 times a day, and `telegram.py` deliberately does not import
-  `render.py`, which would drag in Playwright.
+- **`publish.yml` installs `requests` alone,** not `requirements.txt` — it is
+  the most frequently run workflow here, and `telegram.py` deliberately does
+  not import `render.py`, which would drag in Playwright.
 
 ### Both reviews gate the button
 
@@ -769,13 +781,13 @@ on cost, so they are read by eye. The only design question is where a person
 types three numbers with the least ceremony, and the answer is the chat the
 gate already lives in.
 
-`confirm` therefore does two jobs on the same quarter-hourly poll: it stamps
+`confirm` therefore does two jobs on the same poll: it stamps
 the taps, and three days after a post went live it asks that post's numbers
 and writes the reply into the post JSON. Four things hold it together:
 
 - **The ask writes the block, not the answer.** `metrics: {asked_at}` is
   written when the question goes out, because that block is also what stops
-  the question being asked again fifteen minutes later. An unanswered ask is
+  the question being asked again on the next poll. An unanswered ask is
   a block with no numbers in it, which `learn.py` reports as unanswered
   rather than as a zero — those are very different facts.
 - **The answer is a reply, not a button.** Three integers do not fit in

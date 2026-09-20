@@ -3,7 +3,8 @@
 What each carousel format is made of, and nothing else.
 
 Its own module for the reason llm_errors.py is: every layer needs this
-answer and one of them cannot pay for it. telegram.py runs 96 times a day
+answer and one of them cannot pay for it. telegram.py runs on publish.yml's
+poll, the most frequent workflow here,
 under `requests` and `python-dotenv` alone and must never import render.py,
 which pulls in Jinja and Playwright at module load — so the table cannot
 live there, and a second copy in telegram.py would be a second place for the

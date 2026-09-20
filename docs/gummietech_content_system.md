@@ -252,7 +252,7 @@ Secondary benefit: Route B needs media at a publicly accessible URL, and this pu
 
 Instagram Insights (native, free) gives saves, shares and profile visits per post. Track **saves and shares**, not likes. After 30 posts, cut the weakest format and double the winner.
 
-Built 2026-09-19, and not as the manual sheet this section used to ask for. Three days after a post goes live, `src/telegram.py confirm` — the same quarter-hourly poll that already watches for the publish tap — asks that post for its three numbers in the approval chat. You reply `120 14 33`, and they land in the post's own JSON as a `metrics` block, next to `published_at`. No second database, nothing to open on a laptop, and the numbers sit beside the post they describe.
+Built 2026-09-19, and not as the manual sheet this section used to ask for. Three days after a post goes live, `src/telegram.py confirm` — the same poll that already watches for the publish tap — asks that post for its three numbers in the approval chat. You reply `120 14 33`, and they land in the post's own JSON as a `metrics` block, next to `published_at`. No second database, nothing to open on a laptop, and the numbers sit beside the post they describe.
 
 `python src/learn.py` reads them back: medians by post type, colorway, domain and weekday, then every measured post ranked by saves. It holds back any group under three posts rather than ranking noise, and it computes no per-impression rate — impressions need the Professional-account API §4 rules out on cost, and a ratio invented from these three numbers would look rigorous and mean nothing.
 
