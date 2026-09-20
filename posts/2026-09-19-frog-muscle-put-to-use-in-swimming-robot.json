@@ -5,7 +5,7 @@
   "hook": "Bullfrog muscle powers a wireless manta‑ray robot",
   "what_happened": "Researchers isolated a frog gracilis muscle, wired it to a near‑infrared laser‑powered neural stimulator, and drove a manta‑ray‑shaped robot to swim",
   "why_it_matters": "It shows native muscle can deliver 6.5 N force, overcoming the weak output of engineered tissues and enabling high‑mobility biohybrid robots",
-  "the_catch": "The muscle stayed responsive for only 11 days and the robot could only move in water, not on rigid ground",
+  "the_catch": "The muscle stayed responsive for only 11 days, and the robot still depends on an external light source to move",
   "caption": "A frog’s leg becomes a high‑performance actuator for a wireless manta‑ray robot",
   "keywords": [
     "biohybrid",
@@ -25,10 +25,10 @@
   "peer_reviewed": true,
   "es": {
     "domain": "robotica biohibrida",
-    "hook": "El músculo de la rana bullfrog impulsa un robot manta sin cable",
-    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser infrarrojo cercano y dirigieron un robot con forma de manta para que nadara",
-    "why_it_matters": "Demuestra que el músculo nativo puede generar 6.5 N de fuerza, superando la baja potencia de los tejidos artificiales y permitiendo robots biohíbridos de alta movilidad",
-    "the_catch": "El músculo permaneció activo solo 11 días y el robot solo podía moverse en agua, no sobre terreno sólido",
-    "_en": "e2bba4abf7dcbaae"
+    "hook": "El músculo de la rana bullfrog impulsa un robot manta‑ray inalámbrico",
+    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser de infrarrojo cercano y dirigieron un robot con forma de manta‑ray para nadar",
+    "why_it_matters": "Demuestra que el músculo nativo puede generar 6.5 N de fuerza, superando la débil salida de tejidos diseñados y permitiendo robots biohíbridos de alta movilidad",
+    "the_catch": "El músculo permaneció receptivo solo 11 días, y el robot sigue dependiendo de una fuente de luz externa para moverse",
+    "_en": "5d982e8570108ff6"
   }
 }
