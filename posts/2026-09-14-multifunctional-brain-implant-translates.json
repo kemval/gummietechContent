@@ -22,12 +22,13 @@
   "source_url": "https://doi.org/10.1038/s41593-026-02446-2",
   "attribution": "Brosler et al., Nature Neuroscience (2026)",
   "peer_reviewed": true,
+  "published_at": "2026-09-14",
   "es": {
     "domain": "interfaz cerebro-computadora",
-    "hook": "Un solo implante descifra simultáneamente habla y gestos",
-    "what_happened": "Tres participantes con implante; dos controlaron un avatar virtual, con IA que convirtió el habla tentativa en texto y los gestos en movimiento a partir de una sola matriz de 253 electrodos",
+    "hook": "Un solo implante descifra el habla y los gestos simultáneamente",
+    "what_happened": "Tres participantes con implante; dos controlaron un avatar virtual, con IA que intentó convertir el habla en texto y los gestos en movimiento a partir de una sola matriz de 253 electrodos",
     "why_it_matters": "Los autores lo describen como un paso hacia BCIs que restauren una comunicación más natural y expresiva para personas con parálisis severa",
-    "the_catch": "Los vocabularios eran muy pequeños—máximo diez frases y diez gestos—y los autores afirman que la decodificación simultánea siguió siendo imperfecta en los tres participantes"
-  },
-  "published_at": "2026-09-14"
+    "the_catch": "Los vocabularios eran muy pequeños — como máximo diez frases y diez gestos — y los autores afirman que la decodificación simultánea siguió siendo imperfecta en los tres participantes",
+    "_en": "7f5c26a2d0d56064"
+  }
 }

@@ -22,12 +22,13 @@
   "source_url": "https://physics.stackexchange.com/questions/121830/does-earth-really-have-two-high-tide-bulges-on-opposite-sides",
   "attribution": "Laplace, dynamic theory of tides (1776)",
   "peer_reviewed": true,
+  "published_at": "2026-09-15",
   "es": {
     "domain": "oceanografía",
-    "hook": "Las dos protuberancias mareales del océano que aprendiste en la escuela no existen.",
-    "what_happened": "La teoría dinámica de Laplace demuestra que las mareas son ondas de agua poco profunda, no protuberancias estáticas: el océano no puede seguir el giro de la Tierra.",
-    "why_it_matters": "Corrige la idea errónea de que el océano forma dos protuberancias altas, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de la onda.",
-    "the_catch": "La fuerza mareal de Newton es correcta; solo su respuesta de protuberancia estática es errónea. Su gravedad no está en duda."
-  },
-  "published_at": "2026-09-15"
+    "hook": "Los dos abultamientos de marea oceánica que aprendiste en la escuela no existen.",
+    "what_happened": "La teoría dinámica de Laplace demuestra que las mareas son ondas de agua poco profunda, no abultamientos estáticos: el océano no puede seguir el giro de la Tierra.",
+    "why_it_matters": "Corrige la idea errónea de que el océano forma dos abultamientos altos, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de la onda.",
+    "the_catch": "La fuerza de marea de Newton es correcta; solo su respuesta de abultamiento estático es errónea. Su gravedad no está en duda.",
+    "_en": "7fb48461de02e8e4"
+  }
 }

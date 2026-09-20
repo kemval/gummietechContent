@@ -27,7 +27,8 @@
     "domain": "ingeniería de materiales",
     "hook": "Las estructuras de hielo ahora se pueden imprimir en 3D a temperatura ambiente.",
     "what_happened": "Los investigadores desarrollaron un método simplificado de impresión 3D que crea estructuras de hielo a temperatura ambiente mediante enfriamiento evaporativo en vacío.",
-    "why_it_matters": "Este enfoque imprime estructuras de hielo complejas sin infraestructura criogénica, materiales de soporte o refrigeración externa.",
-    "the_catch": "Las estructuras de hielo impresas son estables solo bajo condiciones de baja presión; una vez eliminado el vacío, se derriten de nuevo en agua."
+    "why_it_matters": "Este enfoque imprime estructuras de hielo complejas sin infraestructura criogénica, materiales de soporte ni refrigeración externa.",
+    "the_catch": "Las estructuras de hielo impresas son estables solo bajo condiciones de baja presión; una vez eliminado el vacío, se derriten de nuevo en agua.",
+    "_en": "d56b593fc507c582"
   }
 }

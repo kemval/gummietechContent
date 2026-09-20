@@ -22,12 +22,13 @@
   "source_url": "https://science.nasa.gov/missions/webb/nasas-webb-reveals-dynamic-panorama-of-star-formation/",
   "attribution": "Luhman and Alves de Oliveira, The Astrophysical Journal Letters (2025)",
   "peer_reviewed": true,
+  "published_at": "2026-09-17",
   "es": {
     "domain": "astronomía",
-    "hook": "JWST detecta 39 candidatos a enanas marrones en IC 348",
-    "what_happened": "Luhman y Alves de Oliveira emplearon JWST NIRCam y NIRSpec para identificar 39 candidatos, 15 espectros y nueve miembros subestelares confirmados",
-    "why_it_matters": "Demuestra que existen enanas marrones de masa mínima (~2 M_Jup), reduciendo el mínimo del IMF y revelando discos que forman planetas",
-    "the_catch": "Solo 15 de los 39 candidatos obtuvieron espectros (la máscara de NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0.05 M☉ carecen de pruebas dinámicas"
-  },
-  "published_at": "2026-09-17"
+    "hook": "JWST encuentra 39 candidatos a enanas marrones en IC 348",
+    "what_happened": "Luhman y Alves de Oliveira usaron JWST NIRCam y NIRSpec para identificar 39 candidatos, 15 espectros, nueve miembros subestelares confirmados",
+    "why_it_matters": "Muestra que existen enanas marrones de menor masa (~2 M_Jup), estrechando el mínimo del IMF y revelando discos formadores de planetas",
+    "the_catch": "Solo 15 de los 39 candidatos obtuvieron espectros (la máscara de NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0.05 M☉ carecen de pruebas dinámicas",
+    "_en": "f316623f4181429a"
+  }
 }

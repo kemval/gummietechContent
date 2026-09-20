@@ -25,10 +25,11 @@
   "published_at": "2026-09-05",
   "es": {
     "domain": "microbiología",
-    "hook": "Los quemadores Bunsen no esterilizan los espacios de trabajo de laboratorio y pueden empeorar la contaminación.",
-    "what_happened": "Los investigadores probaron los quemadores Bunsen contaminando el aire del laboratorio con bacterias y midiendo cuántos microorganismos se depositaron cerca de quemadores activos versus inactivos.",
-    "why_it_matters": "Esto cuestiona la suposición de larga data de que las corrientes de convección de los quemadores Bunsen alejan las partículas que contienen microorganismos de las mesas de trabajo.",
-    "the_catch": "Solo un experimento extremo con niveles masivos de bacterias mostró menos bacterias depositadas cerca del quemador activo."
+    "hook": "Los mecheros Bunsen no esterilizan los espacios de trabajo de laboratorio y pueden empeorar la contaminación.",
+    "what_happened": "Los investigadores probaron los mecheros Bunsen contaminando el aire del laboratorio con bacterias y midiendo cuántos microorganismos se depositaban cerca de mecheros activos frente a inactivos.",
+    "why_it_matters": "Esto cuestiona la suposición de larga data de que las corrientes de convección del mechero Bunsen transportan partículas con microorganismos lejos de las mesas de trabajo.",
+    "the_catch": "Solo un experimento extremo con niveles masivos de bacterias mostró menos bacterias depositándose cerca del mechero activo.",
+    "_en": "4d8ee9124b8b8931"
   },
   "metrics": {
     "asked_at": "2026-09-20"

@@ -22,12 +22,13 @@
   "source_url": "https://www.sciencedaily.com/releases/2026/09/260909231729.htm",
   "attribution": "Denton et al., The Astrophysical Journal Letters (2026)",
   "peer_reviewed": true,
+  "published_at": "2026-09-13",
   "es": {
     "domain": "ciencia planetaria",
     "hook": "La resistencia del material pudo haber permitido que la Luna se formara intacta horas después del impacto",
-    "what_happened": "Las simulaciones SPH con resistencia geológica dependiente de la temperatura mostraron que una Theia caliente pero sólida se captura como una Luna intacta, emergiendo en unas cinco horas",
-    "why_it_matters": "Desafía el modelado de la colisión como fluido puro y sugiere que la formación de la Luna puede estar vinculada a cuán calientes estaban la Tierra y Theia",
-    "the_catch": "En todos los escenarios la Luna proviene mayormente del manto de Theia, por lo que la resistencia no resuelve por qué la Tierra y la Luna coinciden en composición"
-  },
-  "published_at": "2026-09-13"
+    "what_happened": "Las simulaciones SPH con resistencia geológica dependiente de la temperatura mostraron que una Theia caliente pero sólida se captura como una Luna intacta, emergiendo en aproximadamente cinco horas",
+    "why_it_matters": "Desafía la modelación del choque como fluido puro y sugiere que la formación de la Luna puede estar vinculada a cuán calientes estaban la Tierra y Theia",
+    "the_catch": "En cada escenario la Luna proviene mayormente del manto de Theia, por lo que la resistencia no explica por qué la Tierra y la Luna coinciden en composición",
+    "_en": "23f41baae729f5cf"
+  }
 }
