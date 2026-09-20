@@ -1,0 +1,137 @@
+# Tier 2 — preprints (ahead of the news cycle, and never peer-reviewed)
+#
+# Re-verify after editing:  python src/verify_feeds.py -v
+#
+# Every item from this file is a paper, not coverage of one, which is the
+# whole reason it is worth the quota: draft.py's Crossref detour exists to
+# get behind news articles, and here there is nothing to get behind. The
+# abstract is the primary source and the link is the paper.
+#
+# All of these hosts are in draft.py's PREPRINT_HOSTS, so an item from this
+# file is marked peer_reviewed: false whatever Crossref or the model says,
+# and the template is required to show the flag (docs §7.2).
+#
+# --- why arXiv arrives over RSS and not the API docs §3 names ---
+#
+# The API (export.arxiv.org/api/query, sortBy=submittedDate) is what §3
+# lists, and its one advantage is that it answers on any day of the week.
+# It is also rate-limited well below what this file needs. On 2026-09-19 all
+# seven category queries, paced 2s apart by verify_feeds.pace_host, came
+# back `HTTP 429 Rate exceeded` or hung until the 20s timeout. A re-run
+# after five minutes of silence, at arXiv's documented 3s interval and with
+# a contact User-Agent instead of the browser one, returned the same seven
+# failures — so it is a penalty that outlives a run, not a burst. An
+# unattended 2-hourly job cannot carry that: a throttled pass spends the
+# next pass's timeout on tarpitted reads, and CI runs from a shared GitHub
+# Actions address that strangers have been throttling all day.
+#
+# rss.arxiv.org is the daily announcement, served static, and answered every
+# probe in under a second.
+#
+# It is a different shape of fetch, and the difference is the scoring bill.
+# The API query was capped at max_results=25 per fetch; the announcement is
+# a whole day of a category at once, and it carries cross-lists and
+# replacements as well as new submissions. So this file's cost is the
+# submissions/day table below plus whatever share of those two arXiv
+# announces — not 25 × 7 — and it lands on the first ingest after the
+# announcement rather than spread over the day. Read score.py's first
+# weekday numbers before adding a category here.
+#
+# What the announcement does not do is carry anything on a Saturday or a
+# Sunday, and it says so itself in <skipDays>. That is arXiv's schedule, not
+# a hole in this file: https://arxiv.org/list/physics.bio-ph/recent on
+# 2026-09-19, a Saturday, ran Mon 14 Sep → Fri 18 Sep and stopped. Nothing
+# is announced at a weekend, and weekend submissions go out on the Monday.
+# So two days in seven these seven feeds verify as WARN · valid feed but 0
+# entries, and ingest logs them as "0 entries — feed may have moved". Both
+# are expected. Check on a weekday before believing a feed here is dead.
+#
+# --- why these categories and not the ones docs §3 names first ---
+#
+# Measured on 2026-09-19 with opensearch:totalResults over a 7-day
+# submittedDate window, submissions per day:
+#
+#   cs.AI 127 · cs.LG 114 · cs.CV 72 · cs.CL 63 · cs.RO 59 · quant-ph 57
+#   cond-mat.mtrl-sci 24 · astro-ph.GA 20 · astro-ph.SR 14 · astro-ph.EP 9
+#   physics.app-ph 6 · physics.bio-ph 2
+#
+# cs.AI and cs.LG are 241/day between them — more than everything below
+# combined — and they are the worst fit for score.py's `visual` axis, which
+# asks for an image, a dataset or a physical object to build five slides
+# from. Tier 1 already carries seven AI feeds from the labs themselves, so
+# what preprints add is the half Tier 1 covers worst: materials, planets,
+# applied physics, robots and biophysics. Adding the mega-categories would
+# roughly triple the day's scoring bill to buy the lowest-scoring rows in
+# the sheet.
+#
+# Not wired in: medRxiv, which docs §3 names alongside bioRxiv. It is
+# unreviewed clinical research, and a wrong medical claim on a public slide
+# is the highest-harm mistake this account can make — fact-check verifies a
+# post against its source, and here the source itself is the thing that has
+# not been checked. This is a deliberate departure from §3; see CLAUDE.md
+# "When updating strategy".
+
+feeds:
+
+  # --- arXiv ---
+  #
+  # One feed per category, rather than the combined
+  # rss.arxiv.org/rss/cs.RO+cond-mat.mtrl-sci form the endpoint also accepts
+  # (verified 2026-09-19): `source` and `topic` are per feed, and merging the
+  # categories would file every preprint in the sheet under one label.
+  #
+  # Item links are abs pages, so PREPRINT_HOSTS sees arxiv.org and the flag
+  # fires. The announcement carries replacement versions as well as new
+  # papers; whether a replacement arrives under the URL it had the first
+  # time — in which case the sheet's URL dedupe absorbs it — could not be
+  # observed here, because this file was written on a Saturday and the feed
+  # was empty. Read the first weekday ingest for repeated titles before
+  # trusting it.
+
+  - name: arXiv Robotics
+    url: https://rss.arxiv.org/rss/cs.RO
+    topic: robotics
+
+  - name: arXiv Materials
+    url: https://rss.arxiv.org/rss/cond-mat.mtrl-sci
+    topic: materials
+
+  - name: arXiv Quantum
+    url: https://rss.arxiv.org/rss/quant-ph
+    topic: physics
+
+  - name: arXiv Exoplanets
+    url: https://rss.arxiv.org/rss/astro-ph.EP
+    topic: space
+
+  - name: arXiv Solar and Stellar
+    url: https://rss.arxiv.org/rss/astro-ph.SR
+    topic: space
+
+  - name: arXiv Applied Physics
+    url: https://rss.arxiv.org/rss/physics.app-ph
+    topic: engineering
+
+  - name: arXiv Biological Physics
+    url: https://rss.arxiv.org/rss/physics.bio-ph
+    topic: biology
+
+  # --- bioRxiv ---
+  #
+  # connect.biorxiv.org serves 30 entries per subject as a sliding window,
+  # so the subject slug is the volume control. `subject=all` is two days of
+  # everything, most of it molecular biology with nothing to photograph;
+  # these three are the ones that build slides. No skipDays here — bioRxiv
+  # posts seven days a week.
+
+  - name: bioRxiv Bioengineering
+    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=bioengineering"
+    topic: biology
+
+  - name: bioRxiv Biophysics
+    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=biophysics"
+    topic: biology
+
+  - name: bioRxiv Synthetic Biology
+    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology"
+    topic: biology
