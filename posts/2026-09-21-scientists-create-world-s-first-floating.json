@@ -1,7 +1,7 @@
 {
   "post_type": "drop",
   "domain": "materials",
-  "colorway": "ember",
+  "colorway": "signal",
   "hook": "Titanium lattice floats by filling hollow beams with foam",
   "what_happened": "Researchers 3D‑printed Ti‑6Al‑4V hollow‑strut lattices and injected polyurethane foam into the channels, creating a buoyant hybrid structure",
   "why_it_matters": "It removes the density bottleneck of titanium, enabling strong, corrosion‑resistant marine components that stay afloat even after damage",
