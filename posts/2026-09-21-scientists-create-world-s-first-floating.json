@@ -1,0 +1,34 @@
+{
+  "post_type": "drop",
+  "domain": "materials",
+  "colorway": "ember",
+  "hook": "Titanium lattice floats by filling hollow beams with foam",
+  "what_happened": "Researchers 3D‑printed Ti‑6Al‑4V hollow‑strut lattices and injected polyurethane foam into the channels, creating a buoyant hybrid structure",
+  "why_it_matters": "It removes the density bottleneck of titanium, enabling strong, corrosion‑resistant marine components that stay afloat even after damage",
+  "the_catch": "Tests were limited to a 4×4×4 lattice cube; performance under larger scales or different loading conditions is untested",
+  "caption": "A titanium lattice can float when its hollow beams are filled with lightweight foam, giving it buoyancy while keeping its strength. How could this change marine engineering?",
+  "keywords": [
+    "titanium",
+    "foam",
+    "buoyancy"
+  ],
+  "hashtags": [
+    "#titanium",
+    "#foam",
+    "#buoyancy",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides explaining that a 3D‑printed titanium lattice can float when its hollow beams are filled with polyurethane foam, showing the design, testing, and implications",
+  "source_url": "https://newatlas.com/materials/floating-titanium/",
+  "doi": "10.1002/adma.74641",
+  "attribution": "Noronha et al., Advanced Materials (2026)",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "materiales",
+    "hook": "La estructura de celosía de titanio flota al llenar vigas huecas con espuma",
+    "what_happened": "Los investigadores imprimieron en 3D lattices de Ti‑6Al‑4V con vigas huecas e inyectaron espuma de poliuretano en los canales, creando una estructura híbrida con flotabilidad",
+    "why_it_matters": "Elimina el cuello de botella de densidad del titanio, permitiendo componentes marinos fuertes y resistentes a la corrosión que permanecen a flote incluso tras daños",
+    "the_catch": "Las pruebas se limitaron a un cubo de celosía 4×4×4; el rendimiento a escalas mayores o bajo diferentes condiciones de carga no ha sido evaluado",
+    "_en": "82ae075bfa64e156"
+  }
+}
