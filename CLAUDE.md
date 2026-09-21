@@ -164,6 +164,31 @@ about eight times slower than the cron suggests. What it does not change:
 nothing here is correctness-dependent on the interval — `confirm` is
 idempotent, and a tap replays for 24 hours whatever the cadence.
 
+**A once-a-day cron is not shed, it is delivered hours late — a different
+failure with a different fix.** `daily.yml` has been honoured every single
+time it asked (5/5 as of 2026-09-21) and never once near the minute it asked
+for: a 12:17 UTC cron ran at 17:04, 17:04, 16:29, 15:55 and 18:12, between
+3h38m and 5h55m late. `created_at` equals `run_started_at` on all five, so
+this is the scheduler firing late rather than a run queueing behind a busy
+runner. Do not confuse the two shapes: a `*/15` cron loses most of its
+firings and keeps its punctuality, a daily cron keeps all of them and loses
+its hour.
+
+What it cost: on 2026-09-21 the Monday Drop reached Telegram at 12:15 local
+against a comment promising 06:30, which reads as a broken pipeline rather
+than a late one — nothing had failed, and no alert fires for a run that
+simply has not started yet. `notify-failure` speaks for broken runs; there
+is nothing that speaks for absent ones, and there cannot be, because a run
+that has not been created has no runner to speak from.
+
+Since you cannot ask GitHub for less delay, only for an earlier hour,
+`daily.yml` asks four times — `17 6,8,10,12 * * 1,3,5` — and its `gate` job
+makes every firing after the first a no-op by asking whether `posts/` already
+holds a post dated today. The worst case is the old behaviour; the best case
+is a message waiting before the day starts. Any workflow that must land near
+a particular hour needs the same shape. Do not tighten the interval instead:
+that is the `*/15` mistake, and it buys shedding on top of lateness.
+
 **Feed URLs move constantly.** Never hardcode a URL from memory. Run
 `python src/verify_feeds.py -v` after any change to `feeds/`, and treat
 that as a required step before wiring a feed into ingest. The `feed-scout`
@@ -581,16 +606,26 @@ to render. One bad draft must not take the whole site down.
 
 ## The drafting run
 
-`daily.yml` on Monday, Wednesday and Friday at 12:17 UTC — the three Drops
-`docs` §1 fixes the cadence at — drafts the top-scoring queued row, translates
-it and commits the JSON, then calls `review.yml`, which fact-checks, renders,
-proofs and sends to Telegram. It ran daily until 2026-09-19 against a
-three-a-week pillar, and the four surplus drafts a week each spent a draft
-call, a translate call, a `fact-check` run on the Claude quota and a message
-in the chat, while the buffer of undated drafts grew with nothing deciding how
-deep it should get. `publish.yml` polls for the reply on a 15-minute cron
-that the free tier actually delivers about every two hours.
-Between them sits a person, doing what only a person can:
+`daily.yml` on Monday, Wednesday and Friday — the three Drops `docs` §1
+fixes the cadence at — drafts the top-scoring queued row, translates it and
+commits the JSON, then calls `review.yml`, which fact-checks, renders, proofs
+and sends to Telegram. It asks for four firings a day and drafts on one: the
+cron is delivered hours late and unpredictably so (above), so the four are
+one request repeated, and the `gate` job stands in front of the draft to
+answer "has today already been drafted?" off the post's filename. A bare
+`workflow_dispatch` is held to that too — on 2026-09-21 a hand dispatch sent
+one minute after a six-hours-late cron had started produced a second
+unwanted draft, because `concurrency` queues a run rather than dropping it.
+The override is the `force` input, explicit for the same reason `--row` is:
+naming a candidate by hand is an override, and a bare dispatch names nothing.
+
+It ran daily until 2026-09-19 against a three-a-week pillar, and the four
+surplus drafts a week each spent a draft call, a translate call, a
+`fact-check` run on the Claude quota and a message in the chat, while the
+buffer of undated drafts grew with nothing deciding how deep it should get.
+`publish.yml` polls for the reply on a 15-minute cron that the free tier
+actually delivers about every two hours. Between them sits a person, doing
+what only a person can:
 
 ```
 daily.yml ─ draft · translate · commit ──┐

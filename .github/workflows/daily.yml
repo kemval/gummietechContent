@@ -27,13 +27,43 @@ on:
     # three pillars need no cron: The Build is video and never touches src/,
     # and the Breakdown and the Signal are drafted by hand and dispatched.
     #
-    # 12:17 UTC = 06:17 in America/Costa_Rica, which does not observe DST, so
-    # this does not drift across the year. The offset minute is deliberate:
+    # Four times, and all four before the hour the message is wanted, because
+    # this cron is not delivered when it is asked for. Every firing this
+    # workflow has ever had was hours late:
+    #
+    #   asked 12:17 UTC → ran 17:04, 17:04, 16:29, 15:55, 18:12
+    #                     (2026-09-16 … 09-21: +3h38m to +5h55m)
+    #
+    # Not queueing delay — `created_at` equals `run_started_at` on all five,
+    # so it is the scheduler itself firing late. The 2026-09-21 run took
+    # 5h55m and landed at 12:15 in America/Costa_Rica, against a comment
+    # here promising 06:30, which is what made the day look like a failure
+    # when nothing had failed. Note the shape: 5/5 delivered, none dropped.
+    # Lateness is this workflow's failure mode, not shedding — unlike
+    # publish.yml and ingest.yml, whose high-frequency crons are shed
+    # instead (see CLAUDE.md).
+    #
+    # You cannot ask for less delay, only earlier. So ask four times, two
+    # hours apart, ending at the old 12:17: whichever firing GitHub honours
+    # first drafts the post, and the `gate` job below makes the rest no-ops.
+    # Worst case is exactly the behaviour above; best case the 06:17 firing
+    # is honoured promptly and the message is waiting before the day starts.
+    # A message that arrives early sits in the chat; one that arrives at
+    # midday has already missed the morning.
+    #
+    # 06:17 UTC = 00:17 in America/Costa_Rica, which does not observe DST, so
+    # none of these drift across the year. The offset minute is deliberate:
     # the top of the hour is the most contended slot on GitHub's scheduler.
-    # Runs are still delayed 10-30 minutes at peak, so the message lands
-    # around 06:30 local. Change the hour here to move it.
-    - cron: '17 12 * * 1,3,5'
+    - cron: '17 6,8,10,12 * * 1,3,5'
   workflow_dispatch:
+    inputs:
+      force:
+        description: >
+          Draft even though posts/ already has a post dated today. Leave it
+          off unless you mean it — see the `gate` job.
+        type: boolean
+        required: false
+        default: false
 
 # Two drafts in flight would race on the sheet row and on the push.
 concurrency:
@@ -45,7 +75,57 @@ permissions:
   id-token: write         # claude-code-action's default GitHub App auth
 
 jobs:
+  # The four crons above are one request repeated, not four posts wanted, so
+  # every firing after the one GitHub honours first has to do nothing. The
+  # question it asks is "has today already been drafted?", answered off the
+  # filename: draft.py writes posts/<date.today()>-<slug>.json, so a post
+  # carrying today's date is proof that a sibling firing already did the work.
+  # It reads the date with the same call draft.py makes, on the same runner,
+  # so the two cannot disagree about when today starts.
+  #
+  # A bare workflow_dispatch is held to this too, and that is the lesson of
+  # 2026-09-21: the 12:17 cron landed at 18:12, a hand dispatch went out at
+  # 18:13 believing the day had been skipped, concurrency queued it rather
+  # than dropping it, and the pipeline drafted and translated a second story
+  # nobody wanted. `force` is the override, and it is an input rather than
+  # the mere act of dispatching for draft.py's reason: naming a candidate by
+  # hand is an override, and a bare dispatch names nothing.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      draft: ${{ steps.check.outputs.draft }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: check
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          today=$(python3 -c "from datetime import date; print(f'{date.today():%Y-%m-%d}')")
+
+          if [ "$FORCE" = "true" ]; then
+            echo "draft=true" >> "$GITHUB_OUTPUT"
+            echo "force was asked for — drafting whatever posts/ already holds."
+            exit 0
+          fi
+
+          # Glob with no match expands to itself, so test the expansion rather
+          # than trusting the shell to report emptiness.
+          set -- posts/"$today"-*.json
+          if [ -e "$1" ]; then
+            echo "draft=false" >> "$GITHUB_OUTPUT"
+            echo "Already drafted today ($today): $*"
+            echo "Nothing to do — an earlier firing of this cron got there first."
+            echo "Dispatch with force=true to draft a second post anyway."
+          else
+            echo "draft=true" >> "$GITHUB_OUTPUT"
+            echo "No post dated $today in posts/ — this firing does the work."
+          fi
+
   draft:
+    needs: gate
+    if: needs.gate.outputs.draft == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -128,6 +208,8 @@ jobs:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+  # A skipped `draft` skips this too — GitHub does not run a job whose
+  # dependency was skipped — so a no-op firing sends no second message.
   review:
     needs: draft
     uses: ./.github/workflows/review.yml
