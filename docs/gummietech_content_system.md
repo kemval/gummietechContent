@@ -467,7 +467,7 @@ Locked before any automation, because everything downstream depends on it.
 
 - **Canvas:** 1080×1350 (4:5 portrait — maximum feed real estate)
 - **Type:** one display face for hooks, one highly legible sans for body, both from Google Fonts. Hook text must be readable as a thumbnail.
-- **Color:** a set of field hues that rotate per post by topic family, over a constant neutral and near-black. What makes the grid recognizable is *not* a fixed sequence of colors — it is the `--ink` outline frame, the type, and the slide rhythm (cream rest slide, dark "catch" slide, matching first and last slides), all of which hold while the hues change. See the colorway table in `CLAUDE.md`.
+- **Color:** a set of field hues that rotate per post by topic family — and never twice in a row, which is the constraint that outranks the topic when the two disagree, because two posts in the same hue read as one post in the grid. Over a constant neutral and near-black. What makes the grid recognizable is *not* a fixed sequence of colors — it is the `--ink` outline frame, the type, and the slide rhythm (cream rest slide, dark "catch" slide, matching first and last slides), all of which hold while the hues change. See the colorway table in `CLAUDE.md`.
 - **Fixed elements:** @gummietech wordmark, same position every slide; slide-position indicator; source line on the final slide.
 - **Rule:** if a slide has more than 25 words, it is two slides.
 

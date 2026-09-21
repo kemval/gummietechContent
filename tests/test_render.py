@@ -292,3 +292,109 @@ def test_an_es_block_holds_the_same_section_as_plain_strings():
     es = {"items": ["Pasó una cosa.", "Pasó otra cosa."]}
     assert render.body_text(es, "items") == ["Pasó una cosa.",
                                              "Pasó otra cosa."]
+
+
+# ── No two posts running in the same field ────────────────────────────────
+#
+# The post-mortem: 2026-09-18 (materials), 09-19 (biohybrid robotics) and
+# 09-20 (applied thermodynamics) all mapped to `ember` and shipped as three
+# amber posts in a row. The topic mapping was working exactly as documented;
+# what was missing was any memory of the post before. rhythm() already
+# refuses two neighbouring slides in one field — these are that rule between
+# posts.
+
+
+@pytest.mark.parametrize("name", sorted(render.COLORWAYS))
+def test_a_repeat_is_replaced_by_something_that_is_not_the_repeat(name):
+    """The only thing vary() must guarantee: never hand back `previous`."""
+    assert render.vary(name, name) != name
+
+
+@pytest.mark.parametrize("name", sorted(render.COLORWAYS))
+def test_the_substitute_is_a_real_family(name):
+    assert render.vary(name, name) in render.COLORWAYS
+
+
+@pytest.mark.parametrize("name", sorted(render.COLORWAYS))
+def test_the_topic_keeps_its_family_when_the_field_is_free(name):
+    """vary() fires on collision only — otherwise the topic mapping stands,
+    which is what keeps the colour meaning anything at all."""
+    others = [o for o in render.COLORWAYS if o != name]
+    assert render.vary(name, None) == name
+    for previous in others:
+        assert render.vary(name, previous) == name
+
+
+def test_vary_is_deterministic():
+    """Same queue, same render. A random substitute would make a re-render
+    of an approved post come back a different colour."""
+    assert render.vary("ember", "ember") == render.vary("ember", "ember")
+
+
+def test_three_ember_topics_in_a_row_do_not_ship_three_amber_posts():
+    """The failure itself, replayed: feed a run of one family through the
+    rule and no two neighbours may share a field."""
+    shipped = []
+    for topic_family in ["ember", "ember", "ember", "ember"]:
+        shipped.append(render.vary(topic_family,
+                                   shipped[-1] if shipped else None))
+    assert all(a != b for a, b in zip(shipped, shipped[1:])), shipped
+
+
+def test_post_order_is_what_a_reader_meets(posts_dir):
+    """published_at when there is one, the filename's date when there is
+    not, so a drafted post sits where it will land."""
+    directory, write = posts_dir
+    write("2026-09-19-b.json", colorway="orbit", published_at="2026-09-20")
+    write("2026-09-19-a.json", colorway="bloom", published_at="2026-09-19")
+    write("2026-09-25-draft.json", colorway="ember")          # undated
+    assert [p.name for p in render.post_order(directory)] == [
+        "2026-09-19-a.json", "2026-09-19-b.json", "2026-09-25-draft.json"]
+
+
+def test_the_era_fixtures_are_not_posts(posts_dir):
+    """posts/era*.json have no date prefix and no published_at, and sort
+    after every real draft — resolve-post's filter, needed here too."""
+    directory, write = posts_dir
+    write("era.json", colorway="ember")
+    write("2026-09-19-real.json", colorway="orbit", published_at="2026-09-19")
+    assert [p.name for p in render.post_order(directory)] == [
+        "2026-09-19-real.json"]
+
+
+def test_previous_is_the_predecessor_not_the_newest_other_post(posts_dir):
+    """The bug this function had when it was first written: asked about a
+    post with successors after it, it answered with one of them — comparing
+    a post against one nobody has seen yet."""
+    directory, write = posts_dir
+    write("2026-09-20-before.json", colorway="ember",
+          published_at="2026-09-20")
+    middle = write("2026-09-21-this.json", colorway="ember")
+    write("2026-09-22-after.json", colorway="signal")
+    assert render.previous_colorway(middle, directory) == "ember"
+
+
+def test_a_new_draft_is_compared_against_the_end(posts_dir):
+    """draft.py asks before the file exists, so a `before` that is not on
+    disk lands at the end, which is where a new draft goes."""
+    directory, write = posts_dir
+    write("2026-09-20-a.json", colorway="ember", published_at="2026-09-20")
+    write("2026-09-21-b.json", colorway="bloom")
+    assert render.previous_colorway(None, directory) == "bloom"
+
+
+def test_a_malformed_neighbour_does_not_disable_the_rule(posts_dir):
+    """One bad file must not silently turn the check off — site.py's rule."""
+    directory, write = posts_dir
+    write("2026-09-19-good.json", colorway="ember", published_at="2026-09-19")
+    (directory / "2026-09-20-bad.json").write_text("{not json")
+    assert render.previous_colorway(None, directory) == "ember"
+
+
+def test_no_colorway_at_all_is_stepped_over(posts_dir):
+    """A record with no colorway renders as the default but must not be the
+    answer here — it would compare the next post against nothing."""
+    directory, write = posts_dir
+    write("2026-09-19-good.json", colorway="orbit", published_at="2026-09-19")
+    write("2026-09-20-none.json", hook="no colorway field")
+    assert render.previous_colorway(None, directory) == "orbit"

@@ -292,6 +292,34 @@ longer format needs no new palette decision:
   it adds.
 - A new lead or support hue must clear 4.5:1 against `--ink`. `tests/` asserts
   this for all five current hues rather than trusting it.
+- **No two consecutive posts share a field.** `rhythm()` refuses to put the
+  same hue on two neighbouring slides; `render.vary()` is that rule one level
+  up, between posts. Topic alone cannot hold it: a science feed clusters, and
+  four families divided among everything published means neighbours collide
+  often. On 2026-09-18, 09-19 and 09-20 the topics were materials, biohybrid
+  robotics and applied thermodynamics — all `ember` — and three amber posts
+  shipped in a row while every mapping worked exactly as documented.
+
+`vary(chosen, previous)` returns `chosen` untouched unless the post before it
+already had that family, in which case it takes the next family in
+`COLORWAYS` order — deterministic, so a re-render of an approved post cannot
+come back a different colour, and guaranteed to differ from `previous`
+because it only ever runs when the two are equal. The topic keeps its own
+family in the ordinary case; the rule only fires on a collision.
+
+`previous_colorway()` answers what "before" means, and it is strictly the
+predecessor rather than the newest other post: a post being re-rendered sits
+in `posts/` with successors after it, and answering with one of those would
+compare it against a post nobody has seen yet. `post_order()` is the order a
+reader meets them — `published_at` when there is one, the filename's date
+when there is not, so a drafted-but-ungated post sits where it will land. Both
+skip `posts/era*.json` by the same date-prefix filter `resolve-post` needs.
+
+`draft.py` applies this to what it writes. A Breakdown is written by hand and
+never passes through it — 2026-09-20's was the third amber post for that
+reason — so `render.py` warns at render time when a post repeats its
+predecessor and names the `--colorway` that breaks the run. It warns rather
+than rewrites: `render.py` renders the record it was given.
 
 `draft.py` picks the family and `render.py` resolves it, so an invented name
 falls back to `signal` with a warning rather than reaching the CSS. A template

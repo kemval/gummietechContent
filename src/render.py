@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import tempfile
 from collections.abc import Iterator
@@ -46,6 +47,11 @@ from formats import (DEFAULT_FORMAT, FORMATS, RECORD, Format, Section,
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = REPO_ROOT / "templates"
 DEFAULT_OUT = REPO_ROOT / "output"
+POSTS_DIR = REPO_ROOT / "posts"
+
+# Every post draft.py writes is posts/YYYY-MM-DD-<slug>.json, so the prefix
+# both identifies a real post and sorts it. See post_order().
+DATED_NAME = re.compile(r"\d{4}-\d{2}-\d{2}-")
 
 SLIDE_W, SLIDE_H = 1080, 1350
 
@@ -230,6 +236,92 @@ def colorway_pair(name: str | None) -> tuple[str, str]:
     return COLORWAYS[name]
 
 
+def post_order(directory: Path | None = None) -> list[Path]:
+    """Every real post, in the order a reader meets them.
+
+    That order is `published_at` when there is one and the filename's date
+    when there is not, so a drafted-but-ungated post sits where it will land
+    rather than nowhere. Ties break on the filename, which is what two posts
+    drafted the same day get.
+
+    The date-prefix filter is the one resolve-post needs for the same reason:
+    posts/era*.json are hand-built fixtures with neither a prefix nor a
+    published_at, and they would sort after every real draft.
+    """
+    directory = directory or POSTS_DIR
+    dated = []
+    for path in sorted(directory.glob("*.json")):
+        if not DATED_NAME.match(path.name):
+            continue
+        try:
+            post = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue          # site.py skips a malformed post; so does this
+        dated.append((post.get("published_at") or path.name[:10],
+                      path.name, path))
+    return [path for _, _, path in sorted(dated)]
+
+
+def previous_colorway(before: Path | None = None,
+                      directory: Path | None = None) -> str | None:
+    """The colorway of the post a reader meets just before `before`.
+
+    Strictly the predecessor, never merely "the newest other post": a post
+    being re-rendered sits inside posts/ with successors after it, and
+    answering with one of those would compare it against a post nobody has
+    seen yet. A `before` that is not on disk — draft.py asking about the
+    post it is about to write — is treated as landing at the end, which is
+    where a new draft goes.
+
+    Posts with no recognised colorway are stepped over rather than ending
+    the search, so one malformed neighbour cannot silently disable the rule.
+    """
+    order = post_order(directory)
+    if before is None:
+        cut = len(order)
+    else:
+        before = Path(before).resolve()
+        cut = next((i for i, path in enumerate(order)
+                    if path.resolve() == before), len(order))
+
+    for path in reversed(order[:cut]):
+        try:
+            name = json.loads(path.read_text()).get("colorway")
+        except (OSError, json.JSONDecodeError):
+            continue
+        if name in COLORWAYS:
+            return name
+    return None
+
+
+def vary(chosen: str, previous: str | None) -> str:
+    """`chosen`, unless the post before it already had that field.
+
+    rhythm() refuses to put the same field on two neighbouring slides. This
+    is that rule one level up, and it exists for the same reason: two posts
+    running in the same hue read as one post in the grid, and the grid is
+    the whole point of the palette rotating at all.
+
+    It cost three posts before it existed — 2026-09-18 materials, 09-19
+    biohybrid robotics and 09-20 applied thermodynamics all mapped to
+    `ember`, and shipped as three amber posts in a row. Topic alone cannot
+    avoid this: a science feed clusters, and four families divided among
+    everything published means neighbours collide often.
+
+    The substitute is the next family in COLORWAYS order, which is
+    guaranteed to differ from `previous` because it only ever runs when
+    `chosen` is `previous`. Deterministic, so the same queue always renders
+    the same way and a test can say what it must do. The subject keeps its
+    own family whenever the post before it leaves that family free, so the
+    topic mapping still holds in the ordinary case — this only ever fires on
+    a collision.
+    """
+    if previous is None or chosen != previous:
+        return chosen
+    order = list(COLORWAYS)
+    return order[(order.index(chosen) + 1) % len(order)]
+
+
 def slide_fields(name: str | None, count: int = 5,
                  catch: int | None = None) -> tuple[str, list[str]]:
     """Resolve a colorway to (lead hue, one field class name per slide)."""
@@ -341,6 +433,17 @@ def main() -> int:
         outdir = REPO_ROOT / outdir
 
     print(f"Rendering {post_path.name} → {outdir}")
+
+    # draft.py applies vary() to what it writes, but a Breakdown is written
+    # by hand and never passes through it — 2026-09-20's was the third amber
+    # post in a row for exactly that reason. This is the same rule as a
+    # warning rather than a rewrite, because render.py renders the record it
+    # was given: say it, and let --colorway be the answer.
+    used = args.colorway or post.get("colorway")
+    if used and used == (before := previous_colorway(post_path)):
+        print(f"  warning: {post_path.name} is the second {before} post in a "
+              f"row — the post before it has the same field. Re-render with "
+              f"--colorway {vary(used, before)} to break the run.")
     # How many slides, not whether: a Signal flags per item, so "ON" alone
     # said nothing about which of five claims is unreviewed.
     if flags := preprint_claims(post):

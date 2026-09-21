@@ -66,7 +66,7 @@ from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
 from ingest import COLUMNS, open_sheet
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
-                    warn_on_length)
+                    previous_colorway, vary, warn_on_length)
 from verify_feeds import HEADERS, TIMEOUT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -919,6 +919,16 @@ def finish(post: dict, order: list[str]) -> dict:
             print(f"  warning: model returned colorway "
                   f"{post['colorway']!r} — using {DEFAULT_COLORWAY}")
         post["colorway"] = DEFAULT_COLORWAY
+
+    # The topic picks the family; the post before it can veto the hue. See
+    # render.vary() for why a topic mapping alone is not enough. This asks
+    # about the end of posts/ because the file is written after finish()
+    # returns, and the end is where it lands.
+    varied = vary(post["colorway"], previous_colorway())
+    if varied != post["colorway"]:
+        print(f"  colorway: {post['colorway']} would repeat the post before "
+              f"it — using {varied}")
+        post["colorway"] = varied
 
     # render.py's own rule, from the same table: presence for peer_reviewed,
     # because False is the whole point of the field, and truthiness for the
