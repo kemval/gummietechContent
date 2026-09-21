@@ -16,6 +16,9 @@ Usage:
 import argparse
 import sys
 import time
+from collections.abc import Iterator
+from itertools import groupby
+from operator import itemgetter
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -75,6 +78,24 @@ def load_feed_files(single_file=None):
             path = REPO_ROOT / path
         return [path]
     return sorted(FEEDS_DIR.glob("*.yaml"))
+
+
+def all_feeds(single_file=None) -> Iterator[tuple[Path, dict]]:
+    """Every feed entry in the YAML lists, paired with the file it came from.
+
+    Its own function because main() is not the only caller any more: watch.py
+    sweeps the same lists on a cron, and a second copy of the parsing is a
+    second place for the `feeds:` key to be spelled wrong. A missing file is
+    skipped with a warning rather than ending the sweep — one bad list must
+    not hide the state of the other two.
+    """
+    for feed_file in load_feed_files(single_file):
+        if not feed_file.exists():
+            print(f"{BAD}Missing file:{END} {feed_file}")
+            continue
+        data = yaml.safe_load(feed_file.read_text()) or {}
+        for entry in data.get("feeds", []):
+            yield feed_file, entry
 
 
 def check_feed(entry, verbose=False):
@@ -139,22 +160,15 @@ def main():
                     help="show the latest headline from each feed")
     args = ap.parse_args()
 
-    feed_files = load_feed_files(args.file)
-    if not feed_files:
+    if not load_feed_files(args.file):
         print(f"No feed YAML files found in {FEEDS_DIR}")
         return 1
 
     totals = {"ok": 0, "empty": 0, "fail": 0}
     failures = []
 
-    for feed_file in feed_files:
-        if not feed_file.exists():
-            print(f"{BAD}Missing file:{END} {feed_file}")
-            continue
-
-        data = yaml.safe_load(feed_file.read_text()) or {}
-        entries = data.get("feeds", [])
-
+    for feed_file, group in groupby(all_feeds(args.file), key=itemgetter(0)):
+        entries = [entry for _, entry in group]
         print(f"\n{feed_file.name}  ({len(entries)} feeds)")
         print("-" * 74)
 

@@ -1,0 +1,98 @@
+name: watch
+
+# The run that speaks for runs that never happened.
+#
+# notify-failure speaks for a run that started and broke. Nothing speaks for
+# one that was never created — a shed cron, a gate that skipped, a tap no poll
+# picked up — because a run that does not exist has no runner to speak from.
+# This is a different run, once a day, looking backwards at what the pipeline
+# left behind. src/watch.py holds the reasoning for each check.
+#
+# It asks once and is delivered hours late, which is fine and is the design:
+# every question it asks is about an obligation that has already come due —
+# the last Drop day that *ended*, a tap already in the window. Nothing here is
+# time-critical, so the daily cron's 3–6 hour drift changes nothing. Do not
+# copy daily.yml's four-firings shape here: that exists to land a message near
+# a particular hour, and this has no hour to land near.
+#
+# One message, or none. watch.py exits 0 even when it finds things, so
+# notify-failure below speaks only for this workflow actually breaking — one
+# problem cannot produce two messages.
+
+on:
+  schedule:
+    # 05:30 UTC = 00:30 America/Bogota, so the report is waiting rather than
+    # arriving mid-day. It will land later than this; see above.
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: watch
+  cancel-in-progress: false
+
+jobs:
+  # The offline half, defined once in check.yml and called here because a
+  # bot-committed draft never triggers its push event. Its result is handed
+  # to watch.py rather than left as a red ✗ on a run nobody is watching.
+  checks:
+    uses: ./.github/workflows/check.yml
+
+  watch:
+    needs: checks
+    # always(), because a failed check is the single most important thing
+    # this run has to say. Gating the report on the check passing would lose
+    # exactly the message worth sending.
+    if: always()
+    runs-on: ubuntu-latest
+    # The feed sweep is the slow part: ~63 feeds, and a dead one costs the
+    # full 20s request timeout before it is called dead.
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # No `playwright install`. watch.py imports render.py for post_order()
+      # and vary(), and render.py imports playwright at module level — but
+      # the pip package imports fine without browsers, and nothing here ever
+      # opens a page. Adding the browser download would cost a minute a day
+      # for nothing.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # gspread wants a file, and a secret is a string. Written to the
+      # workspace, which is destroyed with the runner. Absent, watch.py
+      # reports the queue as unchecked and still runs the other checks.
+      - name: Write service account credentials
+        env:
+          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+        run: printf '%s' "$GOOGLE_SHEETS_CREDENTIALS_JSON" > credentials.json
+
+      - name: Watch the pipeline
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEETS_CREDENTIALS: credentials.json
+          # Secrets cannot be read in a step `if:`, so the question "is the
+          # fact-check configured at all" is answered here and passed in as a
+          # string — review.yml's own arrangement, for the same reason.
+          HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: python src/watch.py --send --structure '${{ needs.checks.result }}'
+
+      # A failed run is silent unless somebody opens the Actions tab. See
+      # .github/actions/notify-failure for why that is the thing to fix.
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}

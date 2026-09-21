@@ -20,13 +20,18 @@ name: check
 #
 # Commits pushed by the workflows themselves use GITHUB_TOKEN, which by design
 # does not trigger other workflows, so a bot-committed draft is not checked
-# here. A hand correction at the gate is pushed by a person, and is.
+# here. A hand correction at the gate is pushed by a person, and is. That hole
+# is why `workflow_call` is below: watch.yml calls this on a cron so the three
+# drafts a week the bot commits are exercised too. One definition of "the
+# offline half still runs", two callers — review.yml's arrangement, for
+# review.yml's reason.
 
 on:
   push:
     branches: [master]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read

@@ -36,8 +36,9 @@ from pathlib import Path
 from typing import Any
 
 from formats import preprint_claims, spec
-from render import (COLORWAYS, MIN_SLIDES, REPO_ROOT, colorway_pair,
-                    load_post, open_page, render_html, rhythm, word_budget)
+from render import (COLORWAYS, DATED_NAME, MIN_SLIDES, REPO_ROOT,
+                    colorway_pair, load_post, open_page, previous_colorway,
+                    render_html, rhythm, vary, word_budget)
 
 # The project's own invariant, from CLAUDE.md: "A new lead or support hue
 # must clear 4.5:1 against --ink." WCAG would allow 3:1 for text this large,
@@ -208,9 +209,17 @@ def escape(box: dict, inner: dict) -> float:
 
 
 class Report:
-    """Findings, and the verdict they add up to."""
+    """Findings, and the verdict they add up to.
 
-    def __init__(self) -> None:
+    `name` is the word before the verdict on the first line. It is a
+    parameter because watch.py reports `WATCH · FIX` in exactly this shape
+    and a second copy of this class would be a second place for the verdict
+    rule to drift. telegram.py's VERDICT_RE only ever reads the two names
+    that gate the button, which is why adding one here changes no gate.
+    """
+
+    def __init__(self, name: str = "PROOF") -> None:
+        self.name = name
         self.lines: list[tuple[str, str]] = []
 
     def block(self, where: str, what: str) -> None:
@@ -230,7 +239,8 @@ class Report:
     def render(self) -> str:
         mark = {"BLOCK": "🛑", "FIX": "⚠️", "note": "·"}
         body = "\n".join(f"{mark[level]} {text}" for level, text in self.lines)
-        return f"PROOF · {self.verdict}\n{body}" if body else "PROOF · PASS"
+        head = f"{self.name} · {self.verdict}"
+        return f"{head}\n{body}" if body else head
 
 
 def check_rhythm(slides: list[dict], lead: str, support: str,
@@ -349,8 +359,40 @@ def check_words(post: dict, report: Report) -> None:
             report.fix("copy", f"{where} is {count} words (limit {limit})")
 
 
-def proof(post: dict, colorway: str | None) -> Report:
+def check_colorway(path: Path | None, colorway: str | None,
+                   report: Report) -> None:
+    """Whether this post repeats the field of the post before it.
+
+    A record-level check in a file that otherwise measures the DOM, for the
+    reason check_words() is: render.py already says this, and a warning in a
+    run log nobody reads is not a gate. This report is carried into the
+    Telegram message, which is where the rule can still be acted on — after
+    approval the post is on the grid and there is nothing to re-render.
+
+    A FIX rather than a BLOCK: a repeated hue is cosmetic, and withholding
+    the button over one teaches a person to tap "Posted anyway" without
+    reading, which is the failure the gate exists to avoid.
+    """
+    # The same date-prefix filter post_order() and resolve-post use. Without
+    # it the era*.json fixtures — which are not posts and never land — are
+    # treated by previous_colorway() as arriving at the end of the archive,
+    # and proof reports every one of them as clashing with the newest draft.
+    if path is None or not colorway or not DATED_NAME.match(path.name):
+        return
+    before = previous_colorway(path)
+    if colorway == before:
+        report.fix("colour", f"second {before} post in a row — the post "
+                             f"before it has the same field. Re-render with "
+                             f"--colorway {vary(colorway, before)}")
+
+
+def proof(post: dict, colorway: str | None,
+          path: Path | None = None) -> Report:
     report = Report()
+
+    # Before the browser: a colour clash is answerable from posts/ alone, and
+    # reporting it costs nothing even on a post that fails to render.
+    check_colorway(path, colorway or post.get("colorway"), report)
 
     html = render_html(post, colorway)
     with open_page(html) as page:
@@ -385,7 +427,7 @@ def main() -> int:
     if not path.exists():
         sys.exit(f"No such post file: {path}")
 
-    report = proof(load_post(path), args.colorway)
+    report = proof(load_post(path), args.colorway, path)
     print(report.render())
     return 1 if report.verdict == "BLOCK" else 0
 

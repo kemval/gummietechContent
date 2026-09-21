@@ -173,3 +173,53 @@ def test_a_format_with_a_catch_and_no_dark_slide_is_a_block():
         ["pink", "cream", "olive", "pink", "olive"]),
         "pink", "olive", True, report)
     assert report.verdict == "BLOCK"
+
+
+# ------------------------------------------------- the field the post lands on
+
+def test_a_second_post_in_the_same_field_is_a_fix(posts_dir, monkeypatch):
+    """render.py already says this, to a run log nobody reads at the gate.
+    This report is carried into the Telegram message, which is the last place
+    the rule can still be acted on — after approval the post is on the grid."""
+    directory, write = posts_dir
+    monkeypatch.setattr(render, "POSTS_DIR", directory)
+    write("2026-09-18-first.json", colorway="ember")
+    later = write("2026-09-19-second.json", colorway="ember")
+
+    report = proof.Report()
+    proof.check_colorway(later, "ember", report)
+    assert report.verdict == "FIX"
+    assert f"--colorway {render.vary('ember', 'ember')}" in report.render()
+
+
+def test_a_free_field_is_not_a_fix(posts_dir, monkeypatch):
+    directory, write = posts_dir
+    monkeypatch.setattr(render, "POSTS_DIR", directory)
+    write("2026-09-18-first.json", colorway="ember")
+    later = write("2026-09-19-second.json", colorway="orbit")
+
+    report = proof.Report()
+    proof.check_colorway(later, "orbit", report)
+    assert report.verdict == "PASS"
+
+
+def test_a_post_with_no_path_is_not_checked_for_its_neighbour():
+    """proof(post, colorway) without a path is still a valid call — the
+    check is skipped rather than guessing which file the record came from."""
+    report = proof.Report()
+    proof.check_colorway(None, "ember", report)
+    assert report.verdict == "PASS"
+
+
+def test_the_era_fixtures_are_not_held_to_the_rule(posts_dir, monkeypatch):
+    """They are not posts and never land. previous_colorway() treats a path
+    outside post_order() as arriving at the end of the archive, which made
+    proof report every fixture as clashing with the newest real draft."""
+    directory, write = posts_dir
+    monkeypatch.setattr(render, "POSTS_DIR", directory)
+    write("2026-09-19-real.json", colorway="orbit")
+    fixture = write("era-breakdown.json", colorway="orbit")
+
+    report = proof.Report()
+    proof.check_colorway(fixture, "orbit", report)
+    assert report.verdict == "PASS"

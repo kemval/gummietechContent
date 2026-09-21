@@ -69,7 +69,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
-                     publish.yml (the publish tap, 15m) · site.yml (archive)
+                     publish.yml (the publish tap, 15m) · site.yml (archive) ·
+                     watch.yml (daily: is any of this still running?)
 src/
   formats.py         what each carousel format is made of — the one table
   verify_feeds.py    checks every feed URL is live
@@ -86,6 +87,7 @@ src/
   telegram.py        sends a rendered post for approval; reads the tap back,
                      and asks a settled post for its Instagram numbers
   learn.py           the metrics report — what to cut, what to double
+  watch.py           the daily audit — what did not happen and should have
 feeds/               *.yaml source lists by tier
 tests/               pytest over the pure functions; every case is a
                      post-mortem — see **When something breaks**
@@ -177,9 +179,11 @@ its hour.
 What it cost: on 2026-09-21 the Monday Drop reached Telegram at 12:15 local
 against a comment promising 06:30, which reads as a broken pipeline rather
 than a late one — nothing had failed, and no alert fires for a run that
-simply has not started yet. `notify-failure` speaks for broken runs; there
-is nothing that speaks for absent ones, and there cannot be, because a run
-that has not been created has no runner to speak from.
+simply has not started yet. `notify-failure` speaks for broken runs; it
+cannot speak for absent ones, because a run that has not been created has no
+runner to speak from. Nothing did, until `watch.yml` — a *different* run,
+once a day, looking backwards at what the pipeline left behind. See
+**Watching the pipeline**.
 
 Since you cannot ask GitHub for less delay, only for an earlier hour,
 `daily.yml` asks four times — `17 6,8,10,12 * * 1,3,5` — and its `gate` job
@@ -372,6 +376,19 @@ Three measurement choices that are load-bearing:
   locked design decision and pink already sits at 3.26:1 — BLOCKing on it
   would fail every post every day. Content type is at full opacity and clears
   4.86:1 at worst, so the strict bar there is real headroom, not luck.
+
+**It also carries the one rule that is not about this post's pixels.**
+`check_colorway()` reports a post that repeats its predecessor's field, as a
+FIX. `render.py` already says this, to a run log nobody reads at the gate;
+this report is carried into the Telegram message, which is the last place the
+rule can still be acted on — after approval the post is on the grid. A
+record-level check in a file that otherwise measures the DOM, for the reason
+`check_words()` is one. FIX and not BLOCK because a repeated hue is cosmetic,
+and withholding the button over one teaches a person to tap "Posted anyway"
+without reading. It skips a path outside `post_order()`: the `era*.json`
+fixtures are not posts, and `previous_colorway()` treats a path it cannot
+find as arriving at the end of the archive, which made every fixture report
+as clashing with the newest real draft.
 
 The `slide-proof` agent (`.claude/agents/slide-proof.md`) still exists for
 what a measurement cannot answer — whether the slides *look* wrong. Run it
@@ -933,6 +950,8 @@ something nobody reads:
 - `--evergreen` re-drafting the tides post, still #1 in the queue.
 - A metrics reply silently dropped because the mark moved behind an emoji.
 - Five of a Breakdown's eight slides sent to the gate, reported as five.
+- Every `era*.json` fixture reported as clashing with the newest real draft,
+  because a path outside `post_order()` is read as arriving at its end.
 
 What none of the three jobs can catch, so nobody mistakes green for safe:
 anything that needs a real run — Telegram's message cap, a checkout resolving
@@ -963,6 +982,86 @@ It lives in one file for the reason `review.yml` does. Two details:
   sighting, so the throttle is gone rather than rebuilt.
 - **Missing credentials are a no-op, not a second failure.** The point is to
   make a break visible, never to add one on top of it.
+
+## Watching the pipeline
+
+`notify-failure` speaks for a run that started and broke. `watch.yml` is what
+speaks for one that never started, and it can only do that by being a
+different run: `src/watch.py`, once a day, asking what the pipeline should
+have left behind and reporting what is not there. It sends one message or
+none.
+
+```bash
+python src/watch.py                  # print the report
+python src/watch.py --send           # ...and send it if it is not a PASS
+python src/watch.py --skip-feeds     # skip the slow network sweep
+```
+
+Nine checks, each answerable from a file, a sheet cell or a Telegram update —
+so none of it needs a model and none of it spends a quota:
+
+| check | the question |
+|---|---|
+| `cadence` | the last Drop day that **ended** has a post dated it |
+| `gate` | every tap in Telegram's 24h window reached `published_at` |
+| `metrics` | every answered ask was written down, and old asks were answered |
+| `colour` | no two neighbouring posts share a field |
+| `buffer` | drafts are not silently piling up at the gate |
+| `feeds` | every feed still returns entries |
+| `queue` | rows are still arriving, and candidates are still scored |
+| `structure` | `check.yml`, whose result the workflow hands over |
+| `fact-check` | it is configured at all |
+
+Six things hold it together, and every one of them is a rule about not crying
+wolf — a watcher nobody reads is worse than none:
+
+- **It only asks about obligations that have already come due.** A daily cron
+  arrives 3–6 hours late, so `last_drop_day()` walks back from *yesterday*,
+  never from today. A day that has ended owes its post unconditionally; today
+  might just be running behind. This is why `watch.yml` asks once rather than
+  copying `daily.yml`'s four firings: that shape exists to land near an hour,
+  and this has no hour to land near.
+- **A finding nobody can act on is a note, not a finding.** Notes print but
+  do not move the verdict, and only a non-`PASS` verdict sends. A colour run
+  that is already published is history — there is nothing to re-render and no
+  tap to withhold — so it stays visible in a hand run and silent in the chat.
+  The same reasoning as a clean fact-check that must not hold a post.
+- **Findings exit 0.** The message *is* the report. A non-zero exit would
+  make `notify-failure` send a second message about the same thing. Only an
+  unexpected failure exits non-zero, and that genuinely is a broken run.
+- **Every check degrades rather than dying.** `open_sheet()` exits with
+  instructions when the credentials are missing; `watch.py` catches that and
+  reports the queue as unchecked. A watcher that dies on one unconfigured
+  check reports nothing about the eight that are fine.
+- **It reads `getUpdates` without an offset, like `confirm` does.** That
+  leaves the cursor alone, so reading the same 24-hour window from a second
+  process cannot take a tap away from the poll meant to act on it.
+- **`check.yml` runs as a called workflow, not as copied steps.** It gained
+  `workflow_call` for this. The point is the hole `check.yml` documents in
+  itself: bot commits use `GITHUB_TOKEN` and do not trigger its `push`, so
+  the three drafts a week the bot writes were never exercised. Its result is
+  passed to `watch.py` with `--structure` so a red check is a line in the
+  message rather than an ✗ on a run nobody is watching.
+
+**`watch.yml` installs `requirements.txt` but not the browsers.** `watch.py`
+imports `render.py` for `post_order()` and `vary()`, and `render.py` imports
+Playwright at module level — but the pip package imports fine without
+`playwright install`, and nothing here ever opens a page.
+
+Three things it cannot do, which matter as much as what it can:
+
+- **It cannot prove it ran.** It is on the same scheduler that sheds, so its
+  silence means "nothing to report" *or* "I did not run", and nothing
+  distinguishes them. Making its absence visible costs a message a week; that
+  trade is open, not made. Do not "fix" it by tightening the cron.
+- **Telegram does not timestamp a tap.** `callback_query` carries no date, so
+  a tap made shortly before a run is indistinguishable from one the poll
+  lost. That is why an unrecorded tap is a FIX that says the poll may still
+  be pending — a genuinely lost tap reports every day until it is fixed, and
+  that repetition is the signal.
+- **It does not measure how late a cron was.** The Actions API would give
+  that and it would change nothing, since GitHub cannot be asked for less
+  delay. So `watch.yml` asks for no `actions:` permission at all.
 
 ## Publishing
 
