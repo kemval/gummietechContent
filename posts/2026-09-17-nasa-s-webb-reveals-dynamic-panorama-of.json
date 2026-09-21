@@ -30,5 +30,8 @@
     "why_it_matters": "Muestra que existen enanas marrones de menor masa (~2 M_Jup), estrechando el mínimo del IMF y revelando discos formadores de planetas",
     "the_catch": "Solo 15 de los 39 candidatos obtuvieron espectros (la máscara de NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0.05 M☉ carecen de pruebas dinámicas",
     "_en": "f316623f4181429a"
+  },
+  "metrics": {
+    "asked_at": "2026-09-21"
   }
 }
