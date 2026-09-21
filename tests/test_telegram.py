@@ -248,6 +248,22 @@ def test_a_stem_from_the_network_cannot_become_any_path(posts, quiet, stem):
     assert tg.post_for_stem(stem) is None
 
 
+def test_the_ask_carries_the_keyboard_that_makes_the_reply(posts, monkeypatch):
+    """Asking in words was not enough. On 2026-09-21 nine answers arrived as
+    ordinary messages and record_metrics dropped all nine, because
+    reply_to_message is the only thing that says which post three numbers
+    belong to. ForceReply makes the client build that link."""
+    posts("2026-09-15-x.json", hook="h", published_at="2026-09-15")
+    seen: list[dict | None] = []
+    monkeypatch.setattr(tg, "send_message",
+                        lambda token, chat, text, markup=None: seen.append(markup))
+    monkeypatch.setattr(tg, "call", lambda *a, **k: None)
+
+    tg.ask_metrics("tok", "chat", "2026-09-20")
+    assert seen == [tg.METRICS_FORCE_REPLY]
+    assert tg.METRICS_FORCE_REPLY["force_reply"] is True
+
+
 def test_the_question_and_the_answer_agree_on_the_format(posts, quiet):
     """The ask is written in one place and read in another. When the mark
     moved behind an emoji this regex stopped matching and every reply was

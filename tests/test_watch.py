@@ -159,6 +159,42 @@ def test_a_chat_message_is_not_a_dropped_answer(posts):
     assert report.verdict == "PASS"
 
 
+def numbers(text: str = "0 1 1") -> dict:
+    """Three numbers typed into the chat rather than replied with."""
+    return {"message": {"text": text, "chat": {"id": 1}, "message_id": 9}}
+
+
+def test_three_numbers_replying_to_nothing_are_a_finding(posts):
+    """The one failure record_metrics cannot report on itself: it has no idea
+    which post they answer, and getUpdates has no offset, so a nudge from the
+    poll would be re-sent every poll for a day. Nine were lost this way."""
+    directory, write = posts
+    write("2026-09-14-live.json", colorway="signal",
+          published_at="2026-09-14", metrics={"asked_at": "2026-09-17"})
+    report = Report("WATCH")
+    watch.check_metrics([numbers()], "2026-09-18", report, directory)
+    assert findings(report, "metrics")
+
+
+def test_the_same_mistake_repeated_is_one_finding(posts):
+    """Nine in a day is one habit, and nine lines is a message nobody reads."""
+    directory, write = posts
+    report = Report("WATCH")
+    watch.check_metrics([numbers("0 1 1"), numbers("0 1 0"), numbers("0 1 3")],
+                        "2026-09-18", report, directory)
+    assert len(findings(report, "metrics")) == 1
+    assert "3 message(s)" in report.render()
+
+
+def test_talking_to_the_bot_is_not_a_dropped_answer(posts):
+    """Only the shape of an answer counts. Anything else is a conversation."""
+    directory, _ = posts
+    report = Report("WATCH")
+    watch.check_metrics([numbers("posted it"), {"callback_query": {"data": "x"}}],
+                        "2026-09-18", report, directory)
+    assert report.verdict == "PASS"
+
+
 def test_an_ask_nobody_answered_is_a_finding_once_it_is_stale(posts):
     directory, write = posts
     write("2026-09-01-live.json", colorway="signal",

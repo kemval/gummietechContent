@@ -653,6 +653,17 @@ METRICS_ASK_RE = re.compile(rf"{re.escape(METRICS_MARK)} (\S+)$", re.M)
 # A reply that is not three numbers is ignored in silence, deliberately:
 # answering it would replay that answer on every poll for a day.
 METRICS_REPLY_RE = re.compile(r"^\D*(\d+)\D+(\d+)\D+(\d+)\D*$")
+# The ask asks in words for a Telegram *reply*, and words were not enough:
+# on 2026-09-21 nine answers arrived in one day as ordinary messages, and
+# record_metrics dropped every one. reply_to_message is the only thing that
+# says which post three numbers belong to — nothing else is stored — so
+# three numbers typed into the chat are unattributable and lost. ForceReply
+# is the platform's own mechanism for exactly this: the client opens the
+# reply box already pointed at the question, so the link is made by the
+# keyboard rather than by remembering to make it. A person who dismisses it
+# is back where they were, which is why the sentence in the message stays.
+METRICS_FORCE_REPLY = {"force_reply": True,
+                       "input_field_placeholder": "saves shares visits"}
 
 
 def read_post(path: Path) -> dict | None:
@@ -738,7 +749,8 @@ def ask_metrics(token: str, chat_id: str, today: str) -> int:
             f"Published {html.escape(str(post['published_at']))}.\n\n"
             f"Reply to <b>this</b> message with three numbers from Instagram "
             f"Insights — <b>saves shares profile-visits</b>, like "
-            f"<code>120 14 33</code>.")
+            f"<code>120 14 33</code>.",
+            METRICS_FORCE_REPLY)
         post[METRICS_KEY] = {"asked_at": today}
         write_post(path, post)
         asked += 1

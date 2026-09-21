@@ -150,14 +150,25 @@ def check_gate(updates: list, report: Report) -> None:
 def check_metrics(updates: list, today: str, report: Report,
                   directory: Path | None = None) -> None:
     """Answers that were never written down, and asks nobody answered."""
+    orphans = 0
     for update in updates:
         message = update.get("message") or {}
         asked = (message.get("reply_to_message") or {}).get("text", "")
         match = METRICS_ASK_RE.search(asked or "")
-        # Only a reply that is actually three numbers counts. record_metrics
+        # Only a message that is actually three numbers counts. record_metrics
         # ignores anything else in silence, and reporting a chat message as a
         # dropped answer would be reporting on a conversation.
-        if not match or not METRICS_REPLY_RE.match(message.get("text", "")):
+        if not METRICS_REPLY_RE.match(message.get("text", "")):
+            continue
+        # Three numbers replying to nothing — or to the wrong message — are
+        # the one failure record_metrics cannot report on itself. It drops
+        # them because reply_to_message is the only thing that says which
+        # post they answer, and it drops them silently because getUpdates
+        # carries no offset: a nudge sent from the poll would be sent again
+        # on every poll for twenty-four hours. Once a day, from a different
+        # run, is the only place this can be said without becoming that.
+        if not match:
+            orphans += 1
             continue
         path = post_for_stem(match.group(1))
         post = read_post(path) if path else None
@@ -169,6 +180,14 @@ def check_metrics(updates: list, today: str, report: Report,
         report.fix("metrics", f"{match.group(1)} was answered and the "
                               f"numbers are not in the JSON — dispatch "
                               f"publish.yml to re-read the reply.")
+
+    # One finding for the lot: the same mistake nine times is one habit.
+    if orphans:
+        report.fix("metrics", f"{orphans} message(s) of three numbers arrived "
+                              f"without replying to a question, so nothing "
+                              f"knows which post they answer and they were "
+                              f"dropped. Long-press the 📊 message itself and "
+                              f"use Reply.")
 
     directory = directory or POSTS_DIR
     for path in post_order(directory):

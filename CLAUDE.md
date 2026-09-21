@@ -962,7 +962,18 @@ and writes the reply into the post JSON. Four things hold it together:
 - **The answer is a reply, not a button.** Three integers do not fit in
   `callback_data` and no keyboard can carry an arbitrary number, so `confirm`
   asks Telegram for `message` updates as well as taps and reads the stem back
-  out of `reply_to_message`. Nothing new is stored to link the two.
+  out of `reply_to_message`. Nothing new is stored to link the two — which
+  makes the reply *gesture* load-bearing. Three numbers typed as an ordinary
+  message name no post, and `record_metrics` drops them: with several asks
+  outstanding at once, which is the normal state, nothing can say which one
+  they answer, and guessing would put invented numbers into the §8 decision.
+  Asking in words did not secure it. The message has said "Reply to **this**
+  message" in bold since it was written, and on 2026-09-21 nine answers
+  arrived unreplied over a single day and every one was lost. So the ask
+  carries `METRICS_FORCE_REPLY` — Telegram's `ForceReply`, which has the
+  client open the reply box already pointed at the question, so the link is
+  made by the keyboard rather than by remembering. The sentence stays, for
+  whoever dismisses the keyboard.
 - **It survives the missing offset like `published_at` does.** Recording a
   number is a set, not an increment, so a reply replayed for 24 hours writes
   what is already there. Two replies that disagree are a correction, and
@@ -1020,6 +1031,8 @@ something nobody reads:
 - Five of a Breakdown's eight slides sent to the gate, reported as five.
 - Every `era*.json` fixture reported as clashing with the newest real draft,
   because a path outside `post_order()` is read as arriving at its end.
+- Nine metrics answers typed into the chat instead of replied with, dropped
+  in silence, while `learn.py` reported the asks as simply unanswered.
 
 What none of the three jobs can catch, so nobody mistakes green for safe:
 anything that needs a real run — Telegram's message cap, a checkout resolving
@@ -1072,7 +1085,7 @@ so none of it needs a model and none of it spends a quota:
 |---|---|
 | `cadence` | the last Drop day that **ended** has a post dated it |
 | `gate` | every tap in Telegram's 24h window reached `published_at` |
-| `metrics` | every answered ask was written down, and old asks were answered |
+| `metrics` | every answered ask was written down, no answer arrived unreplied, and old asks were answered |
 | `colour` | no two neighbouring posts share a field |
 | `buffer` | drafts are not silently piling up at the gate |
 | `feeds` | every feed still returns entries |
