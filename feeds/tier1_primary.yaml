@@ -2,6 +2,41 @@
 #
 # Re-verify after editing:  python src/verify_feeds.py -v
 # Re-run monthly. Publishers move these without notice.
+#
+# --- considered, not wired in ---
+#
+# The big tech-news sites are the obvious next feeds to add and all five of
+# these were measured on 2026-09-22 and rejected. Ars Technica and MIT
+# Technology Review are already below; the rest fail for structural reasons,
+# so a future session does not need to re-probe them.
+#
+# The cost is not that ingest.py's prefilter drops them — it is that they
+# mostly survive it. Together they are 45–100 items/day onto a sheet taking
+# ~247, and near enough all of it would be rejected by score.py, spending
+# the free tier's daily request cap that CLAUDE.md names as the one budget
+# in this pipeline that actually binds.
+#
+#   Techmeme        <item><link> is techmeme.com/260922/p36, its own cluster
+#                   permalink rather than the article. ingest's URL dedupe
+#                   therefore cannot match it against the Ars or Verge copy
+#                   of the same story, and draft.resolve_paper would fetch a
+#                   cluster page, which has no citation_doi and no abstract.
+#                   Sampled headlines were user-growth numbers, a UN speech
+#                   and a legal-AI startup: 0 of 8 science.
+#   TechCrunch      20/day. is_noise caught 3 of 20; the rest was Disrupt
+#                   conference promotion and funding coverage, which reaches
+#                   the LLM and scores at or below 3 on every axis.
+#   The Verge       is_noise caught 0 of 10. Xbox layoffs, headphones,
+#                   politics — consumer tech, so nothing in DROP_PATTERNS
+#                   fits and all of it would be scored.
+#   Pragmatic       Substack, and paywalled: <description> ran 144–200 chars
+#   Engineer        across the newest three items, the truncation docs §3
+#                   Tier 5 warns about. draft.py would work from a 150-char
+#                   stub. The beat is software careers, not science.
+#   TLDR            tldr.tech/api/rss/tech is live, but one item is one
+#                   issue — title "Googlebooks, Grok 4.7, Google infiltrates
+#                   hackers", <description> empty, link to the digest page.
+#                   One item is not one story. See feeds/tier5_depth.yaml.
 
 feeds:
 

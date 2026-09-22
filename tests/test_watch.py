@@ -11,6 +11,7 @@ and the self-held fact-check were both post-mortems of.
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -355,6 +356,74 @@ def test_a_configured_fact_check_says_nothing(monkeypatch, value):
     report = Report("WATCH")
     watch.check_factcheck(report)
     assert report.verdict == "PASS"
+
+
+# ----------------------------------------------------------------- the feeds
+
+def feed_sweep(monkeypatch, *results):
+    """Stub the network half of check_feeds.
+
+    `results` are (name, status, detail, age) as check_feed returns them.
+    Patched on verify_feeds because check_feeds imports from it at call time,
+    which is what keeps feedparser and yaml out of the other checks.
+    """
+    import verify_feeds as vf
+    entries = [{"name": name, "url": f"https://{name}.example/feed"}
+               for name, _, _, _ in results]
+    replies = {name: (status, detail, age)
+               for name, status, detail, age in results}
+    monkeypatch.setattr(vf, "all_feeds",
+                        lambda *a, **k: [(Path("feeds/x.yaml"), e)
+                                         for e in entries])
+    monkeypatch.setattr(vf, "check_feed",
+                        lambda entry, **k: replies[entry["name"]])
+
+
+def test_a_feed_that_stopped_publishing_is_a_finding(monkeypatch):
+    """The SemiAnalysis case: 200, ten entries, and nothing since last year.
+
+    Every check that existed passed it, because all of them asked whether
+    entries came back. ingest.py would drop all ten on MAX_AGE_DAYS and take
+    a row from it never.
+    """
+    feed_sweep(monkeypatch, ("SemiAnalysis", "ok", "10 entries", 371))
+    report = Report("WATCH")
+    watch.check_feeds(report)
+    found = findings(report, "feeds")
+    assert any("371 days" in line for line in found)
+    assert report.verdict == "FIX"
+
+
+def test_a_slow_feed_is_not_stale(monkeypatch):
+    """Practical Engineering publishes every other week. A watcher that calls
+    that broken is one nobody reads — the whole reason the bar is 60 days and
+    not ingest.py's MAX_AGE_DAYS of 7."""
+    feed_sweep(monkeypatch,
+               ("Practical Engineering", "ok", "20 entries", 7),
+               ("Construction Physics", "ok", "20 entries", 3))
+    report = Report("WATCH")
+    watch.check_feeds(report)
+    assert not findings(report, "feeds")
+    assert report.verdict == "PASS"
+
+
+def test_an_undated_feed_is_not_reported(monkeypatch):
+    """Some feeds carry no dates at all. ingest.py keeps their entries on
+    purpose, so there is no age to test and nothing to say."""
+    feed_sweep(monkeypatch, ("Undated", "ok", "30 entries", None))
+    report = Report("WATCH")
+    watch.check_feeds(report)
+    assert not findings(report, "feeds")
+    assert report.verdict == "PASS"
+
+
+def test_stale_feeds_are_capped_like_dead_ones(monkeypatch):
+    """63 lines of dead feed is scrolled past, so the cap applies to both."""
+    feed_sweep(monkeypatch, *[(f"Gone{i}", "ok", "5 entries", 400)
+                              for i in range(watch.MAX_NAMED + 3)])
+    report = Report("WATCH")
+    watch.check_feeds(report)
+    assert any("more stale" in line for line in findings(report, "feeds"))
 
 
 # --------------------------------------------------------------- the silence

@@ -70,12 +70,20 @@ SUMMARY_CHARS = 500
 # These are structural, not topical — a title matching one of them is
 # never a story, so dropping them here costs nothing and keeps a
 # predictable ~15 rows a week out of the day's scoring budget.
+#
+# "reading list" is the same shape one tier down. An essay newsletter is
+# ingestible only while one item is one story, and feeds/tier5_depth.yaml's
+# header is the test; Construction Physics fails it about half the time by
+# publishing a links column under that name — 11 of 20 items on 2026-09-22.
+# A substring, not a prefix match, because the separator moves between
+# issues ("Reading List 09/19/2026", "Reading List — 09/12/2026").
 DROP_PATTERNS = [
     "raises $", "series a", "series b", "series c", "seed round",
     "announces partnership", "partners with", "acquires", "acquisition of",
     "appoints", "names new ceo", "quarterly results", "earnings",
     "webinar", "sponsored", "press release",
     "photo of the day", "on this day in space", "best deals", "% off",
+    "reading list",
 ]
 
 TAG_RE = re.compile(r"<[^>]+>")

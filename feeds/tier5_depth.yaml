@@ -1,0 +1,114 @@
+# Tier 5 — depth layer (essays, not news)
+#
+# Re-verify after editing:  python src/verify_feeds.py -v
+#
+# docs §3 Tier 5 calls these "not breaking-news sources — they publish after
+# the news, and their value is supplying the understanding and the angle that
+# makes slide 3 better than everyone else's." That is still what they are for.
+# What is new here is that two of them are worth the quota as ingest rows
+# rather than as a reading list, because they are single-topic and roughly
+# weekly. Measured 2026-09-22: 2.5 items/week across both feeds, ~1.5 after
+# the Reading List drop below. Compare the sources rejected in
+# tier1_primary.yaml's "considered, not wired in" block, which are 45–100/day.
+#
+# --- the test these two passed ---
+#
+# A newsletter is ingestible when one item is one story. That is a property
+# of the *item*, not of the publication, and it is what disqualifies most of
+# the names docs §3 Tier 4 recommends. Probed 2026-09-22:
+#
+#   Import AI            "Import AI 473: The US's superintelligence strategy;
+#                         …" — a semicolon-separated digest of four papers
+#   Ahead of AI          "GPT-6 Astra, Looped Transformers, and Hidden
+#                         Reasoning" — same shape
+#   Interconnects        69k chars, interview transcripts
+#   Understanding AI     policy commentary, scores low on `visual`
+#
+# One item carrying four papers cannot be scored on the four axes, cannot be
+# drafted from, and cannot be credited to one author. No transport fixes it —
+# see the Tier 4 note in docs §3, which retires the Gmail-API bridge for
+# exactly this reason.
+#
+# --- and the second test, which is the one that is easy to skip ---
+#
+# A feed can answer 200 with a full item list and still be finished.
+# ingest.py drops anything older than MAX_AGE_DAYS, so a feed frozen last
+# year contributes nothing, forever, while every check that only asks
+# "did entries come back" passes it.
+#
+# Both checks measure it now — verify_feeds.py prints the newest item's age
+# and marks anything past STALE_AFTER_DAYS, and watch.py reports it as a FIX
+# on the daily sweep — but that was added *because* of this tier, on
+# 2026-09-22, after the first feed wired into it turned out to be dead. The
+# three candidates that died on it, all otherwise perfect fits and all named
+# in docs §3:
+#
+#   SemiAnalysis       semianalysis.com/feed/ — 10 single-topic essays on
+#                      datacenters and fabs, which is the gap this tier was
+#                      opened to fill. lastBuildDate Tue, 23 Sep 2025; newest
+#                      item 2025-09-16, 371 days old on 2026-09-22, and the
+#                      WordPress sitemap agrees. The homepage still advertises
+#                      that URL as canonical, so there is no successor feed to
+#                      move to. Every item is already past MAX_AGE_DAYS.
+#   Asianometry        asianometry.com/feed — newest item 2025-01-21, 609 days.
+#   The Gradient       thegradient.pub/rss/ — newest item 2026-02-18, 215 days.
+#
+# Recheck those three before assuming they are gone for good; a frozen feed
+# is sometimes a migration rather than an ending.
+#
+# --- three limits that are real for this tier and for no other ---
+#
+# Everything else in feeds/ is either a paper (tier 2) or coverage with a
+# paper behind it (tier 1). An essay is neither, so three of draft.py's
+# guarantees quietly stop applying:
+#
+# 1. No DOI, so covered_papers() cannot see these. draft.py resolves each
+#    candidate's paper before the LLM call and skips a row whose DOI already
+#    appears in posts/; an essay has no DOI to match, so an essay about a
+#    paper already posted is invisible to that guard. Only the fact-check
+#    agent's step 8, which reads posts/, can catch it. draft.py degrades to
+#    coverage-only drafting with a printed warning, as designed.
+#
+# 2. attribution is the model's, not Crossref's. draft.py builds attribution
+#    from the Crossref author list and discards the model's version only when
+#    a DOI resolved. Here none does — so the one field docs §7.3 calls a
+#    legal and reputational requirement is written by the model, from an
+#    essay whose author is the person §7.3 is about. That section is sharper
+#    here than anywhere else in feeds/: both of these are one person writing
+#    under their own name, not a press office. Credit and tag them, and check
+#    the line at the gate.
+#
+# 3. peer_reviewed is the model's too. An essay is not a paper and its host
+#    is not in draft.py's PREPRINT_HOSTS, so an essay about preprint work can
+#    come back claiming peer review with nothing in code to contradict it.
+#    This is the second failure mode in CLAUDE.md's fact-check section, in
+#    the one case where the host check structurally cannot help.
+#
+# None of that makes these unpostable. It makes them the rows where the
+# fact-check agent is doing real work rather than confirming Crossref.
+
+feeds:
+  # docs §3 Tier 5 calls this "outstanding for engineering" and it is, but
+  # its feed alternates essays with a recurring links column: 11 of 20 items
+  # on 2026-09-22 were "Reading List <date>". Those are digests by the test
+  # above, so "reading list" is in ingest.DROP_PATTERNS and they never reach
+  # the LLM. The separator varies across issues — "Reading List 09/19/2026",
+  # "Reading List — 09/12/2026", "Reading List - 09/05/2026" — which is why
+  # the pattern is a substring and not a prefix match on the date format.
+  # 2.0 items/week, so ~1 essay/week after the drop.
+  - name: Construction Physics
+    url: https://www.construction-physics.com/feed
+    topic: engineering
+
+  # Named in docs §3 Tier 6 rather than Tier 5, and wired here on 2026-09-22
+  # to replace SemiAnalysis: infrastructure is not semiconductors, but it is
+  # the same missing half, and this one is alive. Every item is a full
+  # single-topic transcript of the video it accompanies, 13–20k chars, so it
+  # passes the one-item-one-story test outright — "Every US Electrical Outlet
+  # Explained", "Are Beavers Actually Good at Dams?". 0.5 items/week.
+  #
+  # Being Tier 6 material is a feature: these are evergreen explainers, so a
+  # row from here does not go stale in the queue the way a news row does.
+  - name: Practical Engineering
+    url: https://practical.engineering/blog?format=rss
+    topic: engineering

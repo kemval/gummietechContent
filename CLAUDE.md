@@ -214,6 +214,22 @@ agent (`.claude/agents/feed-scout.md`) does the legwork — it runs the
 checker, finds where a dead feed moved, and proposes the corrected YAML with
 evidence — but it only proposes; you still run `verify_feeds.py` and commit.
 
+**And a feed can be live and finished at the same time.** A publication that
+stops does not take its feed down: the URL answers 200 for years and
+feedparser returns a full item list, so every question of the form "did
+entries come back" says yes. What changes is downstream — `ingest.py` drops
+each of those items on `MAX_AGE_DAYS`, so the feed contributes no rows at
+all. SemiAnalysis was wired into `feeds/tier5_depth.yaml` on 2026-09-22 on
+the strength of a clean OK and 10 entries, none newer than Sep 2025, and only
+a dry-run ingest caught it. Both checks now measure the newest entry's age
+against `verify_feeds.STALE_AFTER_DAYS`: the checker prints it and marks
+anything past the bar, and `watch.py` reports it as a FIX. The bar is 60 days
+rather than `MAX_AGE_DAYS`' 7 because `watch.py` sends to a chat and a
+watcher that cries wolf is one nobody reads — measured over all 65 feeds that
+day, the live set ran median 0d, p90 5d, max 7d, and the dead ones 215d, 371d
+and 609d. An undated feed has no age and is never reported, which is
+`ingest.py`'s own decision about undated rows one layer up.
+
 **The queue is deduplicated by URL, and a story is not a URL.** Many feeds
 cover one press release; each copy is its own row with its own score, and
 the siblings of the row that gets drafted stay queued forever. On
@@ -225,7 +241,11 @@ fetches rather than walking the queue inside a 15-minute job. A candidate
 named by hand — `--row`, `--url`, an evergreen brief — warns and drafts
 anyway, because naming one is the override. Coverage with no resolvable DOI
 cannot be matched at all: that is the `fact-check` agent's step 8, which reads
-`posts/` and can see what a key cannot.
+`posts/` and can see what a key cannot. `feeds/tier5_depth.yaml` is a whole
+tier of that case — essays have no DOI, so nothing about them is deduplicated
+and `attribution` and `peer_reviewed` both come from the model rather than
+from Crossref. The feed file's header says what that costs; it is the reason
+that tier is two feeds and not twenty.
 
 **The duplicates are cross-headline, which is why the DOI is the only key
 that finds them.** This file used to say forty-five feeds carry one press
@@ -1102,7 +1122,7 @@ so none of it needs a model and none of it spends a quota:
 | `metrics` | every answered ask was written down, no answer arrived unreplied, and old asks were answered |
 | `colour` | no two neighbouring posts share a field |
 | `buffer` | drafts are not silently piling up at the gate |
-| `feeds` | every feed still returns entries |
+| `feeds` | every feed still returns entries, and still publishes them |
 | `queue` | rows are still arriving, and candidates are still scored |
 | `structure` | `check.yml`, whose result the workflow hands over |
 | `fact-check` | it is configured at all |

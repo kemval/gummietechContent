@@ -25,7 +25,7 @@ What it reports:
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
     buffer     the gate is not silently accumulating drafts
-    feeds      every feed still returns entries
+    feeds      every feed still returns entries, and still publishes
     queue      rows are still arriving and candidates are still scored
     structure  check.yml, whose result the workflow hands over
     fact-check is configured at all
@@ -257,24 +257,46 @@ def check_buffer(report: Report, directory: Path | None = None) -> None:
 
 
 def check_feeds(report: Report) -> None:
-    """Every feed still returns entries.
+    """Every feed still returns entries — and still publishes them.
 
     A dead feed does not fail anything: ingest.py logs it and goes on, the
     queue quietly stops growing from that source, and nobody finds out until
     draft.py runs short. This is the sweep CLAUDE.md requires by hand after a
     feeds/ change, run on a schedule so a feed that dies on its own is found
     the same way.
+
+    Staleness is the second half, and it is the half that used to be
+    invisible. A publication that stops does not take its feed down with it:
+    the URL answers 200 for years, feedparser returns a full item list, and
+    every check above it passes. What changes is downstream — ingest.py drops
+    each of those items on MAX_AGE_DAYS, so the feed contributes no rows at
+    all, and asking only "did entries come back" cannot see the difference.
+    SemiAnalysis was wired into feeds/tier5_depth.yaml on 2026-09-22 on the
+    strength of a clean OK and 10 entries, none of them newer than Sep 2025.
+
+    Reported as a FIX, not a note: unlike a colour run that already shipped,
+    this is actionable in both directions — the publication moved and the URL
+    can be corrected, or it ended and the entry should come out.
     """
-    from verify_feeds import all_feeds, check_feed      # feedparser + yaml
+    from verify_feeds import (STALE_AFTER_DAYS, all_feeds,      # feedparser
+                              check_feed)                       # + yaml
 
     dead: list[str] = []
+    stale: list[str] = []
     empty = 0
     for _, entry in all_feeds():
-        status, detail = check_feed(entry)
+        name = entry.get("name", "unnamed")
+        status, detail, age = check_feed(entry)
         if status == "fail":
-            dead.append(f"{entry.get('name', 'unnamed')} — {detail}")
+            dead.append(f"{name} — {detail}")
         elif status == "empty":
             empty += 1
+        # age is None for an undated feed, which has no age to test. ingest.py
+        # keeps undated entries on purpose, so silence here is the same
+        # decision one layer up, not an oversight.
+        elif age is not None and age >= STALE_AFTER_DAYS:
+            stale.append(f"{name} — published nothing in {age} days, so "
+                         f"ingest drops every item on age")
 
     for line in dead[:MAX_NAMED]:
         report.fix("feeds", line)
@@ -283,10 +305,19 @@ def check_feeds(report: Report) -> None:
     if dead:
         report.fix("feeds", "run the feed-scout agent — it finds where each "
                             "one moved and proposes the corrected YAML")
+
+    for line in stale[:MAX_NAMED]:
+        report.fix("feeds", line)
+    if len(stale) > MAX_NAMED:
+        report.fix("feeds", f"and {len(stale) - MAX_NAMED} more stale")
+    if stale:
+        report.fix("feeds", "feed-scout finds the successor feed if there is "
+                            "one; retire the entry if there is not")
+
     if empty:
         report.note("feeds", f"{empty} feed(s) parsed but returned 0 entries")
-    if not dead and not empty:
-        report.note("feeds", "every feed is live")
+    if not dead and not empty and not stale:
+        report.note("feeds", "every feed is live and publishing")
 
 
 def check_queue(report: Report) -> None:

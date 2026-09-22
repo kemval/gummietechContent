@@ -72,6 +72,24 @@ cut and captioned by a person. Nothing in `src/` will ever produce one, and
 the automation's job is to cost so little attention that the two reels a week
 are affordable.
 
+### The Status Report — the second pillar
+
+A daily 1080×1350 single slide of relatable-dev humour under a
+`STATUS REPORT #NN` eyebrow. Frequency and personality, on the days no paper
+is worth posting; the carousels stay the reach and credibility pillar.
+
+**It is not a row in the table above, and that is deliberate.** That table is
+post types the pipeline renders, and every one of them must name a source —
+`formats.RECORD` requires `attribution`, `source_url` and `peer_reviewed`,
+and `render.load_post()` refuses a record without them. A status report has
+no source to name. It also uses a different, locked design system: warm cream
+and Instrument Serif, not the field hues and Outfit of §5. So it gets
+`src/series.py` and its own queue, and nothing in `src/` renders it.
+
+Its strategy, numbering contract, design tokens and sibling-series shortlist
+are in `gummietech_status_reports.md`; its mechanics are in `CLAUDE.md`
+§"The status-report pillar".
+
 ### The Drop — 5-slide template (the reach engine)
 
 1. **Hook** — the claim in huge type, one visual. *"A robot just learned to fold laundry from watching 3 videos."*
@@ -325,18 +343,96 @@ template is required to show the flag.
 
 *Not used: the X/Twitter API. Its read tiers are paid and the free tier does not support this use case.*
 
-### Tier 4 — Curated newsletters (highest quality per minute, all free)
+### Tier 4 — Curated newsletters (read by hand, not ingested)
 
-Humans doing Layer 2 filtering for free. Subscribe with a dedicated Gmail, then pull that inbox into the pipeline via the Gmail API (free) so newsletters become just another feed.
+**The Gmail-API bridge this section used to prescribe is retired, unbuilt.**
+The plan was to subscribe with a dedicated Gmail and pull that inbox in so
+newsletters became just another feed. Transport was never the constraint, so
+no transport fixes it.
+
+Two things went wrong with the original reasoning. The first is that "humans
+doing Layer 2 filtering for free" was worth more when Layer 2 cost something;
+it runs on a free tier already, so curation quality is the only thing left on
+offer here, not saved budget. The second is the one that actually decides it:
+
+> **A newsletter is ingestible only while one item is one story** — and that
+> is a property of the item, not of the publication.
+
+Most of the names below fail that test. Measured 2026-09-22:
+
+| newsletter | newest item | |
+|---|---|---|
+| TLDR | "Googlebooks 💻, Grok 4.7 🤖, Google infiltrates hackers 👨‍💻", `description` empty, link to the issue page | digest |
+| Import AI | "Import AI 473: The US's superintelligence strategy; …" — four papers, semicolons | digest |
+| Ahead of AI | "GPT-6 Astra, Looped Transformers, and Hidden Reasoning" | digest |
+| Interconnects | 69k chars, interview transcript | not a finding |
+| The Pragmatic Engineer | `description` 144–200 chars — paywall truncation, as §Tier 5 warns | unusable |
+
+An item carrying four papers cannot be scored on the four axes, cannot be
+drafted from, and cannot be credited to one author — §7.3 is not satisfied by
+naming one of four any more than a Signal's is. `ingest.py` would write one
+row per issue and `draft.py` would draft a carousel from a table of contents.
+TLDR has a perfectly good RSS feed at `tldr.tech/api/rss/tech`; it makes no
+difference, which is the proof that the Gmail inbox would not have either.
+
+So this tier stays a **reading list**: open it, take the idea, and run the
+idea through the normal path. That is the same intake `evergreen-scout` does
+for Tier 6, and it is where these belong — the digests are genuinely good at
+telling a person what happened this week, which is not the same job as
+supplying a row to `score.py`.
 
 **AI:** Import AI (Jack Clark), The Batch (Andrew Ng), AlphaSignal, TLDR AI, Last Week in AI, Ahead of AI (Sebastian Raschka)
 **Science:** Nature Briefing, Science Adviser, Quanta, STAT Morning Rounds
 **Tech/Engineering:** IEEE Spectrum Tech Alert, Benedict Evans, Stratechery (free tier), The Pragmatic Engineer (free tier), Hacker Newsletter
 **Space:** Payload, Rocket Report (Ars Technica)
 
+The ones that *do* pass the test are essays rather than digests, and two of
+them are wired in — see Tier 5.
+
 ### Tier 5 — Depth layer: Medium, Substack, Stack Exchange
 
 **Not breaking-news sources.** They publish *after* the news. Their value is supplying the understanding and the angle that makes slide 3 better than everyone else's.
+
+**Two of them are now feeds as well as reading.** Built 2026-09-22 as
+`feeds/tier5_depth.yaml`: **Construction Physics** and **Practical
+Engineering**, which pass Tier 4's one-item-one-story test every time or
+nearly. Both are engineering and infrastructure, the half Tier 1 covers
+worst — the same argument that picked Tier 2's arXiv categories. Together
+they are 2.5 items/week, ~1.5 after the drop below, against the 45–100/day
+of the tech-news sites `feeds/tier1_primary.yaml` records as rejected.
+
+Construction Physics alternates essays with a recurring links column — 11 of
+20 items on 2026-09-22 were "Reading List *date*" — so `reading list` is in
+`ingest.DROP_PATTERNS` alongside the other recurring non-story columns, and
+those never reach the LLM.
+
+**A feed can answer 200 with a full item list and still be finished**, and
+this section is where that was learned. `ingest.py` drops anything older than
+`MAX_AGE_DAYS`, so a feed frozen last year contributes nothing forever while
+every check that asks only whether entries came back passes it.
+**SemiAnalysis** was the first choice here and died on it — 10 single-topic
+essays on datacenters and fabs, exactly the gap this tier was opened for, and
+a `lastBuildDate` of 23 Sep 2025. So did **Asianometry** (609 days) and
+**The Gradient** (215).
+
+Both checks measure it now, added 2026-09-22 in response: `verify_feeds.py`
+prints each feed's newest-entry age and marks anything past
+`STALE_AFTER_DAYS`, and `watch.py`'s `feeds` check reports it as a FIX on the
+daily sweep. The bar is 60 days rather than `MAX_AGE_DAYS`' 7 because the
+watcher must not cry wolf — measured across all 65 feeds the same day, the
+live set ran median 0d, p90 5d, max 7d, and the three dead ones were 215d,
+371d and 609d.
+
+⚠️ **An essay is neither a paper nor coverage of one, and three of
+`draft.py`'s guarantees quietly stop applying.** There is no DOI, so
+`covered_papers()` cannot tell that an essay is about a paper already posted
+— only the `fact-check` agent's step 8 can. `attribution` is written by the
+model rather than taken from Crossref, which is §7.3's requirement in the one
+case where the author being credited is the essayist themselves. And
+`peer_reviewed` is the model's too, so an essay about preprint work can come
+back claiming peer review with nothing in code to contradict it. The feed
+file's header carries this at length. These are the rows where the
+fact-check agent is doing real work rather than confirming Crossref.
 
 **Medium** — RSS works and is free; insert `/feed` immediately after `medium.com`:
 ```
