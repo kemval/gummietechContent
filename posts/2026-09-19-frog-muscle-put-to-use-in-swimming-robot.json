@@ -31,5 +31,8 @@
     "the_catch": "El músculo permaneció receptivo solo 11 días, y el robot sigue dependiendo de una fuente de luz externa para moverse",
     "_en": "5d982e8570108ff6"
   },
-  "published_at": "2026-09-19"
+  "published_at": "2026-09-19",
+  "metrics": {
+    "asked_at": "2026-09-22"
+  }
 }
