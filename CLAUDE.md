@@ -193,6 +193,20 @@ is a message waiting before the day starts. Any workflow that must land near
 a particular hour needs the same shape. Do not tighten the interval instead:
 that is the `*/15` mistake, and it buys shedding on top of lateness.
 
+**The runner is pinned to `ubuntu-24.04`, and `ubuntu-latest` is the bug.**
+GitHub moves that label to Ubuntu 26.04 *gradually*, between 19 Oct and
+19 Nov 2026 (`actions/runner-images#14748`), and gradual is the worst shape
+for an unattended pipeline: for a month some runs would take one image and
+some the other, so a break would come and go and read as a flake rather than
+as a change. The exposure is not Python — `setup-python` pins 3.12 whatever
+the image is — it is `playwright install --with-deps chromium` in `check.yml`
+and `review.yml`, which apt-installs a library list that is per-release, on
+an image whose kernel and systemd both move (6.17→7.0, 255.4→259.5). Twelve
+jobs carry the label and Actions gives no way to write it once, so each one
+says why in a line rather than leaving twelve bare literals for someone to
+"modernize" back. Unpin deliberately — a green `check.yml` on `ubuntu-26.04`
+first, then all twelve — rather than by tidying the comment away.
+
 **Feed URLs move constantly.** Never hardcode a URL from memory. Run
 `python src/verify_feeds.py -v` after any change to `feeds/`, and treat
 that as a required step before wiring a feed into ingest. The `feed-scout`

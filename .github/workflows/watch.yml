@@ -46,7 +46,8 @@ jobs:
     # this run has to say. Gating the report on the check passing would lose
     # exactly the message worth sending.
     if: always()
-    runs-on: ubuntu-latest
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    runs-on: ubuntu-24.04
     # The feed sweep is the slow part: ~63 feeds, and a dead one costs the
     # full 20s request timeout before it is called dead.
     timeout-minutes: 25
