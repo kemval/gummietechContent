@@ -42,11 +42,21 @@ from pathlib import Path
 from telegram import (METRICS_FIELDS, METRICS_KEY, POSTS_DIR, REPO_ROOT,
                       read_post)
 
+import series
+
 # Below this a median says more about which post went viral than about the
 # group. Reported, not ranked.
 MIN_GROUP = 3
 
 GROUPS = ("post_type", "colorway", "domain", "weekday")
+
+# The status-report pillar groups by different things, because different
+# things vary in it. A report has no post_type, colorway or domain; what it
+# has is the layout module the slide is built from — bars, pills, timeline,
+# cards-4 — and the eyebrow that names its series. §8 puts the format decision
+# at thirty posts, and "which module earns another ten" is exactly that
+# decision one pillar down.
+SERIES_GROUPS = ("module", "eyebrow", "weekday")
 
 WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
             "Saturday", "Sunday")
@@ -72,12 +82,13 @@ def numbers(post: dict) -> dict[str, int] | None:
     return got if len(got) == len(METRICS_FIELDS) else None
 
 
-def load() -> tuple[list[tuple[Path, dict, dict]], int, int]:
+def load(directory: Path | None = None) -> tuple[
+        list[tuple[Path, dict, dict]], int, int]:
     """(posts with numbers, published without, asked but unanswered)."""
     scored: list[tuple[Path, dict, dict]] = []
     unmeasured = 0
     unanswered = 0
-    for path in sorted(POSTS_DIR.glob("*.json")):
+    for path in sorted((directory or POSTS_DIR).glob("*.json")):
         post = read_post(path)
         if post is None or not post.get("published_at"):
             continue
@@ -126,7 +137,7 @@ def ranking(scored: list[tuple[Path, dict, dict]]) -> None:
     print(f"  {'saves':>7}{'shares':>8}{'visits':>8}  {'published':<12}post")
     for path, post, got in sorted(scored, key=lambda s: s[2]["saves"],
                                   reverse=True):
-        hook = str(post.get("hook", "")).strip()
+        hook = str(post.get("hook") or post.get("title") or "").strip()
         print(f"  {got['saves']:>7}{got['shares']:>8}"
               f"{got['profile_visits']:>8}  {post['published_at']:<12}"
               f"{hook[:52]}")
@@ -134,15 +145,27 @@ def ranking(scored: list[tuple[Path, dict, dict]]) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("--by", action="append", choices=GROUPS, default=None,
-                    metavar="FIELD",
-                    help=f"group by one of {', '.join(GROUPS)}. Repeatable; "
+    ap.add_argument("--by", action="append", default=None, metavar="FIELD",
+                    help=f"group by one of {', '.join(GROUPS)} — or, with "
+                         f"--series, {', '.join(SERIES_GROUPS)}. Repeatable; "
                          f"defaults to all of them.")
+    ap.add_argument("--series", action="store_true",
+                    help="report on the status-report pillar in "
+                         "series/reports/ instead of the carousels in posts/")
     args = ap.parse_args()
 
-    scored, unmeasured, unanswered = load()
+    groups = SERIES_GROUPS if args.series else GROUPS
+    if args.by and set(args.by) - set(groups):
+        bad = ", ".join(sorted(set(args.by) - set(groups)))
+        sys.exit(f"Cannot group by {bad} here. "
+                 f"{'A status report' if args.series else 'A carousel'} has "
+                 f"{', '.join(groups)}.")
+
+    scored, unmeasured, unanswered = load(
+        series.REPORTS_DIR if args.series else None)
     total = len(scored) + unmeasured + unanswered
-    print(f"gummietech · what the numbers say")
+    which = "status reports" if args.series else "carousels"
+    print(f"gummietech · what the numbers say · {which}")
     print(f"{total} published · {len(scored)} measured"
           + (f" · {unanswered} asked, not answered" if unanswered else "")
           + (f" · {unmeasured} not yet asked" if unmeasured else ""))
@@ -153,7 +176,7 @@ def main() -> int:
               f"chat and they land here.")
         return 0
 
-    for by in (args.by or GROUPS):
+    for by in (args.by or groups):
         table(scored, by)
     ranking(scored)
 

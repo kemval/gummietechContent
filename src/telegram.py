@@ -80,7 +80,9 @@ from dotenv import load_dotenv
 
 # Standard library only, and deliberately not render.py — see formats.py for
 # why the table lives in its own module and this file may not reach for the
-# one that imports Playwright.
+# one that imports Playwright. series.py is stdlib-only for the same reason:
+# it rides on publish.yml's poll inside this file.
+import series
 from formats import body_text, es_fields, pieces, sections
 
 # Defined here rather than imported from render.py on purpose: `confirm` runs
@@ -100,6 +102,15 @@ CALLBACK_PREFIX = "pub:"
 # separate button a person has to choose, and it says so in the log, in the
 # reply, and in the commit publish.yml makes. See send() for why it exists.
 OVERRIDE_PREFIX = "held:"
+# The same tap again, on a status report rather than a carousel. It dates the
+# record identically, so a third prefix looks like duplication — it is not.
+# confirm() reports `published=true` on GITHUB_OUTPUT and publish.yml
+# dispatches site.yml on it; site.py reads posts/ and nothing else, so a
+# series tap answered as `pub:` would rebuild the archive into byte-identical
+# HTML every single day. That is the 2026-09-21 metrics-comma bug wearing a
+# different hat: a write next to published_at claiming a publish that did not
+# happen. The prefix is what keeps the two apart.
+SERIES_PREFIX = "ser:"
 
 # The two workflows a held post offers links to, under .github/workflows/.
 # workflow_url() says why they are links and not buttons that do the work.
@@ -322,12 +333,18 @@ def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
     return held
 
 
-def parse_callback(data: str) -> tuple[str, bool] | None:
-    """The post stem a tapped button names, and whether it overrode a hold."""
-    for prefix, overridden in ((CALLBACK_PREFIX, False),
-                               (OVERRIDE_PREFIX, True)):
+def parse_callback(data: str) -> tuple[str, bool, bool] | None:
+    """What a tapped button names: (stem, overrode a hold, is a status report).
+
+    The third value is the one that decides whether the archive rebuilds —
+    see SERIES_PREFIX. Order matters here only in that each prefix is
+    distinct; none is a prefix of another.
+    """
+    for prefix, overridden, is_series in ((CALLBACK_PREFIX, False, False),
+                                          (OVERRIDE_PREFIX, True, False),
+                                          (SERIES_PREFIX, False, True)):
         if data.startswith(prefix):
-            return data[len(prefix):], overridden
+            return data[len(prefix):], overridden, is_series
     return None
 
 
@@ -605,6 +622,112 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     return 0
 
 
+def send_series(report_path: Path, dry_run: bool = False) -> int:
+    """Put one status report in the chat, with its caption and one button.
+
+    The same three-message shape `send` uses for a carousel, and for the same
+    reason: the slide, then the caption *alone* so that copy-all on a phone
+    yields exactly what goes in the Instagram box and nothing else, then the
+    message that carries the button.
+
+    There is no review here and no gate to withhold. Nothing checks a status
+    report because there is nothing to check against — no source, no claim,
+    no preprint flag. What `proof.py` measures on a carousel the Design canvas
+    settles at design time, and the joke either lands or it does not.
+    """
+    stem = report_path.stem
+    report = series.read_report(report_path)
+    if report is None:
+        sys.exit(f"Cannot read {report_path}.")
+
+    why = series.sendable(report_path, report)
+    image = series.image_for(report)
+    caption = series.caption_text(report)
+    label = series.label(report)
+
+    data = SERIES_PREFIX + stem
+    if len(data.encode()) > CALLBACK_LIMIT:
+        sys.exit(f"The report filename is too long to carry in a Telegram "
+                 f"button ({len(data.encode())} > {CALLBACK_LIMIT} bytes). "
+                 f"Rename {report_path.name} and its image.")
+
+    if dry_run:
+        print(f"Next up: {label}")
+        print(f"  record  {report_path.relative_to(REPO_ROOT)}")
+        print(f"  image   {image.relative_to(REPO_ROOT)}"
+              f"{'' if image.exists() else '   (MISSING)'}")
+        print(f"  button  {data}")
+        print(f"\n{caption}\n")
+        if why:
+            print(f"Not sendable: {why}")
+        return 1 if why else 0
+
+    token, chat_id = config(need_chat=True)
+
+    # A report whose slide has not been exported yet is the ordinary state of
+    # the queue, not a broken run: the canvas exports by hand and the queue
+    # runs ahead of it. So say what is missing, in the chat, and exit clean —
+    # a failure here would fire notify-failure every day until you sat down
+    # at a computer, which teaches a person to ignore the bot. series.yml
+    # runs once a day, so this nags exactly once a day and stops the moment
+    # the file lands.
+    if why:
+        print(f"Nothing sent — {why}")
+        try:
+            send_message(token, chat_id,
+                         f"📭 <b>{html.escape(label, quote=False)}</b> is "
+                         f"next and cannot go out yet.\n\n"
+                         f"{html.escape(why, quote=False)}\n\n"
+                         f"Nothing else is sent until it does — the numbering "
+                         f"is the point, so the queue waits rather than "
+                         f"skipping ahead.")
+        except TelegramError as exc:
+            sys.exit(str(exc))
+        return 0
+
+    print(f"Sending {stem} to Telegram")
+    try:
+        # A document, not a photo — see the module docstring. These slides are
+        # flat colour fields behind hard offset shadows, which is precisely
+        # what sendPhoto's JPEG re-encode bands.
+        with image.open("rb") as fh:
+            call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})
+        print(f"  sent {image.name}")
+
+        # On its own, so that copying this message copies the caption and
+        # nothing else.
+        #
+        # quote=False is load-bearing. The default also escapes ' and " into
+        # &#x27; and &quot;, and this is the one string in the pipeline that
+        # has to survive a copy-paste into Instagram character for character
+        # — "I'm tired" arriving as "I&#x27;m tired" would be pasted straight
+        # into a caption. Telegram's HTML mode documents exactly three
+        # characters as needing escapes, &, < and >, and quotes are legal raw
+        # in an HTML text node, so escaping them buys nothing and risks
+        # everything.
+        send_message(token, chat_id, html.escape(caption, quote=False))
+        print("  sent the caption")
+
+        poll = workflow_url(PUBLISH_WORKFLOW)
+        rows = [[{"text": "✅ Posted to Instagram", "callback_data": data}]]
+        if poll:
+            rows.append([{"text": "⏱ Record it now", "url": poll}])
+        send_message(token, chat_id,
+                     f"📮 <b>{html.escape(label, quote=False)}</b>\n"
+                     f"<code>{html.escape(stem, quote=False)}</code>\n\n"
+                     f"The caption is the message above — copy it whole.\n\n"
+                     f"{waiting_note(poll)}",
+                     {"inline_keyboard": rows})
+        print(f"  sent the button{' + poll link' if poll else ''}")
+    except TelegramError as exc:
+        sys.exit(str(exc))
+
+    report[series.SENT_KEY] = publish_date()
+    series.write_report(report_path, report)
+    print(f"  {report_path.name}: {series.SENT_KEY} = {report[series.SENT_KEY]}")
+    return 0
+
+
 # ---------- metrics · Layer 7 ----------
 #
 # §9 of the content system makes saves and shares the primary measures and
@@ -680,26 +803,62 @@ def write_post(path: Path, post: dict) -> None:
     path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
 
 
-def post_for_stem(stem: str) -> Path | None:
-    """The post a stem names, or None having said why not.
+def write_record(path: Path, record: dict) -> None:
+    """Write back whichever collection this path came from.
+
+    The two serialise identically today, which is exactly why this exists:
+    the metrics half handles both pillars through one code path, and picking
+    the writer by directory means a later change to either module's format is
+    honoured here instead of quietly bypassed.
+    """
+    if path.parent == series.REPORTS_DIR:
+        series.write_report(path, record)
+    else:
+        write_post(path, record)
+
+
+def locate(stem: str) -> Path | None:
+    """The record a stem names — a carousel in posts/ or a report in series/.
+
+    One lookup across both collections, because a stem is written into a
+    message once and comes back once: the metrics question carries it in its
+    text and the reply carries it back by being a reply. Two lookups would be
+    two ways to read the same string, and the one that guessed wrong would
+    write numbers onto the wrong record in silence.
 
     The stem becomes a path and it arrives from the network, so anything
-    carrying a separator is not a post filename.
+    carrying a separator is not a filename.
     """
     if "/" in stem or "\\" in stem or stem in ("", ".", ".."):
         print(f"  ignored a message carrying {stem!r}")
         return None
     path = POSTS_DIR / f"{stem}.json"
-    if not path.exists():
-        print(f"  ignored {stem}: no such post in posts/")
-        return None
-    return path
+    if path.exists():
+        return path
+    report = series.report_for_stem(stem)
+    if report is not None:
+        return report
+    print(f"  ignored {stem}: no such post in posts/ or series/reports/")
+    return None
+
+
+def measurable() -> list[Path]:
+    """Every record whose Instagram numbers are worth asking for.
+
+    Both pillars: §9 makes saves and shares the primary measure and §8 puts a
+    format decision at thirty posts, and a status report is a post on the same
+    grid competing for the same attention. Asking about one and not the other
+    would leave the newer pillar unmeasurable exactly while it is deciding
+    whether to keep going.
+    """
+    return sorted(POSTS_DIR.glob("*.json")) + sorted(
+        series.REPORTS_DIR.glob("*.json"))
 
 
 def due_for_metrics(today: str) -> list[tuple[Path, dict]]:
     """Published posts old enough to have settled and never asked about."""
     due: list[tuple[Path, dict]] = []
-    for path in sorted(POSTS_DIR.glob("*.json")):
+    for path in measurable():
         post = read_post(path)
         if post is None:
             continue
@@ -741,7 +900,10 @@ def ask_metrics(token: str, chat_id: str, today: str) -> int:
 
     asked = 0
     for path, post in due[:METRICS_ASK_PER_POLL]:
-        hook = str(post.get("hook", "")).strip()
+        # A carousel leads with its hook; a status report has a title. One
+        # line of context is all this needs — enough to recognise which post
+        # the question is about in a chat that now carries two pillars.
+        hook = str(post.get("hook") or post.get("title") or "").strip()
         send_message(
             token, chat_id,
             f"📊 {METRICS_MARK} <code>{html.escape(path.stem)}</code>\n\n"
@@ -752,7 +914,7 @@ def ask_metrics(token: str, chat_id: str, today: str) -> int:
             f"<code>120 14 33</code>.",
             METRICS_FORCE_REPLY)
         post[METRICS_KEY] = {"asked_at": today}
-        write_post(path, post)
+        write_record(path, post)
         asked += 1
         print(f"  {path.name}: asked for its numbers")
     return asked
@@ -771,7 +933,7 @@ def record_metrics(token: str, updates: list, today: str) -> int:
         if not numbers:
             continue
 
-        path = post_for_stem(named.group(1))
+        path = locate(named.group(1))
         if path is None:
             continue
         post = read_post(path)
@@ -784,7 +946,7 @@ def record_metrics(token: str, updates: list, today: str) -> int:
             continue          # the same reply, replayed — the expected case
 
         post[METRICS_KEY] = {**current, **values, "recorded_at": today}
-        write_post(path, post)
+        write_record(path, post)
         recorded += 1
         print(f"  {path.name}: "
               + " · ".join(f"{f.replace('_', ' ')} {v}"
@@ -828,7 +990,8 @@ def confirm() -> int:
         sys.exit(str(exc))
 
     today = publish_date()
-    stamped = 0
+    stamped = 0                  # carousels — these rebuild the archive
+    recorded_series = 0          # status reports — these do not
 
     for update in updates or []:
         query = update.get("callback_query")
@@ -837,9 +1000,9 @@ def confirm() -> int:
         parsed = parse_callback(str(query.get("data", "")))
         if parsed is None:
             continue
-        stem, overridden = parsed
+        stem, overridden, is_series = parsed
 
-        path = post_for_stem(stem)
+        path = locate(stem)
         if path is None:
             continue
         post = read_post(path)
@@ -852,14 +1015,19 @@ def confirm() -> int:
             continue
 
         post["published_at"] = today
-        write_post(path, post)
-        stamped += 1
+        if is_series:
+            series.write_report(path, post)
+            recorded_series += 1
+        else:
+            write_post(path, post)
+            stamped += 1
         held_note = " — over a held review" if overridden else ""
         print(f"  {path.name}: published_at = {today}{held_note}")
 
         call(token, "answerCallbackQuery",
              {"callback_query_id": query["id"],
-              "text": f"Archiving — published_at {today}"}, strict=False)
+              "text": (f"Recorded — published_at {today}" if is_series
+                       else f"Archiving — published_at {today}")}, strict=False)
 
         message = query.get("message") or {}
         if message.get("chat") and message.get("message_id"):
@@ -871,20 +1039,32 @@ def confirm() -> int:
             mark = "⚠️" if overridden else "✅"
             over = (" Recorded over a held review — the reports above still "
                     "stand." if overridden else "")
+            # A status report is not on the web archive — site.py reads
+            # posts/ — so promising a build here would be a lie about where
+            # it went.
+            went = ("Written down." if is_series
+                    else f"Building the archive now.{over}")
             call(token, "sendMessage",
                  {"chat_id": message["chat"]["id"],
                   "reply_to_message_id": message["message_id"],
                   "text": f"{mark} {stem} — published_at {today}. "
-                          f"Building the archive now.{over}"}, strict=False)
+                          f"{went}"}, strict=False)
 
-    print(f"{stamped} post(s) newly published." if stamped
-          else "No new publish taps.")
+    tally = ", ".join(
+        f"{n} {what}" for n, what in ((stamped, "post(s)"),
+                                      (recorded_series, "status report(s)"))
+        if n)
+    print(f"{tally} newly published." if tally else "No new publish taps.")
 
     # Whether the archive has anything new to show. The caller cannot read
     # this off the diff: writing a metrics block next to published_at puts a
     # comma on that line, so it shows up as changed on a poll that published
     # nothing. Appended, never written whole — GITHUB_OUTPUT is shared with
     # every other step of the job.
+    #
+    # `stamped` counts carousels only, never status reports: series/ is not on
+    # the archive at all, so a report tap that set this true would rebuild the
+    # site into byte-identical HTML every day it went out. See SERIES_PREFIX.
     github_output = os.getenv("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as fh:
@@ -910,11 +1090,33 @@ def main() -> int:
                    help="a fact-check or proof report to carry into the "
                         "message; any that says BLOCK withholds the button. "
                         "Repeatable.")
+    r = sub.add_parser("send-series",
+                       help="send the next status report for approval")
+    r.add_argument("report", type=Path, nargs="?", metavar="FILE",
+                   help="a specific report JSON; omit for the next unsent one")
+    r.add_argument("--dry-run", action="store_true",
+                   help="print what would be sent and exit without calling "
+                        "Telegram")
     sub.add_parser("confirm", help="stamp published_at on tapped posts")
 
     args = ap.parse_args()
     if args.command == "confirm":
         return confirm()
+
+    if args.command == "send-series":
+        if args.report:
+            path = (args.report if args.report.is_absolute()
+                    else REPO_ROOT / args.report)
+            if not path.exists():
+                sys.exit(f"No such report file: {path}")
+        else:
+            nxt = series.next_unsent()
+            if nxt is None:
+                print("Every report in series/reports/ has been sent. Add the "
+                      "next one, or the series has run out of runway.")
+                return 0
+            path, _ = nxt
+        return send_series(path, args.dry_run)
 
     post_path = args.post if args.post.is_absolute() else REPO_ROOT / args.post
     if not post_path.exists():

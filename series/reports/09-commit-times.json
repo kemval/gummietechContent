@@ -1,0 +1,15 @@
+{
+  "number": 9,
+  "eyebrow": "status report",
+  "title": "my commit times vs. my sleep",
+  "module": "timeline",
+  "image": "09-commit-times.png",
+  "caption": "my git history is a sleep study nobody asked for.\n\nit starts so responsibly. refactor auth, add tests, tweak spacing.\nthen 22:41 \"one more thing\", 01:17 \"ok actually one more\",\n02:10 \"undo all of that\", 02:53 \"it's the cache isn't it\",\nand 03:38 \"fixed. no idea how.\"\n\nthe commits get worse after midnight and the timestamps know it.\n\nwhat time does your code stop making sense?",
+  "hashtags": [
+    "#git",
+    "#devhumor",
+    "#codinglife",
+    "#nightowl",
+    "#gummietech"
+  ]
+}

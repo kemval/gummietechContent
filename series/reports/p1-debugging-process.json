@@ -1,0 +1,13 @@
+{
+  "eyebrow": "status report",
+  "title": "my debugging process",
+  "module": "cards-4",
+  "image": "p1-debugging-process.png",
+  "caption": "a tragedy in four acts.\n\nact i: it works, no idea why. act ii: it broke, still no idea why.\nact iii: print(\"here\"), a sacred ritual. act iv: one comma,\nthree hours of my life.\n\nwhich act are you stuck in?",
+  "hashtags": [
+    "#debugging",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ]
+}

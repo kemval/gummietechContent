@@ -3,7 +3,8 @@
 Instructions for Claude Code working in this repo.
 Content strategy, source lists, and post formats live in
 `docs/gummietech_content_system.md` — read it when the task touches
-what gets posted rather than how the pipeline runs.
+what gets posted rather than how the pipeline runs. The second pillar, the
+daily status-report slide, has its own: `docs/gummietech_status_reports.md`.
 
 ---
 
@@ -70,7 +71,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive) ·
-                     watch.yml (daily: is any of this still running?)
+                     watch.yml (daily: is any of this still running?) ·
+                     series.yml (the status-report pillar, daily)
 src/
   formats.py         what each carousel format is made of — the one table
   verify_feeds.py    checks every feed URL is live
@@ -84,11 +86,15 @@ src/
   render.py          JSON + template → PNGs
   proof.py           measures the rendered layout — frame, contrast, flag
   site.py            published posts → static web archive
+  series.py          the status-report pillar — what is queued, what went
+                     out, in what order; `python src/series.py` prints it.
+                     Not a post_type; see below
   telegram.py        sends a rendered post for approval; reads the tap back,
                      and asks a settled post for its Instagram numbers
   learn.py           the metrics report — what to cut, what to double
   watch.py           the daily audit — what did not happen and should have
 feeds/               *.yaml source lists by tier
+series/              reports/*.json + images/*.png — the status-report pillar
 tests/               pytest over the pure functions; every case is a
                      post-mortem — see **When something breaks**
 posts/               drafted post JSON
@@ -1188,6 +1194,64 @@ requires a Professional account linked to a Facebook Page, uses a two-step
 container + publish call, has **no native scheduling endpoint**, and caps at
 50 API-published posts per rolling 24 hours. Do not start building against it
 without an explicit decision.
+
+## The status-report pillar
+
+A second content stream beside the carousels: single 1080x1350 slides of
+relatable-dev humour under a `STATUS REPORT #NN` eyebrow, one a day.
+`series.yml` sends the next one to the same Telegram chat with its caption and
+one button; `publish.yml`'s existing poll takes the tap back. Layer 5 applies
+here exactly as it does to a Drop.
+
+Its strategy, numbering contract, design tokens and what is built lives in
+`docs/gummietech_status_reports.md` — read it when the task touches what gets
+posted rather than how the sending runs. `python src/series.py` prints the
+queue: what is next, what is missing an image, how many days of runway are
+left, and whether the numbering has a hole or two neighbours share a module.
+
+**It is not a `post_type`, and adding one would be the mistake.**
+`formats.RECORD` requires `attribution`, `source_url` and `peer_reviewed` on
+every record and `render.load_post()` refuses one without them — because a
+post that cannot name its source must not ship. A status report has no source
+to name. It also uses a different, locked design system (warm cream
+`#F3EEE6`, Instrument Serif / Manrope / JetBrains Mono) that has nothing to do
+with `templates/tokens.css`. So it gets `src/series.py`, a small stdlib-only
+manifest module, and nothing in `src/` renders it.
+
+**The slides are exported by hand.** They are designed on a Claude Design
+canvas and exported to `series/images/` — that export is a click in a browser
+and no workflow can do it. `.gitignore` blanket-ignores `*.png`, so
+`!series/images/*.png` is what lets them be committed at all; delete that line
+and `series.yml` silently finds no image and sends nothing.
+
+Four things that are deliberate:
+
+- **A third callback prefix, `ser:`.** It dates a record exactly as `pub:`
+  does, so it looks like duplication. It is not: `confirm` reports
+  `published=true` on `GITHUB_OUTPUT` and `publish.yml` dispatches `site.yml`
+  on it, and `site.py` reads `posts/` and nothing else — so a report tap
+  answered as `pub:` would rebuild the archive into byte-identical HTML every
+  day it went out. The same shape as the metrics-comma bug: a write next to
+  `published_at` claiming a publish that did not happen.
+- **One poller, not two.** `getUpdates` is called without an offset, so every
+  tap replays for 24 hours; a second polling workflow would see and answer the
+  same taps. `confirm` handles both pillars, and `locate()` is the one lookup
+  that finds a stem in either collection.
+- **`sent_at` is not `published_at`.** Sending writes nothing else, so
+  `series.yml`'s gate has no filename to test the way `daily.yml` tests
+  `posts/<today>-*.json`. `sent_at` is that marker — and "the bot showed it to
+  me" and "I put it on Instagram" are different facts, hours apart.
+- **A report with no image yet is not a failed run.** The queue runs ahead of
+  the export, so `send-series` says what is missing in the chat and exits 0.
+  Failing would fire `notify-failure` every day until someone sat down at a
+  computer, which teaches a person to ignore the bot. It does not skip ahead
+  to the next report that *is* ready: the numbering is public, and a gap reads
+  as posts gone missing.
+
+`python src/learn.py --series` is the Layer 7 half, grouped by `module` and
+`eyebrow` rather than `post_type`/`colorway`/`domain` — what varies in this
+pillar is the layout the slide is built from, and "which module earns another
+ten" is §8's format decision one pillar down.
 
 ## When updating strategy
 

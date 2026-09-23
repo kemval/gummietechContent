@@ -15,6 +15,10 @@ output/
 *.png
 # ...but the avatar is source art, not output
 !assets/*.png
+# ...and so are the status-report slides: series.py has no renderer, they are
+# exported from the Design canvas by hand and are the only copy that exists.
+# Without this line series.yml finds no image and sends nothing, silently.
+!series/images/*.png
 
 # built web archive — rebuilt by src/site.py, deployed from CI
 site/

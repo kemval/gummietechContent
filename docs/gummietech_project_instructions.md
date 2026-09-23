@@ -31,6 +31,11 @@ This table is a copy. The canonical one is §1 of
 `gummietech_content_system.md`, which now matches it; correct this one to
 that rather than the other way round.
 
+**A second pillar sits outside this table:** the daily `STATUS REPORT` slide
+— humour, single image, no source to cite, its own design system. It is not a
+post type the pipeline renders and must never be given one; see
+`gummietech_status_reports.md`.
+
 **The Drop is the default output** for a post request unless stated otherwise:
 
 1. **Hook** — the claim, ≤12 words, written for thumbnail legibility

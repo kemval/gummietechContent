@@ -1,0 +1,14 @@
+{
+  "number": 11,
+  "eyebrow": "status report",
+  "title": "things keeping my codebase alive",
+  "module": "cards-4",
+  "image": "11-codebase-alive.png",
+  "caption": "load-bearing, all four of them.\n\nAI (on call). the docs and Stack Overflow (scripture). caffeine\n(life support). and one old function nobody knows what it does — which\nis the one I'm most afraid of.\n\ndo not touch production.\n\nwhat's the mystery function in your repo that everyone's scared to delete?",
+  "hashtags": [
+    "#legacycode",
+    "#devhumor",
+    "#softwareengineering",
+    "#gummietech"
+  ]
+}

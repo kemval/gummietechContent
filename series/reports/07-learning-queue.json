@@ -1,0 +1,15 @@
+{
+  "number": 7,
+  "eyebrow": "status report",
+  "title": "my current learning queue",
+  "module": "bars",
+  "image": "07-learning-queue.png",
+  "caption": "my learning queue, with honest completion percentages.\n\nRust 4%. system design 12%. that course I bought, 0%. LeetCode 8%.\nDocker properly, 15%. and \"I'll figure it out later\" — sitting\ncomfortably at 100%.\n\nthe queue only ever grows.\n\nwhat's been at 0% in your queue the longest?",
+  "hashtags": [
+    "#learntocode",
+    "#devlife",
+    "#softwareengineer",
+    "#studentlife",
+    "#gummietech"
+  ]
+}

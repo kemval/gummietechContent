@@ -69,7 +69,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- posts/; then
+          # Both pillars: a tap dates a carousel in posts/ or a status
+          # report in series/reports/, and the metrics half writes back to
+          # either. Which of the two happened is what `published` below says.
+          if git diff --quiet -- posts/ series/reports/; then
             echo "Nothing to record."
             exit 0
           fi
@@ -79,7 +82,9 @@ jobs:
           # The answer comes from the step above rather than from the diff:
           # a metrics block written next to published_at puts a comma on that
           # line, so the diff says "published" on a poll that published
-          # nothing.
+          # nothing. A status-report tap is the same trap from the other side
+          # — it writes published_at, but site.py never reads series/, so it
+          # must not rebuild either. confirm() counts the two separately.
           if [ "${{ steps.poll.outputs.published }}" = true ]; then
             subject="Publish to the archive"
             rebuild=yes
@@ -89,7 +94,7 @@ jobs:
           fi
           git config user.name  "gummietech"
           git config user.email "noreply@github.com"
-          git add posts/
+          git add posts/ series/reports/
           git commit -m "$subject" \
                      -m "$(git diff --cached --name-only)"
           git pull --rebase

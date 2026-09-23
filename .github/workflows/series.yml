@@ -1,0 +1,156 @@
+name: series
+
+# The status-report pillar, once a day: put the next slide in Telegram with
+# its caption and one button, and write down that it went out.
+#
+# This is the humour series, not the science pipeline — single 1080x1350
+# slides designed on a Design canvas and exported by hand. Nothing in src/
+# renders them and nothing checks them: there is no source to verify and no
+# preprint to flag, which is exactly why it is not a `post_type`. See
+# src/series.py.
+#
+# It stops at the button, like everything else here. The tap is a person
+# saying the slide is on Instagram; publish.yml's poll is what picks it up
+# and stamps `published_at`. Layer 5 applies to this pillar too.
+
+on:
+  schedule:
+    # Daily — daily.yml is Mon/Wed/Fri because that is the Drop cadence; this
+    # pillar goes out every day.
+    #
+    # Four firings, and the `gate` job below makes every one after the first a
+    # no-op, for the reason daily.yml does it: a once-a-day cron on the free
+    # tier is not shed, it is delivered hours late. Measured on daily.yml,
+    # 5/5 firings were honoured and every one ran 3h38m to 5h55m after the
+    # minute it asked for. You cannot ask GitHub for less delay, only for an
+    # earlier hour, so ask four times and let the first one that lands do the
+    # work.
+    #
+    # 06:17 UTC = 00:17 in America/Costa_Rica, which does not observe DST.
+    # The offset minute is deliberate: the top of the hour is the most
+    # contended slot on GitHub's scheduler.
+    - cron: '17 6,8,10,12 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: >
+          Send even though a report already went out today. Leave it off
+          unless you mean it — see the `gate` job.
+        type: boolean
+        required: false
+        default: false
+
+# Two sends at once would both claim the same report and race on the push.
+concurrency:
+  group: series
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  # "Has today's report already gone out?" — answered off `sent_at` in the
+  # records rather than off a filename. daily.yml can ask whether posts/ holds
+  # a file dated today because drafting *creates* that file; sending creates
+  # nothing, so this pillar needs a field to write the fact into. That is what
+  # series.SENT_KEY is for, and why it is separate from `published_at`: the
+  # bot showing you a slide and you putting it on Instagram are different
+  # facts, hours apart.
+  #
+  # A bare workflow_dispatch is held to this too, which is the lesson of
+  # 2026-09-21 on daily.yml: concurrency queues a hand dispatch rather than
+  # dropping it, so a dispatch sent while a late cron was already running
+  # produced a second post nobody wanted. `force` is the explicit override.
+  gate:
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      send: ${{ steps.check.outputs.send }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - id: check
+        env:
+          FORCE: ${{ inputs.force }}
+          PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
+        run: |
+          if [ "$FORCE" = "true" ]; then
+            echo "send=true" >> "$GITHUB_OUTPUT"
+            echo "force was asked for — sending whatever already went out today."
+            exit 0
+          fi
+          # Dated in the same zone telegram.publish_date() uses, on the same
+          # runner, so the gate and the stamp cannot disagree about when today
+          # started.
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import os, sys
+          sys.path.insert(0, "src")
+          import series
+          from telegram import publish_date
+
+          today = publish_date()
+          sent = [p.name for p, r in series.reports()
+                  if str(r.get(series.SENT_KEY, "")).strip() == today]
+          print(f"send={'false' if sent else 'true'}")
+          print(("Already sent today (%s): %s" % (today, ', '.join(sent))
+                 if sent else f"Nothing sent on {today} yet — this firing does "
+                              f"the work."), file=sys.stderr)
+          PY
+
+  send:
+    needs: gate
+    if: needs.gate.outputs.send == 'true'
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # Not requirements.txt, for publish.yml's reason: telegram.py and
+      # series.py are both stdlib plus these two, and neither imports
+      # render.py. Keep this list in step with telegram.py's imports.
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Send the next report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
+        run: python src/telegram.py send-series
+
+      # Only `sent_at` changes here. `published_at` is publish.yml's to write,
+      # when you tap — this job never dates a post as live.
+      - name: Record that it went out
+        run: |
+          if git diff --quiet -- series/reports/; then
+            echo "Nothing went out — the next report is waiting on its image."
+            exit 0
+          fi
+          git config user.name  "gummietech"
+          git config user.email "noreply@github.com"
+          git add series/reports/
+          git commit -m "Send the next status report" \
+                     -m "$(git diff --cached --name-only)"
+          git pull --rebase
+          git push
+
+      # A failed run is silent unless somebody opens the Actions tab. See
+      # .github/actions/notify-failure for why that is the thing to fix.
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}

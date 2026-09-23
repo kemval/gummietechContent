@@ -1,0 +1,13 @@
+{
+  "eyebrow": "self audit",
+  "title": "red flags in my own code",
+  "module": "cards-4",
+  "image": "p3-red-flags.png",
+  "caption": "self-reported. judge me, I deserve it.\n\n# TODO: later (written eight months ago). final_v2_REAL (git exists,\nI know). except: pass (peace at any cost). and it works on my machine,\nI swear.\n\nwhat's the red flag you'd find in your own repo today?",
+  "hashtags": [
+    "#codereview",
+    "#devhumor",
+    "#techdebt",
+    "#gummietech"
+  ]
+}

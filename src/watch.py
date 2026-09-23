@@ -63,7 +63,7 @@ from proof import Report
 from render import COLORWAYS, post_order, vary
 from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
                       METRICS_REPLY_RE, POSTS_DIR, TelegramError, call, config,
-                      parse_callback, post_for_stem, publish_date, read_post,
+                      locate, parse_callback, publish_date, read_post,
                       send_report)
 
 # docs §1 fixes the Drop at 3×/week and daily.yml asks on `* * 1,3,5`.
@@ -129,11 +129,12 @@ def check_gate(updates: list, report: Report) -> None:
         parsed = parse_callback(data)
         if parsed is None:
             continue
-        stem, _ = parsed
-        # post_for_stem refuses a stem that names no file or tries to be a
-        # path. The stem arrives from the network; confirm() distrusts it and
-        # so does this.
-        path = post_for_stem(stem)
+        stem = parsed[0]
+        # locate() refuses a stem that names no file or tries to be a path,
+        # and finds it whether it is a carousel in posts/ or a status report
+        # in series/reports/ — a lost tap is a lost tap either way. The stem
+        # arrives from the network; confirm() distrusts it and so does this.
+        path = locate(stem)
         if path is None or stem in seen:
             continue
         post = read_post(path)
@@ -170,7 +171,7 @@ def check_metrics(updates: list, today: str, report: Report,
         if not match:
             orphans += 1
             continue
-        path = post_for_stem(match.group(1))
+        path = locate(match.group(1))
         post = read_post(path) if path else None
         if post is None:
             continue

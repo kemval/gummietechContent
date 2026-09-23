@@ -1,0 +1,15 @@
+{
+  "number": 6,
+  "eyebrow": "status report",
+  "title": "my git commit history",
+  "module": "timeline",
+  "image": "06-git-history.png",
+  "caption": "a full archaeological record of one bad afternoon.\n\ninitial commit → fixed thing → fixed the fix → why is this broken →\nPLEASE WORK → final → final-final → final-final-2\n\nversion control is a social experiment and I am failing it.\n\nwhat's the worst commit message you've ever pushed to main?",
+  "hashtags": [
+    "#git",
+    "#versioncontrol",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "number": 8,
+  "eyebrow": "status report",
+  "title": "error messages, ranked by pain",
+  "module": "pills",
+  "image": "08-error-messages.png",
+  "caption": "ranked by how personally I took it.\n\n01 \"undefined is not a function\" · 02 cannot read properties of null ·\n03 blocked by CORS policy · 04 segmentation fault ·\n05 merge conflict in 14 files · 06 \"works on my machine\"\n\nnumber six isn't an error. it's a betrayal.\n\nwhich one ruins your entire day?",
+  "hashtags": [
+    "#debugging",
+    "#devhumor",
+    "#programmerlife",
+    "#webdev",
+    "#gummietech"
+  ]
+}

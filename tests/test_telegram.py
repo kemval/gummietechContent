@@ -80,8 +80,11 @@ def test_the_last_verdict_wins_if_a_report_quotes_the_format():
 # --------------------------------------------------------------- the button
 
 @pytest.mark.parametrize("data,expected", [
-    ("pub:2026-09-15-tides", ("2026-09-15-tides", False)),
-    ("held:2026-09-15-tides", ("2026-09-15-tides", True)),
+    ("pub:2026-09-15-tides", ("2026-09-15-tides", False, False)),
+    ("held:2026-09-15-tides", ("2026-09-15-tides", True, False)),
+    # The third prefix exists so a status report cannot rebuild the archive —
+    # see test_a_status_report_tap_does_not_rebuild_the_archive.
+    ("ser:07-learning-queue", ("07-learning-queue", False, True)),
     ("something-else", None),
     ("", None),
 ])
@@ -245,7 +248,7 @@ def test_a_reply_that_is_not_three_numbers_is_ignored_in_silence(posts, quiet):
 def test_a_stem_from_the_network_cannot_become_any_path(posts, quiet, stem):
     assert tg.record_metrics("tok", [reply_update(stem, "1 2 3")],
                              "2026-09-20") == 0
-    assert tg.post_for_stem(stem) is None
+    assert tg.locate(stem) is None
 
 
 def test_the_ask_carries_the_keyboard_that_makes_the_reply(posts, monkeypatch):
@@ -362,3 +365,75 @@ def test_send_uploads_the_whole_carousel(monkeypatch, tmp_path, posts_dir, quiet
               if method == "sendMediaGroup" for name in names]
     assert slides == [f"slide-{i}" for i in range(1, 9)]
     assert ("sendDocument", ["document"]) in uploaded
+
+
+# --------------------------------------------------- the two pillars, one poll
+
+@pytest.fixture
+def reports(monkeypatch, tmp_path):
+    """A series/reports/ a test can fill, pointed at by both modules."""
+    directory = tmp_path / "reports"
+    directory.mkdir()
+    monkeypatch.setattr(tg.series, "REPORTS_DIR", directory)
+
+    def write(name: str, **record) -> Path:
+        path = directory / name
+        path.write_text(json.dumps(record, indent=2) + "\n")
+        return path
+
+    return write
+
+
+def tap_update(data: str) -> dict:
+    """A button tap, as Telegram returns it."""
+    return {"callback_query": {"id": "1", "data": data,
+                               "message": {"chat": {"id": 1},
+                                           "message_id": 9}}}
+
+
+def test_a_status_report_tap_does_not_rebuild_the_archive(
+        posts, reports, quiet, monkeypatch, tmp_path):
+    """site.py reads posts/ and nothing else, so a status report reaching
+    `published=true` would rebuild the whole archive into byte-identical HTML
+    every single day it went out. Same shape as the metrics-comma bug: a write
+    next to published_at claiming a publish that did not happen."""
+    reports("07-learning-queue.json", title="learning queue",
+            image="07.png", caption="c")
+    monkeypatch.setattr(tg, "call",
+                        lambda t, m, p=None, f=None, strict=True:
+                        [tap_update("ser:07-learning-queue")]
+                        if m == "getUpdates" else None)
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    out = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+
+    assert tg.confirm() == 0
+    assert "published=false" in out.read_text()
+
+
+def test_a_carousel_tap_still_does(posts, reports, quiet, monkeypatch,
+                                   tmp_path):
+    """The other half of the same rule — the science pillar must be unchanged."""
+    posts("2026-09-15-x.json", hook="h")
+    monkeypatch.setattr(tg, "call",
+                        lambda t, m, p=None, f=None, strict=True:
+                        [tap_update("pub:2026-09-15-x")]
+                        if m == "getUpdates" else None)
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    out = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+
+    assert tg.confirm() == 0
+    assert "published=true" in out.read_text()
+
+
+def test_locate_does_not_confuse_the_two_collections(posts, reports, quiet):
+    """A stem is written into a message once and comes back once. The
+    era*.json and resolve-post post-mortems are both this shape: a path
+    outside the expected set read as belonging to it."""
+    posts("2026-09-15-x.json", hook="h")
+    reports("07-learning-queue.json", title="t", image="i.png", caption="c")
+
+    assert tg.locate("2026-09-15-x").parent.name == "posts"
+    assert tg.locate("07-learning-queue").parent.name == "reports"
+    assert tg.locate("nothing-of-the-sort") is None
