@@ -73,6 +73,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: 'pip'
+
+      # The check imports telegram.publish_date, and telegram.py imports
+      # requests at module level. Without this the gate died on its first
+      # scheduled run (2026-09-23) and nothing was sent.
+      - name: Install dependencies
+        run: pip install requests python-dotenv
 
       - id: check
         env:
@@ -101,6 +108,15 @@ jobs:
                  if sent else f"Nothing sent on {today} yet — this firing does "
                               f"the work."), file=sys.stderr)
           PY
+
+      # A gate that breaks sends nothing, which looks exactly like a quiet
+      # day. The send job's notify step never runs when this one fails.
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
 
   send:
     needs: gate
