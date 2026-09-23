@@ -233,9 +233,26 @@ feeds:
     url: https://techxplore.com/rss-feed/
     topic: tech
 
-  - name: Space.com
-    url: https://www.space.com/feeds/all
-    topic: space
+  # Space.com retired 2026-09-23: its RSS is broken on the publisher's side,
+  # not moved. /feeds/all now 301s to /feeds.xml, which is a valid 899-byte
+  # RSS document with a current lastBuildDate, zero items, and the title
+  # "Latest from null" — a section slug resolving to nothing in Future PLC's
+  # CMS. /rss and /feeds/rss serve that same byte-identical stub, /feeds/news
+  # serves another one, and /feeds/all.xml, /feeds/news.xml and section paths
+  # 404. The homepage's own <link rel="alternate"> points at the broken file,
+  # so there is nothing to correct the URL to.
+  #
+  # The control says it is space.com and not the platform or our User-Agent:
+  # livescience.com/feeds.xml and techradar.com/feeds.xml, same publisher and
+  # same path convention, both serve 50 items to the same request.
+  #
+  # Left out rather than left empty because it verified OK-but-empty on every
+  # sweep, and a permanent "1 empty" in a checker's summary is how a person
+  # learns to skim past its output. Space is the best-covered topic in this
+  # file anyway — Phys.org Space, Universe Today, NASASpaceflight, AAS Nova,
+  # two ESA feeds and three NASA ones. Restore the entry if Future ever fixes
+  # the slug; re-probe https://www.space.com/feeds.xml and look for <item>.
+
 
   # ~5/day, but 5 of 20 titles duplicate Phys.org Space under different URLs,
   # so ingest's URL dedupe will not catch them. Net new is closer to 4/day.
