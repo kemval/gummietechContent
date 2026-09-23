@@ -5,7 +5,7 @@
   "hook": "Scientists observed sound quantum jumps in a nanomechanical resonator",
   "what_happened": "A superconducting qubit repeatedly measured phonon number in a resonator, revealing jumps between ground and first excited states",
   "why_it_matters": "It demonstrates controllable quantum behavior in massive vibrating objects, a prerequisite for quantum computing and sensing",
-  "the_catch": "The resonator’s lifetime was only 2.1 ms, limiting the number of observable jumps",
+  "the_catch": "The resonator’s lifetime was only 2.1 ms",
   "caption": "Scientists have directly observed quantum jumps of sound in a nanomechanical resonator, a first for phonons. Could this enable new quantum error‑correction techniques?",
   "keywords": [
     "phonons",
@@ -27,8 +27,8 @@
     "domain": "mecánica cuántica",
     "hook": "Científicos observaron saltos cuánticos de sonido en un resonador nanomecánico",
     "what_happened": "Un qubit superconductor medía repetidamente el número de fonones en un resonador, revelando saltos entre el estado fundamental y el primero excitado",
-    "why_it_matters": "Demuestra un comportamiento cuántico controlable en objetos vibrantes masivos, requisito previo para la computación y el sensor cuánticos",
-    "the_catch": "La vida útil del resonador fue solo 2.1 ms, limitando el número de saltos observables",
-    "_en": "a6b5910d777bfa03"
+    "why_it_matters": "Demuestra un comportamiento cuántico controlable en objetos vibratorios masivos, requisito previo para la computación y el sensor cuánticos",
+    "the_catch": "La vida útil del resonador fue solo de 2.1 ms",
+    "_en": "1c59ce692c8a1d6c"
   }
 }
