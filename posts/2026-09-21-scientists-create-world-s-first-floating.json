@@ -31,5 +31,8 @@
     "the_catch": "Las pruebas se limitaron a un cubo de celosía 4×4×4; el rendimiento a escalas mayores o bajo diferentes condiciones de carga no ha sido evaluado",
     "_en": "82ae075bfa64e156"
   },
-  "published_at": "2026-09-21"
+  "published_at": "2026-09-21",
+  "metrics": {
+    "asked_at": "2026-09-24"
+  }
 }
