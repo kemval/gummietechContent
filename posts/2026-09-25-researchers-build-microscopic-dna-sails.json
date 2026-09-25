@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "materials",
+  "colorway": "signal",
+  "hook": "Microscopic DNA sails can pull molecules apart",
+  "what_happened": "Researchers built DNA-based micro‑sails that generate forces to separate molecules",
+  "why_it_matters": "It offers a new tool to study mechanical forces in biology and drug interactions",
+  "the_catch": "The study was performed in vitro and the sails’ performance under physiological conditions remains untested",
+  "caption": "Scientists have created tiny DNA sails that can pull molecules apart, opening new ways to study mechanical forces in biology. How could this help drug design? #gummietech",
+  "keywords": [
+    "dna",
+    "mechanics",
+    "biotech"
+  ],
+  "hashtags": [
+    "#dna",
+    "#mechanics",
+    "#biotech",
+    "#gummietech"
+  ],
+  "alt_text": "A five‑slide carousel explaining that researchers built microscopic DNA sails to pull molecules apart and its potential impact on biology and drug design",
+  "source_url": "https://phys.org/news/2026-09-microscopic-dna-molecules.html",
+  "attribution": "Phys.org",
+  "peer_reviewed": false,
+  "es": {
+    "domain": "materiales",
+    "hook": "Velas microscópicas de ADN pueden separar moléculas",
+    "what_happened": "Los investigadores construyeron microvelas basadas en ADN que generan fuerzas para separar moléculas",
+    "why_it_matters": "Ofrece una nueva herramienta para estudiar fuerzas mecánicas en biología e interacciones farmacéuticas",
+    "the_catch": "El estudio se realizó in vitro y el rendimiento de las velas bajo condiciones fisiológicas no ha sido evaluado",
+    "_en": "4e00b9c0f3172756"
+  }
+}
