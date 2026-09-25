@@ -20,8 +20,8 @@
   ],
   "alt_text": "A five‑slide carousel explaining that researchers built microscopic DNA sails to pull molecules apart and its potential impact on biology and drug design",
   "source_url": "https://phys.org/news/2026-09-microscopic-dna-molecules.html",
-  "attribution": "Phys.org",
-  "peer_reviewed": false,
+  "attribution": "Yasunaga et al., Science Advances (2026)",
+  "peer_reviewed": true,
   "es": {
     "domain": "materiales",
     "hook": "Velas microscópicas de ADN pueden separar moléculas",
