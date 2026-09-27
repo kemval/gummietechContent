@@ -490,8 +490,16 @@ Educational content, fun facts, and ideas are time-independent and non-competiti
 
 Doubly important on a zero budget: evergreen posts have no API cost, no rate limits, and no deadline.
 
+Tech first since 2026-09-27, like the rest of the account: the library is what a slow news day falls back on, so a science-only library would undo the priority on exactly the days nothing else decides it.
+
 | Source | What you get |
 |---|---|
+| Software post-mortems (`danluu/post-mortems`) | The failure is the story and the published report is the source — Retraction Watch for software |
+| AI Incident Database | Documented failures of deployed AI, each with its citations |
+| IEEE Milestones | Dated engineering and computing firsts, the tech counterpart of Nature Milestones |
+| Foundational CS/ML papers (Papers We Love; the papers that named backprop, attention, dropout…) | Ideas that stay true; explainers like Distill and 3Blue1Brown supply the angle, the paper the credit |
+| Stack Overflow / CS / AI / Cross Validated top questions | "Why does X happen?" with an expert answer attached |
+| Hacker News all-time top stories | Essays and explanations people have already chosen to keep |
 | Wikipedia "Unusual articles" | Endless genuinely weird, true facts |
 | Kurzgesagt / Veritasium / 3Blue1Brown / Real Engineering back catalogs | Proven-viral concepts, reformattable for IG |
 | Quanta archive | Best science explainers written anywhere |

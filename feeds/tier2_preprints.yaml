@@ -56,13 +56,18 @@
 #   physics.app-ph 6 · physics.bio-ph 2
 #
 # cs.AI and cs.LG are 241/day between them — more than everything below
-# combined — and they are the worst fit for score.py's `visual` axis, which
-# asks for an image, a dataset or a physical object to build five slides
-# from. Tier 1 already carries seven AI feeds from the labs themselves, so
-# what preprints add is the half Tier 1 covers worst: materials, planets,
-# applied physics, robots and biophysics. Adding the mega-categories would
-# roughly triple the day's scoring bill to buy the lowest-scoring rows in
-# the sheet.
+# combined — and were left out on 2026-09-19 for that reason: uncapped they
+# would roughly triple the day's scoring bill.
+#
+# They came in on 2026-09-27, when the account went tech-first (CLAUDE.md,
+# "The account is tech-first"): Tier 1's lab blogs are mostly product
+# launches, which score.py rightly buries, so the AI the account now puts
+# first was arriving almost only through coverage. They come in capped
+# rather than whole. `new_only` drops cross-lists and replacements — a paper
+# cross-listed to cs.CL, cs.LG and cs.AI would otherwise be scored three
+# times — and `max_items: 25` holds each to 75 rows a weekday across the
+# three, about four more score.py calls a day. Which 25 is the feed's own
+# order, not a ranking: the cap is a sample, and score.py does the choosing.
 #
 # Not wired in: medRxiv, which docs §3 names alongside bioRxiv. It is
 # unreviewed clinical research, and a wrong medical claim on a public slide
@@ -91,6 +96,25 @@ feeds:
   - name: arXiv Robotics
     url: https://rss.arxiv.org/rss/cs.RO
     topic: robotics
+
+  # The AI categories. Capped: see "why these categories" above.
+  - name: arXiv Language Models
+    url: https://rss.arxiv.org/rss/cs.CL
+    topic: ai
+    new_only: true
+    max_items: 25
+
+  - name: arXiv Machine Learning
+    url: https://rss.arxiv.org/rss/cs.LG
+    topic: ai
+    new_only: true
+    max_items: 25
+
+  - name: arXiv AI
+    url: https://rss.arxiv.org/rss/cs.AI
+    topic: ai
+    new_only: true
+    max_items: 25
 
   - name: arXiv Materials
     url: https://rss.arxiv.org/rss/cond-mat.mtrl-sci

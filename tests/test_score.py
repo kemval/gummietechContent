@@ -76,3 +76,27 @@ def test_every_sheet_column_is_in_an_ingested_row(monkeypatch):
     items, error = ingest.fetch_feed({"name": "t", "url": "https://x/feed"})
     assert error is None and items
     assert set(ingest.COLUMNS) <= set(items[0])
+
+
+def test_an_arxiv_mega_category_is_held_to_new_papers_and_a_cap(monkeypatch):
+    """cs.AI alone announces ~127 papers a day; uncapped, the three AI
+    categories would roughly double score.py's daily bill."""
+    import ingest
+
+    def item(n: int, kind: str) -> bytes:
+        return (f"<item><title>Paper {n}</title><link>https://arxiv.org/abs/{n}"
+                f"</link><arxiv:announce_type>{kind}</arxiv:announce_type>"
+                f"</item>").encode()
+
+    class Resp:
+        status_code = 200
+        content = (b'<rss xmlns:arxiv="http://arxiv.org/schemas/atom">'
+                   b"<channel>" + item(1, "cross") + item(2, "new")
+                   + item(3, "replace") + item(4, "new") + item(5, "new")
+                   + b"</channel></rss>")
+
+    monkeypatch.setattr(ingest.requests, "get", lambda *a, **k: Resp())
+    monkeypatch.setattr(ingest, "pace_host", lambda url: None)
+    items, _ = ingest.fetch_feed({"name": "arXiv AI", "url": "https://x",
+                                  "new_only": True, "max_items": 2})
+    assert [i["title"] for i in items] == ["Paper 2", "Paper 4"]

@@ -1,6 +1,6 @@
 ---
 name: evergreen-scout
-description: Fills the evergreen idea queue. Mines the docs §3 Tier 6 sources — Wikipedia unusual articles, Retraction Watch, Quanta archive, Nature Milestones, Stack Exchange top questions — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
+description: Fills the evergreen idea queue, tech first. Mines the docs §3 Tier 6 sources — software post-mortems, the AI Incident Database, IEEE Milestones, foundational CS and ML papers, Stack Exchange and Hacker News all-time tops, then Quanta, Retraction Watch and Wikipedia for science — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
 tools: Read, Bash, WebFetch, WebSearch
 ---
 
@@ -18,10 +18,57 @@ and you never write to `posts/`.
 
 ## Scope
 
-Given a topic family (`signal` / `orbit` / `bloom` / `ember`) or "surprise me",
-produce ~10 ranked candidates. Given a count, produce that many.
+The account is tech-first (CLAUDE.md, "The account is tech-first"): AI,
+software, automation, ML and robotics come first, and science fills in. So
+with no family named, produce ~10 candidates of which at least seven are on
+those subjects — colorway `signal`, or `ember` for hardware and automation.
+Given a topic family (`signal` / `orbit` / `bloom` / `ember`), stay in it.
+Given a count, produce that many.
 
-## Sources (all from docs §3 Tier 6 and Tier 5)
+The queue in `docs/evergreen_queue.md` was compiled before that decision and
+is almost all science; read it so you do not repeat a subject, not as a
+model of the mix.
+
+## Sources — tech first
+
+These come first because they are what the account is for, and because the
+evergreen library is what a Drop falls back on: a science-only library would
+quietly undo the tech-first rule on every slow news day.
+
+- **Software post-mortems** — `github.com/danluu/post-mortems` and the
+  incidents it links. "The bug that cost $440 million in 45 minutes" is to
+  software what Retraction Watch is to science: the failure is the story,
+  and the published post-mortem is the primary source. Attribute the
+  organisation's own report, never the list.
+- **AI Incident Database** — `incidentdatabase.ai`. Documented real-world
+  failures of deployed AI systems, each with its citations. Prefer incidents
+  with a primary report or paper behind them over press-only ones.
+- **IEEE Milestones** — `ethw.org/Milestones`. The engineering and computing
+  counterpart of Nature Milestones: one dated, plaqued achievement per
+  candidate, with a history page to cite.
+- **Foundational CS and ML papers** — `github.com/papers-we-love/papers-we-love`
+  for computing, and the papers that named an idea in ML (backpropagation,
+  dropout, attention, word2vec, AlphaGo, diffusion). A post explaining the
+  idea is evergreen in a way news about the latest model never is. The paper
+  is the attribution; an explainer that made it famous — Distill
+  (`distill.pub`), Jay Alammar's illustrated guides, 3Blue1Brown — is where
+  the angle comes from, not who gets credited.
+- **Stack Exchange top questions, tech sites** — `stackoverflow.com`,
+  `cs.stackexchange.com`, `softwareengineering.stackexchange.com`,
+  `ai.stackexchange.com`, `stats.stackexchange.com`, `retrocomputing`,
+  `electronics`, `robotics`. Same API as below. "Why is processing a sorted
+  array faster than an unsorted one?" is a finished Breakdown with its
+  expert answer attached.
+- **Hacker News all-time top stories** — free Algolia API, no key:
+
+  ```bash
+  curl -s 'https://hn.algolia.com/api/v1/search?tags=story&numericFilters=points%3E1500&hitsPerPage=50'
+  ```
+
+  Only the evergreen ones — essays and explanations, not launches or news —
+  and cite what the story links to, not the thread.
+
+## Sources — science, when a candidate on a priority subject is not there
 
 - **Wikipedia "Unusual articles"** — `en.wikipedia.org/wiki/Wikipedia:Unusual_articles`.
   Genuinely weird, genuinely true.
@@ -32,8 +79,8 @@ produce ~10 ranked candidates. Given a count, produce that many.
   explainers written anywhere; each maps cleanly to a five-slide breakdown.
 - **Nature "Milestones"** — history-of-a-field series, one discovery per
   candidate.
-- **Stack Exchange top questions** — physics, engineering, space, chemistry,
-  biology, worldbuilding. A highly-voted "why does X happen?" with an expert
+- **Stack Exchange top questions, science sites** — physics, engineering,
+  space, chemistry, biology, worldbuilding. A highly-voted "why does X happen?" with an expert
   answer already attached is a finished post idea. API, no key needed:
 
   ```bash

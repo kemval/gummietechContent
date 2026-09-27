@@ -149,7 +149,20 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
     fetched_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     items = []
 
+    # Two volume controls a feed entry can ask for, for the arXiv mega-
+    # categories (feeds/tier2_preprints.yaml). `new_only` keeps first
+    # announcements and drops cross-lists and replacement versions, which
+    # arXiv tags on each item and which would otherwise be scored again under
+    # a second category. `max_items` caps what one fetch may add, because a
+    # day of cs.AI is ~127 papers and every one of them costs score.py quota.
+    new_only = bool(feed.get("new_only"))
+    max_items = int(feed.get("max_items") or 0)
+
     for entry in parsed.entries:
+        if max_items and len(items) >= max_items:
+            break
+        if new_only and entry.get("arxiv_announce_type", "new") != "new":
+            continue
         link = (entry.get("link") or "").strip()
         title = clean_text(entry.get("title", ""), limit=300)
         if not link or not title:
