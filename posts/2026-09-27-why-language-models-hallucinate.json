@@ -1,0 +1,48 @@
+{
+  "post_type": "breakdown",
+  "domain": "AI research",
+  "colorway": "signal",
+  "hook": "AI makes things up for the same reason students guess on exams.",
+  "the_question": "Asked for a researcher's birthday, and told to answer only if it knew, DeepSeek-V3 gave three different wrong dates in three tries.",
+  "the_intuition": "It looks like a bug that more data or a bigger model will fix: the machine simply does not know that it is wrong.",
+  "mechanism": [
+    "Pretraining teaches a model to predict likely text. A fact seen once, like a birthday, has no pattern to learn, so some errors are inevitable.",
+    "It sets a floor: if 20% of birthdays appear once in training data, a base model should miss at least 20% of them.",
+    "Then the benchmarks. Nine of ten popular ones reviewed grade only right or wrong, with no credit for “I don’t know”, so guessing scores higher."
+  ],
+  "why_it_matters": "The fix, the authors argue, is not another hallucination test but rescoring the main benchmarks: penalise wrong answers and state the confidence needed.",
+  "the_catch": "A preprint, not yet peer-reviewed. The authors note their framework ignores degrees of error and context outside the prompt.",
+  "caption": "Ask an AI model something it cannot know and it will often answer anyway, confidently. A 2025 paper by researchers at OpenAI and Georgia Tech argues this is not a mystery: training makes some errors inevitable, and benchmarks that give zero credit for “I don’t know” teach models that guessing pays. Would you trust an AI more if it said “I don’t know” more often?",
+  "keywords": [
+    "AI hallucination",
+    "language models",
+    "benchmarks",
+    "machine learning"
+  ],
+  "hashtags": [
+    "#AI",
+    "#MachineLearning",
+    "#LLM",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "A nine-slide carousel explaining why large language models hallucinate: facts seen only once in training cannot be learned from a pattern, so errors are statistically inevitable, and most benchmarks grade right or wrong with no credit for \"I don't know\", which rewards guessing. Based on a 2025 preprint by Kalai, Nachum, Vempala and Zhang.",
+  "source_url": "https://arxiv.org/abs/2509.04664",
+  "doi": "10.48550/arXiv.2509.04664",
+  "attribution": "Kalai, Nachum, Vempala and Zhang, arXiv (2025)",
+  "peer_reviewed": false,
+  "es": {
+    "domain": "investigación en IA",
+    "hook": "La IA inventa cosas por la misma razón que los estudiantes adivinan en exámenes.",
+    "the_question": "Al pedir la fecha de cumpleaños de un investigador, y decir que solo responderá si lo sabía, DeepSeek‑V3 dio tres fechas distintas y erróneas en tres intentos.",
+    "the_intuition": "Parece un error que más datos o un modelo mayor arreglarían: la máquina simplemente no sabe que está equivocada.",
+    "mechanism": [
+      "El preentrenamiento enseña a un modelo a predecir texto probable. Un hecho visto una sola vez, como un cumpleaños, no tiene patrón que aprender, por lo que algunos errores son inevitables.",
+      "Establece un piso: si el 20 % de los cumpleaños aparecen una sola vez en los datos de entrenamiento, un modelo base debería fallar al menos en el 20 % de ellos.",
+      "Luego los benchmarks. Nueve de diez revisados populares califican solo como correcto o incorrecto, sin crédito por “no sé”, por lo que adivinar mejora la puntuación."
+    ],
+    "why_it_matters": "Los autores sostienen que la solución no es otro test de alucinaciones sino volver a puntuar los benchmarks principales: penalizar las respuestas incorrectas e indicar la confianza necesaria para responder.",
+    "the_catch": "Preimpresión, aún no revisada por pares. Los autores señalan que su marco ignora grados de error y contexto fuera del prompt.",
+    "_en": "fe96ab898ae69b50"
+  }
+}
