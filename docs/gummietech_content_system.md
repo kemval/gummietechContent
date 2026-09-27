@@ -1,7 +1,7 @@
 # gummietech — Content System & Automation Plan
 
 **Account:** @gummietech (Instagram)
-**Niche:** Science · Technology · Engineering
+**Niche:** Technology first — AI, software, automation, ML, robotics — then science and engineering
 **Goal:** Daily publishing, automated pipeline, audience growth through saves and shares
 **Budget:** $0/month. Every tool in this document is free. See §4.
 **Owner location:** Costa Rica (UTC−6) — relevant for posting-time decisions
@@ -149,11 +149,13 @@ No aggregation service required — parsing RSS directly in code costs nothing a
 Every item scored 1–10 on four axes. Only items scoring ≥7 total surface in the morning queue.
 
 - **Novelty** — genuinely new, or a rehash?
-- **Visual potential** — is there an image, diagram, or video? No visual = hard to post.
+- **Visual potential** — is there an image, diagram, or video? No visual = hard to post. A diagram of how a system works, a benchmark chart or a before/after of a model's output counts — software is not text-only by default.
 - **Explainability** — can a smart non-expert get it in 5 slides?
 - **Surprise** — does it violate an intuition? This is the share driver.
 
-Reject automatically: funding rounds, product launches with no technical substance, opinion pieces, listicles, anything already covered by three or more large accounts.
+Reject automatically: funding rounds, product launches with no technical substance, opinion pieces, listicles, anything already covered by three or more large accounts. A release that publishes how it works — technical report, paper, method — is not a product launch.
+
+**Tech first (2026-09-27).** The same call names each item's *beat* — ai, software, automation, robotics, computing or science — and drafting takes the best-scoring row on the first five before any science row. The score itself stays topic-blind. Before this, September shipped almost no AI: AI items averaged ~2 points below biology and never reached the top of a 2,400-row queue, though 777 of them sat above the threshold.
 
 Run this on a free-tier LLM (Gemini Flash or Groq). Scoring is a cheap, high-volume task — it does not need a frontier model. Batch the calls and sleep between them to respect rate limits.
 

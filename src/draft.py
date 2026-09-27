@@ -657,9 +657,38 @@ def source_text(facts: dict | None, article: str, summary: str) -> str:
 MAX_DUPLICATE_SKIPS = 5
 
 
+# The account is tech-first: AI, software, automation, ML and robotics are
+# what it is for, and science fills in only when none of those is queued.
+# Taking the single highest score regardless of subject never gets there:
+# measured over 8,095 rows on 2026-09-27, the `ai` feeds averaged 4.88
+# against biology's 6.74, and 1 of 195 AI items reached the 8.75 the top of
+# the queue starts at — so September shipped almost no AI while 777 tech
+# candidates sat above the threshold. The score stays topic-blind; the
+# preference is applied here, where one row is chosen from many.
+PRIORITY_BEATS = frozenset({"ai", "software", "automation", "robotics",
+                            "computing"})
+# Rows scored before score.py named a beat have none. Their feed's topic is
+# the fallback — coarser, since a feed is not a subject, but it costs no
+# call, and re-scoring a queue of ~2,400 rows would spend days of quota.
+PRIORITY_TOPICS = frozenset({"ai", "tech", "robotics"})
+
+
+def is_priority(row: list[str], col: dict) -> bool:
+    """Is this row about one of the subjects the account puts first?"""
+    def cell(name: str) -> str:
+        idx = col.get(name)
+        return row[idx].strip().lower() if idx is not None and idx < len(row) else ""
+    beat = cell("beat")
+    return beat in PRIORITY_BEATS if beat else cell("topic") in PRIORITY_TOPICS
+
+
 def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
              skip: set[int] = frozenset()) -> tuple[int, dict]:
-    """The highest-scoring queued row, or the one the caller asked for.
+    """The highest-scoring queued row on a priority subject, or the one the
+    caller asked for.
+
+    Science is taken only when no priority row is left — see PRIORITY_BEATS.
+    A row named with --row is the override and ignores the preference.
 
     `skip` holds rows this run has already rejected as duplicates. Their
     status is updated in the sheet too, but `rows` is the snapshot read
@@ -684,8 +713,13 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
                  "--row with a specific sheet row." if not wanted
                  else f"Row {wanted} is not in the sheet.")
 
-    score, n, row = max(candidates, key=lambda c: c[0])
-    return n, {name: row[idx] for name, idx in col.items()} | {"score": score}
+    preferred = [c for c in candidates if is_priority(c[2], col)]
+    if not wanted and not preferred:
+        print("  note: no queued row on a priority subject — taking the best "
+              "science row instead")
+    score, n, row = max(preferred or candidates, key=lambda c: c[0])
+    return n, {name: row[idx] for name, idx in col.items()
+               if idx < len(row)} | {"score": score}
 
 
 # Tier 6 evergreen subjects never come through a feed, so there is no page to

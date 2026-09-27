@@ -51,10 +51,14 @@ FEEDS_DIR = REPO_ROOT / "feeds"
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-# Column order of the sheet. score.py fills `score` and `notes` and moves
-# `status` on from "new", so anything appended here leaves those blank.
+# Column order of the sheet. score.py fills `score`, `notes` and `beat` and
+# moves `status` on from "new", so anything appended here leaves those blank.
+# `topic` is the feed's, from feeds/*.yaml; `beat` is the item's own, from
+# the scorer, because a feed is not a subject — Phys.org carries AI and Tech
+# Xplore carries batteries. New columns go on the end: ensure_header()
+# rewrites row 1 when this list changes, and nothing already written moves.
 COLUMNS = ["url", "title", "summary", "source", "topic",
-           "published", "fetched_at", "status", "score", "notes"]
+           "published", "fetched_at", "status", "score", "notes", "beat"]
 
 # Feeds carry weeks of backlog. Without a window, the first run floods the
 # sheet with stale items that will never be worth posting.
@@ -215,6 +219,10 @@ def existing_urls(worksheet) -> set[str]:
 
 def ensure_header(worksheet) -> None:
     if worksheet.row_values(1) != COLUMNS:
+        # The grid is exactly as wide as the columns it was created with, and
+        # writing past its edge is an error rather than a resize.
+        if worksheet.col_count < len(COLUMNS):
+            worksheet.add_cols(len(COLUMNS) - worksheet.col_count)
         worksheet.update(values=[COLUMNS], range_name="A1")
 
 

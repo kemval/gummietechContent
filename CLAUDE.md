@@ -321,6 +321,21 @@ If a purge is ever genuinely needed, the only safe rule is age: a row whose
 rows are never safe — `ingest.py` keeps them on purpose, so they have no age
 to test and would return immediately.
 
+**The account is tech-first, and the score is not where that lives.**
+AI, software, automation, ML and robotics come first; science fills in.
+Taking the single top score never got there — measured on 2026-09-27 over
+8,095 rows, the `ai` feeds averaged 4.88 against biology's 6.74 and 1 of 195
+reached the 8.75 where the queue's top starts, so September shipped almost no
+AI with 777 tech candidates queued. So `score.py` names each item's `beat`
+in the same call (a column appended to the sheet — `topic` is the *feed's*,
+and Phys.org carries AI while Tech Xplore carries batteries), and
+`draft.pick_row()` takes the best row whose beat is in `PRIORITY_BEATS`
+before any other. A row scored before `beat` existed falls back to its feed's
+topic rather than being re-scored, which would spend days of quota. A Signal
+inherits the rule, since it walks `pick_row` five times; `--row`, `--url` and
+`--evergreen` are overrides and ignore it. Do not move the preference into
+the score: a topic bonus would make the number stop meaning "worth posting".
+
 **`draft.py` drafts from the paper, not the coverage.** Most feeds are news
 *about* papers, and coverage inverts mechanisms, overstates what a result
 overturns, and quotes whoever gave the interview. So before prompting the

@@ -50,3 +50,11 @@ def test_string_scores_are_accepted():
 def test_the_threshold_matches_the_documented_one():
     """docs §2: only items scoring >= 7 surface."""
     assert score.THRESHOLD == 7.0
+
+
+def test_a_beat_off_the_list_is_stored_blank():
+    """draft.py selects on this column; a word the model invented must not
+    quietly count as a subject, or as science."""
+    assert score.beat_of({"beat": "AI"}) == "ai"
+    assert score.beat_of({"beat": "machine learning"}) == ""
+    assert score.beat_of({}) == ""

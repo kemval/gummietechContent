@@ -263,3 +263,62 @@ def test_a_signals_items_register_in_the_duplicate_guard(tmp_path,
     seen = draft.covered_papers()
     assert draft.already_covered(PAPER, "https://elsewhere.test/x", seen)
     assert draft.already_covered(None, "https://example.org/a", seen)
+
+
+# ---------------------------------------------------------- tech first
+# September 2026 shipped almost no AI while 777 tech candidates sat above
+# the threshold, because pick_row took the single highest score and AI
+# items average two points lower. The account is tech-first; science fills.
+
+HEADER = ["url", "title", "summary", "source", "topic",
+          "published", "fetched_at", "status", "score", "notes", "beat"]
+COL = {name: i for i, name in enumerate(HEADER)}
+
+
+def sheet_row(title: str, score: float, topic: str = "general",
+              beat: str = "", status: str = "queued") -> list[str]:
+    return [f"https://x/{title}", title, "", "src", topic, "", "",
+            status, str(score), "", beat]
+
+
+def test_a_tech_row_beats_a_higher_scoring_science_row():
+    rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
+            sheet_row("agents", 8.0, beat="ai")]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "agents"
+
+
+def test_a_row_scored_before_beats_existed_falls_back_to_its_feed():
+    rows = [HEADER, sheet_row("fossil", 9.0, topic="biology"),
+            sheet_row("chip", 7.5, topic="tech")]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "chip"
+
+
+def test_the_beat_outranks_the_feed_topic():
+    """A tech feed's battery story is science; Phys.org's AI story is not."""
+    rows = [HEADER, sheet_row("battery", 9.0, topic="tech", beat="science"),
+            sheet_row("llm", 7.5, topic="general", beat="ai")]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "llm"
+
+
+def test_science_is_taken_when_nothing_tech_is_queued():
+    rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
+            sheet_row("agents", 9.5, beat="ai", status="drafted")]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "fossil"
+
+
+def test_a_row_named_by_hand_ignores_the_preference():
+    rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
+            sheet_row("agents", 9.5, beat="ai")]
+    n, item = draft.pick_row(rows, COL, 2)
+    assert (n, item["title"]) == (2, "fossil")
+
+
+def test_a_short_row_from_a_narrower_sheet_still_reads():
+    rows = [HEADER[:-1], sheet_row("chip", 8.0, topic="tech")[:-1]]
+    col = {name: i for i, name in enumerate(HEADER[:-1])}
+    _, item = draft.pick_row(rows, col, None)
+    assert item["title"] == "chip"
