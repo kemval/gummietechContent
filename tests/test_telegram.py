@@ -80,11 +80,12 @@ def test_the_last_verdict_wins_if_a_report_quotes_the_format():
 # --------------------------------------------------------------- the button
 
 @pytest.mark.parametrize("data,expected", [
-    ("pub:2026-09-15-tides", ("2026-09-15-tides", False, False)),
-    ("held:2026-09-15-tides", ("2026-09-15-tides", True, False)),
+    ("pub:2026-09-15-tides", ("2026-09-15-tides", "pub:")),
+    ("held:2026-09-15-tides", ("2026-09-15-tides", "held:")),
     # The third prefix exists so a status report cannot rebuild the archive —
     # see test_a_status_report_tap_does_not_rebuild_the_archive.
-    ("ser:07-learning-queue", ("07-learning-queue", False, True)),
+    ("ser:07-learning-queue", ("07-learning-queue", "ser:")),
+    ("reel:2026-09-15-tides", ("2026-09-15-tides", "reel:")),
     ("something-else", None),
     ("", None),
 ])
@@ -103,7 +104,7 @@ def test_the_longest_stem_draft_py_can_write_still_fits_callback_data():
     # The true worst case: a headline with no separator to trim back to.
     longest = f"2026-09-18-{draft.slugify('a' * 200)}"
     assert len(longest) == 51
-    for prefix in (tg.CALLBACK_PREFIX, tg.OVERRIDE_PREFIX):
+    for prefix in tg.PREFIXES:
         assert len(prefix + longest) <= tg.CALLBACK_LIMIT
 
 

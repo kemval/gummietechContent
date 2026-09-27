@@ -72,7 +72,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      fact-check to a held post, then review.yml again) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive) ·
                      watch.yml (daily: is any of this still running?) ·
-                     series.yml (the status-report pillar, daily)
+                     series.yml (the status-report pillar, daily) ·
+                     reel.yml (a published Drop as a reel — on request)
 src/
   formats.py         what each carousel format is made of — the one table
   verify_feeds.py    checks every feed URL is live
@@ -84,6 +85,7 @@ src/
   draft.py           winning item → paper via Crossref → JSON;
                      --signal walks five rows for the weekly roundup
   render.py          JSON + template → PNGs
+  reel.py            a published Drop → silent 9:16 MP4, frame by frame
   proof.py           measures the rendered layout — frame, contrast, flag
   site.py            published posts → static web archive
   series.py          the status-report pillar — what is queued, what went
@@ -101,6 +103,8 @@ posts/               drafted post JSON
 templates/
   tokens.css         the locked palette and type stack — included by both
   drop.html          production slide template — 1080x1350
+  drop_slides.html   the Drop's five slides, shared with reel.html
+  reel.html          the same slides swiped through at 1080x1920
   site_base.html     web archive shell; index.html and post.html extend it
 output/              rendered PNGs (gitignored)
 site/                built web archive (gitignored)
@@ -454,6 +458,39 @@ asks for its own rhythm with `{% set fields = rhythm(5) %}`: the template is
 what knows how many slides it has, `render.py` is what knows what colour they
 go in, and neither has to be edited when the other changes.
 `render.py --colorway <name>` overrides the JSON at the human gate.
+
+### Drop reels
+
+A published Drop can be rendered as a silent ~19s 1080×1920 reel by
+`src/reel.py` — the **Drop reel** row in `docs` §1, on request only. It is
+not The Build, which stays a person's, start to finish. Five things that are
+deliberate:
+
+- **It has no words of its own.** `reel.html` includes
+  `drop_slides.html`, the same partial `drop.html` does, through the same
+  `render_html()` context. That is why it skips the fact-check, and why
+  `reel.py` refuses a post without `published_at`: every claim in it has
+  already passed the gate. `--draft` is for a local preview and the smoke
+  fixture only.
+- **Captured frame by frame, not recorded.** Playwright's video recorder runs
+  in real time and drops frames on a slow runner; its fake clock drives JS
+  timers, not CSS animations. So every animation is paused and stepped
+  through the Web Animations API, and the PNGs are piped into ffmpeg. Same
+  JSON, same video. The template owns the length — `reel.py` reads it off
+  the animations' end times — as it owns the slide count.
+- **ffmpeg is not on `ubuntu-24.04`.** `reel.yml` and `check.yml` apt-install
+  it. It is the one non-Python tool in the pipeline.
+- **Instagram draws over a reel** — the top ~200px and the bottom ~400px —
+  so the slides sit in a card scaled to 0.9 between y=300 and y=1515.
+  `reel.py` measures each settled scene against `SAFE_TOP`/`SAFE_BOTTOM` and
+  reports a `PROOF ·` verdict that gates the button like any other.
+- **The preprint flag is on every frame, and that is checked per frame.**
+  On the carousel it rides the catch slide; in a video a label on screen for
+  three seconds is not a label. `reel.py` aborts, deleting the video, on the
+  first frame where `.reel-flag` is not fully visible inside the safe zone.
+
+Audio is never added: trending audio can only be chosen in the Instagram
+app, and choosing it is a person's call.
 
 ### Proofing the render
 
@@ -874,6 +911,16 @@ first draft. Three limits hold it to repairing rather than rewriting:
 - **It never grades itself.** The fact-check that decides whether the post is
   now true is the one `review.yml` runs afterwards, in a session that never
   saw the applier.
+
+**A reel is asked for from the chat, and recorded by the same poll.** The ✅
+`confirm` replies with on a Drop carries a **Make a reel** link to
+`reel.yml` — a link for `workflow_url()`'s reason below. `send-reel` puts the
+MP4 and its cover in the chat as documents with a `reel:` button, which
+writes `reel: {published_at}` into the post rather than touching
+`published_at`: the carousel was dated long before. Like `ser:`, it never
+reports `published=true`, since `site.py` does not read the reel block.
+`recorded()` is what knows which marker each prefix sets; `watch.py` asks it
+too, so a lost reel tap is not mistaken for a recorded one.
 
 `src/telegram.py` is both halves — `send` and `confirm` — because both are
 the same boundary, and its docstring holds the API-level reasoning. The

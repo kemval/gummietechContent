@@ -329,12 +329,18 @@ def slide_fields(name: str | None, count: int = 5,
     return lead, rhythm(lead, support, count, catch)
 
 
-def render_html(post: dict, colorway: str | None = None) -> str:
+def render_html(post: dict, colorway: str | None = None,
+                template: str | None = None) -> str:
+    """The post in its format's template, or in `template` when named.
+
+    reel.py names reel.html: the same context — flag, hook size, lead, rhythm
+    — so the reel cannot come out in different colours or without the flag.
+    """
     env = Environment(
         loader=FileSystemLoader(TEMPLATE_DIR),
         autoescape=select_autoescape(["html"]),
     )
-    template = env.get_template(template_for(post.get("post_type")))
+    template = env.get_template(template or template_for(post.get("post_type")))
 
     lead, support = colorway_pair(colorway or post.get("colorway"))
 
@@ -360,7 +366,8 @@ def render_html(post: dict, colorway: str | None = None) -> str:
 
 
 @contextmanager
-def open_page(html: str) -> Iterator[Page]:
+def open_page(html: str,
+              size: tuple[int, int] = (SLIDE_W, SLIDE_H)) -> Iterator[Page]:
     """
     A Chromium page with the slides loaded and the webfonts settled.
 
@@ -371,7 +378,7 @@ def open_page(html: str) -> Iterator[Page]:
 
     proof.py measures the same page this screenshots, which is the point of
     it living here: a layout checked in a differently-built page is a layout
-    nobody checked.
+    nobody checked. reel.py opens it at the reel's 9:16 size for that reason.
     """
     with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
         page_file = Path(tmp) / "slides.html"
@@ -379,7 +386,7 @@ def open_page(html: str) -> Iterator[Page]:
 
         browser = p.chromium.launch()
         page = browser.new_page(
-            viewport={"width": SLIDE_W, "height": SLIDE_H},
+            viewport={"width": size[0], "height": size[1]},
             device_scale_factor=1,
         )
         page.goto(page_file.as_uri(), wait_until="load")

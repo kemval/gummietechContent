@@ -1,0 +1,98 @@
+name: reel
+
+# A published Drop, as a silent 9:16 reel, sent to Telegram for approval.
+#
+# On request only: the ✅ that confirm replies with when a Drop is recorded
+# carries a "Make a reel" link here. Nothing schedules it — docs §1 keeps the
+# Drop reel on request until a handful have been measured against their
+# carousels, and §8 decides whether it earns a cadence.
+#
+# It never fact-checks and never commits. The reel repeats claims the carousel
+# already passed the gate with, and reel.py refuses a post without
+# published_at for that reason. The "Reel posted" tap is recorded by
+# publish.yml's existing poll, like every other tap — one poller, not two.
+
+on:
+  workflow_dispatch:
+    inputs:
+      post:
+        description: 'Post JSON path. Leave blank for the newest published Drop without a reel.'
+        required: false
+        type: string
+
+# Two at once would send two videos for one post.
+concurrency:
+  group: reel
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  reel:
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      # Free, and not on GitHub's ubuntu-24.04 image — checked 2026-09-27
+      # against actions/runner-images' Ubuntu2404-Readme. reel.py pipes its
+      # frames into it.
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Pick the post
+        id: post
+        env:
+          POST: ${{ inputs.post }}
+        run: |
+          if [ -z "$POST" ]; then
+            POST=$(python src/reel.py --which) || exit 1
+          fi
+          if [ ! -f "$POST" ]; then
+            echo "::error::$POST is not on master. Check the path, or leave the input blank for the newest published Drop without a reel." >&2
+            exit 1
+          fi
+          echo "post=$POST" >> "$GITHUB_OUTPUT"
+
+      # For caption.txt, which the reel shares with its carousel.
+      - name: Render the slides
+        run: python src/render.py "${{ steps.post.outputs.post }}"
+
+      # Exits 1 on a BLOCK, which is a finding to carry into the message
+      # rather than a reason to abandon the run — as proof.py is in review.yml.
+      # A reel that failed to render at all leaves no reel.mp4, and send-reel
+      # then fails the run with a sentence.
+      - name: Render the reel
+        id: reel
+        continue-on-error: true
+        run: python src/reel.py "${{ steps.post.outputs.post }}"
+
+      - name: Send to Telegram for approval
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          POST: ${{ steps.post.outputs.post }}
+        run: |
+          python src/telegram.py send-reel "$POST" \
+            --review "output/$(basename "$POST" .json)/reel-proof.md"
+
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
