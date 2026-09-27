@@ -1,0 +1,73 @@
+{
+  "post_type": "signal",
+  "domain": "This Week",
+  "colorway": "orbit",
+  "hook": "5 results you missed this week",
+  "items": [
+    {
+      "claim": "Smith hat optical structures produce chiral diffraction patterns with laser light",
+      "attribution": "Moritake et al., Nature Communications (2026)",
+      "source_url": "https://www.sciencedaily.com/releases/2026/09/260914102432.htm",
+      "doi": "10.1038/s41467-026-75023-7",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Thorium‑229 nuclei excited with continuous‑wave laser at sub‑nanowatt power, enabling solid‑state nuclear clock",
+      "attribution": "Morawetz et al., Nature (2026)",
+      "source_url": "https://www.nature.com/articles/s41586-026-11011-7",
+      "doi": "10.1038/s41586-026-11011-7",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Antiprotons successfully transported in a cryogenic, open Penning‑trap system, paving way for 100‑fold CPT tests",
+      "attribution": "Leonhardt et al., Nature (2026)",
+      "source_url": "https://www.nature.com/articles/s41586-026-11019-z",
+      "doi": "10.1038/s41586-026-11019-z",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Scaffolded DNA Computer performs 100‑bit computations thermodynamically favoured, no error correction needed",
+      "attribution": "Stérin et al., Nature (2026)",
+      "source_url": "https://www.nature.com/articles/s41586-026-10996-5",
+      "doi": "10.1038/s41586-026-10996-5",
+      "peer_reviewed": true
+    },
+    {
+      "claim": "Human brain organoids integrate into mouse cortex, extending nerve fibres across most vacant space",
+      "attribution": "Kaganovsky et al., Nature (2026)",
+      "source_url": "https://www.nature.com/articles/d41586-026-02912-8",
+      "doi": "10.1038/s41586-026-11032-2",
+      "peer_reviewed": true
+    }
+  ],
+  "caption": "From exotic tiling optics to nuclear clocks, and from antimatter transport to DNA computers, science keeps pushing boundaries. Which breakthrough excites you most?",
+  "keywords": [
+    "optics",
+    "nuclear clock",
+    "antimatter",
+    "DNA computing",
+    "brain organoids"
+  ],
+  "hashtags": [
+    "#ScienceDaily",
+    "#NatureNews",
+    "#Physics",
+    "#Nanotech",
+    "#Biotech",
+    "#Antimatter",
+    "#DNAcomputing"
+  ],
+  "alt_text": "Carousel with five slides: 1) Smith hat optical patterns, 2) Thorium‑229 laser excitation, 3) Antiproton transport system, 4) DNA computer, 5) Brain organoid integration.",
+  "es": {
+    "domain": "esta semana",
+    "hook": "5 resultados que perdiste esta semana",
+    "items": [
+      "El sombrero de Smith con estructuras ópticas produce patrones de difracción quiral con luz láser",
+      "Núcleos de torio‑229 excitados con láser de onda continua a potencia sub‑nanovatio, habilitando reloj nuclear de estado sólido",
+      "Antiprótones transportados con éxito en un sistema de trampa de Penning criogénico y abierto, abriendo camino para pruebas CPT de 100‑veces",
+      "Computadora de ADN en armazón realiza cálculos de 100 bits favorecidos termodinámicamente, sin necesidad de corrección de errores",
+      "Organoides cerebrales humanos se integran en el córtex de ratón, extendiendo fibras nerviosas a través de la mayor parte del espacio vacío"
+    ],
+    "_en": "a69a1ec459474612"
+  }
+}
