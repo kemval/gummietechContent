@@ -86,6 +86,11 @@ supporting sentence means the claim fails. Specifically:
   settled fact. Flag any certainty the source does not have.
 - **`why_it_matters` must be the source's consequence**, not a general claim
   about the field that the source never makes.
+- **`hooks`, when present, are the cover lines a person may swap in.** Only
+  `hook` is on the slides now. Check each other entry to the same standard,
+  but report a failing one as a FIX that names its number ("hook 3 is
+  unsupported — do not choose it"), never a BLOCK. It is not on the carousel
+  unless someone picks it, and a swap sends the post through this check again.
 
 ### 5. Check the attribution
 

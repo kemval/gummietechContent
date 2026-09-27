@@ -1,0 +1,138 @@
+name: hook
+
+# Put a different cover line on a waiting draft, from a phone.
+#
+# draft.py writes three hooks for every Drop and renders the first; the gate
+# message lists all three with a link here. Pick a number and this swaps the
+# hook, re-translates, commits, and sends the post back through review.yml.
+#
+# A fresh review and not just a re-render, because the hook is the post's
+# loudest claim and the one the fact-check has not yet read: the alternates
+# sit in the JSON unchecked until one of them is chosen.
+#
+# Like fix.yml it never adds published_at, and like fix.yml a guard on the
+# diff enforces that rather than trusting the script. Unlike fix.yml there is
+# no model in it: src/hook.py copies a line the draft already holds and writes
+# no prose, so it spends no Claude quota — only the review afterwards does.
+
+on:
+  workflow_dispatch:
+    inputs:
+      choice:
+        description: 'Which hook goes on the cover (numbered in the chat).'
+        required: true
+        type: choice
+        options: ['2', '3', '1']
+      post:
+        description: 'Post JSON path. Leave blank for the one awaiting approval.'
+        required: false
+        type: string
+
+# Two swaps at once would race on the same file and push over each other.
+concurrency:
+  group: hook
+  cancel-in-progress: false
+
+permissions:
+  contents: write         # commits the swapped hook
+  actions: read           # resolve-post reads which post the gate last sent
+  id-token: write         # review.yml's claude-code-action authenticates with it
+
+jobs:
+  swap:
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    outputs:
+      post: ${{ steps.pick.outputs.post }}
+      changed: ${{ steps.swap.outputs.changed }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+
+      - id: pick
+        uses: ./.github/actions/resolve-post
+        with:
+          post: ${{ inputs.post }}
+          token: ${{ github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Swap the hook
+        id: swap
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+          CHOICE: ${{ inputs.choice }}
+        run: |
+          python src/hook.py "$POST" "$CHOICE"
+          # Asking for the hook already on the cover is not a failure — it
+          # changes nothing, so there is nothing to translate or re-review.
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The es block is stamped with a hash of the English it came from, so a
+      # new hook makes it stale and this re-translates rather than skipping.
+      - name: Re-translate the Spanish
+        if: steps.swap.outputs.changed == 'true'
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: python src/translate.py "${{ steps.pick.outputs.post }}"
+
+      - name: Check it changed that post and nothing else
+        if: steps.swap.outputs.changed == 'true'
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+        run: |
+          changed=$(git diff --name-only)
+          if [ "$changed" != "$POST" ]; then
+            echo "::error::Expected only $POST to change, got: $(echo $changed). Nothing has been committed." >&2
+            exit 1
+          fi
+          if ! python3 -c "import json,sys,os; sys.exit(0 if not json.load(open(os.environ['POST'])).get('published_at') else 1)"; then
+            echo "::error::$POST carries published_at. Nothing here may date a post. Nothing has been committed." >&2
+            exit 1
+          fi
+          git --no-pager diff
+
+      - name: Commit the new hook
+        if: steps.swap.outputs.changed == 'true'
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$POST"
+          git commit -m "Put hook ${{ inputs.choice }} on the cover of $(basename "$POST" .json)" \
+                     -m "Chosen at the gate through .github/workflows/hook.yml. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
+          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+  review:
+    needs: swap
+    if: needs.swap.outputs.changed == 'true'
+    uses: ./.github/workflows/review.yml
+    with:
+      post: ${{ needs.swap.outputs.post }}
+    secrets: inherit

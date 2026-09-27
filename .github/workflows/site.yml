@@ -48,12 +48,16 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      # site.py imports render.py, which imports playwright at module
-      # level, so the package has to be present. `playwright install` is
-      # deliberately NOT run: no browser is launched here, and the
-      # download would add minutes to every build.
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      # site.py renders each post's first slide as its link-preview image,
+      # through render.py's own page. This used to be skipped as minutes of
+      # download for nothing; it now buys the preview a pasted link shows in
+      # a DM, which is how this archive is mostly reached. Without it the
+      # build still succeeds — site.py warns and ships text-only previews.
+      - name: Install the browser
+        run: python -m playwright install --with-deps chromium
 
       - name: Build the site
         run: python src/site.py
