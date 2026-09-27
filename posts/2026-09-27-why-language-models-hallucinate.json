@@ -44,5 +44,6 @@
     "why_it_matters": "Los autores sostienen que la solución no es otro test de alucinaciones sino volver a puntuar los benchmarks principales: penalizar las respuestas incorrectas e indicar la confianza necesaria para responder.",
     "the_catch": "Preimpresión, aún no revisada por pares. Los autores señalan que su marco ignora grados de error y contexto fuera del prompt.",
     "_en": "fe96ab898ae69b50"
-  }
+  },
+  "published_at": "2026-09-27"
 }
