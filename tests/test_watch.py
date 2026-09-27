@@ -484,3 +484,34 @@ def test_notes_alone_do_not_send(posts):
     watch.check_buffer(report, directory)
     assert report.lines            # it has things to print locally
     assert report.verdict == "PASS"   # and nothing to say in the chat
+
+
+# ------------------------------------------------------------ the subject
+# draft.py falls back to science only when no tech row is queued, and said
+# so only in a run log. The account is tech-first; that is worth a message.
+
+def test_a_drop_that_fell_back_to_science_is_said_once(posts):
+    directory, write = posts
+    write("2026-09-28-fossil.json", post_type="drop", beat="science")
+    report = Report("WATCH")
+    watch.check_subject("2026-09-29", report, directory)
+    assert findings(report, "subject")
+
+    # The day after, it is history: no second message about the same Drop.
+    report = Report("WATCH")
+    watch.check_subject("2026-09-30", report, directory)
+    assert not findings(report, "subject")
+
+
+@pytest.mark.parametrize("record", [
+    {"post_type": "drop", "beat": "ai"},
+    {"post_type": "drop", "beat": "tech"},        # a feed topic, pre-beat row
+    {"post_type": "drop"},                        # evergreen: no row, no beat
+    {"post_type": "breakdown", "beat": "science"},
+])
+def test_a_tech_or_unrowed_drop_is_not_a_finding(posts, record):
+    directory, write = posts
+    write("2026-09-28-post.json", **record)
+    report = Report("WATCH")
+    watch.check_subject("2026-09-29", report, directory)
+    assert not findings(report, "subject")

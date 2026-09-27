@@ -988,7 +988,7 @@ def finish(post: dict, order: list[str]) -> dict:
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "what_happened",
              "why_it_matters", "the_catch", "caption", "keywords", "hashtags",
              "alt_text", "source_url", "code_url", "doi", "attribution",
-             "peer_reviewed"]
+             "peer_reviewed", "beat"]
 
 
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
@@ -1019,6 +1019,15 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         # Written for covered_papers() above, and for a person reading the
         # JSON at the gate. The model never supplies it.
         post["doi"] = paper["doi"]
+
+    # What the row was about, for watch.py: a Drop that fell back to science
+    # means the tech pool ran dry, and the only other place that is said is a
+    # run log nobody reads. The scorer's beat, else the feed's topic for a row
+    # scored before beats existed — the same order pick_row judges it in. An
+    # evergreen or --url draft has no row and records nothing.
+    subject = item.get("beat") or item.get("topic")
+    if subject:
+        post["beat"] = subject
 
     return finish(post, DROP_KEYS)
 

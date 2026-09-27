@@ -23,6 +23,7 @@ What it reports:
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
     breakdown  from Friday on, this week has a Breakdown — nothing drafts it
+    subject    yesterday's Drop was on a priority subject, not science
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
@@ -173,6 +174,32 @@ def check_breakdown(today: str, report: Report,
                             f"week ends Sunday. Nothing drafts it — write one "
                             f"in a Claude Code session and dispatch "
                             f"recheck.yml with its path.")
+
+
+def check_subject(today: str, report: Report,
+                  directory: Path | None = None) -> None:
+    """Did yesterday's Drop fall back to science?
+
+    draft.pick_row takes science only when no queued row is on a priority
+    subject, and says so in the run log. That is the moment the tech pool ran
+    dry, and it is worth hearing about without reading the sheet. Only
+    yesterday is asked about, so one fallback is one message, not one a day.
+    """
+    from draft import PRIORITY_BEATS, PRIORITY_TOPICS   # imports the LLM clients
+
+    day = date.fromisoformat(today) - timedelta(days=1)
+    for path in sorted((directory or POSTS_DIR).glob(f"{day.isoformat()}-*.json")):
+        post = read_post(path) or {}
+        beat = str(post.get("beat", "")).strip().lower()
+        if post.get("post_type", "drop") != "drop" or not beat:
+            continue
+        if beat in PRIORITY_BEATS or beat in PRIORITY_TOPICS:
+            continue
+        report.fix("subject", f"{path.stem} is a {beat} Drop: no queued row "
+                              f"was on AI, software, automation or robotics. "
+                              f"The tech pool is dry — check the arXiv AI "
+                              f"feeds are arriving, or draft the next one "
+                              f"with --evergreen from the tech queue.")
 
 
 def check_gate(updates: list, report: Report) -> None:
@@ -508,6 +535,7 @@ def main() -> int:
     check_structure(args.structure, report)
     check_cadence(today, report)
     check_breakdown(today, report)
+    check_subject(today, report)
     if token:
         updates = updates_from_telegram(token, report)
         check_gate(updates, report)

@@ -592,6 +592,10 @@ requirement, not a nicety. When `draft.py` resolves a DOI it builds
 so a wrong attribution on a drafted post means the DOI was wrong, not the
 model.
 
+`beat` is not part of the contract either: `draft.py` copies the drafted
+row's beat (or its feed's topic) onto a Drop so `watch.py` can say when one
+fell back to science. The model never supplies it, and nothing renders it.
+
 `doi` is not part of the contract either: `draft.py` writes it when Crossref
 resolved the paper, so `covered_papers()` can tell whether a queued row is a
 story already posted. The model never supplies it, and `render.py` ignores it.
@@ -1138,13 +1142,14 @@ python src/watch.py --send           # ...and send it if it is not a PASS
 python src/watch.py --skip-feeds     # skip the slow network sweep
 ```
 
-Ten checks, each answerable from a file, a sheet cell or a Telegram update —
+Eleven checks, each answerable from a file, a sheet cell or a Telegram update —
 so none of it needs a model and none of it spends a quota:
 
 | check | the question |
 |---|---|
 | `cadence` | the last drafting day that **ended** has its post — a Drop Mon/Wed/Fri, the week's Signal on Saturday |
 | `breakdown` | from Friday on, this week has a Breakdown — the one carousel nothing drafts |
+| `subject` | yesterday's Drop was tech, not a science fallback because the tech pool was dry |
 | `gate` | every tap in Telegram's 24h window reached `published_at` |
 | `metrics` | every answered ask was written down, no answer arrived unreplied, and old asks were answered |
 | `colour` | no two neighbouring posts share a field |
