@@ -43,7 +43,7 @@ disagree again, this one wins and the other is corrected to match.
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
 | **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
-| **The Signal** | optional | Reference value | Carousel, 5 items | `draft.py --signal` |
+| **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are

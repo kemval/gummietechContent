@@ -43,17 +43,18 @@ def findings(report: Report, where: str) -> list[str]:
 # -------------------------------------------------------------- the cadence
 
 @pytest.mark.parametrize("today,expected", [
-    ("2026-09-21", "2026-09-18"),   # Monday  looks back to Friday
+    ("2026-09-21", "2026-09-19"),   # Monday  looks back to Saturday
     ("2026-09-22", "2026-09-21"),   # Tuesday to Monday
     ("2026-09-23", "2026-09-21"),   # Wednesday morning: Monday, not today
     ("2026-09-24", "2026-09-23"),   # Thursday to Wednesday
-    ("2026-09-20", "2026-09-18"),   # Sunday   to Friday
+    ("2026-09-20", "2026-09-19"),   # Sunday   to Saturday, the Signal
+    ("2026-09-19", "2026-09-18"),   # Saturday to Friday
 ])
-def test_the_last_drop_day_is_one_that_already_ended(today, expected):
+def test_the_last_draft_day_is_one_that_already_ended(today, expected):
     """Never today. A 12:17 cron has been delivered as late as 18:12, so
     asking whether today's Drop exists yet would report a pipeline that is
     merely running behind as one that is broken."""
-    assert watch.last_drop_day(today).isoformat() == expected
+    assert watch.last_draft_day(today).isoformat() == expected
 
 
 def test_a_drop_day_that_produced_nothing_is_a_block(posts):
@@ -81,6 +82,52 @@ def test_the_filenames_date_is_what_answers_it(posts):
     report = Report("WATCH")
     watch.check_cadence("2026-09-22", report, directory)
     assert report.verdict == "BLOCK"
+
+
+def test_a_saturday_owes_a_signal_not_just_any_post(posts):
+    """The week of 2026-09-21 went without one and nothing said so. A
+    Breakdown written by hand on the Saturday is not the Signal."""
+    directory, write = posts
+    write("2026-09-26-a-breakdown.json", post_type="breakdown")
+    report = Report("WATCH")
+    watch.check_cadence("2026-09-27", report, directory)
+    assert report.verdict == "BLOCK"
+    assert "signal=true" in report.render()
+
+    # Drafted a day late, by hand: still the week's Signal.
+    write("2026-09-27-signal-week-39.json", post_type="signal")
+    report = Report("WATCH")
+    watch.check_cadence("2026-09-28", report, directory)
+    assert report.verdict == "PASS"
+
+
+# ------------------------------------------------------------ the breakdown
+
+def test_a_week_with_no_breakdown_is_said_from_friday(posts):
+    """Nothing drafts a Breakdown, so the week of 2026-09-21 ended without
+    one in silence."""
+    directory, write = posts
+    write("2026-09-21-a-drop.json", post_type="drop")
+    for quiet in ("2026-09-21", "2026-09-24"):          # Monday, Thursday
+        report = Report("WATCH")
+        watch.check_breakdown(quiet, report, directory)
+        assert not findings(report, "breakdown")
+    report = Report("WATCH")
+    watch.check_breakdown("2026-09-25", report, directory)   # Friday
+    assert findings(report, "breakdown")
+
+
+def test_last_weeks_breakdown_does_not_count_for_this_one(posts):
+    directory, write = posts
+    write("2026-09-19-the-tube.json", post_type="breakdown")
+    report = Report("WATCH")
+    watch.check_breakdown("2026-09-26", report, directory)
+    assert findings(report, "breakdown")
+
+    write("2026-09-26-this-weeks.json", post_type="breakdown")
+    report = Report("WATCH")
+    watch.check_breakdown("2026-09-26", report, directory)
+    assert not findings(report, "breakdown")
 
 
 # ----------------------------------------------------------------- the gate

@@ -23,9 +23,13 @@ on:
     # drafts should get, so it grew by four a week for as long as it ran.
     #
     # Drafting on the days the Drop goes out keeps the buffer at roughly one
-    # post, which is what resolve-post's fallback is right for. The other
-    # three pillars need no cron: The Build is video and never touches src/,
-    # and the Breakdown and the Signal are drafted by hand and dispatched.
+    # post, which is what resolve-post's fallback is right for.
+    #
+    # Saturday is the Signal: the same job with `draft.py --signal`, five
+    # queued rows into one roundup. It used to be dispatched by hand and the
+    # week of 2026-09-21 simply went without one, since nothing asked. The
+    # Build is video and never touches src/, and the Breakdown is written by
+    # a person — watch.py reminds from Friday when the week has none.
     #
     # Four times, and all four before the hour the message is wanted, because
     # this cron is not delivered when it is asked for. Every firing this
@@ -54,13 +58,20 @@ on:
     # 06:17 UTC = 00:17 in America/Costa_Rica, which does not observe DST, so
     # none of these drift across the year. The offset minute is deliberate:
     # the top of the hour is the most contended slot on GitHub's scheduler.
-    - cron: '17 6,8,10,12 * * 1,3,5'
+    - cron: '17 6,8,10,12 * * 1,3,5,6'
   workflow_dispatch:
     inputs:
       force:
         description: >
           Draft even though posts/ already has a post dated today. Leave it
           off unless you mean it — see the `gate` job.
+        type: boolean
+        required: false
+        default: false
+      signal:
+        description: >
+          Draft this week's Signal instead of a Drop. A Saturday run does
+          this on its own; tick it to draft the roundup on any other day.
         type: boolean
         required: false
         default: false
@@ -96,14 +107,28 @@ jobs:
     timeout-minutes: 5
     outputs:
       draft: ${{ steps.check.outputs.draft }}
+      signal: ${{ steps.check.outputs.signal }}
     steps:
       - uses: actions/checkout@v5
 
+      # A Signal is owed once a week, not once a day, so its test is by name:
+      # draft.py calls it <date>-signal-week-<ISO week>, and one already in
+      # posts/ for this week — drafted by hand on any day — is the proof.
+      # watch.owed_glob() asks the same question the same way.
       - id: check
         env:
           FORCE: ${{ inputs.force }}
+          SIGNAL: ${{ inputs.signal }}
         run: |
-          today=$(python3 -c "from datetime import date; print(f'{date.today():%Y-%m-%d}')")
+          read -r today weekday week year <<< "$(python3 -c "from datetime import date; d = date.today(); c = d.isocalendar(); print(f'{d:%Y-%m-%d} {c.weekday} {c.week:02d} {d.year}')")"
+
+          if [ "$SIGNAL" = "true" ] || [ "$weekday" = "6" ]; then
+            echo "signal=true" >> "$GITHUB_OUTPUT"
+            pattern="posts/$year-*-signal-week-$week.json"
+          else
+            echo "signal=false" >> "$GITHUB_OUTPUT"
+            pattern="posts/$today-*.json"
+          fi
 
           if [ "$FORCE" = "true" ]; then
             echo "draft=true" >> "$GITHUB_OUTPUT"
@@ -113,15 +138,15 @@ jobs:
 
           # Glob with no match expands to itself, so test the expansion rather
           # than trusting the shell to report emptiness.
-          set -- posts/"$today"-*.json
+          set -- $pattern
           if [ -e "$1" ]; then
             echo "draft=false" >> "$GITHUB_OUTPUT"
-            echo "Already drafted today ($today): $*"
+            echo "Already drafted ($today): $*"
             echo "Nothing to do — an earlier firing of this cron got there first."
             echo "Dispatch with force=true to draft a second post anyway."
           else
             echo "draft=true" >> "$GITHUB_OUTPUT"
-            echo "No post dated $today in posts/ — this firing does the work."
+            echo "Nothing matches $pattern — this firing does the work."
           fi
 
   draft:
@@ -155,9 +180,9 @@ jobs:
         run: printf '%s' "$GOOGLE_SHEETS_CREDENTIALS_JSON" > credentials.json
 
       # draft.py with no arguments takes the highest-scoring queued row and
-      # marks it drafted, then prints the file it wrote. If the sheet has
-      # nothing queued it exits non-zero and the run fails loudly, which is
-      # the right signal: the feeds have gone dry.
+      # marks it drafted, then prints the file it wrote; --signal takes five.
+      # If the sheet has nothing queued it exits non-zero and the run fails
+      # loudly, which is the right signal: the feeds have gone dry.
       - name: Draft the top-scoring story
         id: draft
         env:
@@ -167,8 +192,10 @@ jobs:
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
+          SIGNAL: ${{ needs.gate.outputs.signal }}
         run: |
-          python src/draft.py | tee draft.log
+          if [ "$SIGNAL" = "true" ]; then set -- --signal; else set --; fi
+          python src/draft.py "$@" | tee draft.log
           post=$(sed -n 's/^Wrote //p' draft.log | tail -1)
           if [ -z "$post" ] || [ ! -f "$post" ]; then
             echo "::error::draft.py did not report a post file it wrote." >&2

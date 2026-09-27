@@ -66,7 +66,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      (one definition of "the post that is waiting")
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
-                     commit, Mon/Wed/Fri) · review.yml (fact-check · render
+                     commit, Mon/Wed/Fri; the Signal Sat) · review.yml (fact-check · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
@@ -631,7 +631,12 @@ project where the explanation has to be excellent — and a Breakdown is
 written by hand, then rendered, proofed, fact-checked and gated exactly like
 any other post.
 
-**A Signal is drafted, by `draft.py --signal`.** It is the same walk down
+**A Signal is drafted, by `draft.py --signal`, on Saturday.** `daily.yml`
+asks for a fourth day and runs `--signal` on it; its gate looks for this
+ISO week's `signal-week-NN` file rather than today's date, so a roundup
+drafted by hand earlier in the week is not drafted twice. It was dispatched
+by hand until 2026-09-27, and the week of 09-21 went without one because
+nothing asked. It is the same walk down
 the queue as a Drop, five times, and the same code ownership of the credit
 and the preprint flag applied per item rather than per post; one LLM call
 writes all five claims. It moved off the hand-written side because a roundup
@@ -1118,12 +1123,13 @@ python src/watch.py --send           # ...and send it if it is not a PASS
 python src/watch.py --skip-feeds     # skip the slow network sweep
 ```
 
-Nine checks, each answerable from a file, a sheet cell or a Telegram update —
+Ten checks, each answerable from a file, a sheet cell or a Telegram update —
 so none of it needs a model and none of it spends a quota:
 
 | check | the question |
 |---|---|
-| `cadence` | the last Drop day that **ended** has a post dated it |
+| `cadence` | the last drafting day that **ended** has its post — a Drop Mon/Wed/Fri, the week's Signal on Saturday |
+| `breakdown` | from Friday on, this week has a Breakdown — the one carousel nothing drafts |
 | `gate` | every tap in Telegram's 24h window reached `published_at` |
 | `metrics` | every answered ask was written down, no answer arrived unreplied, and old asks were answered |
 | `colour` | no two neighbouring posts share a field |
@@ -1137,7 +1143,7 @@ Six things hold it together, and every one of them is a rule about not crying
 wolf — a watcher nobody reads is worse than none:
 
 - **It only asks about obligations that have already come due.** A daily cron
-  arrives 3–6 hours late, so `last_drop_day()` walks back from *yesterday*,
+  arrives 3–6 hours late, so `last_draft_day()` walks back from *yesterday*,
   never from today. A day that has ended owes its post unconditionally; today
   might just be running behind. This is why `watch.yml` asks once rather than
   copying `daily.yml`'s four firings: that shape exists to land near an hour,
@@ -1146,7 +1152,10 @@ wolf — a watcher nobody reads is worse than none:
   do not move the verdict, and only a non-`PASS` verdict sends. A colour run
   that is already published is history — there is nothing to re-render and no
   tap to withhold — so it stays visible in a hand run and silent in the chat.
-  The same reasoning as a clean fact-check that must not hold a post.
+  The same reasoning as a clean fact-check that must not hold a post. It is
+  also why `breakdown` asks only about the current week and only from
+  Friday: a week that already ended without one is history, and saying so
+  every day until the next Monday would be nagging.
 - **Findings exit 0.** The message *is* the report. A non-zero exit would
   make `notify-failure` send a second message about the same thing. Only an
   unexpected failure exits non-zero, and that genuinely is a broken run.

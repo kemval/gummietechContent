@@ -20,7 +20,9 @@ Usage:
 
 What it reports:
 
-    cadence    the last Drop day that has ended has a post dated that day
+    cadence    the last drafting day that has ended has its post: a Drop on
+               Mon/Wed/Fri, the Signal on Saturday
+    breakdown  from Friday on, this week has a Breakdown — nothing drafts it
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
@@ -66,8 +68,30 @@ from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
                       locate, parse_callback, publish_date, read_post,
                       send_report)
 
-# docs §1 fixes the Drop at 3×/week and daily.yml asks on `* * 1,3,5`.
-DROP_DAYS = (0, 2, 4)                    # Monday, Wednesday, Friday
+# What each drafting day owes. docs §1 fixes the Drop at 3×/week and the
+# Signal at one; daily.yml asks on `* * 1,3,5,6` and drafts the Signal on the
+# Saturday.
+DRAFT_DAYS = {0: "Drop", 2: "Drop", 4: "Drop",   # Monday, Wednesday, Friday
+              5: "Signal"}                        # Saturday
+
+
+def owed_glob(day: date) -> str:
+    """The filename that proves a drafting day did its work.
+
+    The same test daily.yml's gate job makes, by the same means. A Drop is
+    anything dated that day. A Signal is named for its ISO week by draft.py,
+    and is looked for by that name anywhere in the week: one drafted by hand
+    on the Sunday is still that week's Signal, as 2026-09-27's was.
+    """
+    if DRAFT_DAYS[day.weekday()] == "Signal":
+        return f"{day.year}-*-signal-week-{day.isocalendar().week:02d}.json"
+    return f"{day.isoformat()}-*.json"
+
+
+# The Breakdown is written by a person, so no cron can miss it and no cadence
+# check can see it go missing. From this weekday on the week is running out,
+# and a reminder is still something that can be acted on.
+BREAKDOWN_FROM = 4                       # Friday
 
 # Above this, drafts are piling up at the gate faster than they are tapped.
 # Three is a comfortable buffer at 3 posts a week; four is a backlog.
@@ -90,8 +114,8 @@ INGEST_SILENCE_HOURS = 24
 MAX_NAMED = 8
 
 
-def last_drop_day(today: str) -> date:
-    """The most recent Drop day that has already ended.
+def last_draft_day(today: str) -> date:
+    """The most recent drafting day that has already ended.
 
     It walks back from *yesterday*, never from today, and that is the whole
     reason this check cannot false-alarm: the free tier delivers a daily cron
@@ -100,25 +124,55 @@ def last_drop_day(today: str) -> date:
     day that has ended owes its post unconditionally.
     """
     day = date.fromisoformat(today) - timedelta(days=1)
-    while day.weekday() not in DROP_DAYS:
+    while day.weekday() not in DRAFT_DAYS:
         day -= timedelta(days=1)
     return day
 
 
 def check_cadence(today: str, report: Report,
                   directory: Path | None = None) -> None:
-    """Did the last Drop day that ended produce a post?"""
-    day = last_drop_day(today)
+    """Did the last drafting day that ended produce its post?"""
+    day = last_draft_day(today)
     directory = directory or POSTS_DIR
-    # The same question daily.yml's gate job asks, by the same means: the
-    # filename's date prefix is what says a post belongs to a day.
-    if any(directory.glob(f"{day.isoformat()}-*.json")):
+    if any(directory.glob(owed_glob(day))):
         report.note("cadence", f"{day:%A} {day.isoformat()} was drafted")
         return
-    report.block("cadence", f"{day:%A} {day.isoformat()} was a Drop day and "
-                            f"posts/ has nothing dated it. Check whether "
-                            f"daily.yml ran at all; dispatch it with "
-                            f"force=true to draft now.")
+    what, how = (("the Signal day", "with signal=true")
+                 if DRAFT_DAYS[day.weekday()] == "Signal"
+                 else ("a Drop day", "with force=true"))
+    report.block("cadence", f"{day:%A} {day.isoformat()} was {what} and "
+                            f"posts/ has nothing for it. Check whether "
+                            f"daily.yml ran at all; dispatch it {how} to "
+                            f"draft now.")
+
+
+def check_breakdown(today: str, report: Report,
+                    directory: Path | None = None) -> None:
+    """Does this week have a Breakdown, while there is still time to write one?
+
+    docs §1 wants one a week and no workflow drafts it — it is written by a
+    person, so the week of 2026-09-21 simply went without one and nothing
+    said so. Only the current week is asked about, and only from Friday: a
+    week that already ended without one is history, and repeating it every
+    day until the next Monday is the nagging this file exists to avoid.
+    """
+    day = date.fromisoformat(today)
+    if day.weekday() < BREAKDOWN_FROM:
+        return
+    monday = day - timedelta(days=day.weekday())
+    for path in post_order(directory or POSTS_DIR):
+        try:
+            drafted = date.fromisoformat(path.name[:10])
+        except ValueError:
+            continue
+        if (monday <= drafted <= day
+                and (read_post(path) or {}).get("post_type") == "breakdown"):
+            report.note("breakdown", f"this week's is {path.stem}")
+            return
+    report.fix("breakdown", f"no Breakdown this week (since {monday}) and the "
+                            f"week ends Sunday. Nothing drafts it — write one "
+                            f"in a Claude Code session and dispatch "
+                            f"recheck.yml with its path.")
 
 
 def check_gate(updates: list, report: Report) -> None:
@@ -453,6 +507,7 @@ def main() -> int:
 
     check_structure(args.structure, report)
     check_cadence(today, report)
+    check_breakdown(today, report)
     if token:
         updates = updates_from_telegram(token, report)
         check_gate(updates, report)
