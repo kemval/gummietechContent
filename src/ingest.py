@@ -177,6 +177,7 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
             "status": "new",
             "score": "",
             "notes": "",
+            "beat": "",
         })
 
     return items, None

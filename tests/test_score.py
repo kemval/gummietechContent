@@ -58,3 +58,21 @@ def test_a_beat_off_the_list_is_stored_blank():
     assert score.beat_of({"beat": "AI"}) == "ai"
     assert score.beat_of({"beat": "machine learning"}) == ""
     assert score.beat_of({}) == ""
+
+
+def test_every_sheet_column_is_in_an_ingested_row(monkeypatch):
+    """ingest appends [item[c] for c in COLUMNS]; adding `beat` to COLUMNS
+    without adding it to the row would have failed every ingest with new
+    items (caught before it ran, 2026-09-27)."""
+    import ingest
+
+    class Resp:
+        status_code = 200
+        content = (b"<rss><channel><item><title>A robot</title>"
+                   b"<link>https://x/1</link></item></channel></rss>")
+
+    monkeypatch.setattr(ingest.requests, "get", lambda *a, **k: Resp())
+    monkeypatch.setattr(ingest, "pace_host", lambda url: None)
+    items, error = ingest.fetch_feed({"name": "t", "url": "https://x/feed"})
+    assert error is None and items
+    assert set(ingest.COLUMNS) <= set(items[0])
