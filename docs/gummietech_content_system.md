@@ -73,6 +73,10 @@ cut and captioned by a person. Nothing in `src/` will ever produce one, and
 the automation's job is to cost so little attention that the two reels a week
 are affordable.
 
+`docs/build_episodes.md` is the list to film from: ten episodes, each a
+dated post-mortem from this repo with its measured number, cover line and
+what to screen-record. Added 2026-09-27, when none had been made.
+
 **A Drop reel is not a Build,** and that sentence still holds for The Build.
 Added 2026-09-27: a Drop reel is a published Drop's five slides animated into
 a silent 9:16 video by `src/reel.py`, made only when asked for from the chat.
@@ -111,6 +115,8 @@ are in `gummietech_status_reports.md`; its mechanics are in `CLAUDE.md`
 
 Slides 3 and 4 are the entire competitive advantage. Anyone can rewrite a headline. Almost nobody adds the *why* and the *but*.
 
+**The hook is chosen, not accepted.** Added 2026-09-27, after 22 posts earned 0 saves: `draft.py` asks for three cover lines per Drop — the finding stated plainly, the belief it corrects, and what it changes for the reader — and renders the first. The gate message lists all three, and `hook.yml` swaps in another, re-translates it, and sends the post back through the full review, since a new hook is a new claim. The two hooks that read best in the archive so far both broke the old "state the finding plainly" rule. Whether choosing moves saves is §8's question: compare `learn.py` before and after.
+
 ### The Breakdown — 8–10 slides
 
 Cover → the question → the intuition → the mechanism (2–3 slides) → the surprising implication → the limits → recap → CTA.
@@ -128,6 +134,8 @@ A Breakdown is drafted by hand rather than by `draft.py` — §4 splits the work
 Five items, one slide each, ranked. Highest save rate of the three formats because it functions as a reference.
 
 Built 2026-09-19 as `templates/signal.html`: cover + one slide per item + CTA, so five items is seven slides and the count follows the post.
+
+**The cover teases item 1.** Until 2026-09-27 it read "5 results you missed this week" every week, and a cover that never changes is one a follower learns to scroll past. `draft.py --signal` now asks for source 1's result plus "N more".
 
 **It is the format that least resembles the other two.** A roundup has five sources, so `attribution`, `source_url` and `peer_reviewed` belong to each item rather than to the post — §7.3 is not satisfied by crediting one of five, and §7.2 is not satisfied by one preprint label for five claims. Each item slide therefore carries its own credit line, and its own flag when it needs one.
 
@@ -664,4 +672,8 @@ Explicitly **not** a primary metric: likes.
 - [ ] Database: Google Sheets (simpler) vs. Supabase (scales better)
 - [ ] Posting time locked (test 3 slots, pick by save rate)
 - [~] Reels. **Decided for Drop reels** (2026-09-27): on request, from a published Drop, measured before they get a cadence (§1). **The Build** is still a person's, start to finish, and still unmade.
+- [ ] **Proposed series, 2026-09-27** — not adopted. Each is a claim to test, with the number that settles it:
+  - **The Catch, weekly.** A carousel of only the catches: the week's five most-hyped AI claims, one slide each, stating what the source does not support. It is slides 3–4's competitive advantage made into a whole post, and the most shareable thing the account could say. Cost: hand-written like a Breakdown, since a roundup of caveats is exactly where a free-tier model invents one. Settled by: shares per post against the Signal's median over four weeks.
+  - **Measured, not claimed.** The pipeline's own data as posts: cron lateness, the 503 rate, what 8,000 scored headlines say about which beats score high. It is original data no other page has, and the start of the original-reporting body of work §8 names. The first is drafted: `posts/2026-09-28-the-cron-that-runs-late.json`. Settled by: saves and profile visits against the Breakdown median. Profile visits matter most here, because this is the Build's funnel job done in carousel form.
+  - **Spanish slides, one test.** Render one Breakdown with its `es` block as the slides and post it as its own carousel. The archive already carries the Spanish, so the cost is a template switch and one gate. Settled by: reach from non-followers on that post against its English twin, read by eye from Insights, since `metrics` does not record reach. That is the only number that says whether a Costa Rica / Latin America audience is there.
 - [~] Spanish-language variant — Costa Rica base is an underserved-market advantage worth considering. **Decided for the archive** (2026-09-11): every archive page is bilingual, translated by `src/translate.py` at no cost and no per-post writing (§6b). **Still open for the feed:** Spanish slides or a second account are a per-post cost against the §8 budget, so the archive runs first and the traffic decides.
