@@ -515,3 +515,24 @@ def test_a_tech_or_unrowed_drop_is_not_a_finding(posts, record):
     report = Report("WATCH")
     watch.check_subject("2026-09-29", report, directory)
     assert not findings(report, "subject")
+
+
+def test_a_signal_says_how_many_items_fell_back(posts):
+    directory, write = posts
+    write("2026-10-03-signal-week-40.json", post_type="signal", items=[
+        {"claim": "a", "beat": "ai"}, {"claim": "b", "beat": "science"},
+        {"claim": "c", "beat": "robotics"}, {"claim": "d", "beat": "science"},
+        {"claim": "e"}])
+    report = Report("WATCH")
+    watch.check_subject("2026-10-04", report, directory)
+    [line] = findings(report, "subject")
+    assert "2 of 5" in line
+
+
+def test_an_all_tech_signal_is_not_a_finding(posts):
+    directory, write = posts
+    write("2026-10-03-signal-week-40.json", post_type="signal",
+          items=[{"claim": c, "beat": "software"} for c in "abcde"])
+    report = Report("WATCH")
+    watch.check_subject("2026-10-04", report, directory)
+    assert not findings(report, "subject")

@@ -991,6 +991,18 @@ DROP_KEYS = ["post_type", "domain", "colorway", "hook", "what_happened",
              "peer_reviewed", "beat"]
 
 
+def row_subject(item: dict) -> str:
+    """What a drafted row was about, recorded for watch.py.
+
+    A Drop or a Signal item that fell back to science means the tech pool ran
+    dry, and the only other place that is said is a run log nobody reads. The
+    scorer's beat, else the feed's topic for a row scored before beats
+    existed — the order pick_row judges it in. An evergreen or --url draft
+    has no row and records nothing.
+    """
+    return item.get("beat") or item.get("topic") or ""
+
+
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
     url = item["url"]
@@ -1020,13 +1032,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         # JSON at the gate. The model never supplies it.
         post["doi"] = paper["doi"]
 
-    # What the row was about, for watch.py: a Drop that fell back to science
-    # means the tech pool ran dry, and the only other place that is said is a
-    # run log nobody reads. The scorer's beat, else the feed's topic for a row
-    # scored before beats existed — the same order pick_row judges it in. An
-    # evergreen or --url draft has no row and records nothing.
-    subject = item.get("beat") or item.get("topic")
-    if subject:
+    if subject := row_subject(item):
         post["beat"] = subject
 
     return finish(post, DROP_KEYS)
@@ -1034,7 +1040,8 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
 
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
-ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed"]
+ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
+             "beat"]
 
 
 def validate_signal(post: dict, picks: list[dict]) -> dict:
@@ -1062,6 +1069,8 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
                  "attribution": str(item.get("attribution", "")).strip(),
                  "source_url": url,
                  "peer_reviewed": peer_review_flag(paper, url)}
+        if subject := row_subject(pick["item"]):
+            built["beat"] = subject
         if paper:
             if cite := citation(paper):
                 built["attribution"] = cite

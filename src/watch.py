@@ -23,7 +23,7 @@ What it reports:
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
     breakdown  from Friday on, this week has a Breakdown — nothing drafts it
-    subject    yesterday's Drop was on a priority subject, not science
+    subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
@@ -178,28 +178,39 @@ def check_breakdown(today: str, report: Report,
 
 def check_subject(today: str, report: Report,
                   directory: Path | None = None) -> None:
-    """Did yesterday's Drop fall back to science?
+    """Did yesterday's Drop, or any of its Signal's items, fall back to science?
 
     draft.pick_row takes science only when no queued row is on a priority
     subject, and says so in the run log. That is the moment the tech pool ran
     dry, and it is worth hearing about without reading the sheet. Only
     yesterday is asked about, so one fallback is one message, not one a day.
+    A Drop or item with no beat came from no row — evergreen, --url, or a
+    Signal drafted before beats were recorded — and is not judged.
     """
     from draft import PRIORITY_BEATS, PRIORITY_TOPICS   # imports the LLM clients
 
+    def off(record: dict) -> str:
+        beat = str(record.get("beat", "")).strip().lower()
+        return "" if not beat or beat in PRIORITY_BEATS | PRIORITY_TOPICS else beat
+
+    advice = ("The tech pool is dry — check the arXiv AI feeds are arriving, "
+              "or draft the next one with --evergreen from the tech queue.")
     day = date.fromisoformat(today) - timedelta(days=1)
     for path in sorted((directory or POSTS_DIR).glob(f"{day.isoformat()}-*.json")):
         post = read_post(path) or {}
-        beat = str(post.get("beat", "")).strip().lower()
-        if post.get("post_type", "drop") != "drop" or not beat:
-            continue
-        if beat in PRIORITY_BEATS or beat in PRIORITY_TOPICS:
-            continue
-        report.fix("subject", f"{path.stem} is a {beat} Drop: no queued row "
-                              f"was on AI, software, automation or robotics. "
-                              f"The tech pool is dry — check the arXiv AI "
-                              f"feeds are arriving, or draft the next one "
-                              f"with --evergreen from the tech queue.")
+        kind = post.get("post_type", "drop")
+        if kind == "drop" and (beat := off(post)):
+            report.fix("subject", f"{path.stem} is a {beat} Drop: no queued "
+                                  f"row was on AI, software, automation or "
+                                  f"robotics. {advice}")
+        elif kind == "signal":
+            items = [i for i in post.get("items") or [] if isinstance(i, dict)]
+            fell = [off(i) for i in items if off(i)]
+            if fell:
+                report.fix("subject", f"{path.stem} has {len(fell)} of "
+                                      f"{len(items)} items off the priority "
+                                      f"subjects ({', '.join(sorted(set(fell)))})."
+                                      f" {advice}")
 
 
 def check_gate(updates: list, report: Report) -> None:

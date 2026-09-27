@@ -322,3 +322,15 @@ def test_a_short_row_from_a_narrower_sheet_still_reads():
     col = {name: i for i, name in enumerate(HEADER[:-1])}
     _, item = draft.pick_row(rows, col, None)
     assert item["title"] == "chip"
+
+
+def test_each_signal_item_carries_the_subject_its_row_was_on():
+    """watch.py says when a Signal item fell back to science; it can only
+    read that off the item. An item with no row records nothing."""
+    tech, science, unrowed = (pick("https://example.org/a", PAPER),
+                              pick("https://example.org/b", PAPER, row=2),
+                              pick("https://example.org/c", PAPER, row=3))
+    tech["item"]["beat"] = "ai"
+    science["item"]["topic"] = "biology"
+    post = draft.validate_signal(reply(3), [tech, science, unrowed])
+    assert [i.get("beat") for i in post["items"]] == ["ai", "biology", None]
