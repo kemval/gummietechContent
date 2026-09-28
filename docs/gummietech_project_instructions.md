@@ -89,13 +89,13 @@ Sharp, curious, plain-spoken. Explain like a smart friend who actually understan
 
 ## Design system (locked)
 
-Derived from the account avatar. Production asset: `templates/drop.html`.
+Derived from the account avatar. Production assets: `templates/tokens.css` (palette and type) and `templates/slides.css` (design v2, shared by every format).
 
 - **Palette:** `--pink #EE6EC0`, `--olive #B2BC5F`, `--cream #F7EFE2` (neutral), `--ink #3B2C23` (outline and type — not black), `--blush #F9A8D4`, `--sky #7FB2E5`, `--amber #F2B441`.
-- **Type:** Outfit 800 for display/hooks, Figtree 500/700 for body. Both Google Fonts.
+- **Type:** Archivo (variable width) for display and body, IBM Plex Mono for labels. Both free Google Fonts, self-hosted for rendering.
 - **Canvas:** 1080×1350 (4:5).
-- **Signature element:** a 10px `--ink` outline frame, 44px radius, inset 34px — echoes the avatar's illustration style, appears on every slide.
-- **Fields rotate by topic, the rhythm does not.** Each post picks a colorway family — `signal` (AI, computing, software), `orbit` (space, astronomy, physics), `bloom` (biology, medicine, climate), `ember` (energy, materials, engineering) — and renders `lead · cream · support · dark · lead`. Slide 2 is always cream, slide 4 always drops to `--ink` with its frame in the post's lead hue, and slides 1 and 5 always match. `COLORWAYS` in `src/render.py` is the source of truth.
+- **Signature elements:** type fitted to the column, four mono corner labels on every slide, a selection box around each post's key phrase, and the catch set as a diff when it corrects the cover's figure. No drawn frame — the 10px ink frame was retired on 2026-09-28.
+- **Fields rotate by topic, the rhythm does not.** Each post picks a colorway family — `signal` (AI, computing, software), `orbit` (space, astronomy, physics), `bloom` (biology, medicine, climate), `ember` (energy, materials, engineering) — and renders `lead · cream · support · dark · lead`. Slide 2 is always cream, the catch always drops to `--ink` with its preprint flag and diff in the post's lead hue, and slides 1 and 5 always match. `COLORWAYS` in `src/render.py` is the source of truth.
 - Build reel cover frames use the Drop hook styling, so both pillars read as one account.
 
 Do not propose a different visual direction without being asked.

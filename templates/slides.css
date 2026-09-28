@@ -46,12 +46,6 @@
 
 {% include 'tokens.css' %}
 
-:root {
-  --display: 'Archivo', system-ui, sans-serif;
-  --body:    'Archivo', system-ui, sans-serif;
-  --mono:    'IBM Plex Mono', ui-monospace, monospace;
-}
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #2A2A2A; font-family: var(--body); }
 
