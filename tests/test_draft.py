@@ -15,6 +15,7 @@ import json
 import pytest
 
 import draft
+import papers
 
 
 @pytest.fixture
@@ -32,7 +33,7 @@ def crossref(monkeypatch):
             work = works.get(doi)
             return (work, None) if work else (None, f"no record for {doi}")
 
-        monkeypatch.setattr(draft, "fetch_crossref", fake)
+        monkeypatch.setattr(papers, "fetch_crossref", fake)
         return asked
 
     return install
@@ -61,20 +62,20 @@ def test_doi_is_trimmed_of_the_query_string_it_was_scraped_with():
     coverage-only, because the 404 looks like an ordinary dead DOI.
     """
     page = '<a href="https://doi.org/10.1038/s41586-026-10968-9?format=refman">cite</a>'
-    named, mentioned = draft.doi_candidates(page)
+    named, mentioned = papers.doi_candidates(page)
     assert "10.1038/s41586-026-10968-9" in named + mentioned
 
 
 def test_trailing_sentence_punctuation_is_not_part_of_the_doi():
     page = "Journal reference: doi:10.1234/abcd.5678."
-    named, _ = draft.doi_candidates(page)
+    named, _ = papers.doi_candidates(page)
     assert named == ["10.1234/abcd.5678"]
 
 
 def test_the_meta_tag_outranks_a_doi_further_down_the_page():
     page = ('<meta name="citation_doi" content="10.1111/first">'
             '<p>See also 10.2222/second</p>')
-    named, mentioned = draft.doi_candidates(page)
+    named, mentioned = papers.doi_candidates(page)
     assert named[0] == "10.1111/first"
     assert "10.2222/second" in mentioned
 
@@ -87,10 +88,10 @@ def test_nature_news_is_coverage_though_crossref_files_it_under_nature():
     Nothing about the record's shape separates it from a paper — same venue,
     same type — so the identifier is the only tell.
     """
-    news = draft.paper_facts(work("10.1038/d41586-026-02895-6", journal="Nature"))
-    paper = draft.paper_facts(work("10.1038/s41586-026-10968-9", journal="Nature"))
-    assert draft.is_coverage(news)
-    assert not draft.is_coverage(paper)
+    news = papers.paper_facts(work("10.1038/d41586-026-02895-6", journal="Nature"))
+    paper = papers.paper_facts(work("10.1038/s41586-026-10968-9", journal="Nature"))
+    assert papers.is_coverage(news)
+    assert not papers.is_coverage(paper)
 
 
 @pytest.mark.parametrize("venue", ["Physics World", "New Scientist",
@@ -98,7 +99,7 @@ def test_nature_news_is_coverage_though_crossref_files_it_under_nature():
 def test_named_magazines_are_coverage_even_carrying_an_abstract(venue):
     """Physics World deposits an abstract for every article, which would
     otherwise wave it through as the primary source."""
-    assert draft.is_coverage(draft.paper_facts(work("10.1088/x", journal=venue)))
+    assert papers.is_coverage(papers.paper_facts(work("10.1088/x", journal=venue)))
 
 
 def test_a_matching_title_is_evidence_a_record_is_the_work():
@@ -106,16 +107,16 @@ def test_a_matching_title_is_evidence_a_record_is_the_work():
     headline threw away the paper on the paper's own page, and credited the
     slides to Wegst et al. (2014) — the first thing its reference list cited.
     """
-    facts = draft.paper_facts(work("10.1038/s41586-026-10968-9", journal="Nature",
+    facts = papers.paper_facts(work("10.1038/s41586-026-10968-9", journal="Nature",
                                    abstract=""))
-    assert not draft.is_coverage(facts)
+    assert not papers.is_coverage(facts)
 
 
 # ------------------------------------------------------------- resolve_paper
 
 def test_a_named_doi_is_taken_at_its_word(crossref):
     crossref({"10.1126/paper": work("10.1126/paper", journal="Science Advances")})
-    facts, warning = draft.resolve_paper(
+    facts, warning = papers.resolve_paper(
         '<meta name="citation_doi" content="10.1126/paper">')
     assert warning is None
     assert facts["doi"] == "10.1126/paper"
@@ -126,7 +127,7 @@ def test_a_mentioned_doi_older_than_the_story_is_not_the_paper(crossref):
     was about to credit Building and Environment (2012) on a 2026 story."""
     crossref({"10.1016/old": work("10.1016/old", year=2012,
                                   journal="Building and Environment")})
-    facts, warning = draft.resolve_paper("<p>see 10.1016/old</p>")
+    facts, warning = papers.resolve_paper("<p>see 10.1016/old</p>")
     assert facts is None
     assert "older than the story" in warning
 
@@ -138,7 +139,7 @@ def test_the_coverage_doi_leads_to_the_paper_it_cites(crossref):
     news["reference"] = [{"DOI": "10.1038/s41586-026-10968-9"}]
     crossref({news["DOI"]: news,
               "10.1038/s41586-026-10968-9": work("10.1038/s41586-026-10968-9")})
-    facts, warning = draft.resolve_paper(
+    facts, warning = papers.resolve_paper(
         '<meta name="citation_doi" content="10.1038/d41586-026-02895-6">')
     assert warning is None
     assert facts["doi"] == "10.1038/s41586-026-10968-9"
@@ -153,7 +154,7 @@ def test_a_page_with_its_own_reference_list_is_the_work(crossref):
     crossref({doi: work(doi, year=year) for doi, year in refs})
     page = "<h2>References</h2>" + "".join(
         f"<p>Someone. A title ({year}). doi:{doi}</p>" for doi, year in refs)
-    facts, warning = draft.resolve_paper(page)
+    facts, warning = papers.resolve_paper(page)
     assert facts is None
     assert "reference list" in warning
 
@@ -164,14 +165,14 @@ def test_a_specific_cue_still_names_the_paper_among_references(crossref):
     crossref({"10.1126/paper": work("10.1126/paper")})
     page = ("<p>Journal reference: doi:10.1126/paper</p>"
             + "".join(f"<p>doi:10.9999/ref{i}</p>" for i in range(5)))
-    facts, warning = draft.resolve_paper(page)
+    facts, warning = papers.resolve_paper(page)
     assert warning is None
     assert facts["doi"] == "10.1126/paper"
 
 
 def test_a_page_with_no_doi_says_so_rather_than_guessing(crossref):
     crossref({})
-    facts, warning = draft.resolve_paper("<p>No identifiers here.</p>")
+    facts, warning = papers.resolve_paper("<p>No identifiers here.</p>")
     assert facts is None
     assert "no DOI on the page" in warning
 
@@ -181,8 +182,8 @@ def test_the_crossref_budget_is_not_exceeded(crossref):
     reference list."""
     page = " ".join(f"10.1234/ref{i}" for i in range(40))
     asked = crossref({})
-    draft.resolve_paper(page)
-    assert len(asked) <= draft.MAX_CROSSREF_LOOKUPS
+    papers.resolve_paper(page)
+    assert len(asked) <= papers.MAX_CROSSREF_LOOKUPS
 
 
 # ------------------------------------------------------------------ attribution
@@ -191,7 +192,7 @@ def test_an_explicit_first_sequence_marker_beats_array_order():
     record = work("10.1/x", authors=())
     record["author"] = [{"family": "Senior"},
                         {"family": "Lead", "sequence": "first"}]
-    assert draft.paper_facts(record)["authors"][0] == "Lead"
+    assert papers.paper_facts(record)["authors"][0] == "Lead"
 
 
 @pytest.mark.parametrize("authors,expected", [
@@ -200,7 +201,7 @@ def test_an_explicit_first_sequence_marker_beats_array_order():
     (("One", "Two", "Three"), "One et al., Nature (2026)"),
 ])
 def test_citation_shape(authors, expected):
-    assert draft.citation(draft.paper_facts(work("10.1/x", authors=authors))) == expected
+    assert papers.citation(papers.paper_facts(work("10.1/x", authors=authors))) == expected
 
 
 def test_a_preprint_carries_its_server_where_a_journal_would_be():
@@ -208,9 +209,9 @@ def test_a_preprint_carries_its_server_where_a_journal_would_be():
     citation."""
     record = work("10.1101/x", journal=None, type="posted-content")
     record["institution"] = [{"name": "bioRxiv"}]
-    facts = draft.paper_facts(record)
+    facts = papers.paper_facts(record)
     assert facts["is_preprint"]
-    assert "bioRxiv" in draft.citation(facts)
+    assert "bioRxiv" in papers.citation(facts)
 
 
 # --- the Signal: five sources in one prompt -------------------------------

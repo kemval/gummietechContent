@@ -41,7 +41,7 @@ from markupsafe import Markup, escape
 
 from formats import (body_text, entries, es_fields, missing_from_entries,
                      pieces, required, sections, spec)
-from render import REPO_ROOT, colorway_pair, open_page, render_html
+from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset
 
 POSTS_DIR = REPO_ROOT / "posts"
 TEMPLATE_DIR = REPO_ROOT / "templates"
@@ -134,7 +134,11 @@ def t(en: str, es: str = "") -> Markup:
 
     The `lang` attribute is not decoration: without it a screen reader
     pronounces the Spanish with an English voice.
+
+    `typeset` is the slides' one character change ("1.81x" → "1.81×"), so
+    a number reads the same on the page as on the carousel it came from.
     """
+    en, es = typeset(en), typeset(es)
     if not es:
         return Markup(f"<span>{escape(en)}</span>")
     return Markup(f'<span lang="en" data-lang="en">{escape(en)}</span>'

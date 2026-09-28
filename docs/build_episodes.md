@@ -2,7 +2,10 @@
 
 The Build is the conversion pillar (§1 of `gummietech_content_system.md`):
 a 30–60s reel, recorded, cut and captioned by a person. Nothing in `src/`
-makes one. This file is a list to film from.
+makes one. This file is a list to film from — and the source of each
+episode's stills: `python src/build_kit.py N` renders the cover, the
+problem card, a transparent lower third and the end card from the Cover,
+Problem and End-on lines below, verbatim, into `output/build-NN/`.
 
 Every episode below is a real bug this pipeline hit, taken from a dated
 post-mortem in `CLAUDE.md`. Every number in it is measured, not recalled.

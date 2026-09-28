@@ -30,3 +30,10 @@ site/
 # Generated output
 graphify-out/
 .mypy_cache/
+
+# impeccable (design skill) — installed per machine by `npx impeccable
+# install`, not part of the pipeline. Its hook lives in
+# .claude/settings.local.json, which is already per-machine.
+.claude/skills/impeccable/
+.claude/agents/impeccable-*.md
+.impeccable/

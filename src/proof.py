@@ -73,13 +73,13 @@ EPSILON = 0.5
 # missing from this one is merely held to the stricter bar and says so
 # loudly. Silence is the failure worth engineering against; a false BLOCK
 # gets fixed the morning it appears.
-CHROME = ("domain", "wordmark", "dots", "rank", "step-mark")
+CHROME = ("domain", "wordmark", "dots", "rank", "step-mark", "lbl")
 
 # Absolutely positioned, and the only things flow content can collide with.
 # .hook carries `margin-bottom: 96px` in the template with the comment
 # "clears the wordmark" — that margin is the entire defence, and this is
 # what checks it held.
-FIXTURES = ("wordmark", "dots")
+FIXTURES = ("wordmark", "dots", "lbl")
 
 MEASURE = """
 () => {
@@ -115,9 +115,14 @@ MEASURE = """
     // its own. .dots carries no text and is included by name because it is
     // a fixture everything else has to clear.
     const texted = el => el.textContent.trim().length > 0;
+    //
+    // Decoration marked aria-hidden (the Drop's keyword cloud and ghost
+    // words) is skipped: it is hidden from screen readers for the same
+    // reason — it is not something anyone is meant to read.
     const els = [...frame.querySelectorAll('*')].filter(el =>
-        (texted(el) && ![...el.children].some(texted)) ||
-        el.classList.contains('dots')).map(el => {
+        !el.closest('[aria-hidden="true"]') &&
+        ((texted(el) && ![...el.children].some(texted)) ||
+        el.classList.contains('dots'))).map(el => {
       const cs = getComputedStyle(el);
       // The element box of a left-aligned block spans the full column even
       // when its last line stops far short, so a block box is the wrong
@@ -126,13 +131,24 @@ MEASURE = """
       // another. Range rects are the line boxes the text actually occupies,
       // which is both quieter here and stricter where it matters — a line
       // that really does reach the dots is caught, and a short one is not.
+      // Text nodes only: a range over the whole element also returns the
+      // boxes of its empty children, and the Drop's selection box carries
+      // four 15px handle squares that sit 17px outside the words on purpose.
       const range = document.createRange();
-      range.selectNodeContents(el);
-      const lines = [...range.getClientRects()]
-        .filter(r => r.width > 0 && r.height > 0)
-        .map(r => rel(r, sr));
+      const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const lines = [];
+      for (let t = walk.nextNode(); t; t = walk.nextNode()) {
+        if (!t.textContent.trim()) continue;
+        range.selectNodeContents(t);
+        lines.push(...[...range.getClientRects()]
+          .filter(r => r.width > 0 && r.height > 0)
+          .map(r => rel(r, sr)));
+      }
       return {
-        kind: el.className.split(' ')[0],
+        // A classless run inside a chrome label (<b>gummietech</b>) is
+        // that label, not anonymous content held to the content bar.
+        kind: el.className.split(' ')[0] ||
+              (el.closest('.lbl') ? 'lbl' : el.tagName.toLowerCase()),
         rect: rel(el.getBoundingClientRect(), sr),
         lines: lines.length ? lines : [rel(el.getBoundingClientRect(), sr)],
         fontSize: px(cs.fontSize),
@@ -159,9 +175,13 @@ MEASURE = """
 
 
 def channels(value: str) -> tuple[float, float, float]:
-    """'rgb(59, 44, 35)' or 'rgba(59, 44, 35, 0.5)' -> (r, g, b)."""
-    nums = value[value.index("(") + 1:value.rindex(")")].split(",")
-    return tuple(float(n) for n in nums[:3])          # type: ignore[return-value]
+    """'rgb(59, 44, 35)', 'rgba(59, 44, 35, 0.5)' or 'color(srgb 0.23 0.17
+    0.14)' -> (r, g, b) on 0-255. Chromium reports a color-mix() — how
+    slides.css derives --mute — in the last form, with channels 0-1."""
+    inner = value[value.index("(") + 1:value.rindex(")")]
+    if inner.startswith("srgb"):
+        return tuple(float(n) * 255 for n in inner.split()[1:4])  # type: ignore[return-value]
+    return tuple(float(n) for n in inner.split(",")[:3])  # type: ignore[return-value]
 
 
 def over(fg: tuple[float, float, float], bg: tuple[float, float, float],
@@ -283,7 +303,9 @@ def check_slide(slide: dict, report: Report) -> None:
                             f"frame and will be clipped — shorten the field "
                             f"or drop the hook a size")
 
-    fixtures = {e["kind"]: e for e in slide["els"] if e["kind"] in FIXTURES}
+    # A list, not a dict by kind: a Drop has four .lbl corners, and keying
+    # them by class kept only the last one as something to collide with.
+    fixtures = [e for e in slide["els"] if e["kind"] in FIXTURES]
 
     for el in slide["els"]:
         kind, box = el["kind"], el["rect"]
@@ -301,7 +323,8 @@ def check_slide(slide: dict, report: Report) -> None:
 
         # Flow text against the absolutely positioned chrome.
         if kind not in CHROME:
-            for name, fixture in fixtures.items():
+            for fixture in fixtures:
+                name = fixture["kind"]
                 if fixture["rect"]["w"] <= 0:
                     continue
                 clear = min(gap(line, fixture["rect"]) for line in el["lines"])

@@ -61,36 +61,78 @@ body { background: var(--ink); }
 .stage > .backdrop.slide, .card > .slide { animation-delay: var(--t); }
 
 /* The words rise in just after their slide lands. */
-.card > .slide :is(.domain, .hook, .slide-title, .slide-body,
-                   .cta-handle, .cta-line, .source) {
+.card > .slide :is(.sec, .text, .diff .minus, .follow, .tagline, .sources) {
   animation: rise 0.5s ease-out both;
   animation-delay: calc(var(--t) + 0.3s);
 }
+
+/* The selection box draws itself around its phrase, left to right, then
+   its handles pop — the carousel's static box, performed. Real elements
+   (.box, .h), because a ::before animation computes but does not paint
+   when reel.py seeks frame by frame. */
+.card > .slide .sel .box {
+  animation: draw 0.5s cubic-bezier(.6, 0, .2, 1) both;
+  animation-delay: calc(var(--t) + 0.7s);
+}
+.card > .slide .sel .h {
+  animation: pop 0.22s ease-out both;
+  animation-delay: calc(var(--t) + 1.15s);
+}
+
+/* The catch plays as a diff: the claim, struck through, then the
+   correction. The honesty moment is the one that moves most. */
+.card > .slide .diff .minus .strike {
+  animation: strike 0.45s cubic-bezier(.6, 0, .2, 1) both;
+  animation-delay: calc(var(--t) + 1.0s);
+}
+.card > .slide .diff .plus {
+  animation: rise 0.5s ease-out both;
+  animation-delay: calc(var(--t) + 1.55s);
+}
+
+/* The loop: the cover swipes back in after the last scene, and the reel
+   ends the moment it lands, so its last frame is its first and Instagram's
+   replay has no seam. It is a clone of slide 1 made in the page (see the
+   script below), so it cannot say anything the cover does not; it is not a
+   `.card > .slide`, so reel.py still counts five scenes. Its box stays
+   undrawn, as it is on frame 0. */
+.card > .loop {
+  position: absolute; inset: 0;
+  animation: swipe-in var(--enter) cubic-bezier(.2, .8, .2, 1) both;
+  animation-delay: calc(var(--scene) * 5);
+}
+.card > .loop > .slide { position: absolute; top: 0; left: 0; }
+.card > .loop .sel :is(.box, .h) { visibility: hidden; }
+.stage > .backdrop.slide:nth-of-type(6) { --t: calc(var(--scene) * 5); }
 /* Except the hook's: a reel autoplays from its first frame, and a viewer
    deciding whether to stop scrolling must see the hook on it, not an
-   empty card. */
-.card > .slide:nth-child(1) :is(.domain, .hook) { animation: none; }
+   empty card. The cover's whole face is there from frame 0 — the hook is
+   not animated on it, and its spec row and figure never were. */
 
 /* Not decoration: the one animation that spans the whole reel, so its end
-   is the reel's length — the last scene plus a hold on the credit. */
+   is the reel's length — five scenes, then the cover's return, ending on
+   the frame it lands. The extra 0.05s is one frame at 30fps: reel.py's
+   last frame falls up to a frame before the end, and without it the cover
+   was 17ms short of landing, so the loop visibly jumped. */
 .clock {
   position: absolute; width: 1px; height: 1px; opacity: 0;
-  animation: hold calc(var(--scene) * 5 + 1.5s) linear both;
+  animation: hold calc(var(--scene) * 5 + var(--enter) + 0.05s) linear both;
 }
 
 /* The preprint flag for the whole reel, not just the catch scene: in a
    video a label that is on screen for three seconds is not a label.
    Deliberately never animated — reel.py fails the render if any frame
-   shows it less than fully. The border keeps the pill's edge visible on
-   the dark scene, where the stage is the same ink as the pill. */
+   shows it less than fully. It wears the carousel's catch-flag colours
+   (lead hue, ink type); the ink border keeps its edge visible on the two
+   lead-field scenes, where the stage is the same hue as the pill. */
 .reel-flag {
   position: absolute; top: 215px; left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  background: var(--ink); color: var(--cream);
-  border: 4px solid var(--cream);
-  font-family: var(--body); font-weight: 700; font-size: 30px;
-  padding: 10px 26px; border-radius: 999px;
+  background: var(--lead); color: var(--ink);
+  border: 4px solid var(--ink);
+  font-family: var(--mono); font-weight: 600; font-size: 30px;
+  padding: 10px 26px; border-radius: 6px;
 }
 
 @keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
@@ -98,16 +140,32 @@ body { background: var(--ink); }
 @keyframes rise     { from { opacity: 0; transform: translateY(28px); }
                       to   { opacity: 1; transform: none; } }
 @keyframes hold     { from { opacity: 0; } to { opacity: 0; } }
+@keyframes draw     { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes pop      { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes strike   { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 </style>
 </head>
 <body style="--lead: var(--{{ lead }})">
 <div class="stage">
-  {% for field in rhythm(5) %}<div class="backdrop slide {{ field }}"></div>{% endfor %}
+  {% set scenes = rhythm(5) %}
+  {% for field in scenes %}<div class="backdrop slide {{ field }}"></div>{% endfor %}
+  <div class="backdrop slide {{ scenes[0] }}"></div>
   <div class="card">
 {% include 'drop_slides.html' %}
+    <div class="loop" aria-hidden="true"></div>
   </div>
   {% if show_preprint_flag %}<div class="reel-flag">Preprint — not yet peer-reviewed</div>{% endif %}
   <div class="clock"></div>
 </div>
+<script>
+/* The loop's cover: slide 1, cloned before the layout pass runs so it is
+   fitted exactly as the original is. */
+(function () {
+  var cover = document.querySelector('.card > .slide').cloneNode(true);
+  cover.removeAttribute('id');
+  document.querySelector('.card > .loop').appendChild(cover);
+}());
+{% include 'slides_layout.js' %}
+</script>
 </body>
 </html>

@@ -1,0 +1,87 @@
+{# The pieces every format shares, as macros, so the Drop, the Breakdown and
+   the Signal cannot drift into three accounts. Imported `with context`: the
+   macros read the record (hook, attribution, …) the way a template does.
+
+   Every word here is a record field or fixed template copy. `typeset` sets
+   "1.81x" as "1.81×" and is the only change made to a character;
+   `emphasis`, `figure` and `diff` (render.py) only choose which span of the
+   record's own text to box, set large or strike — they never write any. #}
+
+{% set PREPRINT = "Preprint — not yet peer-reviewed" %}
+
+{# Four corner labels: the account and format, the field (or what the slide
+   is), the handle, and the position. The cover's position says "swipe". #}
+{% macro corners(fmt, at, n, right) -%}
+  <div class="lbl tl"><b>gummietech</b> — {{ fmt }}</div>
+  {% if at == 1 %}<div class="lbl tr">{{ "%02d"|format(at) }} / {{ "%02d"|format(n) }} — swipe →</div>
+  {% else %}<div class="lbl tr">{{ right }}</div>
+  <div class="lbl bl">@gummietech</div>
+  <div class="lbl br">{{ "%02d"|format(at) }} / {{ "%02d"|format(n) }}</div>{% endif %}
+{%- endmacro %}
+
+{# The record's text with one span in a selection box: a figure phrase, else
+   the first keyword that appears in it (render.emphasis). The outline and
+   the diff's strike are real elements, not ::before or text-decoration,
+   because the reel draws them — and reel.py steps animations frame by frame,
+   where a pseudo-element's animation computes but does not paint. #}
+{% macro boxed(text, figures_only=False) -%}
+{%- set t = text|typeset -%}{%- set pick = text|emphasis(figures_only) -%}
+{%- if pick and pick in t -%}{%- set parts = t.split(pick, 1) -%}
+{{ parts[0] }}<span class="sel">{{ pick }}<i class="box"></i><i class="h a"></i><i class="h b"></i><i class="h c"></i><i class="h d"></i></span>{{ parts[1] }}
+{%- else -%}{{ t }}{%- endif -%}
+{%- endmacro %}
+
+{# The cover. `spec` is the row of [label] value pairs under the hook, each
+   a record field; a pair whose value is empty is left out. The figure is
+   set large only when render.cover_figure() found one, and never without
+   the hook's own words that qualify it. #}
+{% macro cover(fmt, n, field, spec) -%}
+<div class="slide {{ field }}" id="slide-1"><div class="frame">
+  {{ corners(fmt, 1, n) }}
+  <div class="hook">{{ boxed(hook, figures_only=True) }}</div>
+  <dl class="spec">
+    {% for label, value, required in spec if value %}<div><dt>[{{ label }}]</dt><dd{{ ' class="req"'|safe if required }}>{{ value }}</dd></div>{% endfor %}
+  </dl>
+  {% if figure %}<div class="figure"><div class="giant">{{ figure.value }}</div><div class="qual">{{ figure.qualifier }}</div></div>{% endif %}
+</div></div>
+{%- endmacro %}
+
+{# The last slide: follow, the account line, then where the sources are.
+   `sources` is a list of [label] value pairs. #}
+{% macro follow(fmt, n, field, sources) -%}
+<div class="slide {{ field }}" id="slide-{{ n }}"><div class="frame">
+  <div class="lbl tl"><b>gummietech</b> — {{ fmt }}</div>
+  <div class="lbl tr">sources</div>
+  <div class="giant" aria-hidden="true" data-anchor="top">(gummie<br>tech)</div>
+  <div class="body" style="bottom: 96px">
+    <p class="follow">Follow @gummietech</p>
+    <p class="tagline">Science, technology and engineering — explained by someone whose code also crashes.</p>
+    <div class="sources">
+      {% for label, value in sources if value %}<div><span>[{{ label }}]</span><span>{{ value }}</span></div>{% endfor %}
+      <div><span>[FULL SOURCES]</span><span>link in bio →</span></div>
+    </div>
+  </div>
+  <div class="lbl br">{{ "%02d"|format(n) }} / {{ "%02d"|format(n) }}</div>
+</div></div>
+{%- endmacro %}
+
+{# A section label: "(02)  WHY IT MATTERS". #}
+{% macro sec(num, title) -%}
+<div class="sec"><span>({{ "%02d"|format(num) }})</span>{{ title }}</div>
+{%- endmacro %}
+
+{# The catch slide, which a Drop and a Breakdown share: preprint flag, then
+   either the diff (render.catch_diff) or the ghost "(but)", then the text. #}
+{% macro catch(fmt, at, n, field, num, title) -%}
+<div class="slide {{ field }}" id="slide-{{ at }}"><div class="frame">
+  {{ corners(fmt, at, n, domain) }}
+  {% if show_preprint_flag %}<div class="flag-row"><span class="flag">{{ PREPRINT }}</span></div>{% endif %}
+  {% if diff %}<div class="diff">
+    {% for row in diff %}<div class="row {{ 'minus' if row.sign == '−' else 'plus' }}"><span class="sign">{{ row.sign }}</span><span class="num">{{ row.value }}{% if row.sign == '−' %}<i class="strike"></i>{% endif %}</span><span class="why">{{ row.label }}</span></div>{% endfor %}
+  </div>{% else %}<div class="giant ghost" aria-hidden="true" data-anchor="top">(but)</div>{% endif %}
+  <div class="body">
+    {{ sec(num, title) }}
+    <p class="text{{ ' sm' if diff }}">{{ the_catch|typeset }}</p>
+  </div>
+</div></div>
+{%- endmacro %}

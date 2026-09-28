@@ -1,0 +1,34 @@
+# Feeds
+
+Moved verbatim from `CLAUDE.md` on 2026-09-28. `CLAUDE.md` keeps the
+rule in a line; this keeps the reasoning and the measurements behind it.
+Section names below ("see **X**") refer to `CLAUDE.md`'s headings.
+
+**Fetch feeds with a browser User-Agent.** Publishers behind Cloudflare return
+403s or HTML block pages to unfamiliar agents, and feedparser reports the
+latter as a confusing "not well-formed" XML error rather than a network
+failure. `src/verify_feeds.py` has working headers — reuse them everywhere
+a feed is fetched.
+
+**Feed URLs move constantly.** Never hardcode a URL from memory. Run
+`python src/verify_feeds.py -v` after any change to `feeds/`, and treat
+that as a required step before wiring a feed into ingest. The `feed-scout`
+agent (`.claude/agents/feed-scout.md`) does the legwork — it runs the
+checker, finds where a dead feed moved, and proposes the corrected YAML with
+evidence — but it only proposes; you still run `verify_feeds.py` and commit.
+
+**And a feed can be live and finished at the same time.** A publication that
+stops does not take its feed down: the URL answers 200 for years and
+feedparser returns a full item list, so every question of the form "did
+entries come back" says yes. What changes is downstream — `ingest.py` drops
+each of those items on `MAX_AGE_DAYS`, so the feed contributes no rows at
+all. SemiAnalysis was wired into `feeds/tier5_depth.yaml` on 2026-09-22 on
+the strength of a clean OK and 10 entries, none newer than Sep 2025, and only
+a dry-run ingest caught it. Both checks now measure the newest entry's age
+against `verify_feeds.STALE_AFTER_DAYS`: the checker prints it and marks
+anything past the bar, and `watch.py` reports it as a FIX. The bar is 60 days
+rather than `MAX_AGE_DAYS`' 7 because `watch.py` sends to a chat and a
+watcher that cries wolf is one nobody reads — measured over all 65 feeds that
+day, the live set ran median 0d, p90 5d, max 7d, and the dead ones 215d, 371d
+and 609d. An undated feed has no age and is never reported, which is
+`ingest.py`'s own decision about undated rows one layer up.
