@@ -39,7 +39,7 @@ permissions:
 jobs:
   smoke:
     name: render, proof and archive the fixture
-    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -123,7 +123,7 @@ jobs:
 
   tests:
     name: the pure functions that have been silently wrong
-    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
@@ -157,7 +157,7 @@ jobs:
 
   publish-deps:
     name: telegram.py under publish.yml's two packages
-    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See CLAUDE.md.
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
     timeout-minutes: 5
 
