@@ -42,7 +42,7 @@
 # a hole in this file: https://arxiv.org/list/physics.bio-ph/recent on
 # 2026-09-19, a Saturday, ran Mon 14 Sep → Fri 18 Sep and stopped. Nothing
 # is announced at a weekend, and weekend submissions go out on the Monday.
-# So two days in seven these seven feeds verify as WARN · valid feed but 0
+# So two days in seven every arXiv feed here verifies as WARN · valid feed but 0
 # entries, and ingest logs them as "0 entries — feed may have moved". Both
 # are expected. Check on a weekday before believing a feed here is dead.
 #
