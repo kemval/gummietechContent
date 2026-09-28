@@ -26,6 +26,8 @@ Usage:
     python src/score.py --dry-run           # score and print, write nothing
     python src/score.py --beats             # name the beat of queued rows
                                             # scored before beats existed
+    python src/score.py --beats --again     # re-name every queued row's beat
+                                            # after BEAT_RULE changes
 
 Environment (.env locally, repo secrets in CI):
     LLM_PROVIDER                 'gemini' (default) or 'groq' — see llm.py
@@ -168,17 +170,25 @@ def beat_of(result: dict) -> str:
 
 
 def backfill_beats(worksheet, rows: list[list[str]], col: dict,
-                   api_key: str, model: str, dry_run: bool) -> int:
-    """Name the beat of every queued row that has none.
+                   api_key: str, model: str, dry_run: bool,
+                   again: bool = False) -> int:
+    """Name the beat of every queued row that has none — or, with `again`,
+    of every queued row, overwriting what an older BEAT_RULE named.
 
     Rows scored before score.py named a beat would otherwise fall back to
     their feed's topic in draft.py, and a feed is not a subject: on
     2026-09-27 that fallback put a battery, a solar cell and a cookie made
     of plastic among the five "tech" rows it would draft first.
+
+    `again` exists because a fixed prompt only reaches rows scored after it.
+    On 2026-09-28 the next priority rows were metalworking under `software`
+    and a dead star under `computing`, named before BEAT_RULE said the beat
+    is the subject. A model answer off the list leaves the old beat alone.
     """
     pending = [(n, row) for n, row in enumerate(rows[1:], start=2)
                if row[col["status"]] == "queued"
-               and not (row[col["beat"]] if col["beat"] < len(row) else "")]
+               and (again
+                    or not (row[col["beat"]] if col["beat"] < len(row) else ""))]
     print(f"Naming the beat of {len(pending)} queued rows, "
           f"{BEATS_BATCH} to a call")
     named = 0
@@ -215,6 +225,9 @@ def main() -> int:
     ap.add_argument("--beats", action="store_true",
                     help="name the beat of queued rows that have none, "
                          "instead of scoring")
+    ap.add_argument("--again", action="store_true",
+                    help="with --beats, re-name every queued row's beat, "
+                         "not only the blank ones")
     args = ap.parse_args()
 
     api_key, model = llm.config()
@@ -230,7 +243,7 @@ def main() -> int:
             sys.exit("The sheet has no `beat` column yet. Run "
                      "`python src/ingest.py` once — it rewrites the header.")
         return backfill_beats(worksheet, rows, col, api_key, model,
-                              args.dry_run)
+                              args.dry_run, again=args.again)
     pending = [
         {"row": n, "i": len(rows),                # placeholder, renumbered below
          "title": row[col["title"]],

@@ -144,6 +144,31 @@ def test_the_coverage_doi_leads_to_the_paper_it_cites(crossref):
     assert facts["doi"] == "10.1038/s41586-026-10968-9"
 
 
+def test_a_page_with_its_own_reference_list_is_the_work(crossref):
+    """2026-09-28: rohanbansal.com/qorl, the author's own write-up, credited
+    Leis et al. (2015) — the first "doi:" in its references. A year test
+    alone would have credited the 2026 arXiv preprint further down."""
+    refs = [("10.14778/leis", 2015), ("10.14778/revisited", 2025),
+            ("10.1145/ibaraki", 1984), ("10.48550/arXiv.2603.07267", 2026)]
+    crossref({doi: work(doi, year=year) for doi, year in refs})
+    page = "<h2>References</h2>" + "".join(
+        f"<p>Someone. A title ({year}). doi:{doi}</p>" for doi, year in refs)
+    facts, warning = draft.resolve_paper(page)
+    assert facts is None
+    assert "reference list" in warning
+
+
+def test_a_specific_cue_still_names_the_paper_among_references(crossref):
+    """Coverage that says "Journal reference:" is not a bibliography just
+    because the page also carries other DOIs."""
+    crossref({"10.1126/paper": work("10.1126/paper")})
+    page = ("<p>Journal reference: doi:10.1126/paper</p>"
+            + "".join(f"<p>doi:10.9999/ref{i}</p>" for i in range(5)))
+    facts, warning = draft.resolve_paper(page)
+    assert warning is None
+    assert facts["doi"] == "10.1126/paper"
+
+
 def test_a_page_with_no_doi_says_so_rather_than_guessing(crossref):
     crossref({})
     facts, warning = draft.resolve_paper("<p>No identifiers here.</p>")

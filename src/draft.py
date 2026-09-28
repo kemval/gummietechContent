@@ -145,6 +145,23 @@ CONTENT_RE = re.compile(r"content=[\"']([^\"']+)[\"']", re.I)
 # papers' DOIs and a bare "doi:" can land in it.
 DOI_CUES = ("journal reference", "more information", "cite this",
             "citation", "doi:")
+# The last three are weak on a page with a reference list: it says "doi:"
+# before every entry, and its "cite this" is the page citing itself — qorl's
+# "Please cite this work as: Bansal, Rohan" carries no DOI, so the search ran
+# on to the first reference. See BIBLIOGRAPHY_DOIS for when they stop counting.
+WEAK_DOI_CUES = ("cite this", "citation", "doi:")
+
+# A page carrying this many distinct DOIs is a reference list, and then it is
+# usually the work itself — a blog post, an essay, a paper — citing others,
+# not coverage of one of them. On 2026-09-28 rohanbansal.com/qorl, the
+# author's own write-up with a reference list, had its first entry, Leis et
+# al. (2015), credited on the slides. The year test cannot save that case:
+# the same list cited a 2026 arXiv preprint. So on such a page only the meta
+# tag and the coverage cues ("journal reference", "more information") name a
+# paper, and mentions are not guessed from. Coverage names its paper with one
+# DOI or a cue; the Research Briefing GUESS_MAX_AGE describes carried five
+# references and no paper at all.
+BIBLIOGRAPHY_DOIS = 4
 
 # The alt_text line is specific about what the slides are not, because the
 # model otherwise writes what a science post's images would normally be —
@@ -372,6 +389,9 @@ def doi_candidates(page: str) -> tuple[list[str], list[str]]:
     than what it is about — which is why resolve_paper will not credit one
     without corroboration. Kept because an aggregator that uses no cue
     heading leaves the paper's DOI nowhere else.
+
+    A page with BIBLIOGRAPHY_DOIS or more is read as a reference list: the
+    weak cues name nothing and `mentioned` is empty.
     """
     named: list[str] = []
     mentioned: list[str] = []
@@ -387,11 +407,19 @@ def doi_candidates(page: str) -> tuple[list[str], list[str]]:
         if content:
             add(_trimmed_doi(DOI_RE.search(content.group(1))))
 
+    every = {_trimmed_doi(m) for m in DOI_RE.finditer(page)}
+    bibliography = len(every) >= BIBLIOGRAPHY_DOIS
+
     lowered = page.lower()
     for cue in DOI_CUES:
+        if bibliography and cue in WEAK_DOI_CUES:
+            continue
         at = lowered.find(cue)
         if at != -1:
             add(_trimmed_doi(DOI_RE.search(page, at)))
+
+    if bibliography:
+        return named, mentioned               # a reference list, not guesses
 
     for match in DOI_RE.finditer(page):
         add(_trimmed_doi(match), mentioned)
@@ -572,6 +600,10 @@ def resolve_paper(page: str) -> tuple[dict | None, str | None]:
     if not page:
         return None, None                     # fetch already warned
     named, mentioned = doi_candidates(page)
+    if not (named or mentioned) and DOI_RE.search(page):
+        return None, ("every DOI on the page is in its reference list, so it "
+                      "is the work itself rather than coverage of a paper — "
+                      "credit its author, and check peer_reviewed by hand")
     if not (named or mentioned):
         return None, ("no DOI on the page — drafting from the coverage alone, "
                       "so check the authors and the mechanism against the paper")
