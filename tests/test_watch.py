@@ -84,6 +84,21 @@ def test_the_filenames_date_is_what_answers_it(posts):
     assert report.verdict == "BLOCK"
 
 
+def test_a_breakdown_dated_a_drop_day_is_not_its_drop(posts):
+    """2026-09-28: a hand-written Breakdown dated that Monday made the gate
+    report the Drop as drafted, and no Drop was."""
+    directory, write = posts
+    write("2026-09-28-the-cron-that-runs-late.json", post_type="breakdown")
+    report = Report("WATCH")
+    watch.check_cadence("2026-09-29", report, directory)
+    assert report.verdict == "BLOCK"
+
+    write("2026-09-28-the-drop.json", post_type="drop")
+    report = Report("WATCH")
+    watch.check_cadence("2026-09-29", report, directory)
+    assert report.verdict == "PASS"
+
+
 def test_a_saturday_owes_a_signal_not_just_any_post(posts):
     """The week of 2026-09-21 went without one and nothing said so. A
     Breakdown written by hand on the Saturday is not the Signal."""

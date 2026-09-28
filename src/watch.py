@@ -90,6 +90,20 @@ def owed_glob(day: date) -> str:
     return f"{day.isoformat()}-*.json"
 
 
+def owes(day: date, post: dict) -> bool:
+    """Is this post, matched by owed_glob(), the one that day owed?
+
+    The date alone does not say. A Breakdown is written by hand and dated
+    whatever day it was written, and on 2026-09-28 one dated that Monday
+    made daily.yml's gate report the Drop as already drafted, so no Drop
+    was. The Signal's name already says what it is; a Drop day is answered
+    by anything that is not a Breakdown. daily.yml's gate asks the same.
+    """
+    if DRAFT_DAYS[day.weekday()] == "Signal":
+        return True
+    return post.get("post_type", "drop") != "breakdown"
+
+
 # The Breakdown is written by a person, so no cron can miss it and no cadence
 # check can see it go missing. From this weekday on the week is running out,
 # and a reminder is still something that can be acted on.
@@ -136,7 +150,8 @@ def check_cadence(today: str, report: Report,
     """Did the last drafting day that ended produce its post?"""
     day = last_draft_day(today)
     directory = directory or POSTS_DIR
-    if any(directory.glob(owed_glob(day))):
+    if any(owes(day, read_post(path) or {})
+           for path in directory.glob(owed_glob(day))):
         report.note("cadence", f"{day:%A} {day.isoformat()} was drafted")
         return
     what, how = (("the Signal day", "with signal=true")
