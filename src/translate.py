@@ -27,9 +27,10 @@ belong to Instagram, which posts in English; `alt_text` and the page's meta
 description stay English because one language has to win for crawlers and
 link previews. A translated field nobody renders is a field nobody proofs.
 
-One request per post, rather than score.py's batching: a post is five short
-fields, and a day's drafting is one post, so this costs one call against a
-daily cap in the hundreds. Batching would buy nothing and add a slug-to-post
+Two requests per post — a translation, then a proofread of it against the
+English — rather than score.py's batching: a post is five short fields, and
+a day's drafting is one post, so this costs two calls against a daily cap in
+the hundreds. Batching would buy nothing and add a slug-to-post
 mapping the model can silently get wrong.
 
 The Spanish is machine-written and lands on a public permalink, so it goes
@@ -67,6 +68,51 @@ SLEEP_BETWEEN_CALLS = 5          # seconds; the free tier allows ~12/minute
 # stale Spanish and a permalink was somebody remembering to pass --force.
 SOURCE_KEY = "_en"
 
+# Rules both passes share. Each named example is a real failure from posts/
+# (2026-09-07 to 09-28), written with openai/gpt-oss-20b on Groq.
+RULES = """\
+- Neutral Latin American Spanish: no regionalisms, no "vosotros", usted-free \
+impersonal phrasing.
+- Translate the meaning, not the words. The English is plain and declarative; \
+the Spanish has to read as if it had been written that way, not as a \
+translation of something. Read each sentence back: if a Spanish reader would \
+have to guess what it means, rewrite it.
+- Keep every claim exactly as strong as the English. Do not add, drop, soften \
+or sharpen anything, and keep who does what to whom: "asked … and told to \
+answer only if it knew" is "cuando se le pidió … y que respondiera solo si lo \
+sabía", not "decir que solo responderá si lo sabía". "the_catch" is the \
+credibility line — a hedge that moves is a factual error.
+- Grammar has to be correct: gender and number agreement ("el Consejo de la \
+Cuenca", "arte rupestre descolorido", "la detección cuántica"), and ranges \
+as "del 8 % al 60 %".
+- Translate every ordinary word. An English word left inside a Spanish \
+sentence reads as a mistake: "bullfrog" is "rana toro", "manta ray" is \
+"mantarraya", "lattice" is "red" or "celosía", "sloshing" is "chapoteo" or \
+"oscilación". Keep in English only what has no Spanish form in use: \
+proper nouns, institutions, journal names, named benchmarks, datasets, \
+software and models (the "Join Order Benchmark" stays as it is), and \
+established loanwords such as "benchmark", "prompt", "software".
+- A multiplier is a comparison, not a count: "100-fold tests" is "pruebas \
+100 veces más precisas" (or whatever the English compares), never \
+"pruebas de 100 veces". "1.81x faster" is "1.81 veces más rápido".
+- Leave units and numbers exactly as they are.
+- Scientific terms take their established Spanish form. If you are not \
+certain of the accepted term, keep the English word rather than coin a \
+Spanish-looking one: a reader can look up an English term, but a word that \
+does not exist tells them nothing and discredits the rest. "semi-crystalline" \
+is "semicristalino" — it came back once as "semicuadráticos", which means \
+"semi-quadratic" and is not a word. An acronym keeps its English letters \
+but gets its Spanish name the first time if a reader would not know it.
+- This is a web page, not a slide: take the words natural Spanish needs, \
+usually a little longer than the English. Never compress a sentence into \
+telegraphic or broken Spanish to save space ("Nueve de diez revisados \
+populares" came from that).
+- "domain" is a 2-3 word field label. Translate it as well — it is shown to \
+the reader — lowercase unless it contains a proper noun.
+- A field whose English value is a LIST comes back as a list of the same \
+length, in the same order, one translated string per entry. Each entry is its \
+own paragraph; do not merge, split or reorder them."""
+
 PROMPT = """Translate this @gummietech post into neutral Latin American \
 Spanish for the account's web archive.
 
@@ -74,32 +120,41 @@ Return ONLY a JSON object, no prose and no code fences, with exactly these \
 keys: {keys}.
 
 Rules:
-- Neutral Latin American Spanish: no regionalisms, no "vosotros", usted-free \
-impersonal phrasing.
-- Translate the meaning, not the words. The English is plain and declarative; \
-the Spanish has to read as if it had been written that way, not as a \
-translation of something.
-- Keep every claim exactly as strong as the English. Do not add, drop, soften \
-or sharpen anything. "the_catch" is the credibility line — a hedge that moves \
-is a factual error.
-- Leave proper nouns, institutions, journal names, units and numbers exactly \
-as they are.
-- Scientific terms take their established Spanish form. If you are not \
-certain of the accepted term, keep the English word rather than coin a \
-Spanish-looking one: a reader can look up an English term, but a word that \
-does not exist tells them nothing and discredits the rest. "semi-crystalline" \
-is "semicristalino" — it came back once as "semicuadráticos", which means \
-"semi-quadratic" and is not a word.
-- Keep each field to roughly the English length. These render in a fixed \
-layout, and a field that doubles overflows it.
-- "domain" is a 2-3 word field label. Translate it as well — it is shown to \
-the reader — lowercase unless it contains a proper noun.
-- A field whose English value is a LIST comes back as a list of the same \
-length, in the same order, one translated string per entry. Each entry is its \
-own slide; do not merge, split or reorder them.
+{rules}
 
 Post:
 {post}"""
+
+# A second call that reads the draft against the English. The first pass
+# gets most of it right and leaves a few sentences per post that do not say
+# what the English says or are not Spanish; a translator asked to proofread
+# its own output as a separate task catches most of those, for one more call
+# per post against a daily cap in the hundreds.
+REVIEW_PROMPT = """You are proofreading a machine translation of a \
+@gummietech post, English into neutral Latin American Spanish, before it \
+goes on a public web page.
+
+For every field, compare the Spanish with the English and fix:
+- anything whose meaning differs from the English — added, dropped, \
+softened, sharpened, or with the roles swapped;
+- grammar: agreement, prepositions, verb tense, word order;
+- English words left untranslated that have a Spanish form in common use;
+- words that do not exist in Spanish, and phrasing a native reader would \
+have to reread to understand.
+If a field is already right, return it unchanged. Do not restyle correct \
+Spanish.
+
+Return ONLY a JSON object, no prose and no code fences, with exactly these \
+keys: {keys}.
+
+The translation had to follow these rules; the corrected version must too:
+{rules}
+
+English:
+{post}
+
+Spanish to correct:
+{draft}"""
 
 
 def value(post: dict, field: str) -> str | list[str] | None:
@@ -248,15 +303,10 @@ def check(paths: list[Path]) -> int:
     return 1 if stale else 0
 
 
-def translate(post: dict, api_key: str, model: str) -> dict:
-    """Ask for the Spanish block and refuse anything the page cannot show."""
-    source = source_fields(post)
+def ask(prompt: str, source: dict, api_key: str, model: str) -> dict:
+    """One call; refuse any reply the page cannot show."""
     fields = list(source)
-
-    reply = llm.generate(
-        PROMPT.format(keys=", ".join(f'"{f}"' for f in fields),
-                      post=json.dumps(source, indent=2, ensure_ascii=False)),
-        api_key, model, temperature=0.2)
+    reply = llm.generate(prompt, api_key, model, temperature=0.2)
 
     try:
         es = json.loads(reply.strip())
@@ -272,8 +322,8 @@ def translate(post: dict, api_key: str, model: str) -> dict:
         sys.exit(f"Refusing to write. The model left these empty: "
                  f"{', '.join(missing)}. Re-run to try again.")
 
-    # A list field has to come back the same length: each entry is a slide,
-    # and a translation one short would silently drop one.
+    # A list field has to come back the same length: each entry is a
+    # paragraph, and a translation one short would silently drop one.
     for f in fields:
         if isinstance(source[f], list):
             got = value(es, f)
@@ -281,11 +331,26 @@ def translate(post: dict, api_key: str, model: str) -> dict:
                 sys.exit(f"Refusing to write. {f!r} has {len(source[f])} "
                          f"entries in English and came back with "
                          f"{len(got) if isinstance(got, list) else 'not a list'}"
-                         f". Each one is a slide. Re-run to try again.")
+                         f". Each one is a paragraph. Re-run to try again.")
 
     # Keys the page does not render are dropped rather than stored: an
     # unrendered translation is one nobody proofreads at the gate.
     return {f: value(es, f) for f in fields}
+
+
+def translate(post: dict, api_key: str, model: str) -> dict:
+    """Translate, then have the draft proofread against the English."""
+    source = source_fields(post)
+    keys = ", ".join(f'"{f}"' for f in source)
+    english = json.dumps(source, indent=2, ensure_ascii=False)
+
+    draft = ask(PROMPT.format(keys=keys, rules=RULES, post=english),
+                source, api_key, model)
+    time.sleep(SLEEP_BETWEEN_CALLS)
+    return ask(REVIEW_PROMPT.format(
+                   keys=keys, rules=RULES, post=english,
+                   draft=json.dumps(draft, indent=2, ensure_ascii=False)),
+               source, api_key, model)
 
 
 def process(path: Path, api_key: str, model: str, force: bool,

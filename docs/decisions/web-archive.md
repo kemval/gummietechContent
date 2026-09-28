@@ -48,6 +48,15 @@ Two things that are deliberate:
   its Spanish goes on saying the old thing. A block written before the stamp
   existed carries none, and counts as unknown rather than stale: it is skipped
   as it always was, so nothing already reviewed is silently rewritten.
+- **Two calls, translate then proofread.** The second reads the Spanish
+  against the English and fixes meaning drift, broken grammar and English
+  words left in the sentence. Until 2026-09-28 the prompt also held each field
+  to the English length "for a fixed layout", which was never true — Spanish
+  renders only on these pages — and the squeeze produced the broken phrasing
+  ("Nueve de diez revisados populares"). The model is the ceiling:
+  `openai/gpt-oss-20b` still leaves errors after both passes;
+  `openai/gpt-oss-120b` on the same free Groq key did not, in a dry run over
+  the three worst posts.
 
 Machine-written Spanish on a permalink is the same credibility risk as an
 unlabelled preprint, so it goes through Layer 5 like everything else: run
