@@ -2,9 +2,10 @@
    gummietech design tokens — LOCKED.
 
    The single source of truth for the palette and type stack.
-   Included by templates/drop.html (the 1080x1350 slides) and
-   templates/site_base.html (the web archive), so the carousel
-   and the page it links to cannot drift apart.
+   Included by templates/slides.css (every carousel format, the
+   reel and The Build's kit) and templates/site_base.html (the web
+   archive), so the carousel and the page it links to cannot drift
+   apart.
 
    Do not add a hue here without checking it clears 4.5:1
    against --ink; do not name one of these colours downstream.
@@ -14,7 +15,7 @@
 
    @font-face is NOT here: the slides load the fonts over
    file:// and the site loads them over http, so each template
-   declares its own faces against these same two families.
+   declares its own faces against these same families.
    ============================================================ */
 
 :root {
@@ -26,6 +27,9 @@
   --sky:    #7FB2E5;
   --amber:  #F2B441;
 
-  --display: 'Outfit', system-ui, sans-serif;
-  --body:    'Figtree', system-ui, sans-serif;
+  /* Design v2 (2026-09-28): one variable grotesk for display and body,
+     one mono for labels. docs/decisions/rendering.md, "Design v2". */
+  --display: 'Archivo', system-ui, sans-serif;
+  --body:    'Archivo', system-ui, sans-serif;
+  --mono:    'IBM Plex Mono', ui-monospace, monospace;
 }

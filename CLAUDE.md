@@ -224,9 +224,8 @@ record to box, set large or strike (`emphasis`, `cover_figure`,
 `catch_diff`), and `typeset` ("1.81x" → "1.81×") is the only character it
 changes. A cover figure never appears without the hook's own qualifier.
 The web archive (`site_base.html`) is on v2 too — flat colour blocks, mono
-labels, the same fonts at `font-display: swap`. `tokens.css` still names
-Outfit/Figtree in its type stack; `slides.css` and `site_base.html` both
-override it.
+labels, the same fonts at `font-display: swap`. The type stack lives in
+`tokens.css` with the palette; do not restate it in a template.
 → `docs/decisions/rendering.md`
 
 ### Colorways
