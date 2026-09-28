@@ -2,16 +2,16 @@
   "post_type": "drop",
   "domain": "database optimization",
   "colorway": "signal",
-  "hook": "Qwen 4B model produces 81% faster Postgres query plans",
+  "hook": "4B model's Postgres plans ran 81% faster — best of 15 tries",
   "hooks": [
-    "Qwen 4B model produces 81% faster Postgres query plans",
+    "4B model's Postgres plans ran 81% faster — best of 15 tries",
     "It shows that language models can beat traditional optimizers",
     "Now you can get queries 81% faster with a 4B LLM"
   ],
-  "what_happened": "A 4B Qwen model was fine‑tuned with supervised learning and agentic reinforcement learning to output query plans that Postgres executed 81% faster than its default plans",
-  "why_it_matters": "It removes the bottleneck of sub‑optimal join ordering in Postgres, proving a small LLM can outperform a mature optimizer",
-  "the_catch": "The speedup was measured on a single IMDb‑style dataset and may not generalize to all workloads",
-  "caption": "A 4B Qwen model can generate Postgres query plans that run 81% faster than the database’s own optimizer. Could a language model be the future of database tuning?",
+  "what_happened": "4B Qwen model, tuned with agentic RL, wrote Postgres plans; the fastest of up to 15 tries ran 1.81x faster than defaults on 113 queries",
+  "why_it_matters": "A small 4B model, trained for one database, beat Postgres's default plans on a join-heavy benchmark, hinting small task-specific models may suit query tuning",
+  "the_catch": "81% is the fastest of up to 15 plans per query; the model's own picks gave 1.40x. Tested only on the IMDb-based Join Order Benchmark.",
+  "caption": "A 4B Qwen model wrote Postgres query plans that, taking the fastest of up to 15 tries per query, ran 81% faster than Postgres's default plans on a 113-query benchmark. Could a language model be the future of database tuning?",
   "keywords": [
     "query optimization",
     "language models",
@@ -23,17 +23,17 @@
     "#performance",
     "#gummietech"
   ],
-  "alt_text": "A five‑slide carousel explaining that a 4B Qwen language model can produce Postgres query plans 81% faster than the default optimizer, highlighting the experiment, its impact, and its limitation",
+  "alt_text": "A five‑slide carousel explaining that a 4B Qwen language model wrote Postgres query plans that, taking the best of up to 15 tries per query, ran 81% faster than default plans, highlighting the experiment, its impact, and its limitation",
   "source_url": "https://rohanbansal.com/qorl",
   "attribution": "Rohan Bansal",
   "peer_reviewed": false,
   "beat": "ai",
   "es": {
     "domain": "optimización de bases de datos",
-    "hook": "El modelo Qwen 4B genera planes de consulta Postgres 81 % más rápidos",
-    "what_happened": "Un modelo Qwen 4B fue afinado con aprendizaje supervisado y aprendizaje por refuerzo agencial para generar planes de consulta que Postgres ejecutó 81 % más rápido que sus planes por defecto",
-    "why_it_matters": "Elimina el cuello de botella del ordenamiento subóptimo de joins en Postgres, demostrando que un LLM pequeño puede superar a un optimizador maduro",
-    "the_catch": "El aumento de velocidad se midió en un único conjunto de datos estilo IMDb y puede no generalizarse a todas las cargas de trabajo",
-    "_en": "1c09913aa90a0f3e"
+    "hook": "Los planes de Postgres del modelo 4B fueron 81 % más rápidos — mejor de 15 intentos",
+    "what_happened": "El modelo Qwen 4B, afinado con RL agencial, generó planes de Postgres; el más rápido de hasta 15 intentos fue 1.81 veces más rápido que los valores por defecto en 113 consultas",
+    "why_it_matters": "Un modelo pequeño de 4 B, entrenado para una sola base de datos, superó los planes por defecto de Postgres en un benchmark con muchas uniones, lo que sugiere que modelos pequeños y específicos de tarea pueden ser adecuados para el ajuste de consultas",
+    "the_catch": "81 % corresponde al mejor de hasta 15 planes por consulta; las selecciones propias del modelo dieron 1.40 veces. Se probó únicamente en el Benchmark de Orden de Uniones basado en IMDb.",
+    "_en": "558f57bdc1936174"
   }
 }
