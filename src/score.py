@@ -67,6 +67,18 @@ BEATS = ("ai", "software", "automation", "robotics", "computing", "science")
 # in the morning queue."
 THRESHOLD = 7.0
 
+# The one definition of a beat, shared by both prompts. The subject rule is
+# a post-mortem: on 2026-09-28 "Show HN: What if the speed of light was
+# 5 km/h?" — a relativity simulation — was named `ai` from its headline, and
+# pick_row() drafted physics as the day's tech post. A demo, an app or a
+# "Show HN" about a science topic is that topic; the medium is not the beat.
+BEAT_RULE = """Exactly one of: ai (machine learning, models, agents), software \
+(programming, languages, tools, infrastructure), automation, robotics, \
+computing (hardware, chips, quantum computing, security), science (everything \
+else). The beat is what the item is about, not what it is made with or where \
+it was posted: a simulation, app, demo or "Show HN" about physics, biology or \
+space is science. Name ai only when machine learning is the subject."""
+
 PROMPT = """You are the editorial filter for @gummietech, an Instagram account \
 that explains science, technology and engineering to a smart non-expert audience.
 
@@ -87,10 +99,7 @@ finding or mechanism. A release that publishes how it works — a technical \
 report, a paper, a method or an architecture — is not a product launch; score \
 it on what it shows.
 
-Also name each item's beat, exactly one of: ai (machine learning, models, \
-agents), software (programming, languages, tools, infrastructure), automation, \
-robotics, computing (hardware, chips, quantum computing, security), science \
-(everything else).
+Also name each item's beat. {beats}
 
 Return ONLY a JSON object with a "results" array, one entry per item, no \
 prose and no code fences:
@@ -107,10 +116,7 @@ Items:
 # rows queued before `beat` existed fit in about 25 requests, once.
 BEATS_BATCH = 100
 
-BEATS_PROMPT = """Name the beat of each headline below, exactly one of: ai \
-(machine learning, models, agents), software (programming, languages, tools, \
-infrastructure), automation, robotics, computing (hardware, chips, quantum \
-computing, security), science (everything else).
+BEATS_PROMPT = """Name the beat of each headline below. {beats}
 
 Return ONLY a JSON object, no prose and no code fences:
 {{"results": [{{"i": <item number>, "beat": "<one beat>"}}]}}
@@ -180,8 +186,8 @@ def backfill_beats(worksheet, rows: list[list[str]], col: dict,
         batch = pending[start:start + BEATS_BATCH]
         block = "\n".join(f"{i}. [{row[col['source']]}] {row[col['title']]}"
                            for i, (_, row) in enumerate(batch, start=1))
-        results = parse_scores(llm.generate(BEATS_PROMPT.format(items=block),
-                                            api_key, model))
+        prompt = BEATS_PROMPT.format(beats=BEAT_RULE, items=block)
+        results = parse_scores(llm.generate(prompt, api_key, model))
         by_index = {int(r["i"]): r for r in results if "i" in r}
         letter = chr(65 + col["beat"])
         updates = []
@@ -251,7 +257,8 @@ def main() -> int:
             item["i"] = n                          # numbering is per request
 
         results = parse_scores(llm.generate(
-            PROMPT.format(items=build_items_block(batch)), api_key, model))
+            PROMPT.format(beats=BEAT_RULE, items=build_items_block(batch)),
+            api_key, model))
         by_index = {int(r["i"]): r for r in results if "i" in r}
 
         updates = []
