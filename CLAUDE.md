@@ -70,6 +70,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
+                     hook.yml (put another of a draft's hooks on the cover,
+                     then review.yml again) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive) ·
                      watch.yml (daily: is any of this still running?) ·
                      series.yml (the status-report pillar, daily) ·
@@ -87,7 +89,9 @@ src/
   render.py          JSON + template → PNGs
   reel.py            a published Drop → silent 9:16 MP4, frame by frame
   proof.py           measures the rendered layout — frame, contrast, flag
-  site.py            published posts → static web archive
+  hook.py            swaps a draft's cover line for one of its alternates
+  site.py            published posts → static web archive, with each
+                     post's slide 1 as its link-preview image
   series.py          the status-report pillar — what is queued, what went
                      out, in what order; `python src/series.py` prints it.
                      Not a post_type; see below
@@ -209,13 +213,14 @@ GitHub moves that label to Ubuntu 26.04 *gradually*, between 19 Oct and
 for an unattended pipeline: for a month some runs would take one image and
 some the other, so a break would come and go and read as a flake rather than
 as a change. The exposure is not Python — `setup-python` pins 3.12 whatever
-the image is — it is `playwright install --with-deps chromium` in `check.yml`
-and `review.yml`, which apt-installs a library list that is per-release, on
-an image whose kernel and systemd both move (6.17→7.0, 255.4→259.5). Twelve
-jobs carry the label and Actions gives no way to write it once, so each one
-says why in a line rather than leaving twelve bare literals for someone to
-"modernize" back. Unpin deliberately — a green `check.yml` on `ubuntu-26.04`
-first, then all twelve — rather than by tidying the comment away.
+the image is — it is `playwright install --with-deps chromium` in `check.yml`,
+`review.yml` and `site.yml`, which apt-installs a library list that is
+per-release, on an image whose kernel and systemd both move (6.17→7.0,
+255.4→259.5). Every job carries the label — sixteen on 2026-09-27 — and
+Actions gives no way to write it once, so each one says why in a line rather
+than leaving bare literals for someone to "modernize" back. Unpin
+deliberately — a green `check.yml` on `ubuntu-26.04` first, then every job —
+rather than by tidying the comment away.
 
 **Feed URLs move constantly.** Never hardcode a URL from memory. Run
 `python src/verify_feeds.py -v` after any change to `feeds/`, and treat
@@ -633,6 +638,22 @@ model.
 row's beat (or its feed's topic) onto a Drop, and onto each Signal item, so `watch.py` can say when one
 fell back to science. The model never supplies it, and nothing renders it.
 
+`hooks` is not part of the contract either. The model returns three cover
+lines and `draft.py` keeps them as `hooks`, with the first copied to `hook`,
+which is what renders. They exist for the gate: `telegram.py` numbers them in
+the message, and `hook.yml` runs `src/hook.py` to put another on the cover,
+re-translates, commits, and calls `review.yml`. The alternates are unchecked
+until chosen, which is why a swap re-runs the whole review rather than only
+re-rendering, and why `fact-check` reports a bad alternate as a FIX naming its
+number, never a BLOCK. `hook.py` refuses a post with `published_at`, because
+its cover is already fixed on Instagram.
+
+`code_url` is written by code, never by the model: `draft.code_link()` takes
+the first `github.com`, `gitlab.com` or `huggingface.co` repo named in the
+paper's Crossref abstract or the feed item's summary, which for an arXiv row
+is the abstract. It never reads the fetched page, for the same related-stories
+rail reason as `DOI_CUES`. Slide 5 and the archive print it.
+
 `doi` is not part of the contract either: `draft.py` writes it when Crossref
 resolved the paper, so `covered_papers()` can tell whether a queued row is a
 story already posted. The model never supplies it, and `render.py` ignores it.
@@ -814,6 +835,17 @@ Two rules:
   fallback that publishes undated posts. Layer 5 applies to the web too, and a
   wrong post on a permalink is worse than a wrong post in a feed.
 
+**Every page carries link-preview tags,** and a post page uses its own slide
+1 as the image: `site.py` renders `<slug>/cover.png` through `render.py`'s
+`render_html()` and `open_page()`, so the preview is the cover that went out
+rather than a second design of it. Instagram does not make links clickable,
+so this archive is mostly reached by a link pasted into a DM, and a bare URL
+there is one nobody taps. `SITE_URL` in `site.py` makes the tags absolute. So
+`site.yml` now installs Chromium (about a minute per deploy). A build where
+the browser will not launch warns once and ships text-only previews rather
+than failing: a laptop that has never rendered must still be able to build
+the archive.
+
 `site.py` skips a malformed post with a warning instead of exiting — the
 opposite of `render.py`, which is right to hard-fail the one post it was asked
 to render. One bad draft must not take the whole site down.
@@ -911,6 +943,13 @@ first draft. Three limits hold it to repairing rather than rewriting:
 - **It never grades itself.** The fact-check that decides whether the post is
   now true is the one `review.yml` runs afterwards, in a session that never
   saw the applier.
+
+**A cover line is swapped from the chat too.** Every Drop drafted since
+2026-09-27 carries three hooks, and its message carries a **🔀 Swap the hook**
+link to `hook.yml` on both keyboards, held or not. Which hook stops a thumb is
+a judgement about the post, not about whether a check passed. It is a link
+for `workflow_url()`'s reason, and it spends no Claude quota of its own: only
+the review it hands off to does.
 
 **A reel is asked for from the chat, and recorded by the same poll.** The ✅
 `confirm` replies with on a Drop carries a **Make a reel** link to

@@ -2,6 +2,15 @@
 
 {% block title %}{{ post.hook }} — gummietech{% endblock %}
 {% block description %}{{ post.alt_text }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_path %}{{ post.slug }}/{% endblock %}
+{% block og_image %}{% if post.cover %}
+<meta property="og:image" content="{{ site_url }}{{ post.slug }}/cover.png">
+<meta property="og:image:width" content="1080">
+<meta property="og:image:height" content="1350">
+<meta property="og:image:alt" content="{{ post.hook }}">
+<meta name="twitter:card" content="summary_large_image">
+{% else %}<meta name="twitter:card" content="summary">{% endif %}{% endblock %}
 
 {% block masthead %}
     <a class="back" href="{{ base }}">{{ t("← all posts", "← todos los posts") }}</a>

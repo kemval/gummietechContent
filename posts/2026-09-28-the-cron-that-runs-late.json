@@ -1,0 +1,48 @@
+{
+  "post_type": "breakdown",
+  "domain": "software",
+  "colorway": "orbit",
+  "hook": "Asked for a run every 15 minutes. Got one every two hours.",
+  "the_question": "A */15 cron asks for 96 runs a day. On 20 Sep 2026 our poller got eight in 19.5 hours. Where did the rest go?",
+  "the_intuition": "A cron line reads like a promise: at this minute, run this. On GitHub's shared runners it is a request, and the scheduler decides.",
+  "mechanism": [
+    "GitHub's docs: scheduled runs can be delayed under high load, and some queued jobs may be dropped. Peak is the top of each hour.",
+    "A frequent cron loses firings. A daily one keeps them and loses its hour: ours ran 5 of 5 times, 3h38m to 5h55m late.",
+    "The fix is to ask earlier, not more often: four firings a day, and a gate that makes every one after the first do nothing."
+  ],
+  "why_it_matters": "Nothing failed, so nothing alerted. A run that never starts cannot report itself — only a second job, looking back, can notice it is missing.",
+  "the_catch": "One repo, a few days of September 2026. GitHub's docs give no delay figures, and yours will vary with load and time of day.",
+  "caption": "GitHub Actions cron schedules are requests, not promises: our every-15-minutes job ran eight times in 19.5 hours, and our daily job arrived hours late. Have you ever built on a schedule that turned out to be a suggestion?",
+  "keywords": [
+    "GitHub Actions",
+    "cron schedule",
+    "workflow delays",
+    "build in public"
+  ],
+  "hashtags": [
+    "#githubactions",
+    "#devops",
+    "#softwareengineering",
+    "#buildinpublic",
+    "#gummietech"
+  ],
+  "alt_text": "A nine-slide carousel explaining why a GitHub Actions workflow scheduled every 15 minutes ran eight times in 19.5 hours, why a daily one ran hours late, and how asking four times a day with a gate works around it.",
+  "source_url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows",
+  "code_url": "https://github.com/kemval/gummietechContent",
+  "attribution": "GitHub Docs, \"Events that trigger workflows\"; measurements from gummietech's own run log, Sep 2026",
+  "peer_reviewed": true,
+  "es": {
+    "domain": "software",
+    "hook": "Se pidió una ejecución cada 15 minutos. Se obtuvo una cada dos horas.",
+    "the_question": "Un cron */15 solicita 96 ejecuciones al día. El 20 de septiembre de 2026 nuestro poller obtuvo ocho en 19.5 horas. ¿Dónde se fueron las demás?",
+    "the_intuition": "Una línea de cron se lee como una promesa: a este minuto, ejecuta esto. En los runners compartidos de GitHub es una solicitud, y el planificador decide.",
+    "mechanism": [
+      "La documentación de GitHub: las ejecuciones programadas pueden retrasarse bajo carga alta, y algunos trabajos en cola pueden ser descartados. El pico es al inicio de cada hora.",
+      "Un cron frecuente pierde disparos. Un cron diario los mantiene y pierde su hora: el nuestro se ejecutó 5 de 5 veces, de 3h38m a 5h55m tarde.",
+      "La solución es pedir más temprano, no con mayor frecuencia: cuatro disparos al día, y una puerta que haga que cada uno después del primero no haga nada."
+    ],
+    "why_it_matters": "Nada falló, por lo que nada alertó. Una ejecución que nunca comienza no puede informarse a sí misma; solo un segundo trabajo, mirando atrás, puede notar que falta.",
+    "the_catch": "Un repositorio, unos días de septiembre de 2026. La documentación de GitHub no da cifras de retraso, y los tuyos variarán con la carga y la hora del día.",
+    "_en": "ea5f45407572ee83"
+  }
+}

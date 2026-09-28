@@ -41,12 +41,18 @@ from markupsafe import Markup, escape
 
 from formats import (body_text, entries, es_fields, missing_from_entries,
                      pieces, required, sections, spec)
-from render import REPO_ROOT, colorway_pair
+from render import REPO_ROOT, colorway_pair, open_page, render_html
 
 POSTS_DIR = REPO_ROOT / "posts"
 TEMPLATE_DIR = REPO_ROOT / "templates"
 FONTS_DIR = REPO_ROOT / "fonts"
 DEFAULT_OUT = REPO_ROOT / "site"
+
+# Where Pages serves the archive — the Instagram bio link. Link-preview tags
+# must be absolute, and a crawler never sees the relative `base` the pages
+# navigate by. Written down rather than derived: the build runs locally too,
+# where nothing knows the public address.
+SITE_URL = "https://kemval.github.io/gummietechContent/"
 
 
 # Hard-coded rather than taken from the C locale: es_ES is not installed on
@@ -271,12 +277,46 @@ def prepare(outdir: Path) -> None:
     outdir.mkdir(parents=True)
 
 
+def covers(posts: list[dict], outdir: Path) -> None:
+    """Each post's first slide as <slug>/cover.png, for its link preview.
+
+    Rendered from the post JSON exactly as render.py renders it — same
+    render_html(), same open_page() — so a pasted link shows the cover that
+    went to Instagram rather than a second design of it. From the file, not
+    from the dict load_posts() has decorated for the page templates.
+
+    A browser that will not launch (Chromium not installed, which is the
+    normal state of a laptop that has never rendered) is not a failed build:
+    it says so once and the pages go out with text-only previews. The first
+    failure stops the rest, since it is almost always that same cause and
+    thirty identical warnings bury it.
+    """
+    for post in posts:
+        try:
+            raw = json.loads((POSTS_DIR / f"{post['slug']}.json").read_text())
+            with open_page(render_html(raw)) as page:
+                first = page.query_selector(".slide")
+                if first is None:
+                    raise RuntimeError("the template rendered no .slide")
+                first.screenshot(path=str(outdir / post["slug"] / "cover.png"))
+            post["cover"] = True
+        except Exception as exc:              # noqa: BLE001 — see docstring
+            print(f"  warning: no preview images — {post['slug']} would not "
+                  f"render ({str(exc).splitlines()[0]}). Run `python -m "
+                  f"playwright install chromium` to build them locally; the "
+                  "pages are built without them.")
+            return
+    print(f"  wrote {len(posts)} cover.png preview image"
+          f"{'s' * (len(posts) != 1)}")
+
+
 def build(posts: list[dict], outdir: Path) -> None:
     env = Environment(
         loader=FileSystemLoader(TEMPLATE_DIR),
         autoescape=select_autoescape(["html"]),
     )
     env.globals["t"] = t
+    env.globals["site_url"] = SITE_URL
 
     # The toggle is only offered where there is something to toggle to.
     # A button that swaps the furniture around unchanged English prose
@@ -305,10 +345,14 @@ def build(posts: list[dict], outdir: Path) -> None:
     )
     print("  wrote about/index.html")
 
+    for post in posts:
+        (outdir / post["slug"]).mkdir()
+    # Before the pages, which only point at an image that exists.
+    covers(posts, outdir)
+
     post_template = env.get_template("post.html")
     for post in posts:
         page = outdir / post["slug"]
-        page.mkdir()
         (page / "index.html").write_text(
             post_template.render(post=post, base="../",
                                  translated=bool(post["es"]))

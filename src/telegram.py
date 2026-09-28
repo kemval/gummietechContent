@@ -146,6 +146,12 @@ FACTCHECK_REPORT = "factcheck"
 # running it early, or twice, or with nothing tapped, does nothing at all.
 PUBLISH_WORKFLOW = "publish.yml"
 
+# Where a draft's cover line is swapped for one of its alternates. Offered on
+# both keyboards, held or not: which hook stops a thumb is a judgement about
+# the post, not about whether a check passed. A link for workflow_url()'s
+# reason — a callback would replay and re-dispatch a review every poll.
+HOOK_WORKFLOW = "hook.yml"
+
 # Where a published Drop's reel is asked for: a link under the ✅ that confirm
 # replies with. A link and not a callback for workflow_url()'s reason — a tap
 # replays for 24 hours, and a render per replay would spend runner minutes
@@ -413,6 +419,24 @@ def waiting_note(poll: str | None) -> str:
     return note
 
 
+def hook_lines(post: dict) -> list[str]:
+    """The cover lines draft.py offered, numbered as hook.yml's input is.
+
+    Only the one on the cover has been fact-checked; the others are read by
+    the review that runs after a swap. The message says so, because a person
+    choosing between them on a phone should not take them for checked copy.
+    """
+    hooks = post.get("hooks")
+    if not isinstance(hooks, list) or len(hooks) < 2:
+        return []
+    out = ["<b>Cover line</b> — <i>to swap, run hook.yml with the number "
+           "(🔀 below); the new one is checked before it comes back</i>"]
+    for n, hook in enumerate(hooks, 1):
+        mark = "▶" if hook == post.get("hook") else "  "
+        out.append(f"{mark} {n}. {html.escape(str(hook))}")
+    return out + [""]
+
+
 def review_text(post: dict, stem: str,
                 reviews: list[tuple[str, str]] | None = None,
                 retry: str | None = None, fix: str | None = None,
@@ -430,6 +454,7 @@ def review_text(post: dict, stem: str,
         f"<i>{e(post.get('domain', ''))} · {e(post.get('colorway') or 'signal')}"
         f" · {e(flag)}</i>",
         "",
+        *hook_lines(post),
         "<b>Caption + hashtags</b>",
         f"<pre>{e(caption)}</pre>",
         "<b>Alt text</b>",
@@ -615,6 +640,7 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         # Offered on both keyboards, because both end in a tap nobody answers
         # for a couple of hours. See PUBLISH_WORKFLOW.
         poll = workflow_url(PUBLISH_WORKFLOW)
+        swap = (workflow_url(HOOK_WORKFLOW) if hook_lines(post) else None)
         if held:
             # A hold cannot stop the carousel reaching Instagram — that is
             # done by hand, outside this. All it can withhold is the record,
@@ -631,9 +657,12 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                           "callback_data": override_data}])
             if poll:
                 rows.append([{"text": "⏱ Record it now", "url": poll}])
+            if swap:
+                rows.append([{"text": "🔀 Swap the hook", "url": swap}])
             markup = {"inline_keyboard": rows}
             links = ", ".join(n for n, on in (("fix", fix), ("re-check", retry),
-                                              ("poll", poll)) if on)
+                                              ("poll", poll), ("hook", swap))
+                              if on)
             note = (f"HELD by {', '.join(held)}, override button"
                     + (f" + {links} link(s)" if links else ""))
         else:
@@ -641,8 +670,11 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                       "callback_data": data}]]
             if poll:
                 rows.append([{"text": "⏱ Record it now", "url": poll}])
+            if swap:
+                rows.append([{"text": "🔀 Swap the hook", "url": swap}])
             markup = {"inline_keyboard": rows}
-            note = "button offered" + (" + poll link" if poll else "")
+            note = ("button offered" + (" + poll link" if poll else "")
+                    + (" + hook link" if swap else ""))
         send_message(token, chat_id,
                      review_text(post, stem, reviews, retry, fix, poll), markup)
         print(f"  sent the review message — {note}")

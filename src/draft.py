@@ -126,6 +126,15 @@ CROSSREF_HEADERS = {
 # link .../10.1038/d41586-026-02895-6?format=refman yields a DOI that 404s at
 # Crossref, and the draft silently falls back to the coverage.
 DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>&)\]?#]+", re.I)
+# owner/repo on the three hosts papers link code from. Deeper paths are
+# dropped: a slide prints the repo, and /tree/main/... is noise on it.
+# huggingface.co/papers/<id> is the paper again, not code.
+CODE_URL_RE = re.compile(
+    r"https?://(?:www\.)?(?:github\.com|gitlab\.com|huggingface\.co)"
+    r"/(?!papers/)(?:(?:datasets|spaces)/)?[\w.-]+/[\w.-]+", re.I)
+# How many cover lines the model offers. Three, because the gate message
+# lists them and hook.yml's input is a choice of that many.
+HOOK_CHOICES = 3
 META_DOI_RE = re.compile(r"<meta[^>]*citation_doi[^>]*>", re.I)
 OG_TITLE_RE = re.compile(r"<meta[^>]*og:title[^>]*>", re.I)
 TITLE_TAG_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
@@ -157,8 +166,13 @@ no prose and no code fences, with exactly these keys:
 (biology, medicine, climate, ecology), ember (energy, materials, engineering, \
 chemistry). Use exactly one of those four words. If none clearly fits, use \
 signal>",
-  "hook": "<at most {hook_limit} words. The finding, stated plainly. No \
-questions, no 'scientists say', no hype>",
+  "hooks": ["<three cover lines for the same finding, each at most \
+{hook_limit} words, each a different angle. 1: the finding, stated plainly. \
+2: the assumption it breaks or the belief it corrects — only if the text \
+names one; otherwise another plain statement. 3: what it changes for the \
+reader, or its number made concrete ('as thin as', 'in the time it takes \
+to'). No questions, no 'scientists say', no hype, and no claim the text does \
+not support — a person picks one of these for the cover>"],
   "what_happened": "<at most {word_limit} words. Who did what, and how it works>",
   "why_it_matters": "<at most {word_limit} words. The consequence. Name the \
 bottleneck it removes or the assumption it breaks>",
@@ -192,6 +206,8 @@ simplifies mechanisms, overstates what a result overturns, and quotes \
 researchers who did not write the paper. Never credit the work to a name \
 that is not in the paper's author list, and never describe the method in \
 terms the paper contradicts.
+- Every hook is held to the rules below, not only the first: any one of \
+them may end up on the cover.
 - the_catch is the credibility slide. Prefer a limitation the paper states \
 about itself. A weak but true limitation beats a strong invented one.
 
@@ -216,8 +232,10 @@ Research roundup>",
 signal (AI, computing, software, robotics), orbit (space, astronomy, \
 physics), bloom (biology, medicine, climate, ecology), ember (energy, \
 materials, engineering, chemistry)>",
-  "hook": "<the cover line, {hook_limit} words maximum, naming the number: \
-e.g. '{count} results you missed this week'>",
+  "hook": "<the cover line, {hook_limit} words maximum: source 1's result \
+as a teaser, then how many more follow. e.g. 'A brain implant decoded speech \
+and gesture — plus {more} more'. It must be supported by source 1 alone. A \
+cover that says the same thing every week is a cover nobody stops for>",
   "items": [
     {{"claim": "<the result in one sentence, {claim_limit} words maximum>",
       "attribution": "<who did the work: 'Surname et al., Journal (year)'>"}}
@@ -985,9 +1003,9 @@ def finish(post: dict, order: list[str]) -> dict:
     return {k: post[k] for k in order if k in post}
 
 
-DROP_KEYS = ["post_type", "domain", "colorway", "hook", "what_happened",
-             "why_it_matters", "the_catch", "caption", "keywords", "hashtags",
-             "alt_text", "source_url", "code_url", "doi", "attribution",
+DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
+             "what_happened", "why_it_matters", "the_catch", "caption",
+             "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
              "peer_reviewed", "beat"]
 
 
@@ -1001,6 +1019,44 @@ def row_subject(item: dict) -> str:
     has no row and records nothing.
     """
     return item.get("beat") or item.get("topic") or ""
+
+
+def code_link(paper: dict | None, item: dict) -> str | None:
+    """The repository the paper itself points to, if it points to one.
+
+    Read from the paper's own abstract first, then the feed item's summary —
+    for an arXiv row that summary *is* the abstract, and it is where authors
+    write "code is available at". Never from the fetched page: an
+    aggregator's sidebar links other projects' repos exactly as its
+    related-stories rail carries other papers' DOIs (see DOI_CUES), and a
+    wrong repo under a result on slide 5 is a wrong credit.
+    """
+    for text in ((paper or {}).get("abstract", ""), item.get("summary", "")):
+        if found := CODE_URL_RE.search(text or ""):
+            return found.group(0).rstrip(".,;:)")
+    return None
+
+
+def hook_choices(post: dict) -> dict:
+    """`hook` and `hooks` from whichever shape the model replied in.
+
+    The model writes three cover lines and a person picks one at the gate —
+    hook.yml swaps it. The first is the one rendered until then. A reply in
+    the old single-`hook` shape is still a draft: it just has no choices.
+    """
+    raw = post.pop("hooks", None)
+    options = raw if isinstance(raw, list) else []
+    if post.get("hook"):
+        options.insert(0, post["hook"])
+    hooks: list[str] = []
+    for option in options:
+        text = " ".join(str(option).split())
+        if text and text not in hooks:
+            hooks.append(text)
+    hooks = hooks[:HOOK_CHOICES]
+    if not hooks:
+        return {}              # finish() reports the missing hook
+    return {"hook": hooks[0], **({"hooks": hooks} if len(hooks) > 1 else {})}
 
 
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
@@ -1035,6 +1091,13 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     if subject := row_subject(item):
         post["beat"] = subject
 
+    # Written by code, never by the model: a repo link the model supplies is
+    # a URL nobody can tell from an invented one. See code_link().
+    post.pop("code_url", None)
+    if link := code_link(paper, item):
+        post["code_url"] = link
+
+    post.update(hook_choices(post))
     return finish(post, DROP_KEYS)
 
 
@@ -1296,7 +1359,7 @@ def main() -> int:
 
     if args.signal:
         reply = llm.generate(
-            SIGNAL_PROMPT.format(count=len(picks),
+            SIGNAL_PROMPT.format(count=len(picks), more=len(picks) - 1,
                                  hook_limit=HOOK_WORD_LIMIT,
                                  claim_limit=CLAIM_WORD_LIMIT,
                                  sources=signal_sources(picks)),
