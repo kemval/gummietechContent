@@ -1,153 +1,235 @@
 /* ============================================================
-   gummietech — the slide stylesheet, shared by every carousel
-   format. Canvas 1080x1350 (4:5). Rendered by src/render.py,
-   which screenshots each .slide individually.
+   gummietech — the slide stylesheet (design v2, 2026-09-28), shared
+   by every carousel format and by the Drop reel. Canvas 1080x1350
+   (4:5), screenshotted per .slide by render.py.
 
-   It lives in its own file for the reason tokens.css does: the
-   Drop and the Breakdown are the same account or they are not
-   one grid, and a second copy of these rules is a second place
-   for them to drift. A format's own file carries only what is
-   particular to it.
+   One file for the same reason tokens.css is one file: the Drop, the
+   Breakdown and the Signal are the same account or they are not one
+   grid. A format's own template carries only what is particular to it;
+   the pieces they share (corner labels, cover, follow slide, selection
+   box) are macros in slide_parts.html.
 
-   Fonts are SELF-HOSTED from ../fonts/. Do not switch to the
-   Google Fonts CDN: rendering would then depend on a network
-   call, and a slow or blocked request produces silently
-   wrong-looking slides instead of a clear error.
+   The palette and the rhythm are the locked ones: tokens.css is
+   included below unchanged and render.py's rhythm() still picks each
+   slide's field. What v2 changed is the type and the layout (see
+   docs/decisions/rendering.md, "Design v2"):
+
+   - Archivo (variable width) for display and body, IBM Plex Mono for
+     the labels. Self-hosted from ../fonts/. Do not switch to the Google
+     Fonts CDN: rendering would then depend on a network call, and a
+     slow or blocked request produces silently wrong-looking slides
+     instead of a clear error.
+   - No drawn frame. .frame is kept as an invisible box inset 34px
+     because proof.py measures "inside the frame" against it; type sits
+     26px inside that, 60px from the canvas edge.
+   - Content is always full --on-field. Ink on the palest lead (pink) is
+     4.86:1, so any dilution of it drops a content line under 4.5.
+     --mute is for chrome only, held to 3.0 by proof.py.
    ============================================================ */
 
 @font-face {
-  font-family: 'Outfit';
-  src: url('{{ font_dir }}/Outfit.ttf') format('truetype');
-  font-weight: 100 900;
+  font-family: 'Archivo';
+  src: url('{{ font_dir }}/Archivo.ttf') format('truetype');
+  font-weight: 100 900; font-stretch: 62% 125%;
   font-display: block;
 }
 @font-face {
-  font-family: 'Figtree';
-  src: url('{{ font_dir }}/Figtree.ttf') format('truetype');
-  font-weight: 300 900;
-  font-display: block;
+  font-family: 'IBM Plex Mono';
+  src: url('{{ font_dir }}/IBMPlexMono-Medium.ttf') format('truetype');
+  font-weight: 500; font-display: block;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('{{ font_dir }}/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-weight: 600; font-display: block;
 }
 
 {% include 'tokens.css' %}
 
-/* --lead is the post's topic hue, set on <body> by render.py from the
-   resolved colorway. It is the only colour value that varies per post, and
-   it always comes from the COLORWAYS allowlist in render.py — never
-   straight from the draft JSON. Jinja autoescaping guards HTML, not CSS,
-   so the allowlist is what makes this safe. */
+:root {
+  --display: 'Archivo', system-ui, sans-serif;
+  --body:    'Archivo', system-ui, sans-serif;
+  --mono:    'IBM Plex Mono', ui-monospace, monospace;
+}
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body { background: #2A2A2A; font-family: var(--body); }
 
-/* ---------- THE SLIDE ----------
-   Colours are addressed by ROLE, not by hue. The hue that fills each slide
-   is chosen per post (see COLORWAYS in render.py) and applied as the
-   modifier class below, so nothing downstream may name a colour directly —
-   do that and the dark slide breaks the moment the palette rotates. */
+/* ---------- the slide: colour by role, never by hue ---------- */
 .slide {
-  --field:    var(--pink);      /* the flood colour behind everything */
-  --on-field: var(--ink);       /* type and dots */
-  --frame:    var(--on-field);  /* the 10px signature outline */
-  --flag-bg:  var(--ink);
-  --flag-fg:  var(--cream);
-
+  --field:    var(--pink);
+  --on-field: var(--ink);
+  --mark:     var(--ink);      /* selection box outline */
+  --mute:     color-mix(in srgb, var(--on-field) 86%, var(--field));
   width: 1080px; height: 1350px;
-  background: var(--field);
-  color: var(--on-field);
+  background: var(--field); color: var(--on-field);
   position: relative; overflow: hidden;
-  padding: 34px;
+  /* Its own stacking context: the z-indexes below order things within a
+     slide. Without it they compete across slides, and in the reel — where
+     slides stack in one card — the cover's hook painted over slide 2. */
+  isolation: isolate;
 }
-
-.frame {
-  height: 100%;
-  border: 10px solid var(--frame);
-  border-radius: 44px;
-  padding: 68px 62px 60px;
-  display: flex; flex-direction: column;
-  position: relative;
-}
-
 .slide.pink  { --field: var(--pink);  }
 .slide.olive { --field: var(--olive); }
 .slide.cream { --field: var(--cream); }
 .slide.blush { --field: var(--blush); }
 .slide.sky   { --field: var(--sky);   }
 .slide.amber { --field: var(--amber); }
+.slide.dark  { --field: var(--ink); --on-field: var(--cream); --mark: var(--cream); }
 
-/* The catch slide. Its frame and preprint flag carry --lead, so the post's
-   topic hue is present even on the one slide that is never a field colour. */
-.slide.dark {
-  --field:    var(--ink);
-  --on-field: var(--cream);
-  --frame:    var(--lead);
-  --flag-bg:  var(--lead);
-  --flag-fg:  var(--ink);
+/* grain: flat fields otherwise read as a template */
+.slide::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 20;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: .07; mix-blend-mode: multiply;
 }
+.slide.dark::after { mix-blend-mode: screen; opacity: .08; }
 
-/* ---------- chrome ---------- */
-.domain {
-  font-family: var(--body); font-weight: 700;
-  font-size: 30px; margin-bottom: 26px; opacity: 0.75;
-}
-.wordmark {
-  position: absolute; left: 62px; bottom: 46px;
-  font-family: var(--display); font-weight: 800;
-  font-size: 28px; letter-spacing: -0.02em; opacity: 0.75;
-}
-.dots { position: absolute; right: 62px; bottom: 50px; display: flex; gap: 10px; }
-.dots i {
-  width: 13px; height: 13px; border-radius: 50%;
-  border: 3px solid var(--on-field); display: block;
-}
-.dots i.on { background: var(--on-field); }
-.spacer { flex: 1; }
+.frame { position: absolute; inset: 34px; }
 
-/* ---------- hook ----------
-   Size is set by render.py from the hook's character count, so a long
-   hook shrinks instead of overflowing the frame. */
+/* ---------- chrome: one mono label per corner ---------- */
+.lbl {
+  position: absolute; z-index: 5; white-space: nowrap;
+  font-family: var(--mono); font-weight: 500; font-size: 22px;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--mute);
+}
+.lbl b { color: var(--on-field); font-weight: 600; }
+.lbl.tl { top: 22px; left: 26px; }  .lbl.tr { top: 22px; right: 26px; }
+.lbl.bl { bottom: 18px; left: 26px; } .lbl.br { bottom: 18px; right: 26px; }
+
+/* ---------- cover ---------- */
 .hook {
-  font-family: var(--display); font-weight: 800;
-  line-height: 0.95; letter-spacing: -0.035em;
-  margin-top: auto; margin-bottom: 96px;   /* clears the wordmark */
-  text-wrap: balance;
+  position: absolute; left: 26px; right: 26px; top: 98px; z-index: 3;
+  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-size: 96px; line-height: 1.0; letter-spacing: -.03em; text-wrap: balance;
 }
-.hook.xl { font-size: 118px; }
-.hook.lg { font-size: 96px; }
-.hook.md { font-size: 80px; }
-.hook.sm { font-size: 66px; }
+.spec {
+  position: absolute; left: 26px; right: 26px; bottom: 26px; z-index: 5;
+  display: flex; gap: 36px;
+}
+.spec > div { flex: 1; }
+.spec dt {
+  font-family: var(--mono); font-weight: 600; font-size: 22px;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.spec dd { font-size: 25px; font-weight: 500; margin-top: 8px; line-height: 1.3; }
+.spec dd.req { font-weight: 700; }
 
-/* ---------- body ---------- */
-.slide-title {
-  font-family: var(--display); font-weight: 800;
-  font-size: 50px; letter-spacing: -0.025em; margin-bottom: 42px;
+/* The figure and the hook's words that qualify it are one unit, so the
+   number cannot be read without them. */
+.figure {
+  position: absolute; left: 26px; right: 26px; bottom: 26px; z-index: 2;
+  display: flex; align-items: baseline; gap: 28px;
 }
-.slide-body {
-  font-family: var(--body); font-weight: 500;
-  font-size: 54px; line-height: 1.36;
-  max-width: 19ch; text-wrap: pretty;
-  padding-bottom: 40px;
+.figure .giant { position: static; line-height: normal; }
+.figure .qual {
+  width: 230px; flex: none;
+  font-family: var(--mono); font-weight: 600; font-size: 28px; line-height: 1.25;
+  text-transform: uppercase; letter-spacing: .04em;
 }
-.slide-body.lg { font-size: 62px; line-height: 1.3; }
 
-/* ---------- caveat flag ---------- */
+.giant {
+  position: absolute; left: 26px; z-index: 1; white-space: nowrap;
+  font-family: var(--display); font-weight: 900; font-stretch: 125%;
+  line-height: .96; letter-spacing: -.05em;
+}
+.giant.ghost { opacity: .13; }
+.slide.dark .giant.ghost { opacity: .09; }
+
+/* ---------- body slides ---------- */
+.body { position: absolute; left: 26px; right: 26px; bottom: 116px; z-index: 6; }
+.body.top { top: 98px; bottom: auto; }
+.sec {
+  font-family: var(--mono); font-weight: 600; font-size: 24px;
+  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 40px;
+}
+.sec span { font-weight: 500; margin-right: 18px; }
+.text {
+  font-family: var(--body); font-weight: 500; font-stretch: 94%;
+  font-size: 60px; line-height: 1.18; letter-spacing: -.02em; text-wrap: pretty;
+}
+.text.sm { font-size: 52px; }
+
+/* ---------- the selection box: outline and handles, never a label ---------- */
+.sel { position: relative; display: inline-block; white-space: nowrap; margin: 0 .22em; }
+/* the box's outline and handles reach 17px past the text: keep a line's
+   last word clear of the column edge by that much */
+.hook, .text { padding-right: 8px; }
+.sel .box { position: absolute; inset: 2px -10px 4px -10px; border: 3px solid var(--mark); }
+.sel .h { position: absolute; width: 15px; height: 15px; background: var(--lead); border: 3px solid var(--mark); z-index: 2; }
+.sel .h.a { left: -17px; top: -5px; }    .sel .h.b { right: -17px; top: -5px; }
+.sel .h.c { left: -17px; bottom: -3px; } .sel .h.d { right: -17px; bottom: -3px; }
+
+/* ---------- the catch ---------- */
+.flag-row { position: absolute; left: 26px; top: 116px; z-index: 6; }
 .flag {
-  display: inline-block; align-self: flex-start;
-  background: var(--flag-bg); color: var(--flag-fg);
-  font-family: var(--body); font-weight: 700; font-size: 25px;
-  padding: 13px 22px; border-radius: 999px; margin-bottom: 34px;
+  display: inline-block; font-family: var(--mono); font-weight: 600; font-size: 24px;
+  letter-spacing: .02em; background: var(--lead); color: var(--ink);
+  padding: 10px 16px; border-radius: 4px;
 }
+/* The catch as a diff: the cover's figure struck, the correction in the
+   lead hue. Only rendered when render.catch_diff() finds both. */
+.diff { position: absolute; left: 26px; right: 26px; top: 216px; z-index: 6; }
+.diff .row {
+  display: flex; align-items: baseline; gap: 28px; padding: 14px 0;
+  border-top: 2px solid color-mix(in srgb, var(--cream) 30%, var(--ink));
+}
+.diff .row:last-child { border-bottom: 2px solid color-mix(in srgb, var(--cream) 30%, var(--ink)); }
+.diff .sign { font-family: var(--display); font-weight: 700; font-size: 96px; width: 56px; }
+.diff .num {
+  font-family: var(--display); font-weight: 900; font-stretch: 125%;
+  font-size: 150px; line-height: .9; letter-spacing: -.04em;
+}
+.diff .why {
+  margin-left: auto; max-width: 300px; text-align: right;
+  font-family: var(--mono); font-weight: 500; font-size: 24px; line-height: 1.3;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.diff .minus { color: color-mix(in srgb, var(--cream) 78%, var(--ink)); }
+.diff .num { position: relative; }
+.diff .minus .strike {
+  position: absolute; left: -4px; right: -4px; top: 52%; height: 8px;
+  background: currentColor; transform-origin: left center;
+}
+.diff .plus { color: var(--lead); }
 
-/* ---------- final slide ---------- */
-.cta-handle {
-  font-family: var(--display); font-weight: 800;
-  font-size: 94px; line-height: 0.95;
-  letter-spacing: -0.035em; margin-bottom: 26px;
+/* ---------- keyword cloud: the post's keywords, decoration only ---------- */
+.cloud { position: absolute; inset: 0; z-index: 2; }
+.cloud span { position: absolute; white-space: nowrap; font-family: var(--body); font-weight: 500; }
+
+/* ---------- last slide ---------- */
+.follow {
+  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-size: 84px; line-height: 1.02; letter-spacing: -.03em;
 }
-.cta-line { font-size: 36px; font-weight: 500; line-height: 1.45; }
-.source {
-  border-top: 6px solid currentColor;
-  padding-top: 28px; margin-top: 46px;
-  font-size: 29px; line-height: 1.55;
+.tagline { font-size: 40px; font-weight: 500; line-height: 1.25; margin-top: 20px; }
+.sources {
+  margin-top: 44px; padding-top: 24px; border-top: 2px solid var(--on-field);
+  font-family: var(--mono); font-weight: 500; font-size: 24px; line-height: 1.6; letter-spacing: .02em;
 }
-.source b { font-family: var(--display); font-weight: 800; }
+.sources div { display: flex; justify-content: space-between; gap: 40px; }
+.sources span:last-child { text-align: right; }
+
+/* ---------- Breakdown ---------- */
+/* The question and the recap are the post speaking in its own voice, so
+   they are set in the display weight rather than as body copy. */
+.text.display { font-family: var(--display); font-weight: 700; font-stretch: 90%;
+                font-size: 64px; line-height: 1.08; letter-spacing: -.025em; }
+/* The mechanism's position: one segment per step, the current one filled.
+   No text, so proof.py has nothing here to measure. */
+.steps { display: flex; gap: 10px; margin-bottom: 30px; }
+.steps i { flex: 1; height: 14px; border: 3px solid var(--on-field); border-radius: 2px; }
+.steps i.on { background: var(--on-field); }
+
+/* ---------- Signal ---------- */
+/* One claim per slide, ~15 words: it can carry more size than a Breakdown's
+   question, and the band under the rank is otherwise empty. */
+.text.display.claim { font-size: 76px; }
+/* The rank is a position marker, held to the chrome bar by proof.py like
+   the corner labels; it is full --on-field all the same. */
+.credit {
+  margin-top: 34px; padding-top: 20px; border-top: 2px solid var(--on-field);
+  display: flex; gap: 28px; align-items: baseline;
+}
+.credit dt { font-family: var(--mono); font-weight: 600; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; flex: none; }
+.credit dd { font-size: 28px; font-weight: 500; line-height: 1.3; }

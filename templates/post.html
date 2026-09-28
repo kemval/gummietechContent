@@ -31,7 +31,7 @@
        Breakdown's six and a Drop's three are the same code here. #}
     {% for section in post.body %}
     <div class="section">
-      <h2>{{ t(section.en, section.es) }}</h2>
+      <h2><span class="num">({{ "%02d"|format(loop.index) }})</span>{{ t(section.en, section.es) }}</h2>
       {% for en, es in section.pieces %}<p>{{ t(en, es) }}</p>{% endfor %}
     </div>
     {% endfor %}

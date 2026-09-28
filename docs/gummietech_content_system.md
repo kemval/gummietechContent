@@ -98,7 +98,7 @@ post types the pipeline renders, and every one of them must name a source —
 `formats.RECORD` requires `attribution`, `source_url` and `peer_reviewed`,
 and `render.load_post()` refuses a record without them. A status report has
 no source to name. It also uses a different, locked design system: warm cream
-and Instrument Serif, not the field hues and Outfit of §5. So it gets
+and Instrument Serif, not the field hues and Archivo of §5. So it gets
 `src/series.py` and its own queue, and nothing in `src/` renders it.
 
 Its strategy, numbering contract, design tokens and sibling-series shortlist
@@ -591,14 +591,14 @@ These are real limits, not obstacles to route around — knowing them up front p
 Locked before any automation, because everything downstream depends on it.
 
 - **Canvas:** 1080×1350 (4:5 portrait — maximum feed real estate)
-- **Type:** one display face for hooks, one highly legible sans for body, both from Google Fonts. Hook text must be readable as a thumbnail.
-- **Color:** a set of field hues that rotate per post by topic family — and never twice in a row, which is the constraint that outranks the topic when the two disagree, because two posts in the same hue read as one post in the grid. Over a constant neutral and near-black. What makes the grid recognizable is *not* a fixed sequence of colors — it is the `--ink` outline frame, the type, and the slide rhythm (cream rest slide, dark "catch" slide, matching first and last slides), all of which hold while the hues change. See the colorway table in `CLAUDE.md`.
-- **Fixed elements:** @gummietech wordmark, same position every slide; slide-position indicator; source line on the final slide.
+- **Type:** one variable grotesk for hooks and body (Archivo — its width axis lets a figure or a word be fitted to the column), one monospace for labels (IBM Plex Mono). Both free, from Google Fonts, self-hosted for rendering. Hook text must be readable as a thumbnail.
+- **Color:** a set of field hues that rotate per post by topic family — and never twice in a row, which is the constraint that outranks the topic when the two disagree, because two posts in the same hue read as one post in the grid. Over a constant neutral and near-black. What makes the grid recognizable is *not* a fixed sequence of colors — it is the type (fitted display type, mono corner labels), the recurring devices (the selection box around a post's key phrase, the catch set as a diff when it corrects the cover's figure), and the slide rhythm (cream rest slide, dark "catch" slide, matching first and last slides), all of which hold while the hues change. The drawn `--ink` frame that did this job until 2026-09-28 is retired; see `docs/decisions/rendering.md`, "Design v2". See the colorway table in `CLAUDE.md`.
+- **Fixed elements:** four mono corner labels on every slide — account and format, field, @gummietech, position (`02 / 05`); a `[source]` line on the final slide, and on every Signal item.
 - **Rule:** if a slide has more than 25 words, it is two slides.
 
 Design the template in Figma's free tier if it helps to see it, then translate to HTML/CSS — the HTML file is the production asset, not the Figma file.
 
-*Direction chosen: playful/bright. Field hues vary per post to suit the subject; the ink frame and type carry the consistency.*
+*Direction chosen: playful/bright fields with an editorial type system. Field hues vary per post to suit the subject; the type, the corner labels and the slide rhythm carry the consistency. (Design v2, 2026-09-28 — the ink frame and the Outfit/Figtree pair were the v1 answer.)*
 
 ---
 

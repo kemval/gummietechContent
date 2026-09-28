@@ -37,29 +37,42 @@
    can actually reach the source a carousel was built from.
 
    Built by src/site.py from posts/*.json. Same tokens as the
-   slides (templates/tokens.css) so the two read as one account.
+   slides (templates/tokens.css) and the same design v2 — Archivo,
+   IBM Plex Mono, flat colour fields, no drawn frame — so the bio
+   link and the grid read as one account (docs/decisions/rendering.md,
+   "Design v2").
 
    Fonts are self-hosted from ./fonts, copied in by site.py, for
-   the same reason drop.html avoids the CDN. font-display differs
+   the same reason the slides avoid the CDN. font-display differs
    though: the slides use `block` because a screenshot taken in a
    fallback face is silently wrong, while a web reader is better
    served by `swap` than by invisible text.
    ============================================================ */
 
 @font-face {
-  font-family: 'Outfit';
-  src: url('{{ base }}fonts/Outfit.ttf') format('truetype');
-  font-weight: 100 900;
+  font-family: 'Archivo';
+  src: url('{{ base }}fonts/Archivo.ttf') format('truetype');
+  font-weight: 100 900; font-stretch: 62% 125%;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Figtree';
-  src: url('{{ base }}fonts/Figtree.ttf') format('truetype');
-  font-weight: 300 900;
-  font-display: swap;
+  font-family: 'IBM Plex Mono';
+  src: url('{{ base }}fonts/IBMPlexMono-Medium.ttf') format('truetype');
+  font-weight: 500; font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('{{ base }}fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-weight: 600; font-display: swap;
 }
 
 {% include 'tokens.css' %}
+
+:root {
+  --display: 'Archivo', system-ui, sans-serif;
+  --body:    'Archivo', system-ui, sans-serif;
+  --mono:    'IBM Plex Mono', ui-monospace, monospace;
+}
 
 /* --accent is the post's lead hue, set inline per element from the
    colorway. Like --lead on the slides it only ever comes from the
@@ -90,54 +103,70 @@ a { color: inherit; }
 
 .wrap { max-width: 660px; margin: 0 auto; padding: 30px 18px 80px; }
 
+/* The slides' corner label: mono, uppercase, tracked. Full ink — on the
+   slides content is never diluted, and on a colour field ink is 4.86:1
+   at worst. */
+.label, .meta, .source dt, .back {
+  font-family: var(--mono); font-weight: 600;
+  font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
 /* ---------- masthead ---------- */
 .masthead {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 16px; margin-bottom: 34px;
 }
 .masthead > .titles { min-width: 0; }   /* let the tagline wrap, not push */
+/* The home page's wordmark is set as wide as the column; next to the
+   language button it ran into it on a phone. So there the button takes its
+   own row, top right, and the wordmark the full width below it. */
+.masthead:has(.mark) { flex-wrap: wrap; }
+.masthead:has(.mark) .titles { order: 2; flex-basis: 100%; }
+.masthead:has(.mark) .lang { order: 1; margin-left: auto; }
+/* The wordmark set like the slides' giant type: black weight, full width. */
 .mark {
-  font-family: var(--display); font-weight: 800;
-  font-size: 27px; letter-spacing: -0.035em; text-decoration: none;
+  display: block;
+  font-family: var(--display); font-weight: 900; font-stretch: 125%;
+  /* "gummietech" at this width and weight is ~7.9em wide: sized from the
+     column (viewport less the 18px gutters), capped at the 660px column. */
+  font-size: clamp(32px, calc((100vw - 36px) / 7.9), 79px); line-height: 0.95;
+  letter-spacing: -0.05em; text-decoration: none;
 }
-.tagline { font-size: 15px; opacity: 0.72; margin-top: 4px; max-width: 44ch; }
+.tagline {
+  font-size: 16px; margin-top: 14px; max-width: 44ch;
+  color: color-mix(in srgb, var(--ink) 82%, var(--cream));
+}
 
-/* ---------- the signature frame ----------
-   The slides carry a 10px --ink border at 44px radius, inset from a
-   1080px canvas. Scaled to a 660px column that is 4px at 26px: the
-   same shape, not the same numbers. */
+/* ---------- the colour field ----------
+   The slides are flat fields with the type 60px in from the edge and no
+   drawn frame. On a 660px column that is a block of the post's lead hue,
+   square-cornered, with the same mono label over the display hook. */
 .panel {
-  border: 4px solid var(--ink);
-  border-radius: 26px;
-  padding: 26px 24px;
+  padding: 24px 22px 26px;
   background: var(--accent, var(--cream));
   transition: transform 0.12s ease;
 }
 
-.meta {
-  font-family: var(--body); font-weight: 700;
-  font-size: 13px; letter-spacing: 0.09em;
-  text-transform: uppercase; opacity: 0.68;
-}
+.meta { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 
 .hook {
-  font-family: var(--display); font-weight: 800;
-  line-height: 1.02; letter-spacing: -0.035em;
+  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  line-height: 1.0; letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
 /* ---------- language toggle ----------
-   Same shape language as .panel and .flag: an ink outline that fills in on
-   hover. The globe carries the meaning for a reader skimming; the code says
-   which language the click leads to, not which one is showing. */
+   The slides' flag shape: a small square-cornered mono tab. The globe
+   carries the meaning for a reader skimming; the code says which language
+   the click leads to, not which one is showing. */
 .lang {
   flex: none;
   display: inline-flex; align-items: center; gap: 7px;
-  margin-top: 4px; padding: 6px 12px;
+  margin-top: 4px; padding: 6px 10px;
   background: none; color: inherit;
-  border: 2px solid var(--ink); border-radius: 999px;
-  font-family: var(--body); font-weight: 700;
-  font-size: 13px; letter-spacing: 0.08em;
+  border: 2px solid var(--ink); border-radius: 4px;
+  font-family: var(--mono); font-weight: 600;
+  font-size: 13px; letter-spacing: 0.06em;
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
 }
@@ -145,80 +174,84 @@ a { color: inherit; }
 .lang:hover, .lang:focus-visible { background: var(--ink); color: var(--cream); }
 
 /* ---------- index ---------- */
-.entry { display: block; text-decoration: none; margin-bottom: 18px; }
-.entry .hook { font-size: 30px; margin-top: 8px; }
+.entry { display: block; text-decoration: none; margin-bottom: 14px; }
+.entry .hook { font-size: 30px; margin-top: 12px; }
 .entry:hover .panel, .entry:focus-visible .panel { transform: translateY(-2px); }
-.empty { opacity: 0.7; }
+.empty { color: color-mix(in srgb, var(--ink) 82%, var(--cream)); }
 
 /* ---------- post ---------- */
-.back { font-size: 15px; font-weight: 700; text-decoration: none; opacity: 0.7; }
-.back:hover { opacity: 1; }
-.hero { margin-bottom: 34px; }
-.hero .hook { font-size: 38px; margin-top: 10px; }
-.section { margin: 30px 0; }
+.back { text-decoration: none; }
+.back:hover { text-decoration: underline; text-underline-offset: 4px; }
+.hero { margin-bottom: 38px; padding: 28px 24px 34px; }
+.hero .hook { font-size: 38px; margin-top: 16px; }
+.section { margin: 34px 0; }
+/* "(01)  WHAT HAPPENED" — the slides' section label. */
 .section h2 {
-  font-family: var(--display); font-weight: 800;
-  font-size: 21px; letter-spacing: -0.025em; margin-bottom: 6px;
+  font-family: var(--mono); font-weight: 600;
+  font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 10px;
 }
-.section p { max-width: 42ch; }
+.section h2 .num { font-weight: 500; margin-right: 12px; }
+.section p { max-width: 42ch; font-size: 19px; }
 
 /* ---------- source ---------- */
 .source {
-  border-top: 4px solid var(--ink);
-  padding-top: 22px; margin-top: 44px;
+  border-top: 2px solid var(--ink);
+  padding-top: 20px; margin-top: 48px;
   font-size: 16px;
 }
-.source dt {
-  font-family: var(--body); font-weight: 700;
-  font-size: 13px; letter-spacing: 0.09em;
-  text-transform: uppercase; opacity: 0.68; margin-top: 14px;
-}
-.source dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.source dt { margin-top: 16px; }
+.source dt::before { content: "["; } .source dt::after { content: "]"; }
+.source dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .source a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 
 /* Mirrors .flag on the slides. §7.2 — a preprint is labelled in the
-   template, not by convention, here as well as on slide 4. */
+   template, not by convention, here as well as on the catch slide. Ink
+   here rather than the lead hue: it sits on a lead-hued block. */
 .flag {
   display: inline-block;
   background: var(--ink); color: var(--cream);
-  font-family: var(--body); font-weight: 700;
-  font-size: 13px; padding: 7px 14px; border-radius: 999px;
-  margin-bottom: 14px;
+  font-family: var(--mono); font-weight: 600;
+  font-size: 13px; letter-spacing: 0.02em;
+  padding: 6px 10px; border-radius: 4px;
+  margin-bottom: 16px;
 }
 
 /* ---------- the pitch ----------
    The archive is the one link Instagram makes clickable, so it is also the
    only place a reader can find out who makes this and ask for something to
-   be built. Borrowed from the slides on purpose: the 10px ink frame and the
-   44px radius are the account's signature element, so the block reads as
-   part of the same thing rather than an ad bolted to the bottom.
+   be built. Set as the slides' dark catch slide — ink field, cream type —
+   so the block reads as part of the same thing rather than an ad bolted to
+   the bottom.
 
    Fixed prose in the template, the same on every page. Nothing here is per
    post, which is what keeps §6b's "not a blog" rule intact. */
 .pitch {
   margin-top: 64px;
-  border: 10px solid var(--ink); border-radius: 44px;
-  padding: 30px 32px;
+  background: var(--ink); color: var(--cream);
+  padding: 30px 26px 32px;
 }
 .pitch h2 {
-  font-family: var(--display); font-weight: 800;
-  font-size: 26px; letter-spacing: -0.025em; margin-bottom: 10px;
+  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-size: 28px; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 12px;
 }
 .pitch p { max-width: 52ch; }
-.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .cta {
   display: inline-block;
   background: var(--ink); color: var(--cream);
-  font-family: var(--body); font-weight: 700;
-  font-size: 15px; padding: 11px 20px; border-radius: 999px;
-  text-decoration: none;
+  font-family: var(--mono); font-weight: 600; letter-spacing: 0.04em;
+  font-size: 14px; padding: 11px 16px; border-radius: 4px;
+  text-decoration: none; text-transform: uppercase;
 }
-.cta.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 3px var(--ink); }
+.cta.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+.pitch .cta { background: var(--cream); color: var(--ink); }
+.pitch .cta.ghost { background: none; color: var(--cream); box-shadow: inset 0 0 0 2px var(--cream); }
 
-.foot { margin-top: 40px; font-size: 15px; opacity: 0.7; }
+.foot { margin-top: 40px; font-size: 15px; color: color-mix(in srgb, var(--ink) 82%, var(--cream)); }
 
 @media (min-width: 560px) {
-  .hero .hook { font-size: 50px; }
+  .hero .hook { font-size: 52px; }
   .entry .hook { font-size: 34px; }
 }
 @media (prefers-reduced-motion: reduce) {

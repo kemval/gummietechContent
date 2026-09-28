@@ -223,3 +223,9 @@ def test_the_era_fixtures_are_not_held_to_the_rule(posts_dir, monkeypatch):
     report = proof.Report()
     proof.check_colorway(fixture, "orbit", report)
     assert report.verdict == "PASS"
+
+
+def test_a_color_mix_value_parses():
+    """slides.css derives --mute with color-mix(), which Chromium reports as
+    color(srgb …) with 0-1 channels; proof.py crashed on the first render."""
+    assert proof.channels("color(srgb 0.231373 0.172549 0.137255)") == pytest.approx((59, 44, 35), abs=0.01)

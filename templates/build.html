@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — The Build kit</title>
+<style>
+{% include 'slides.css' %}
+
+/* ============================================================
+   The Build's brand kit — 1080x1920 stills a person drops into
+   their editor (CapCut, DaVinci). The Build is filmed and cut by
+   hand, start to finish (docs §1); this only makes its cover,
+   title cards and lower third match the grid. Rendered by
+   src/build_kit.py from one episode of docs/build_episodes.md.
+
+   Two crops constrain every frame: Instagram draws over a reel's
+   top ~200px and bottom ~400px, and the profile grid shows a reel
+   cover cropped to 4:5 — the middle 1350px, y 285–1635. So the
+   frame box is inset to y 267–1520; the corner labels sit 22px
+   inside it and everything else 26px: all of it between y 289
+   and 1502, inside both crops.
+   ============================================================ */
+
+body { background: transparent; }
+.slide.tall { height: 1920px; }
+.slide.tall .frame { inset: 267px 34px 400px; }
+
+/* The recording shows through: no field, no grain. */
+.slide.clear { background: transparent; }
+.slide.clear::after { display: none; }
+.lower {
+  position: absolute; left: 26px; right: 26px; bottom: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0;
+}
+.lower .tag, .lower .what {
+  font-family: var(--mono); font-weight: 600; font-size: 30px;
+  letter-spacing: .04em; text-transform: uppercase; padding: 14px 20px;
+}
+.lower .tag  { background: var(--lead); color: var(--ink); }
+.lower .what { background: var(--ink); color: var(--cream); }
+
+.text code { font-family: var(--mono); font-weight: 500; font-size: .82em; letter-spacing: 0; }
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})">
+{% import 'slide_parts.html' as parts with context %}
+{% set num = "%02d"|format(episode.number) %}
+
+<!-- COVER — the Drop's hook styling, per the Build's own rules -->
+<div class="slide tall {{ lead }}" id="cover"><div class="frame">
+  <div class="lbl tl"><b>gummietech</b> — the build</div>
+  <div class="lbl tr">#{{ num }}</div>
+  <div class="hook">{{ episode.cover }}</div>
+  <dl class="spec">
+    <div><dt>[the build]</dt><dd>#{{ num }}</dd></div>
+    <div><dt>[episode]</dt><dd>{{ episode.title }}</dd></div>
+  </dl>
+</div></div>
+
+<!-- THE PROBLEM — a title card before the screen recording -->
+<div class="slide tall cream" id="problem"><div class="frame">
+  <div class="lbl tl"><b>gummietech</b> — the build</div>
+  <div class="lbl tr">#{{ num }}</div>
+  <div class="body top">
+    {{ parts.sec(1, "The problem") }}
+    <p class="text">{{ episode.problem }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(bug)</div>
+</div></div>
+
+<!-- LOWER THIRD — transparent, laid over the recording -->
+<div class="slide tall clear" id="lower-third"><div class="frame">
+  <div class="lower"><span class="tag">[the build #{{ num }}]</span><span class="what">{{ episode.title }}</span></div>
+</div></div>
+
+<!-- END — close on the fix, then the ask -->
+<div class="slide tall dark" id="end"><div class="frame">
+  <div class="lbl tl"><b>gummietech</b> — the build</div>
+  <div class="lbl tr">#{{ num }}</div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">(fix)</div>
+  <div class="body" style="bottom: 60px">
+    {{ parts.sec(2, "The fix") }}
+    <p class="text display">{{ episode.end }}</p>
+    <div class="sources"><div><span>[FOLLOW]</span><span>@gummietech</span></div></div>
+  </div>
+</div></div>
+
+<script>
+{% include 'slides_layout.js' %}
+</script>
+</body>
+</html>

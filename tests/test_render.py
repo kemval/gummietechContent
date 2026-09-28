@@ -398,3 +398,64 @@ def test_no_colorway_at_all_is_stepped_over(posts_dir):
     write("2026-09-19-good.json", colorway="orbit", published_at="2026-09-19")
     write("2026-09-20-none.json", hook="no colorway field")
     assert render.previous_colorway(None, directory) == "orbit"
+
+
+# ------------------------------------------------ the Drop's emphasis devices
+#
+# 2026-09-28, the Drop redesign. Each case below is something the design
+# prototype got wrong before these helpers existed.
+
+REAL_HOOK = "4B model's Postgres plans ran 81% faster — best of 15 tries"
+REAL_CATCH = ("81% is the fastest of up to 15 plans per query; the model's "
+              "own picks gave 1.40x. Tested only on the IMDb-based Join "
+              "Order Benchmark.")
+
+
+def test_the_cover_figure_never_travels_without_the_hooks_qualifier():
+    """The prototype set a bare "81%" at 300px — the best-of-15 result as
+    the loudest thing in the post."""
+    assert render.cover_figure(REAL_HOOK) == {"value": "81%",
+                                              "qualifier": "best of 15 tries"}
+
+
+def test_a_hook_with_two_figures_gets_no_cover_figure():
+    """"rose 8% to 60%" would have set 8% — the number it moved away from."""
+    hook = "Artificial beaver dams: one creek's juvenile coho survival rose 8% to 60%."
+    assert render.cover_figure(hook) is None
+
+
+def test_the_catch_becomes_a_diff_only_when_it_corrects_the_cover_figure():
+    diff = render.catch_diff(REAL_CATCH, render.cover_figure(REAL_HOOK))
+    assert [(r["sign"], r["value"]) for r in diff] == [("−", "81%"), ("+", "1.40×")]
+    assert diff[0]["label"] == "the fastest of up to 15 plans per query"
+    assert diff[1]["label"] == "the model's own picks"
+    # A catch that names the figure but offers no second one is plain text.
+    quasar = render.cover_figure("Quasar winds are 100× more powerful than thought")
+    assert render.catch_diff("The 100× rests on assuming a shock", quasar) is None
+
+
+@pytest.mark.parametrize("text,out", [
+    ("ran 1.81x faster", "ran 1.81× faster"),
+    ("0x1F and 4x4 and Qwen", "0x1F and 4x4 and Qwen"),
+])
+def test_typeset_changes_a_glyph_never_a_word(text, out):
+    assert render.typeset(text) == out
+
+
+def test_a_boxed_keyword_is_widened_to_the_whole_word():
+    """"Bunsen burner" boxed inside "Bunsen burners" left the "s" to wrap
+    onto the next line on its own."""
+    assert render.emphasis("Researchers tested Bunsen burners by",
+                           ["Bunsen burner"]) == "Bunsen burners"
+
+
+def test_a_range_is_one_figure():
+    """"at least 1–10 %" boxed only the "10 %"."""
+    assert render.emphasis("efficiency of at least 1–10 %, meeting", []) == "1–10 %"
+
+
+def test_a_boxed_figure_does_not_take_a_linking_word_with_it():
+    """"20% of" was boxed on a Breakdown step: the next word travels with a
+    figure only when it says something ("81% faster")."""
+    assert render.figure_phrase("if 20% of birthdays appear once") == "20%"
+    assert render.figure_phrase("ran 81% faster") == "81% faster"

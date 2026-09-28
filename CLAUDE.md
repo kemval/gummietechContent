@@ -90,6 +90,8 @@ src/
                      --signal walks five rows for the weekly roundup
   render.py          JSON + template → PNGs
   reel.py            a published Drop → silent 9:16 MP4, frame by frame
+  build_kit.py       The Build's stills (cover, cards, lower third) from
+                     docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
   hook.py            swaps a draft's cover line for one of its alternates
   site.py            published posts → static web archive, with each
@@ -108,8 +110,13 @@ tests/               pytest over the pure functions; every case is a
 posts/               drafted post JSON
 templates/
   tokens.css         the locked palette and type stack — included by both
+  slides.css         the slide design (v2), shared by every format + reel
+  slide_parts.html   macros every format shares: corners, cover, catch, follow
+  slides_layout.js   the layout pass: measures and fits, never writes text
   drop.html          production slide template — 1080x1350
   drop_slides.html   the Drop's five slides, shared with reel.html
+  breakdown.html     8–10 slides; signal.html — the weekly roundup
+  build.html         The Build's 9:16 kit, inside the reel and 4:5 grid crops
   reel.html          the same slides swiped through at 1080x1920
   site_base.html     web archive shell; index.html and post.html extend it
 output/              rendered PNGs (gitignored)
@@ -207,8 +214,20 @@ copy them into a third place:
 --amber: #F2B441;   /* field */
 ```
 
-Type: Outfit 800 display, Figtree 500/700 body. Signature: a 10px `--ink`
-border, 44px radius, inset 34px, on every slide.
+**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28): Archivo
+(variable width) for display and body, IBM Plex Mono for labels, no drawn
+frame — type sits 60px from the edge, and `.frame` survives as an invisible
+box inset 34px that `proof.py` measures against. Content is always full
+`--on-field`; only corner chrome (`.lbl`) is muted. **Every word is a record
+field or fixed template copy**: `render.py` only *chooses* spans of the
+record to box, set large or strike (`emphasis`, `cover_figure`,
+`catch_diff`), and `typeset` ("1.81x" → "1.81×") is the only character it
+changes. A cover figure never appears without the hook's own qualifier.
+The web archive (`site_base.html`) is on v2 too — flat colour blocks, mono
+labels, the same fonts at `font-display: swap`. `tokens.css` still names
+Outfit/Figtree in its type stack; `slides.css` and `site_base.html` both
+override it.
+→ `docs/decisions/rendering.md`
 
 ### Colorways
 
@@ -224,8 +243,8 @@ never hardcode a hue in a template. A Drop renders
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
 | `ember` | energy, materials, engineering, chemistry | amber | pink |
 
-Invariants (`render.rhythm()` is them as code): `--ink` is type, frame and
-dots on light slides; slide 2 is cream; the catch is the second-to-last
+Invariants (`render.rhythm()` is them as code): `--ink` is the type on
+light slides; slide 2 is cream; the catch is the second-to-last
 slide and drops to `--ink`; first and last slides share a field; the middle
 alternates support and lead; every lead/support hue clears 4.5:1 against
 `--ink` (asserted in `tests/`); **no two consecutive posts share a field**
@@ -237,7 +256,11 @@ the gate. → `docs/decisions/rendering.md`
 `src/reel.py`, on request only, for published Drops: no words of its own,
 captured frame by frame through the Web Animations API, ffmpeg apt-installed,
 slides kept inside `SAFE_TOP`/`SAFE_BOTTOM`, preprint flag checked on every
-frame. Audio is never added. → `docs/decisions/rendering.md`
+frame. Audio is never added. The selection box draws itself, the catch's
+diff strikes its figure, and the cover swipes back in so the reel loops —
+animated elements are real ones, never `::before`. The Build's cover and
+cards come from `src/build_kit.py`; its reel is still a person's.
+→ `docs/decisions/rendering.md`
 
 ### Proofing the render
 

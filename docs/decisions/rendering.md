@@ -32,9 +32,97 @@ apart. Do not copy these values into a third place:
 --amber: #F2B441;   /* field */
 ```
 
-Type: Outfit 800 for display, Figtree 500/700 for body, both Google Fonts.
-Signature element: a 10px `--ink` border, 44px radius, inset 34px from the
-canvas edge, on every slide.
+Until 2026-09-28 the type was Outfit 800 for display and Figtree 500/700
+for body, and the signature element was a 10px `--ink` border, 44px radius,
+inset 34px from the canvas edge, on every slide. Both were replaced for
+every carousel format and the web archive that day — see **Design v2**
+below.
+
+### Design v2 (2026-09-28)
+
+The Drop and its reel moved to a new layout on 2026-09-28, from a mood board
+the owner assembled (editorial Instagram grids and sci-tech posters: huge
+fitted grotesk type, tiny mono labels, spec-sheet brackets, Figma selection
+boxes). **The palette and the rhythm did not change** — the owner asked to
+keep them, and `rhythm()` still colours every slide. What changed, and why:
+
+- **Type.** Archivo (variable `wdth` 62–125) replaces Outfit/Figtree for
+  display and body; IBM Plex Mono sets the labels. Geist Mono was tried
+  first and dropped because impeccable's detector flags it as overused, and
+  JetBrains Mono is the status-report pillar's, which must stay a separate
+  system. Both are OFL and self-hosted in `fonts/` with their licences.
+- **The drawn frame is retired.** The fitted giant type is the new
+  signature and a 10px border boxed it in. `.frame` is kept, invisible,
+  inset 34px, because `proof.py` defines "inside the frame" against it.
+- **Content is never diluted.** Ink on pink is 4.86:1, so any `color-mix`
+  toward the field puts a content line under 4.5. `--mute` is corner chrome
+  only (`.lbl`, held to 3.0 like `.domain` was).
+- **The design never writes a word.** A hand-built prototype of this design
+  silently dropped "than defaults" from what_happened and turned "default
+  plans" into "own planner". The template now binds every text node to a
+  record field, and `render.py` only chooses spans: `emphasis()` (the span a
+  selection box outlines — a figure phrase, else a keyword widened to whole
+  words), `cover_figure()` and `catch_diff()`.
+- **A figure is never bare.** The prototype set "81%" at 300px on the
+  cover, the best-of-15 result, while the catch existed to say the model's
+  own picks gave 1.40×. `cover_figure()` shows a figure only when the hook
+  has exactly one, and always with the hook's own qualifier (after its em
+  dash, or the rest of the clause). `catch_diff()` strikes it and sets the
+  correction beside it only when the catch names that figure first and a
+  second one after it; anything less regular is plain text.
+- **Layout is measured, in `slides_layout.js`.** Fitting type to a column,
+  docking the spec row, growing a figure-less hook into the space and
+  placing the keyword cloud all need rendered glyph widths. The script sets
+  `window.__ready`; `open_page()` waits for it and raises on
+  `window.__layoutError` instead of screenshotting a half-laid page. It
+  divides by the reel card's 0.9 scale, and `.slide` is `isolation:
+  isolate`: without it the cover's z-indexed hook painted over slide 2 in
+  the reel, where slides stack.
+- **Breakdown and Signal followed the same day**, so the grid has one look.
+  `slides.css` is again the one stylesheet every format includes, and the
+  pieces they share — corner labels, cover, catch slide, follow slide, the
+  selection box — are macros in `slide_parts.html`, so a format's template
+  holds only its own middle. Each kind of slide gets its own composition
+  (ghost "(?)" under the question, the keyword cloud over the intuition, a
+  step bar and a ghost "1/3" on each mechanism step, a fitted rank and a
+  `[source]` credit on each Signal item) so a nine-slide post does not
+  repeat one layout nine times. A figure's box leaves a linking word out:
+  "20% of" read as a typo on a Breakdown step.
+- **The web archive followed too**, so the bio link matches the grid: the
+  ink-bordered rounded panels became flat lead-hue blocks, labels went to
+  full-ink IBM Plex Mono, sections are numbered "(01)" as on the slides, the
+  pitch is set as the dark catch slide, and `site.py`'s `t()` applies the
+  same `typeset`. The home page's wordmark is sized from the column
+  (`calc((100vw - 36px) / 7.9)`) — at `13vw` its letters ran 31px past the
+  column on a phone and the page scrolled sideways.
+- **Decoration is `aria-hidden`** — the keyword cloud and the ghost words
+  "(why)", "(but)", "(gummie tech)" — and `proof.py` skips it, for the same
+  reason a screen reader does. `proof.py` also measures text-node rects only,
+  since the selection box's handles sit outside the words by design.
+
+### Reel motion and The Build's kit (2026-09-28)
+
+- **The reel performs the design's two signatures.** The selection box
+  draws left to right and its handles pop; on the catch, the "−" row rises,
+  a line strikes its figure, then the "+" row rises. The honesty moment is
+  the one that moves most. Both are real elements (`.box`, `.strike`) in
+  `slide_parts.html`: the carousel renders them statically, identically,
+  and the reel animates them — a `::before` or `text-decoration` cannot be
+  animated where reel.py seeks frame by frame.
+- **It loops.** After scene five the cover swipes back in and the reel
+  ends as it lands, plus one frame (at 30fps the last captured frame fell
+  17ms short of landing and the seam showed). The returning cover is slide
+  1 cloned in the page before the layout pass, so it cannot differ from the
+  cover; it is a `.card > .loop`, not a `.card > .slide`, so reel.py still
+  counts five scenes. First and last frames measure 43 dB apart — encoder
+  noise between an I-frame and a P-frame, not a visible jump.
+- **The Build gets stills, not a generator.** It is a person's reel start to
+  finish (docs §1). `src/build_kit.py` renders four 1080x1920 PNGs from one
+  episode of `docs/build_episodes.md` — cover (the Drop's hook styling, as
+  the Build rules require), problem card, a transparent lower third, end
+  card — for the editor. Every readable word sits inside both the reel's
+  safe zone and the profile grid's 4:5 crop of a reel cover (y 285–1635);
+  the first version put the corner labels at y 281.
 
 ### Colorways
 

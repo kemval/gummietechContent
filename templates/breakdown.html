@@ -5,21 +5,6 @@
 <title>gummietech — Breakdown</title>
 <style>
 {% include 'slides.css' %}
-
-/* ---------- particular to the Breakdown ----------
-   Only what the Drop has no use for lives here; everything else comes from
-   slides.css, so the two formats cannot drift into looking like two
-   accounts.
-
-   A Breakdown carries more slides and more words per slide than a Drop, so
-   the body steps down one size and the step marker replaces nothing — the
-   Drop has no equivalent because five slides need no signposting. */
-.slide-body.step { font-size: 48px; max-width: 21ch; }
-.step-mark {
-  font-family: var(--display); font-weight: 800;
-  font-size: 30px; letter-spacing: 0.02em;
-  opacity: 0.75; margin-bottom: 18px;
-}
 </style>
 </head>
 <body style="--lead: var(--{{ lead }})">
@@ -35,106 +20,90 @@
    moves back a place — the limits slide is half of what docs §1 calls the
    account's entire competitive advantage, so it is the one that goes dark
    either way.
+
+   The cover, the catch and the follow slide are the Drop's (slide_parts.html),
+   so the two formats read as one account. What is particular here is the
+   middle, and each kind of slide gets its own composition so a nine-slide
+   post does not repeat one layout nine times.
 #}
+{% import 'slide_parts.html' as parts with context %}
 {% set steps = mechanism or [] %}
 {% set has_recap = recap is defined and recap %}
 {% set n = 6 + steps|length + (1 if has_recap else 0) %}
 {% set fields = rhythm(n, n - 2 if has_recap else n - 1) %}
 
-{% macro dots(at) %}
-  <div class="dots">{% for i in range(1, n + 1) %}<i class="{{ 'on' if i == at else '' }}"></i>{% endfor %}</div>
-{% endmacro %}
+<!-- 1. COVER -->
+{{ parts.cover("breakdown", n, fields[0], [
+     ("domain", domain, false),
+     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("source", attribution, false)]) }}
 
-<!-- 1. COVER — the Drop's hook styling, so both pillars read as one account -->
-<div class="slide {{ fields[0] }}" id="slide-1"><div class="frame">
-  <div class="domain">{{ domain }}</div>
-  <div class="hook {{ hook_size }}">{{ hook }}</div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(1) }}
-</div></div>
-
-<!-- 2. THE QUESTION -->
+<!-- 2. THE QUESTION — the post's own voice, large, with the ghost below -->
 <div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
-  <div class="slide-title">The question</div>
-  <div class="spacer"></div>
-  <div class="slide-body">{{ the_question }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(2) }}
+  {{ parts.corners("breakdown", 2, n, domain) }}
+  <div class="body top">
+    {{ parts.sec(1, "The question") }}
+    <p class="text display">{{ parts.boxed(the_question) }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(?)</div>
 </div></div>
 
-<!-- 3. THE INTUITION -->
+<!-- 3. THE INTUITION — the keyword cloud above it, as on a Drop's slide 2 -->
 <div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
-  <div class="slide-title">The intuition</div>
-  <div class="spacer"></div>
-  <div class="slide-body">{{ the_intuition }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(3) }}
+  {{ parts.corners("breakdown", 3, n, domain) }}
+  {% if keywords %}<div class="cloud" aria-hidden="true" data-words="{{ keywords|join('|') }}" data-seed="{{ hook }}"></div>{% endif %}
+  <div class="body">
+    {{ parts.sec(2, "The intuition") }}
+    <p class="text">{{ parts.boxed(the_intuition) }}</p>
+  </div>
 </div></div>
 
 <!-- 4..n-3. THE MECHANISM, one slide per step -->
 {% for step in steps %}
-{% set at = loop.index + 3 %}
+{% set at = loop.index + 3 %}{% set current = loop.index %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  <div class="step-mark">How it works · {{ loop.index }}/{{ steps|length }}</div>
-  <div class="slide-title">The mechanism</div>
-  <div class="spacer"></div>
-  <div class="slide-body step">{{ step }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(at) }}
+  {{ parts.corners("breakdown", at, n, domain) }}
+  <div class="body top">
+    {{ parts.sec(3, "How it works") }}
+    <div class="steps">{% for _ in steps %}<i class="{{ 'on' if loop.index <= current }}"></i>{% endfor %}</div>
+    <p class="text">{{ parts.boxed(step) }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">{{ loop.index }}/{{ steps|length }}</div>
 </div></div>
 {% endfor %}
 
-<!-- THE IMPLICATION -->
+<!-- THE IMPLICATION — ghost above, text below: the mirror of the steps -->
 {% set at = 4 + steps|length %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  <div class="slide-title">Why it matters</div>
-  <div class="spacer"></div>
-  <div class="slide-body">{{ why_it_matters }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(at) }}
+  {{ parts.corners("breakdown", at, n, domain) }}
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">(why)</div>
+  <div class="body">
+    {{ parts.sec(4, "Why it matters") }}
+    <p class="text">{{ parts.boxed(why_it_matters) }}</p>
+  </div>
 </div></div>
 
 <!-- THE LIMITS — the dark slide, wherever it lands -->
 {% set at = 5 + steps|length %}
-<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  {% if show_preprint_flag %}<div class="flag">Preprint — not yet peer-reviewed</div>{% endif %}
-  <div class="slide-title">The limits</div>
-  <div class="spacer"></div>
-  <div class="slide-body">{{ the_catch }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(at) }}
-</div></div>
+{{ parts.catch("breakdown", at, n, fields[at - 1], 5, "The limits") }}
 
 {% if has_recap %}
 <!-- RECAP -->
 {% set at = 6 + steps|length %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  <div class="slide-title">In one line</div>
-  <div class="spacer"></div>
-  <div class="slide-body">{{ recap }}</div>
-  <div class="spacer"></div>
-  <div class="wordmark">@gummietech</div>
-  {{ dots(at) }}
+  {{ parts.corners("breakdown", at, n, domain) }}
+  <div class="body">
+    {{ parts.sec(6, "In one line") }}
+    <p class="text display">{{ recap|typeset }}</p>
+  </div>
 </div></div>
 {% endif %}
 
 <!-- CTA + SOURCE -->
-<div class="slide {{ fields[n - 1] }}" id="slide-{{ n }}"><div class="frame">
-  <div class="spacer"></div>
-  <div class="cta-handle">Follow<br>@gummietech</div>
-  <div class="cta-line">Science, technology and engineering —<br>explained by someone whose code also crashes.</div>
-  <div class="source">
-    <b>Source</b> — {{ attribution }}<br>
-    {% if code_url %}<b>Code</b> — {{ code_url }}<br>{% endif %}
-    Full sources → link in bio
-  </div>
-  {{ dots(n) }}
-</div></div>
+{{ parts.follow("breakdown", n, fields[n - 1], [("source", attribution), ("code", code_url)]) }}
 
+<script>
+{% include 'slides_layout.js' %}
+</script>
 </body>
 </html>

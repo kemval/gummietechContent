@@ -161,6 +161,123 @@ def hook_size_class(hook: str) -> str:
     return "sm"
 
 
+# ---------- the Drop's typographic devices ----------
+#
+# Every word on a Drop slide is a field of the record, and nothing below
+# rewrites one. On 2026-09-28 a hand-typed prototype dropped "than defaults"
+# from what_happened and turned "default plans" into "own planner" — the
+# design had quietly changed the claim. So these only ever *choose* a span
+# of the record's own text to emphasise; `typeset` is the single change to a
+# character the slides make, and it is a glyph, not a word.
+
+# "1.81x" set as "1.81×". Only a digit followed by a bare x at a word end:
+# "0x1F", "4x4" and "Qwen2-x" are left alone.
+MULTIPLIER = re.compile(r"(\d)x\b")
+
+# A figure: a number carrying % or ×/x, or a range of them ("1–10 %" is
+# one figure, not a "10 %" to box on its own). "4B" and "15" are not
+# figures — they are counts, and the cover does not put a count at 300px.
+FIGURE = re.compile(r"\d[\d.,]*(?:[–-]\d[\d.,]*)?\s?(?:%|×|x\b)")
+
+
+LINKING_WORDS = {"of", "the", "a", "an", "to", "in", "on", "for", "and", "or",
+                 "per", "at", "by", "with", "from", "than", "as", "is", "was"}
+
+
+def typeset(text: str) -> str:
+    return MULTIPLIER.sub(r"\1×", text or "")
+
+
+def figure_phrase(text: str) -> str | None:
+    """The first figure in `text` with the word after it — "81% faster"."""
+    t = typeset(text)
+    m = FIGURE.search(t)
+    if not m:
+        return None
+    # The next word travels with the figure ("81% faster") unless it only
+    # links it to what follows — a box around "20% of" reads as a typo.
+    rest = re.match(r"\s*([\w-]+)", t[m.end():])
+    if rest and rest.group(1).lower() in LINKING_WORDS:
+        rest = None
+    return t[m.start():m.end() + (rest.end() if rest else 0)].strip()
+
+
+def cover_figure(hook: str) -> dict | None:
+    """
+    The number the cover sets large, and the hook's own words that qualify it.
+
+    On 2026-09-28 the cover set "81%" at 300px with no context, where the
+    hook said "81% faster — best of 15 tries": the design made the
+    best-of-15 result the loudest thing in the post while the catch was
+    there to say the model's own picks gave 1.40x. The figure is therefore
+    never shown bare — it carries whatever the hook puts after its last
+    em dash, or failing that the rest of the clause the figure opens,
+    verbatim. And a hook with two figures gets none: "survival rose 8% to
+    60%" would set "8%" large, the one number the hook is moving away from.
+    """
+    t = typeset(hook)
+    found = list(FIGURE.finditer(t))
+    if len(found) != 1:
+        return None
+    m = found[0]
+    if " — " in t:
+        qualifier = t.rsplit(" — ", 1)[1]
+    else:
+        qualifier = re.split(r"[.;:,—]", t[m.end():], maxsplit=1)[0]
+    qualifier = qualifier.strip(" .")
+    if not qualifier:
+        return None
+    return {"value": m.group(0).replace(" ", ""), "qualifier": qualifier}
+
+
+def catch_diff(the_catch: str, figure: dict | None) -> list[dict] | None:
+    """
+    The catch as a diff — the cover's figure struck through, the corrected
+    one below it — but only when the catch names the cover's figure first
+    and a second figure after it. Each row's label is the clause of the
+    catch that figure sits in, with the figure and its linking verb taken
+    out; nothing is paraphrased. Anything less regular gets no diff and the
+    catch is shown as plain text, which is always correct.
+    """
+    if not figure:
+        return None
+    t = typeset(the_catch)
+    found = [m.group(0).replace(" ", "") for m in FIGURE.finditer(t)]
+    if len(found) < 2 or found[0] != figure["value"]:
+        return None
+    clauses = re.split(r"(?<=[;.])\s+", t)
+
+    def label(value: str) -> str:
+        clause = next((c for c in clauses if value in c), "")
+        words = clause.replace(value, "", 1).strip(" ;.")
+        return re.sub(r"^(?:is|was|gave|gives|are)\s+|\s+(?:is|was|gave|gives|are)$",
+                      "", words).strip()
+
+    return [{"sign": "−", "value": found[0], "label": label(found[0])},
+            {"sign": "+", "value": found[1], "label": label(found[1])}]
+
+
+def emphasis(text: str, keywords: list[str] | None = None,
+             figures_only: bool = False) -> str | None:
+    """The span a slide boxes: its first figure phrase, else the first of
+    the post's keywords that appears in it, else nothing. The cover passes
+    `figures_only`: a boxed phrase cannot wrap, so a long keyword there
+    ("Decorrelation stretch") holds the whole hook to its width.
+
+    A keyword match is widened to whole words — "Bunsen burner" inside
+    "Bunsen burners" boxes "Bunsen burners", or the box ends mid-word and
+    its last letter wraps onto the next line alone."""
+    phrase = figure_phrase(text)
+    if phrase or figures_only:
+        return phrase
+    t = typeset(text)
+    for k in keywords or []:
+        m = re.search(r"(?<!\w)" + re.escape(k) + r"\w*", t, re.IGNORECASE) if k else None
+        if m:
+            return m.group(0)
+    return None
+
+
 def rhythm(lead: str, support: str, count: int,
            catch: int | None = None) -> list[str]:
     """The field of every slide, from the invariants in CLAUDE.md.
@@ -356,7 +473,12 @@ def render_html(post: dict, colorway: str | None = None,
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
+        figure=cover_figure(post.get("hook", "")),
     )
+    context["diff"] = catch_diff(post.get("the_catch", ""), context["figure"])
+    env.filters["typeset"] = typeset
+    env.filters["emphasis"] = (lambda text, figures_only=False:
+                               emphasis(text, post.get("keywords"), figures_only))
     # The template calls this with its own slide count: it is the only thing
     # that knows how many it has, and this is the only thing that knows what
     # colour they go in.
@@ -391,6 +513,15 @@ def open_page(html: str,
         )
         page.goto(page_file.as_uri(), wait_until="load")
         page.wait_for_timeout(600)          # let webfonts settle
+        # A template with a layout pass (slides_layout.js) measures glyphs and
+        # moves boxes after the fonts load; it sets window.__ready false at
+        # parse and true when done. Templates without one never set it.
+        page.wait_for_function("window.__ready !== false", timeout=15_000)
+        error = page.evaluate("window.__layoutError || null")
+        if error:
+            raise RuntimeError(
+                f"The template's layout pass failed, so the slides would "
+                f"render half-laid-out. Fix templates/slides_layout.js:\n{error}")
         try:
             yield page
         finally:
