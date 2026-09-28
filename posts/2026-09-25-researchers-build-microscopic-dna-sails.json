@@ -35,6 +35,10 @@
     "published_at": "2026-09-27"
   },
   "metrics": {
-    "asked_at": "2026-09-28"
+    "asked_at": "2026-09-28",
+    "saves": 0,
+    "shares": 1,
+    "profile_visits": 0,
+    "recorded_at": "2026-09-28"
   }
 }

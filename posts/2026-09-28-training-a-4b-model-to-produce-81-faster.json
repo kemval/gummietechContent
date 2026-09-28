@@ -35,5 +35,6 @@
     "why_it_matters": "Un modelo pequeño de 4 B, entrenado para una sola base de datos, superó los planes por defecto de Postgres en un benchmark con muchas uniones, lo que sugiere que modelos pequeños y específicos de tarea pueden ser adecuados para el ajuste de consultas",
     "the_catch": "81 % corresponde al mejor de hasta 15 planes por consulta; las selecciones propias del modelo dieron 1.40 veces. Se probó únicamente en el Benchmark de Orden de Uniones basado en IMDb.",
     "_en": "558f57bdc1936174"
-  }
+  },
+  "published_at": "2026-09-28"
 }
