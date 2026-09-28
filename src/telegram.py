@@ -83,7 +83,7 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import body_text, es_fields, pieces, sections
+from formats import body_text, es_fields, format_name, pieces, sections
 
 # Defined here rather than imported from render.py on purpose: `confirm` runs
 # on publish.yml's poll and needs nothing but requests, and render.py imports
@@ -111,6 +111,14 @@ OVERRIDE_PREFIX = "held:"
 # different hat: a write next to published_at claiming a publish that did not
 # happen. The prefix is what keeps the two apart.
 SERIES_PREFIX = "ser:"
+# A fourth, on a Drop's reel. The post already has published_at — its carousel
+# went out first, which is what let reel.py make the reel at all — so this one
+# writes `reel: {published_at}` instead, and like `ser:` never rebuilds the
+# archive: site.py does not read the reel block, so a rebuild would be
+# byte-identical. recorded() is what knows which marker each prefix sets.
+REEL_PREFIX = "reel:"
+PREFIXES = (CALLBACK_PREFIX, OVERRIDE_PREFIX, SERIES_PREFIX, REEL_PREFIX)
+REEL_KEY = "reel"
 
 # The two workflows a held post offers links to, under .github/workflows/.
 # workflow_url() says why they are links and not buttons that do the work.
@@ -137,6 +145,16 @@ FACTCHECK_REPORT = "factcheck"
 # the tap is picked up in under a minute. Idempotent like every other poll —
 # running it early, or twice, or with nothing tapped, does nothing at all.
 PUBLISH_WORKFLOW = "publish.yml"
+
+# Where a published Drop's reel is asked for: a link under the ✅ that confirm
+# replies with. A link and not a callback for workflow_url()'s reason — a tap
+# replays for 24 hours, and a render per replay would spend runner minutes
+# making the same video eight times over.
+REEL_WORKFLOW = "reel.yml"
+# What reel.py writes beside the slides. Named here rather than imported:
+# reel.py imports render.py, and this file must not — see formats.py.
+REEL_VIDEO = "reel.mp4"
+REEL_COVER = "reel-cover.png"
 
 SLIDE_RE = re.compile(r"^slide-(\d+)\.png$")
 SIDECAR = "caption.txt"
@@ -333,19 +351,31 @@ def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
     return held
 
 
-def parse_callback(data: str) -> tuple[str, bool, bool] | None:
-    """What a tapped button names: (stem, overrode a hold, is a status report).
+def parse_callback(data: str) -> tuple[str, str] | None:
+    """What a tapped button names: (stem, the prefix it carried).
 
-    The third value is the one that decides whether the archive rebuilds —
-    see SERIES_PREFIX. Order matters here only in that each prefix is
-    distinct; none is a prefix of another.
+    The prefix is the kind of tap — a publish, an override, a status report,
+    a reel — and decides both which marker it sets (recorded()) and whether
+    the archive rebuilds. Each prefix is distinct; none is a prefix of
+    another.
     """
-    for prefix, overridden, is_series in ((CALLBACK_PREFIX, False, False),
-                                          (OVERRIDE_PREFIX, True, False),
-                                          (SERIES_PREFIX, False, True)):
+    for prefix in PREFIXES:
         if data.startswith(prefix):
-            return data[len(prefix):], overridden, is_series
+            return data[len(prefix):], prefix
     return None
+
+
+def recorded(record: dict, prefix: str) -> bool:
+    """Whether the tap this prefix names has already been written down.
+
+    A reel tap lands on a post whose carousel is long since dated, so its own
+    marker is the one to test — testing published_at would skip every reel
+    tap as already done. confirm() and watch.py both ask this, so a lost
+    reel tap is reported as lost rather than as recorded.
+    """
+    if prefix == REEL_PREFIX:
+        return bool((record.get(REEL_KEY) or {}).get("published_at"))
+    return bool(record.get("published_at"))
 
 
 def workflow_url(workflow: str) -> str | None:
@@ -728,6 +758,69 @@ def send_series(report_path: Path, dry_run: bool = False) -> int:
     return 0
 
 
+def send_reel(post_path: Path, review_paths: list[Path]) -> int:
+    """Put a Drop's reel in the chat: the video, its cover, one button.
+
+    Documents, not a video or a photo, for the slides' reason: sendVideo and
+    sendPhoto both re-encode, and the reel is about to be compressed again by
+    Instagram. The caption is the carousel's — caption.txt, which render.py
+    wrote beside the slides — because the words are the same post's.
+
+    reel.py's proof is the only review. The claims were fact-checked and
+    approved when the carousel went out, and the reel repeats them; what is
+    new is where they sit in a 9:16 frame Instagram draws over. A BLOCK there
+    withholds the button exactly as it does on a carousel.
+    """
+    token, chat_id = config(need_chat=True)
+    stem = post_path.stem
+    reviews = read_reviews(review_paths)
+    held = blocked_by(reviews)
+
+    data = REEL_PREFIX + stem
+    if len(data.encode()) > CALLBACK_LIMIT:
+        sys.exit(f"The post filename is too long to carry in a Telegram "
+                 f"button ({len(data.encode())} > {CALLBACK_LIMIT} bytes).")
+
+    outdir = OUTPUT_DIR / stem
+    wanted = [outdir / REEL_VIDEO, outdir / REEL_COVER, outdir / SIDECAR]
+    if missing := [p.name for p in wanted if not p.exists()]:
+        sys.exit(f"{outdir} is missing {', '.join(missing)}. Run "
+                 f"`python src/render.py {post_path.relative_to(REPO_ROOT)}` "
+                 f"and then `python src/reel.py` on it first.")
+
+    print(f"Sending the {stem} reel to Telegram")
+    try:
+        for path in wanted:
+            with path.open("rb") as fh:
+                call(token, "sendDocument", {"chat_id": chat_id},
+                     {"document": fh})
+            print(f"  sent {path.name}")
+        for name, body in reviews:
+            send_report(token, chat_id, name, body)
+
+        poll = workflow_url(PUBLISH_WORKFLOW)
+        rows = []
+        if not held:
+            rows.append([{"text": "✅ Reel posted to Instagram",
+                          "callback_data": data}])
+            if poll:
+                rows.append([{"text": "⏱ Record it now", "url": poll}])
+        text = (f"🎬 <b>Reel</b> · <code>{html.escape(stem, quote=False)}"
+                f"</code>\n\nSilent on purpose — pick the audio in the "
+                f"Instagram app when you upload it, and upload "
+                f"<code>{REEL_COVER}</code> as the cover. The caption is the "
+                f"carousel's, in the file above.\n\n")
+        text += (f"HELD by {', '.join(held)} — the reel sits under "
+                 f"Instagram's overlays somewhere. Nothing to record until "
+                 f"that is fixed." if held else waiting_note(poll))
+        send_message(token, chat_id, text,
+                     {"inline_keyboard": rows} if rows else None)
+        print(f"  sent the message — {'HELD' if held else 'button offered'}")
+    except TelegramError as exc:
+        sys.exit(str(exc))
+    return 0
+
+
 # ---------- metrics · Layer 7 ----------
 #
 # §9 of the content system makes saves and shares the primary measures and
@@ -992,6 +1085,7 @@ def confirm() -> int:
     today = publish_date()
     stamped = 0                  # carousels — these rebuild the archive
     recorded_series = 0          # status reports — these do not
+    recorded_reels = 0           # nor do reels
 
     for update in updates or []:
         query = update.get("callback_query")
@@ -1000,7 +1094,10 @@ def confirm() -> int:
         parsed = parse_callback(str(query.get("data", "")))
         if parsed is None:
             continue
-        stem, overridden, is_series = parsed
+        stem, prefix = parsed
+        overridden = prefix == OVERRIDE_PREFIX
+        is_series = prefix == SERIES_PREFIX
+        is_reel = prefix == REEL_PREFIX
 
         path = locate(stem)
         if path is None:
@@ -1009,25 +1106,34 @@ def confirm() -> int:
         if post is None:
             continue
 
-        if post.get("published_at"):
+        if recorded(post, prefix):
             # The expected case on every poll after the first: getUpdates
             # keeps replaying the tap for 24 hours.
             continue
 
-        post["published_at"] = today
-        if is_series:
-            series.write_report(path, post)
-            recorded_series += 1
-        else:
+        if is_reel:
+            post[REEL_KEY] = {**(post.get(REEL_KEY) or {}),
+                              "published_at": today}
             write_post(path, post)
-            stamped += 1
-        held_note = " — over a held review" if overridden else ""
-        print(f"  {path.name}: published_at = {today}{held_note}")
+            recorded_reels += 1
+            print(f"  {path.name}: reel.published_at = {today}")
+        else:
+            post["published_at"] = today
+            if is_series:
+                series.write_report(path, post)
+                recorded_series += 1
+            else:
+                write_post(path, post)
+                stamped += 1
+            held_note = " — over a held review" if overridden else ""
+            print(f"  {path.name}: published_at = {today}{held_note}")
 
         call(token, "answerCallbackQuery",
              {"callback_query_id": query["id"],
-              "text": (f"Recorded — published_at {today}" if is_series
-                       else f"Archiving — published_at {today}")}, strict=False)
+              "text": (f"Recorded — published_at {today}"
+                       if is_series or is_reel
+                       else f"Archiving — published_at {today}")},
+             strict=False)
 
         message = query.get("message") or {}
         if message.get("chat") and message.get("message_id"):
@@ -1042,17 +1148,27 @@ def confirm() -> int:
             # A status report is not on the web archive — site.py reads
             # posts/ — so promising a build here would be a lie about where
             # it went.
-            went = ("Written down." if is_series
+            went = ("Written down." if is_series or is_reel
                     else f"Building the archive now.{over}")
-            call(token, "sendMessage",
-                 {"chat_id": message["chat"]["id"],
-                  "reply_to_message_id": message["message_id"],
-                  "text": f"{mark} {stem} — published_at {today}. "
-                          f"{went}"}, strict=False)
+            what = f"{stem} reel" if is_reel else stem
+            reply = {"chat_id": message["chat"]["id"],
+                     "reply_to_message_id": message["message_id"],
+                     "text": f"{mark} {what} — published_at {today}. {went}"}
+            # A Drop that just went out is the one a reel can now be made
+            # from — reel.py refuses a post without published_at. Offered,
+            # never made: a reel is on request until a few are measured.
+            reel = workflow_url(REEL_WORKFLOW)
+            if (reel and not is_series and not is_reel
+                    and format_name(post.get("post_type")) == "drop"):
+                reply["reply_markup"] = json.dumps(
+                    {"inline_keyboard": [[{"text": "🎬 Make a reel",
+                                           "url": reel}]]})
+            call(token, "sendMessage", reply, strict=False)
 
     tally = ", ".join(
         f"{n} {what}" for n, what in ((stamped, "post(s)"),
-                                      (recorded_series, "status report(s)"))
+                                      (recorded_series, "status report(s)"),
+                                      (recorded_reels, "reel(s)"))
         if n)
     print(f"{tally} newly published." if tally else "No new publish taps.")
 
@@ -1072,10 +1188,10 @@ def confirm() -> int:
 
     # Recorded before asking, so a post answered in this same poll is not
     # also asked about in it.
-    recorded = record_metrics(token, updates or [], today)
+    answered = record_metrics(token, updates or [], today)
     asked = ask_metrics(token, chat_id, today)
-    if recorded or asked:
-        print(f"{recorded} post(s) got numbers, {asked} asked for theirs.")
+    if answered or asked:
+        print(f"{answered} post(s) got numbers, {asked} asked for theirs.")
     return 0
 
 
@@ -1097,6 +1213,12 @@ def main() -> int:
     r.add_argument("--dry-run", action="store_true",
                    help="print what would be sent and exit without calling "
                         "Telegram")
+    v = sub.add_parser("send-reel",
+                       help="send a published Drop's reel for approval")
+    v.add_argument("post", type=Path, help="path to the post JSON")
+    v.add_argument("--review", type=Path, action="append", default=[],
+                   metavar="FILE", help="reel.py's proof report; BLOCK "
+                                        "withholds the button")
     sub.add_parser("confirm", help="stamp published_at on tapped posts")
 
     args = ap.parse_args()
@@ -1121,6 +1243,8 @@ def main() -> int:
     post_path = args.post if args.post.is_absolute() else REPO_ROOT / args.post
     if not post_path.exists():
         sys.exit(f"No such post file: {post_path}")
+    if args.command == "send-reel":
+        return send_reel(post_path, args.review)
     return send(post_path, args.review)
 
 

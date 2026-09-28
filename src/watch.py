@@ -67,6 +67,7 @@ from render import COLORWAYS, post_order, vary
 from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
                       METRICS_REPLY_RE, POSTS_DIR, TelegramError, call, config,
                       locate, parse_callback, publish_date, read_post,
+                      recorded,
                       send_report)
 
 # What each drafting day owes. docs §1 fixes the Drop at 3×/week and the
@@ -221,7 +222,7 @@ def check_gate(updates: list, report: Report) -> None:
         parsed = parse_callback(data)
         if parsed is None:
             continue
-        stem = parsed[0]
+        stem, prefix = parsed
         # locate() refuses a stem that names no file or tries to be a path,
         # and finds it whether it is a carousel in posts/ or a status report
         # in series/reports/ — a lost tap is a lost tap either way. The stem
@@ -230,7 +231,9 @@ def check_gate(updates: list, report: Report) -> None:
         if path is None or stem in seen:
             continue
         post = read_post(path)
-        if post is None or post.get("published_at"):
+        # recorded(), not published_at: a reel tap lands on a post that has
+        # been dated since its carousel went out, and would read as done.
+        if post is None or recorded(post, prefix):
             continue
         seen.add(stem)
         report.fix("gate", f"{stem} was tapped and still has no "

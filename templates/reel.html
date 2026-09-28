@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Drop reel</title>
+<style>
+{% include 'slides.css' %}
+
+/* ============================================================
+   The Drop reel — 1080x1920 (9:16). The same five slides as the
+   carousel, from the same partial, swiped through one at a time.
+   Rendered frame by frame by src/reel.py, which reads the reel's
+   length off these animations: the template owns how long the
+   reel is, as it owns how many slides a post has.
+
+   Instagram draws over a reel: the account name across the top
+   ~200px, caption, audio and buttons across the bottom ~400px.
+   So the slides sit in a card scaled to 0.9 (972x1215) from
+   y=300 to y=1515, and the preprint flag above it at y≈215.
+   reel.py checks both against SAFE_TOP / SAFE_BOTTOM on every
+   scene rather than trusting these numbers.
+   ============================================================ */
+
+:root { --scene: 3.5s; --enter: 0.45s; }
+
+body { background: var(--ink); }
+
+.stage {
+  position: relative; overflow: hidden;
+  width: 1080px; height: 1920px;
+}
+
+/* One backdrop per slide, fading in with its scene, so the whole
+   9:16 frame takes the slide's field. They carry `slide` and the
+   field class only to resolve --field the way a slide does — the
+   rhythm is render.py's, and repeating its hue mapping here would
+   be a second place for it to drift. */
+.stage > .backdrop.slide {
+  position: absolute; inset: 0;
+  width: auto; height: auto; padding: 0;
+  animation: fade-in var(--enter) ease-out both;
+}
+
+.card {
+  position: absolute; left: 54px; top: 300px;
+  width: 1080px; height: 1350px;
+  transform: scale(0.9); transform-origin: 0 0;
+  overflow: hidden;
+}
+.card > .slide {
+  position: absolute; top: 0; left: 0;
+  animation: swipe-in var(--enter) cubic-bezier(.2, .8, .2, 1) both;
+}
+
+/* When each scene starts. Slide 1 is on screen from the first frame. */
+.stage > .backdrop.slide:nth-of-type(1), .card > .slide:nth-child(1) { --t: 0s; animation: none; }
+.stage > .backdrop.slide:nth-of-type(2), .card > .slide:nth-child(2) { --t: calc(var(--scene) * 1); }
+.stage > .backdrop.slide:nth-of-type(3), .card > .slide:nth-child(3) { --t: calc(var(--scene) * 2); }
+.stage > .backdrop.slide:nth-of-type(4), .card > .slide:nth-child(4) { --t: calc(var(--scene) * 3); }
+.stage > .backdrop.slide:nth-of-type(5), .card > .slide:nth-child(5) { --t: calc(var(--scene) * 4); }
+.stage > .backdrop.slide, .card > .slide { animation-delay: var(--t); }
+
+/* The words rise in just after their slide lands. */
+.card > .slide :is(.domain, .hook, .slide-title, .slide-body,
+                   .cta-handle, .cta-line, .source) {
+  animation: rise 0.5s ease-out both;
+  animation-delay: calc(var(--t) + 0.3s);
+}
+/* Except the hook's: a reel autoplays from its first frame, and a viewer
+   deciding whether to stop scrolling must see the hook on it, not an
+   empty card. */
+.card > .slide:nth-child(1) :is(.domain, .hook) { animation: none; }
+
+/* Not decoration: the one animation that spans the whole reel, so its end
+   is the reel's length — the last scene plus a hold on the credit. */
+.clock {
+  position: absolute; width: 1px; height: 1px; opacity: 0;
+  animation: hold calc(var(--scene) * 5 + 1.5s) linear both;
+}
+
+/* The preprint flag for the whole reel, not just the catch scene: in a
+   video a label that is on screen for three seconds is not a label.
+   Deliberately never animated — reel.py fails the render if any frame
+   shows it less than fully. The border keeps the pill's edge visible on
+   the dark scene, where the stage is the same ink as the pill. */
+.reel-flag {
+  position: absolute; top: 215px; left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--ink); color: var(--cream);
+  border: 4px solid var(--cream);
+  font-family: var(--body); font-weight: 700; font-size: 30px;
+  padding: 10px 26px; border-radius: 999px;
+}
+
+@keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes swipe-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes rise     { from { opacity: 0; transform: translateY(28px); }
+                      to   { opacity: 1; transform: none; } }
+@keyframes hold     { from { opacity: 0; } to { opacity: 0; } }
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})">
+<div class="stage">
+  {% for field in rhythm(5) %}<div class="backdrop slide {{ field }}"></div>{% endfor %}
+  <div class="card">
+{% include 'drop_slides.html' %}
+  </div>
+  {% if show_preprint_flag %}<div class="reel-flag">Preprint — not yet peer-reviewed</div>{% endif %}
+  <div class="clock"></div>
+</div>
+</body>
+</html>

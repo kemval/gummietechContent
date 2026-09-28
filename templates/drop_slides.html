@@ -1,0 +1,59 @@
+{# The Drop's five slides, without the document around them. Shared by
+   drop.html (the carousel) and reel.html (the same slides, animated), so a
+   reel cannot say anything its carousel does not. #}
+{# Five slides, and render.py's rhythm() says what colour each one goes in.
+   The count lives here because this file is what has the divs; the rule
+   lives there because every format shares it. #}
+{% set fields = rhythm(5) %}
+
+<!-- 1. HOOK -->
+<div class="slide {{ fields[0] }}" id="slide-1"><div class="frame">
+  <div class="domain">{{ domain }}</div>
+  <div class="hook {{ hook_size }}">{{ hook }}</div>
+  <div class="wordmark">@gummietech</div>
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</div></div>
+
+<!-- 2. WHAT HAPPENED -->
+<div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
+  <div class="slide-title">What happened</div>
+  <div class="spacer"></div>
+  <div class="slide-body">{{ what_happened }}</div>
+  <div class="spacer"></div>
+  <div class="wordmark">@gummietech</div>
+  <div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+</div></div>
+
+<!-- 3. WHY IT MATTERS -->
+<div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
+  <div class="slide-title">Why it matters</div>
+  <div class="spacer"></div>
+  <div class="slide-body">{{ why_it_matters }}</div>
+  <div class="spacer"></div>
+  <div class="wordmark">@gummietech</div>
+  <div class="dots"><i></i><i></i><i class="on"></i><i></i><i></i></div>
+</div></div>
+
+<!-- 4. THE CATCH -->
+<div class="slide {{ fields[3] }}" id="slide-4"><div class="frame">
+  {% if show_preprint_flag %}<div class="flag">Preprint — not yet peer-reviewed</div>{% endif %}
+  <div class="slide-title">The catch</div>
+  <div class="spacer"></div>
+  <div class="slide-body">{{ the_catch }}</div>
+  <div class="spacer"></div>
+  <div class="wordmark">@gummietech</div>
+  <div class="dots"><i></i><i></i><i></i><i class="on"></i><i></i></div>
+</div></div>
+
+<!-- 5. CTA + SOURCE -->
+<div class="slide {{ fields[4] }}" id="slide-5"><div class="frame">
+  <div class="spacer"></div>
+  <div class="cta-handle">Follow<br>@gummietech</div>
+  <div class="cta-line">Science, technology and engineering —<br>explained by someone whose code also crashes.</div>
+  <div class="source">
+    <b>Source</b> — {{ attribution }}<br>
+    {% if code_url %}<b>Code</b> — {{ code_url }}<br>{% endif %}
+    Full sources → link in bio
+  </div>
+  <div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></div>
+</div></div>

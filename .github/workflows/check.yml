@@ -101,6 +101,15 @@ jobs:
             python src/proof.py "posts/$post.json"
           done
 
+      # The Drop reel is the same slides through templates/drop_slides.html,
+      # so a change to either can break it without touching reel.py. --draft
+      # because era.json is undated on purpose; reel.py refuses that outside
+      # a preview. ffmpeg is not on the runner image — see reel.yml.
+      - name: Render the Drop reel
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
+          python src/reel.py posts/era.json --draft --outdir /tmp/smoke-reel
+
       # Builds every published post, so a template change that breaks one page
       # shows up here rather than on the live archive.
       - name: Build the web archive

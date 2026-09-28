@@ -44,6 +44,7 @@ disagree again, this one wins and the other is corrected to match.
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
 | **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
+| **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -71,6 +72,16 @@ the work behind it is a magazine, which is the thing this is explicitly not.
 cut and captioned by a person. Nothing in `src/` will ever produce one, and
 the automation's job is to cost so little attention that the two reels a week
 are affordable.
+
+**A Drop reel is not a Build,** and that sentence still holds for The Build.
+Added 2026-09-27: a Drop reel is a published Drop's five slides animated into
+a silent 9:16 video by `src/reel.py`, made only when asked for from the chat.
+It has no new words — every claim in it passed the carousel's fact-check and
+gate — no camera and no conversion job; its job is the Drop's, reach, aimed
+at the non-followers Instagram shows reels to. Audio is chosen in the
+Instagram app at upload, by a person. It stays on request until a handful
+have been measured against their own carousels; what earns it a cadence is
+§8's decision, not this one.
 
 ### The Status Report — the second pillar
 
@@ -652,5 +663,5 @@ Explicitly **not** a primary metric: likes.
 - [ ] Orchestration: GitHub Actions (simpler) vs. n8n on Oracle Cloud (visual editor)
 - [ ] Database: Google Sheets (simpler) vs. Supabase (scales better)
 - [ ] Posting time locked (test 3 slots, pick by save rate)
-- [ ] Reels: in scope for month 1, or defer to month 2?
+- [~] Reels. **Decided for Drop reels** (2026-09-27): on request, from a published Drop, measured before they get a cadence (§1). **The Build** is still a person's, start to finish, and still unmade.
 - [~] Spanish-language variant — Costa Rica base is an underserved-market advantage worth considering. **Decided for the archive** (2026-09-11): every archive page is bilingual, translated by `src/translate.py` at no cost and no per-post writing (§6b). **Still open for the feed:** Spanish slides or a second account are a per-post cost against the §8 budget, so the archive runs first and the traffic decides.
