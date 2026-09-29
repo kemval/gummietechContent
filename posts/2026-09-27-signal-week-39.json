@@ -58,19 +58,19 @@
     "#DNAcomputing"
   ],
   "alt_text": "Carousel with five slides: 1) Smith hat optical patterns, 2) Thorium‑229 laser excitation, 3) Antiproton transport system, 4) DNA computer, 5) Brain organoid integration.",
+  "published_at": "2026-09-27",
   "es": {
     "domain": "esta semana",
-    "hook": "5 resultados que perdiste esta semana",
+    "hook": "5 resultados que te perdiste esta semana",
     "items": [
-      "El sombrero de Smith con estructuras ópticas produce patrones de difracción quiral con luz láser",
-      "Núcleos de torio‑229 excitados con láser de onda continua a potencia sub‑nanovatio, habilitando reloj nuclear de estado sólido",
-      "Antiprótones transportados con éxito en un sistema de trampa de Penning criogénico y abierto, abriendo camino para pruebas CPT de 100‑veces",
-      "Computadora de ADN en armazón realiza cálculos de 100 bits favorecidos termodinámicamente, sin necesidad de corrección de errores",
-      "Organoides cerebrales humanos se integran en el córtex de ratón, extendiendo fibras nerviosas a través de la mayor parte del espacio vacío"
+      "Las estructuras ópticas tipo sombrero de Smith generan patrones de difracción quirales con luz láser.",
+      "Núcleos de torio‑229 excitados con láser de onda continua a potencia subnanovatio, lo que permite un reloj nuclear de estado sólido.",
+      "Antiprotones transportados con éxito en un sistema criogénico de trampa de Penning abierta, allanando el camino para pruebas CPT 100 veces más precisas.",
+      "La computadora de ADN estructurada realiza cálculos de 100 bits termodinámicamente favorecidos, sin necesidad de corrección de errores.",
+      "Organoides cerebrales humanos se integran en la corteza de ratón, extendiendo fibras nerviosas a través de la mayor parte del espacio vacío."
     ],
     "_en": "a69a1ec459474612"
   },
-  "published_at": "2026-09-27",
   "metrics": {
     "asked_at": "2026-09-30"
   }

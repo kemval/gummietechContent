@@ -23,14 +23,6 @@
   "doi": "10.1002/adma.74641",
   "attribution": "Noronha et al., Advanced Materials (2026)",
   "peer_reviewed": true,
-  "es": {
-    "domain": "materiales",
-    "hook": "La estructura de celosía de titanio flota al llenar vigas huecas con espuma",
-    "what_happened": "Los investigadores imprimieron en 3D lattices de Ti‑6Al‑4V con vigas huecas e inyectaron espuma de poliuretano en los canales, creando una estructura híbrida con flotabilidad",
-    "why_it_matters": "Elimina el cuello de botella de densidad del titanio, permitiendo componentes marinos fuertes y resistentes a la corrosión que permanecen a flote incluso tras daños",
-    "the_catch": "Las pruebas se limitaron a un cubo de celosía 4×4×4; el rendimiento a escalas mayores o bajo diferentes condiciones de carga no ha sido evaluado",
-    "_en": "82ae075bfa64e156"
-  },
   "published_at": "2026-09-21",
   "metrics": {
     "asked_at": "2026-09-24",
@@ -38,5 +30,13 @@
     "shares": 0,
     "profile_visits": 0,
     "recorded_at": "2026-09-24"
+  },
+  "es": {
+    "domain": "materiales",
+    "hook": "La celosía de titanio flota al rellenar las vigas huecas con espuma",
+    "what_happened": "Investigadores imprimieron en 3D celosías de Ti‑6Al‑4V con varillas huecas e inyectaron espuma de poliuretano en los canales, creando una estructura híbrida flotante",
+    "why_it_matters": "Elimina la limitación de densidad del titanio, lo que permite componentes marinos fuertes y resistentes a la corrosión que permanecen a flote incluso tras sufrir daños",
+    "the_catch": "Las pruebas se limitaron a un cubo de celosía 4×4×4; el rendimiento a escalas mayores o bajo diferentes condiciones de carga no ha sido evaluado",
+    "_en": "82ae075bfa64e156"
   }
 }

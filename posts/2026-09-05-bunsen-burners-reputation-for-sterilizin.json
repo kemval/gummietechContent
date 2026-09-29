@@ -23,19 +23,19 @@
   "attribution": "DeVincent et al., Microbiol. Spectr. (2026)",
   "peer_reviewed": true,
   "published_at": "2026-09-05",
-  "es": {
-    "domain": "microbiología",
-    "hook": "Los mecheros Bunsen no esterilizan los espacios de trabajo de laboratorio y pueden empeorar la contaminación.",
-    "what_happened": "Los investigadores probaron los mecheros Bunsen contaminando el aire del laboratorio con bacterias y midiendo cuántos microorganismos se depositaban cerca de mecheros activos frente a inactivos.",
-    "why_it_matters": "Esto cuestiona la suposición de larga data de que las corrientes de convección del mechero Bunsen transportan partículas con microorganismos lejos de las mesas de trabajo.",
-    "the_catch": "Solo un experimento extremo con niveles masivos de bacterias mostró menos bacterias depositándose cerca del mechero activo.",
-    "_en": "4d8ee9124b8b8931"
-  },
   "metrics": {
     "asked_at": "2026-09-20",
     "saves": 0,
     "shares": 1,
     "profile_visits": 1,
     "recorded_at": "2026-09-21"
+  },
+  "es": {
+    "domain": "microbiología",
+    "hook": "Los mecheros Bunsen no esterilizan los espacios de trabajo del laboratorio y pueden empeorar la contaminación.",
+    "what_happened": "Los investigadores probaron los mecheros Bunsen contaminando el aire del laboratorio con bacterias y midiendo cuántos microbios se depositaron cerca de los mecheros activos en comparación con los inactivos.",
+    "why_it_matters": "Esto cuestiona la suposición de larga data de que las corrientes de convección de los mecheros Bunsen alejan las partículas que contienen microbios de las mesas de trabajo.",
+    "the_catch": "Solo un experimento extremo con niveles masivos de bacterias mostró que se depositaron menos bacterias cerca del mechero activo.",
+    "_en": "4d8ee9124b8b8931"
   }
 }

@@ -22,14 +22,6 @@
   "source_url": "https://phys.org/news/2026-09-microscopic-dna-molecules.html",
   "attribution": "Yasunaga et al., Science Advances (2026)",
   "peer_reviewed": true,
-  "es": {
-    "domain": "materiales",
-    "hook": "Velas microscópicas de ADN pueden separar moléculas",
-    "what_happened": "Los investigadores construyeron microvelas basadas en ADN que generan fuerzas para separar moléculas",
-    "why_it_matters": "Ofrece una nueva herramienta para estudiar fuerzas mecánicas en biología e interacciones farmacéuticas",
-    "the_catch": "El estudio se realizó in vitro y el rendimiento de las velas bajo condiciones fisiológicas no ha sido evaluado",
-    "_en": "4e00b9c0f3172756"
-  },
   "published_at": "2026-09-25",
   "reel": {
     "published_at": "2026-09-27"
@@ -40,5 +32,13 @@
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-28"
+  },
+  "es": {
+    "domain": "materiales",
+    "hook": "Velas microscópicas de ADN pueden separar moléculas",
+    "what_happened": "Investigadores construyeron micro‑velas basadas en ADN que generan fuerzas para separar moléculas",
+    "why_it_matters": "Ofrece una nueva herramienta para estudiar fuerzas mecánicas en biología e interacciones farmacológicas",
+    "the_catch": "El estudio se realizó in vitro y el desempeño de las velas bajo condiciones fisiológicas no ha sido probado",
+    "_en": "4e00b9c0f3172756"
   }
 }

@@ -23,19 +23,19 @@
   "attribution": "Ni et al., Nature (2026)",
   "peer_reviewed": true,
   "published_at": "2026-09-10",
-  "es": {
-    "domain": "ciencia de la corrosión",
-    "hook": "Las gotas de agua ligeramente cargadas corroen el metal recubierto más fácilmente",
-    "what_happened": "Ni et al. demostraron que gotas cargadas espontáneamente dañan las capas protectoras y aceleran la corrosión del metal",
-    "why_it_matters": "Este mecanismo pasado por alto puede contribuir al desgaste de edificios, barcos y automóviles, y señala la necesidad de recubrimientos que resistan el daño inducido por carga",
-    "the_catch": "El modelo de ruptura es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor",
-    "_en": "e5537661fcfc0095"
-  },
   "metrics": {
     "asked_at": "2026-09-20",
     "saves": 0,
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-21"
+  },
+  "es": {
+    "domain": "ciencia de la corrosión",
+    "hook": "Gotas de agua ligeramente cargadas corroen el metal recubierto más fácilmente",
+    "what_happened": "Ni et al. demostraron que gotas cargadas espontáneamente dañan los recubrimientos protectores y aceleran la corrosión del metal",
+    "why_it_matters": "Este mecanismo pasado por alto puede contribuir al desgaste de edificios, barcos y automóviles, y señala la necesidad de recubrimientos que resistan el daño inducido por carga",
+    "the_catch": "El modelo de ruptura es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor",
+    "_en": "e5537661fcfc0095"
   }
 }

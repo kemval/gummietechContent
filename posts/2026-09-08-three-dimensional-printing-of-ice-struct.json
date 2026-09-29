@@ -23,19 +23,19 @@
   "attribution": "Demmenie et al., PNAS (2026)",
   "peer_reviewed": true,
   "published_at": "2026-09-08",
-  "es": {
-    "domain": "ingeniería de materiales",
-    "hook": "Las estructuras de hielo ahora se pueden imprimir en 3D a temperatura ambiente.",
-    "what_happened": "Los investigadores desarrollaron un método simplificado de impresión 3D que crea estructuras de hielo a temperatura ambiente mediante enfriamiento evaporativo en vacío.",
-    "why_it_matters": "Este enfoque imprime estructuras de hielo complejas sin infraestructura criogénica, materiales de soporte ni refrigeración externa.",
-    "the_catch": "Las estructuras de hielo impresas son estables solo bajo condiciones de baja presión; una vez eliminado el vacío, se derriten de nuevo en agua.",
-    "_en": "d56b593fc507c582"
-  },
   "metrics": {
     "asked_at": "2026-09-20",
     "saves": 0,
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-21"
+  },
+  "es": {
+    "domain": "ingeniería de materiales",
+    "hook": "Ahora se pueden imprimir estructuras de hielo en 3D a temperatura ambiente.",
+    "what_happened": "Investigadores desarrollaron un método simplificado de impresión 3D que crea estructuras de hielo a temperatura ambiente mediante enfriamiento evaporativo en vacío.",
+    "why_it_matters": "Este método permite imprimir estructuras de hielo complejas sin infraestructura criogénica, materiales de soporte ni refrigeración externa.",
+    "the_catch": "Las estructuras de hielo impresas son estables solo bajo condiciones de baja presión; al eliminar el vacío, se funden y vuelven a ser agua.",
+    "_en": "d56b593fc507c582"
   }
 }

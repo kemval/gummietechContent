@@ -23,14 +23,6 @@
   "doi": "10.1002/adfm.77713",
   "attribution": "Zhang et al., Advanced Functional Materials (2026)",
   "peer_reviewed": true,
-  "es": {
-    "domain": "robotica biohibrida",
-    "hook": "El músculo de la rana bullfrog impulsa un robot manta‑ray inalámbrico",
-    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser de infrarrojo cercano y dirigieron un robot con forma de manta‑ray para nadar",
-    "why_it_matters": "Demuestra que el músculo nativo puede generar 6.5 N de fuerza, superando la débil salida de tejidos diseñados y permitiendo robots biohíbridos de alta movilidad",
-    "the_catch": "El músculo permaneció receptivo solo 11 días, y el robot sigue dependiendo de una fuente de luz externa para moverse",
-    "_en": "5d982e8570108ff6"
-  },
   "published_at": "2026-09-19",
   "metrics": {
     "asked_at": "2026-09-22",
@@ -38,5 +30,13 @@
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-22"
+  },
+  "es": {
+    "domain": "robótica biohíbrida",
+    "hook": "Músculo de rana toro impulsa un robot manta raya inalámbrico",
+    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser de infrarrojo cercano y lo usaron para mover un robot con forma de manta raya",
+    "why_it_matters": "Demuestra que el músculo nativo puede generar una fuerza de 6.5 N, superando la escasa salida de los tejidos ingenierizados y permitiendo robots biohíbridos de alta movilidad",
+    "the_catch": "El músculo permaneció sensible solo durante 11 días, y el robot sigue dependiendo de una fuente de luz externa para moverse",
+    "_en": "5d982e8570108ff6"
   }
 }

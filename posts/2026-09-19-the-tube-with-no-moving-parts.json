@@ -32,20 +32,6 @@
   "doi": "10.1016/j.rser.2007.03.006",
   "attribution": "Eiamsa-ard and Promvonge, Renew. Sustain. Energy Rev. (2008); Polihronov and Straatman, Phys. Rev. Lett. (2012)",
   "peer_reviewed": true,
-  "es": {
-    "domain": "termodinámica aplicada",
-    "hook": "Un tubo de acero sin piezas móviles calienta y enfría el aire.",
-    "the_question": "El aire comprimido entra en un tubo de acero. Un extremo puede alcanzar 200 °C, el otro −50 °C. Sin refrigerante, sin electricidad, sin piezas móviles.",
-    "the_intuition": "Parece algo por nada: un tubo pasivo que separa caliente de frío sin nada que conectar ni nada que girar.",
-    "mechanism": [
-      "El gas comprimido se inyecta lateralmente en una cámara de remolino, de modo que recorre el tubo por dentro en espiral como un vórtice externo rápido.",
-      "Un cono en el extremo opuesto permite que solo esa capa externa escape. El resto se fuerza a regresar por el centro como un segundo vórtice más estrecho.",
-      "El vórtice interno entrega energía hacia afuera al regresar. Regresa frío; la capa externa sale caliente del extremo opuesto."
-    ],
-    "why_it_matters": "Sin refrigerante, sin electricidad, sin piezas móviles. Donde una fábrica ya dispone de aire comprimido, es la forma más barata de enfriar de forma puntual una herramienta de corte.",
-    "the_catch": "El dispositivo está establecido; los físicos debatieron la explicación durante más de 80 años. El frío no es gratis: lo pagó el compresor aguas arriba.",
-    "_en": "9e60d5af41fd2273"
-  },
   "published_at": "2026-09-20",
   "metrics": {
     "asked_at": "2026-09-23",
@@ -53,5 +39,19 @@
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-23"
+  },
+  "es": {
+    "domain": "termodinámica aplicada",
+    "hook": "Un tubo de acero sin partes móviles calienta y enfría el aire.",
+    "the_question": "El aire comprimido entra en un tubo de acero. Un extremo puede alcanzar 200 °C, el otro −50 °C. Sin refrigerante, sin electricidad, sin partes móviles.",
+    "the_intuition": "Parece algo de la nada: un tubo pasivo que separa el calor del frío sin nada que conectar y sin nada que gire.",
+    "mechanism": [
+      "El gas comprimido se inyecta lateralmente en una cámara de remolino, de modo que gira en espiral por el interior del tubo como un vórtice externo rápido.",
+      "Un cono en el extremo lejano permite que solo esa capa externa escape. El resto se obliga a volver por el centro como un segundo vórtice más estrecho.",
+      "El vórtice interno entrega energía hacia afuera al regresar. Vuelve frío; la capa externa sale del extremo lejano caliente."
+    ],
+    "why_it_matters": "Sin refrigerante, sin electricidad, sin partes móviles. Cuando una fábrica ya dispone de aire comprimido, es la forma más barata de enfriar rápidamente una herramienta de corte.",
+    "the_catch": "El dispositivo no está en duda; los físicos debatieron la explicación durante más de 80 años. El frío no es gratuito: el compresor aguas arriba lo pagó.",
+    "_en": "9e60d5af41fd2273"
   }
 }

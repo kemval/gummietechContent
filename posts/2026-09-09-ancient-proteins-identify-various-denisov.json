@@ -23,19 +23,19 @@
   "attribution": "Rao et al., Nature (2026)",
   "peer_reviewed": true,
   "published_at": "2026-09-09",
-  "es": {
-    "domain": "evolución humana",
-    "hook": "Proteínas antiguas confirman tres huesos denisovanos del suroeste de China",
-    "what_happened": "Los investigadores examinaron más de 60,000 fragmentos óseos, seleccionaron 76 para espectrometría de masas, secuenciaron proteínas de 17 y identificaron tres huesos homínidos como denisovanos",
-    "why_it_matters": "Cierra una brecha geográfica, convirtiendo la Cueva Bianfu en el sitio denisovano más rico fuera de Siberia y aporta información sobre su anatomía postcraneal",
-    "the_catch": "La recuperación de ADN antiguo de los huesos fracasó, y los datos actuales de proteínas y genoma denisovanos son demasiado escasos para determinar la línea de descendencia de esta población",
-    "_en": "65758ab19c58a356"
-  },
   "metrics": {
     "asked_at": "2026-09-20",
     "saves": 0,
     "shares": 1,
     "profile_visits": 1,
     "recorded_at": "2026-09-21"
+  },
+  "es": {
+    "domain": "evolución humana",
+    "hook": "Proteínas antiguas confirman tres huesos denisovanos del suroeste de China",
+    "what_happened": "Los investigadores examinaron >60,000 fragmentos óseos, seleccionaron 76 para espectrometría de masas y secuenciaron proteínas de 17 fragmentos, identificando tres huesos homínidos como denisovanos.",
+    "why_it_matters": "Cubre una brecha geográfica, convirtiendo la Cueva Bianfu en el sitio denisovano más rico fuera de Siberia y aporta información sobre su anatomía poscraneal.",
+    "the_catch": "No se logró recuperar ADN antiguo de los huesos, y los datos actuales de proteínas y genomas denisovanos son demasiado escasos para determinar el linaje de esta población.",
+    "_en": "65758ab19c58a356"
   }
 }
