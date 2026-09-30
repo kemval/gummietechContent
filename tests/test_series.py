@@ -81,3 +81,37 @@ def test_the_unnumbered_prototypes_are_not_holes(reports):
     found = series.reports()
     assert series.missing_numbers(found) == []
     assert series.claimed_numbers(found) == [4]
+
+
+def test_a_swap_never_sends_a_numbered_report_out_of_turn(reports):
+    """The number is drawn into the slide, so standing #11 in for #10 would be
+    the very skip next_unsent() refuses. Only an unnumbered report can."""
+    reports("10-a.json", number=10, title="a", image="10.png", caption=".",
+            sent_at="2026-09-30")
+    reports("11-b.json", number=11, title="b", image="11.png", caption=".")
+    assert series.swap_candidate() is None
+
+
+def test_a_swap_takes_the_first_ready_unnumbered_report(reports, monkeypatch,
+                                                        tmp_path):
+    images = tmp_path / "images"
+    images.mkdir()
+    monkeypatch.setattr(series, "IMAGES_DIR", images)
+    monkeypatch.setattr(series, "REPO_ROOT", tmp_path)
+    (images / "p2.png").write_bytes(b"")
+    reports("11-b.json", number=11, title="b", image="11.png", caption=".")
+    reports("p1-a.json", title="a", image="p1.png", caption=".")   # no image
+    reports("p2-b.json", title="b", image="p2.png", caption=".")
+    reports("p3-c.json", title="c", image="p2.png", caption=".",
+            sent_at="2026-09-01")
+
+    assert series.swap_candidate()[0].name == "p2-b.json"
+
+
+def test_only_an_unposted_report_can_be_taken_back(reports):
+    reports("10-a.json", number=10, title="a", image="10.png", caption=".",
+            sent_at="2026-09-30", published_at="2026-09-30")
+    assert series.sent_on("2026-09-30") is None
+    reports("11-b.json", number=11, title="b", image="11.png", caption=".",
+            sent_at="2026-09-30")
+    assert series.sent_on("2026-09-30")[0].name == "11-b.json"

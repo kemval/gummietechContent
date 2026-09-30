@@ -9,10 +9,11 @@ name: check
 # behind by a correction. Every one of those was found in production, hours
 # after the commit that caused it.
 #
-# Three jobs. `smoke` runs the offline half of the pipeline end to end and is
+# Four jobs. `smoke` runs the offline half of the pipeline end to end and is
 # deliberately not a test suite. `tests` is the test suite, over the pure
 # functions that have been silently wrong before — a different question, so a
-# different job. `publish-deps` is an environment, not a check.
+# different job. `publish-deps` is an environment, not a check. `workflows`
+# lints the YAML every other job and every phone button depends on.
 #
 # What it does NOT cover, so nobody mistakes green for safe: anything that
 # needs a real run — the Telegram message cap, a checkout resolving to the
@@ -184,3 +185,29 @@ jobs:
           python src/telegram.py --help
           python src/telegram.py send --help
           python src/telegram.py confirm --help
+
+  workflows:
+    name: every workflow parses, and its shell is sound
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    # The workflows are the least-tested code here and the most consequential:
+    # every button in the chat is a workflow_dispatch, and a typo in a
+    # `${{ }}` expression or a `run:` block shows up as a dead button the next
+    # time a person taps it from a phone — never at the commit. actionlint
+    # checks the expressions, the job graph and the inputs, and runs
+    # shellcheck (preinstalled on the runner) over every `run:` block.
+    # Deliberate word splitting says so with a `shellcheck disable` comment
+    # and its reason, so a new finding here is a new question, not noise.
+    #
+    # Pinned, version and download script both: a linter that moves under us
+    # would turn this red on a day nothing here changed.
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install actionlint 1.7.12
+        run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+
+      - name: Lint every workflow
+        run: ./actionlint -color

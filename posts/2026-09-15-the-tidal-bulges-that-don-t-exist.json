@@ -23,19 +23,19 @@
   "attribution": "Laplace, dynamic theory of tides (1776)",
   "peer_reviewed": true,
   "published_at": "2026-09-15",
-  "es": {
-    "domain": "oceanografía",
-    "hook": "Los dos abultamientos de marea oceánica que aprendiste en la escuela no existen.",
-    "what_happened": "La teoría dinámica de Laplace demuestra que las mareas son ondas de agua poco profunda, no abultamientos estáticos: el océano no puede seguir el giro de la Tierra.",
-    "why_it_matters": "Corrige la idea errónea de que el océano forma dos abultamientos altos, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de la onda.",
-    "the_catch": "La fuerza de marea de Newton es correcta; solo su respuesta de abultamiento estático es errónea. Su gravedad no está en duda.",
-    "_en": "7fb48461de02e8e4"
-  },
   "metrics": {
     "asked_at": "2026-09-21",
     "saves": 0,
     "shares": 1,
     "profile_visits": 0,
     "recorded_at": "2026-09-21"
+  },
+  "es": {
+    "domain": "oceanografía",
+    "hook": "Las dos protuberancias de marea que se enseñan en la escuela no existen.",
+    "what_happened": "La teoría dinámica de Laplace muestra que las mareas son ondas de aguas someras, no protuberancias estáticas: el océano no puede seguir la rotación de la Tierra.",
+    "why_it_matters": "Corrige la idea errónea de que el océano forma dos protuberancias altas, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de propagación de las ondas.",
+    "the_catch": "La fuerza de elevación de mareas de Newton es correcta; solo su respuesta de protuberancia estática es errónea. Su gravedad no está en duda.",
+    "_en": "7fb48461de02e8e4"
   }
 }

@@ -23,6 +23,8 @@ Usage:
     python src/draft.py --url https://...   # draft an evergreen source
     python src/draft.py --signal            # the weekly roundup, top 5 rows
     python src/draft.py --dry-run           # print the JSON, write nothing
+    python src/draft.py --reject posts/X.json --reason "..."
+                                            # retire a waiting draft (redraft.yml)
 
 Environment: same as score.py (LLM_PROVIDER, GEMINI_API_KEY / GROQ_API_KEY,
 GOOGLE_SHEET_ID, GOOGLE_SHEETS_CREDENTIALS).
@@ -514,7 +516,11 @@ def covered_papers() -> dict[str, str]:
     cannot.
     """
     seen: dict[str, str] = {}
-    for path in sorted(POSTS_DIR.glob("*.json")):
+    # A draft turned down at the gate still covered its paper: the story was
+    # judged and passed on, and it must not come back through a sibling
+    # feed's row. See reject().
+    for path in sorted([*POSTS_DIR.glob("*.json"),
+                        *(POSTS_DIR / REJECTED_DIR).glob("*.json")]):
         try:
             post = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
@@ -532,6 +538,43 @@ def covered_papers() -> dict[str, str]:
                     seen.setdefault(" ".join(str(key).lower().split()),
                                     path.name)
     return seen
+
+
+# Where reject() moves a draft. A subdirectory, not a deletion and not a
+# field: every other reader of posts/ — site.py, resolve-post, watch.py,
+# learn.py's post groups, daily.yml's gate — globs posts/*.json without
+# recursing, so a moved draft leaves all of them at once, while
+# covered_papers() above reads it on purpose.
+REJECTED_DIR = "rejected"
+
+
+def reject(path: Path, reason: str, today: str) -> Path:
+    """Retire a waiting draft at the gate, keeping it as dedup memory.
+
+    For redraft.yml: the story on the waiting draft was not worth posting,
+    so it leaves the queue and the next one is drafted in its place. The
+    sheet row stays `drafted`, which already keeps pick_row() off it.
+    Refuses a dated post — that one is live — and a Breakdown, which a
+    person wrote and nothing here can draft again.
+    """
+    try:
+        post = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        sys.exit(f"Cannot read {path}: {exc}. Check the path, or leave "
+                 f"redraft.yml's post input blank to take the waiting one.")
+    if post.get("published_at"):
+        sys.exit(f"{path.name} has published_at {post['published_at']} — it "
+                 f"is live, and a live post is not rejected. Nothing moved.")
+    if post.get("post_type") == "breakdown":
+        sys.exit(f"{path.name} is a Breakdown, which is written by hand; "
+                 f"nothing can draft another in its place. Edit it instead. "
+                 f"Nothing moved.")
+    post["rejected"] = {"at": today, "reason": reason.strip()}
+    dest = path.parent / REJECTED_DIR / path.name
+    dest.parent.mkdir(exist_ok=True)
+    dest.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
+    path.unlink()
+    return dest
 
 
 def already_covered(paper: dict | None, url: str,
@@ -950,9 +993,20 @@ def main() -> int:
                         metavar="N",
                         help=f"draft a Signal — the weekly roundup — from the "
                              f"top {SIGNAL_ITEMS} queued rows, or the top N")
+    picked.add_argument("--reject", type=Path, metavar="POST",
+                        help="move a waiting draft to posts/rejected/ and "
+                             "draft nothing — redraft.yml's first step")
+    ap.add_argument("--reason", default="",
+                    help="with --reject: why, kept for learn.py")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the JSON without writing or marking the row")
     args = ap.parse_args()
+
+    # Before llm.config() and the sheet: rejecting needs neither.
+    if args.reject:
+        dest = reject(args.reject, args.reason, date.today().isoformat())
+        print(f"Rejected {args.reject} → {dest}")
+        return 0
 
     if args.signal is not None and args.signal < 2:
         sys.exit(f"--signal {args.signal} is not a roundup. "

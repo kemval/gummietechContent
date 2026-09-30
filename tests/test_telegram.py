@@ -438,3 +438,149 @@ def test_locate_does_not_confuse_the_two_collections(posts, reports, quiet):
     assert tg.locate("2026-09-15-x").parent.name == "posts"
     assert tg.locate("07-learning-queue").parent.name == "reports"
     assert tg.locate("nothing-of-the-sort") is None
+
+
+# A swapped-out status report keeps its ✅ in the chat, and getUpdates replays
+# a tap for 24 hours — past the moment the report goes out again tomorrow.
+NOON_0930 = 1790769600        # 2026-09-30 12:00 UTC
+
+
+@pytest.mark.parametrize("report, stale", [
+    ({"sent_at": "2026-09-30"}, False),   # the live button on today's send
+    ({}, True),                           # taken back, not re-sent yet
+    ({"sent_at": "2026-10-01"}, True),    # re-sent since: the old message
+])
+def test_a_tap_on_a_swapped_out_send_records_nothing(monkeypatch, report,
+                                                     stale):
+    monkeypatch.setenv("PUBLISH_TZ", "UTC")
+    assert tg.stale_series_tap(report, {"date": NOON_0930}) is stale
+
+
+# ------------------------------------------------- swapping today's report
+#
+# A swap takes a report back by clearing its sent_at. The order is the whole
+# point: cleared before the new one is out, a send that broke halfway would
+# leave neither report as today's, and series.yml would send #10 again on
+# its next firing as though nothing had gone out.
+
+@pytest.fixture
+def queue(monkeypatch, tmp_path):
+    """A series/ a test can fill; every report written gets its image."""
+    import series
+    reports, images = tmp_path / "reports", tmp_path / "images"
+    reports.mkdir()
+    images.mkdir()
+    monkeypatch.setattr(series, "REPORTS_DIR", reports)
+    monkeypatch.setattr(series, "IMAGES_DIR", images)
+    monkeypatch.setattr(series, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setenv("PUBLISH_TZ", "UTC")
+
+    def write(name: str, **record) -> Path:
+        image = f"{Path(name).stem}.png"
+        (images / image).write_bytes(b"\x89PNG")
+        path = reports / name
+        path.write_text(json.dumps({"title": name, "caption": ".",
+                                    "image": image, **record}))
+        return path
+
+    return write
+
+
+def read(path: Path) -> dict:
+    return json.loads(path.read_text())
+
+
+def test_a_swap_sends_the_unnumbered_one_and_requeues_today(queue, quiet):
+    today = tg.publish_date()
+    numbered = queue("10-a.json", number=10, sent_at=today)
+    spare = queue("p1-b.json")
+
+    assert tg.swap_series() == 0
+    assert read(spare)["sent_at"] == today
+    assert "sent_at" not in read(numbered)
+
+
+def test_a_swap_that_breaks_halfway_leaves_today_as_it_was(queue, monkeypatch):
+    today = tg.publish_date()
+    numbered = queue("10-a.json", number=10, sent_at=today)
+    spare = queue("p1-b.json")
+
+    def refuse(*a, **k):
+        raise tg.TelegramError("Bad Request: chat not found")
+    monkeypatch.setattr(tg, "call", refuse)
+    monkeypatch.setattr(tg, "send_message", refuse)
+
+    with pytest.raises(SystemExit):
+        tg.swap_series()
+    assert read(numbered)["sent_at"] == today
+    assert "sent_at" not in read(spare)
+
+
+def test_with_no_spare_a_swap_says_so_and_changes_nothing(queue, quiet):
+    today = tg.publish_date()
+    numbered = queue("10-a.json", number=10, sent_at=today)
+    queue("11-b.json", number=11)
+
+    assert tg.swap_series() == 0
+    assert read(numbered)["sent_at"] == today
+    assert "Nothing swapped" in quiet[-1]
+
+
+@pytest.mark.parametrize("days_before, recorded", [(0, True), (1, False)])
+def test_confirm_does_not_date_a_report_from_its_swapped_out_send(
+        queue, posts, monkeypatch, days_before, recorded):
+    """The helper is tested above; this is that confirm() actually asks it.
+    Yesterday's message is the swapped-out send of a report re-sent today."""
+    import time
+    report = queue("10-a.json", number=10, sent_at=tg.publish_date())
+    tap = {"callback_query": {
+        "id": "1", "data": "ser:10-a",
+        "message": {"date": int(time.time()) - days_before * 86400,
+                    "chat": {"id": 1}, "message_id": 5}}}
+    monkeypatch.setattr(
+        tg, "call",
+        lambda token, method, *a, **k: [tap] if method == "getUpdates" else None)
+
+    tg.confirm()
+    assert bool(read(report).get("published_at")) is recorded
+
+
+# --------------------------------------------------- the Another story link
+
+@pytest.fixture
+def gate(monkeypatch, posts, tmp_path):
+    """send() as review.yml runs it, keeping the keyboard it would send."""
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setattr(tg, "OUTPUT_DIR", tmp_path / "output")
+    monkeypatch.setenv("GITHUB_SERVER_URL", "https://github.com")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setattr(tg, "call", lambda *a, **k: None)
+    keyboards: list[list[str]] = []
+    monkeypatch.setattr(
+        tg, "send_message",
+        lambda token, chat, text, markup=None: keyboards.append(
+            [b["text"] for row in (markup or {}).get("inline_keyboard", [])
+             for b in row]))
+
+    def run(post_type: str) -> list[str]:
+        stem = f"2026-09-30-{post_type}"
+        path = posts(f"{stem}.json", post_type=post_type, hook="h")
+        outdir = tmp_path / "output" / stem
+        outdir.mkdir(parents=True)
+        for n in range(1, 6):
+            (outdir / f"slide-{n}.png").write_bytes(b"\x89PNG")
+        (outdir / tg.SIDECAR).write_text("caption")
+        tg.send(path, [])
+        return keyboards[-1]
+
+    return run
+
+
+@pytest.mark.parametrize("post_type, offered", [
+    ("drop", True), ("signal", True),
+    ("breakdown", False),      # written by hand: there is no "next one"
+])
+def test_another_story_is_offered_only_where_draft_py_can_write_one(
+        gate, post_type, offered):
+    assert ("🗑 Another story" in gate(post_type)) is offered
