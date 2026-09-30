@@ -5,12 +5,12 @@
   "hook": "Drilling small holes lets you fold curved aluminum sheets by hand.",
   "hooks": [
     "Drilling small holes lets you fold curved aluminum sheets by hand.",
-    "Scoring grooves crack metal, but hole lines avoid that failure.",
-    "Create complex curves with just a drill and patience, no fancy tools."
+    "A scored groove cracked the aluminum; drilled holes folded clean.",
+    "Create complex curves with hand tools and patience."
   ],
   "what_happened": "John drilled small holes along each curved fold line, then bent the aluminum by hand to create the desired shape.",
-  "why_it_matters": "It lets you shape curved metal without expensive machines, removing the tool bottleneck.",
-  "the_catch": "The finished part has visible perforations, the process is slow, and it hasn’t been proven on thick steel.",
+  "why_it_matters": "It shows curved folds in aluminum can be made with hand tools and patience, no fancy machines.",
+  "the_catch": "The finished part keeps small perforations along each fold, and it needs finishing and straightening.",
   "caption": "Drilling a line of small holes lets you fold curved aluminum sheets by hand without fancy tools. Could you replace a scoring groove with this hole‑perforation technique on your next project?",
   "keywords": [
     "metal folding",
@@ -31,9 +31,9 @@
   "es": {
     "domain": "materiales",
     "hook": "Taladrar pequeños agujeros permite doblar láminas de aluminio curvadas a mano.",
-    "what_happened": "John taladró pequeños agujeros a lo largo de cada línea de pliegue curva, luego dobló el aluminio a mano para crear la forma deseada.",
-    "why_it_matters": "Permite dar forma al metal curvo sin máquinas costosas, eliminando el cuello de botella de la herramienta.",
-    "the_catch": "La pieza terminada tiene perforaciones visibles, el proceso es lento y no se ha demostrado en acero grueso.",
-    "_en": "d9f8089198d65c74"
+    "what_happened": "John taladró pequeños agujeros a lo largo de cada línea de pliegue curvo, luego dobló el aluminio a mano para crear la forma deseada.",
+    "why_it_matters": "Demuestra que los pliegues curvos en aluminio pueden hacerse con herramientas manuales y paciencia, sin máquinas sofisticadas.",
+    "the_catch": "La pieza terminada conserva pequeñas perforaciones a lo largo de cada pliegue y requiere acabado y enderezado.",
+    "_en": "120a5664778f1428"
   }
 }
