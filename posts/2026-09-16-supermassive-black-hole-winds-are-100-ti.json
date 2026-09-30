@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "astronomía",
-    "hook": "Los vientos de cuásar son 100× más potentes de lo que se creía",
-    "what_happened": "XRISM observó H1821+643, encontrando un ensanchamiento de la línea Fe XXV causado por turbulencia a una distancia de 20–100 kpc",
-    "why_it_matters": "Indica una eficiencia de retroalimentación en modo cuásar de al menos 1–10 %, cumpliendo los requerimientos de las simulaciones y reconfigurando la evolución de los cúmulos de galaxias",
-    "the_catch": "El factor 100× se basa en asumir que un choque impulsado por el cuásar ensanchó las líneas; la oscilación del cúmulo también podría contribuir",
+    "hook": "Los vientos de cuásar son 100 veces más poderosos de lo que se pensaba",
+    "what_happened": "XRISM observó el cuásar H1821+643 y encontró un ensanchamiento de la línea Fe XXV provocado por turbulencia a una distancia de 20 a 100 kpc",
+    "why_it_matters": "Esto sugiere una eficiencia de retroalimentación en modo cuásar de al menos del 1 % al 10 %, lo que satisface los requisitos de las simulaciones y podría remodelar la evolución de los cúmulos de galaxias",
+    "the_catch": "El factor 100× se basa en asumir que un choque impulsado por el cuásar ensanchó las líneas; el chapoteo del cúmulo también podría contribuir",
     "_en": "c64e3222967f90b9"
   }
 }

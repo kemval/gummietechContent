@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "emparejamiento de ADN",
-    "hook": "Dos dobles hélices de ADN se unen, puenteadas por iones metálicos",
-    "what_happened": "Los investigadores usaron microscopía de fuerza atómica para obtener imágenes de dos dobles hélices de ADN encajándose",
-    "why_it_matters": "Primera evidencia directa de un modelo de emparejamiento de ADN propuesto hace más de dos décadas, con implicaciones para la condensación cromosómica",
-    "the_catch": "La obtención de imágenes se realizó con iones de níquel sobre mica; los resultados fisiológicos con magnesio y calcio provienen de simulaciones, no de imágenes",
+    "hook": "Dos hélices dobles de ADN se unen, puenteadas por iones metálicos",
+    "what_happened": "Los investigadores usaron microscopía de fuerza atómica para obtener imágenes de dos hélices dobles de ADN encajando entre sí",
+    "why_it_matters": "Es la primera evidencia directa de un modelo de emparejamiento de ADN propuesto hace más de dos décadas, con implicaciones para la condensación cromosómica",
+    "the_catch": "Las imágenes se obtuvieron con iones de níquel sobre mica; los resultados fisiológicos con magnesio y calcio provienen de simulaciones, no de imágenes",
     "_en": "046a2e2463065bbf"
   }
 }

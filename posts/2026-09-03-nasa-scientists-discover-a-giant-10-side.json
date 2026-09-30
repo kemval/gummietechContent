@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "ciencia planetaria",
-    "hook": "Se ha formado una gigantesca onda atmosférica de diez lados en el polo sur de Saturno.",
-    "what_happened": "Investigadores usaron el Telescopio Espacial Hubble de la NASA y datos de observatorios terrestres para identificar un patrón de chorro de diez lados que se está formando y se extiende verticalmente en la atmósfera del hemisferio sur de Saturno.",
-    "why_it_matters": "Es el primer patrón de chorro grande y regular observado en el hemisferio sur de Saturno, lo que permite a los científicos observar el desarrollo de una enorme estructura atmosférica durante varios años.",
-    "the_catch": "Los científicos aún desconocen qué desencadenó el decágono, cómo se formó o si la estructura permanecerá estable con el tiempo.",
+    "hook": "Una gigantesca onda atmosférica de diez lados se ha formado en el polo sur de Saturno",
+    "what_happened": "Los investigadores combinaron datos del Telescopio Espacial Hubble de la NASA y observaciones terrestres para identificar un patrón de chorro verticalmente extendido de diez lados que está emergiendo en la atmósfera del hemisferio sur de Saturno",
+    "why_it_matters": "Es el primer patrón de chorro regular y de gran escala observado en el sur de Saturno, lo que permite a los científicos seguir el desarrollo de una enorme estructura atmosférica durante varios años",
+    "the_catch": "Los científicos aún desconocen qué desencadenó el decágono, cómo se formó o si la estructura permanecerá estable con el tiempo",
     "_en": "ba6c9f2dab7c017b"
   }
 }

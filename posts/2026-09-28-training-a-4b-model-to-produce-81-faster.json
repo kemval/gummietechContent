@@ -31,10 +31,10 @@
   "published_at": "2026-09-28",
   "es": {
     "domain": "optimización de bases de datos",
-    "hook": "Los planes de Postgres del modelo de 4 B fueron 81 % más rápidos — el mejor de 15 intentos",
-    "what_happened": "Modelo Qwen de 4 B, ajustado con RL agéntico, generó planes de Postgres; el más rápido de hasta 15 intentos fue 1.81 veces más rápido que los predeterminados en 113 consultas",
-    "why_it_matters": "Un modelo pequeño de 4 B, entrenado para una sola base de datos, superó los planes predeterminados de Postgres en un benchmark con muchas uniones, lo que sugiere que los modelos pequeños y específicos de tarea pueden ser adecuados para la afinación de consultas",
-    "the_catch": "El 81 % corresponde al plan más rápido de hasta 15 planes por consulta; las propias selecciones del modelo dieron 1.40 veces. Sólo se probó en el Join Order Benchmark basado en IMDb.",
+    "hook": "Los planes de Postgres del modelo de 4B fueron 81 % más rápidos — el mejor de 15 intentos",
+    "what_happened": "Un modelo Qwen de 4B, ajustado con RL agéntico, generó planes de ejecución para Postgres; el más rápido de hasta 15 intentos fue 1,81 veces más rápido que los planes predeterminados en 113 consultas",
+    "why_it_matters": "Un modelo pequeño de 4B, entrenado para una sola base de datos, superó los planes predeterminados de Postgres en un benchmark centrado en consultas con muchas uniones, lo que sugiere que los modelos pequeños y especializados podrían funcionar bien para optimizar consultas",
+    "the_catch": "El 81 % corresponde al plan más rápido de hasta 15 intentos por consulta; las propias selecciones del modelo alcanzaron 1,40 veces la velocidad. Solo se probó en el Join Order Benchmark basado en IMDb.",
     "_en": "558f57bdc1936174"
   }
 }

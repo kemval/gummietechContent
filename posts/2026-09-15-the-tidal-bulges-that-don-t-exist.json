@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "oceanografía",
-    "hook": "Las dos protuberancias de marea que se enseñan en la escuela no existen.",
-    "what_happened": "La teoría dinámica de Laplace muestra que las mareas son ondas de aguas someras, no protuberancias estáticas: el océano no puede seguir la rotación de la Tierra.",
-    "why_it_matters": "Corrige la idea errónea de que el océano forma dos protuberancias altas, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de propagación de las ondas.",
-    "the_catch": "La fuerza de elevación de mareas de Newton es correcta; solo su respuesta de protuberancia estática es errónea. Su gravedad no está en duda.",
+    "hook": "Los dos bultos de marea que aprendiste en la escuela no existen",
+    "what_happened": "La teoría dinámica de Laplace muestra que las mareas son ondas de aguas someras, no bultos estáticos: el océano no puede seguir el ritmo de la rotación de la Tierra",
+    "why_it_matters": "Corrige la idea errónea de que el océano forma dos protuberancias altas, aclarando que las mareas son fenómenos ondulatorios limitados por la velocidad de propagación de las ondas",
+    "the_catch": "La fuerza de marea que describió Newton es correcta; solo su respuesta de bulto estático es equivocada. No se cuestiona su gravedad",
     "_en": "7fb48461de02e8e4"
   }
 }
