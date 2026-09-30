@@ -341,6 +341,9 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 - **`published_at` is the human gate.** `site.py` skips any post without it;
   never add a fallback that publishes undated posts.
 - **It is not a blog.** Every page is a pure function of the draft JSON.
+- **It wears the slides' moving backdrop** (`templates/backdrop.js`, one
+  shader for slides, reel and archive), live, still under
+  `prefers-reduced-motion`, flat without WebGL.
 - Each post page uses its own rendered slide 1 as the link-preview image;
   a browser that will not launch degrades to text-only previews.
 - A malformed post is skipped with a warning, never fails the build.

@@ -3,6 +3,7 @@
 {% block title %}{{ post.hook }} — gummietech{% endblock %}
 {% block description %}{{ post.alt_text }}{% endblock %}
 {% block og_type %}article{% endblock %}
+{% block field %}{{ post.lead }}{% endblock %}
 {% block og_path %}{{ post.slug }}/{% endblock %}
 {% block og_image %}{% if post.cover %}
 <meta property="og:image" content="{{ site_url }}{{ post.slug }}/cover.png">

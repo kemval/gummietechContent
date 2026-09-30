@@ -107,3 +107,26 @@ the archive.
 `site.py` skips a malformed post with a warning instead of exiting — the
 opposite of `render.py`, which is right to hard-fail the one post it was asked
 to render. One bad draft must not take the whole site down.
+
+## The moving backdrop (2026-09-30)
+
+The archive wears the carousel's v3 look, so the bio link and the grid are
+one account. `templates/backdrop.js` is the single shader, included by both
+`slides_layout.js` and `site_base.html`. Stills, clips, reel and archive
+cannot drift apart.
+
+- **Surfaces.** Cream ribbons behind the whole page (a fixed layer), the
+  post's lead ribbons behind its hero, and the dark ribbons behind the
+  pitch. Index entries are frosted glass (`backdrop-filter`) tinted with
+  their lead hue.
+- **Live, and still when asked.** The page runs the loop on the reader's
+  GPU and repaints only surfaces on screen. `prefers-reduced-motion`
+  gets one still frame. No WebGL gets the flat colours of before.
+- **Contrast.** It follows the slides' argument: every light ribbon hue
+  clears 4.5:1 against ink, and glass tints mix only light hues. The
+  tagline, the empty-state line and the foot were diluted ink, which fell
+  to 3.6:1 over the sky ribbon, so they are full ink now, the slides' rule.
+- **An edge artefact.** Scaling the small shader picture up sampled the
+  row beyond it and drew a light line along the top of the page.
+  `backdrop.js` samples 1.5px inside every edge.
+
