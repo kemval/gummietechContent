@@ -26,6 +26,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 from collections.abc import Iterator
@@ -560,12 +562,67 @@ def shoot(html: str, outdir: Path) -> list[Path]:
     return written
 
 
+# The moving backdrop (templates/slides_layout.js) loops every
+# window.__backdropLoop ms. Each slide is filmed over exactly one loop, so
+# the clip repeats seamlessly in the carousel.
+MOTION_FPS = 30
+
+
+def film(html: str, outdir: Path) -> list[Path]:
+    """One looping MP4 per slide, beside its PNG, for a moving carousel.
+
+    Frames are stepped, not recorded, for the reason reel.py gives: the same
+    post gives the same video. JPEG frames rather than PNG because encoding
+    was most of the time, and the video is lossy anyway. Only the slide being
+    filmed is repainted each frame. No ffmpeg or no WebGL is a warning, not a
+    failure: the still carousel is complete without motion.
+    """
+    encoder = shutil.which("ffmpeg")
+    if not encoder:
+        print("  warning: ffmpeg is not installed, so no motion clips. It is "
+              "free: `brew install ffmpeg` or `sudo apt-get install -y ffmpeg`.")
+        return []
+    written: list[Path] = []
+    with open_page(html) as page:
+        loop = page.evaluate("window.__backdropLoop || 0")
+        if not loop:
+            print("  warning: the backdrop did not draw (no WebGL in this "
+                  "browser), so no motion clips — the PNGs are unaffected.")
+            return []
+        for i, el in enumerate(page.query_selector_all(".slide"), start=1):
+            out = outdir / f"slide-{i}.mp4"
+            proc = subprocess.Popen(
+                [encoder, "-y", "-loglevel", "error",
+                 "-f", "image2pipe", "-framerate", str(MOTION_FPS), "-i", "-",
+                 # JPEG frames are full-range; Instagram expects TV range,
+                 # and left as yuvj420p the colours shift on upload.
+                 "-vf", "scale=in_range=pc:out_range=tv,format=yuv420p",
+                 "-c:v", "libx264", "-crf", "18",
+                 "-movflags", "+faststart", str(out)],
+                stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            for f in range(loop * MOTION_FPS // 1000):
+                page.evaluate("([t, el]) => window.__backdrop(t, el)",
+                              [f * 1000 / MOTION_FPS, el])
+                proc.stdin.write(el.screenshot(type="jpeg", quality=92))
+            proc.stdin.close()
+            if proc.wait() != 0:
+                err = proc.stderr.read().decode(errors="replace").strip()
+                sys.exit(f"ffmpeg failed on {out.name}: {err or 'no output'}. "
+                         f"Check the ffmpeg install has libx264, or re-run "
+                         f"with --no-motion for stills only.")
+            written.append(out)
+            print(f"  wrote {shown(out)}")
+    return written
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("post", help="path to the post JSON")
     ap.add_argument("--outdir", default=None, help="where to write PNGs")
     ap.add_argument("--colorway", default=None, choices=sorted(COLORWAYS),
                     help="override the colorway in the JSON")
+    ap.add_argument("--no-motion", action="store_true",
+                    help="stills only: skip the looping MP4 per slide")
     args = ap.parse_args()
 
     post_path = Path(args.post)
@@ -599,7 +656,12 @@ def main() -> int:
         print(f"  preprint flag ON — {flags} slide{'s' * (flags != 1)} "
               f"must carry it")
 
-    written = shoot(render_html(post, args.colorway), outdir)
+    html = render_html(post, args.colorway)
+    written = shoot(html, outdir)
+    # Stale clips from an earlier render must not ride along with new stills.
+    for old in outdir.glob("slide-*.mp4"):
+        old.unlink()
+    clips = [] if args.no_motion else film(html, outdir)
 
     # The caption and alt text are needed at posting time, so drop them
     # next to the images rather than making you dig back into the JSON.
@@ -621,7 +683,8 @@ def main() -> int:
         + "--- ATTRIBUTION ---\n" + "\n\n".join(credits) + "\n"
     )
     print(f"  wrote {shown(sidecar)}")
-    print(f"\nDone. {len(written)} slides.")
+    print(f"\nDone. {len(written)} slides"
+          + (f", {len(clips)} motion clips." if clips else "."))
     return 0
 
 

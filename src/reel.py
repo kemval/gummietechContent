@@ -66,7 +66,12 @@ PAUSE = """
 }
 """
 
-SEEK = "t => { for (const a of document.getAnimations()) a.currentTime = t; }"
+# The backdrop is a shader, not a Web Animation: it moves with the same
+# clock through window.__backdrop (templates/slides_layout.js).
+# `s` stretches the backdrop's clock so the reel holds a whole number of its
+# loops: otherwise the background would jump where the reel loops.
+SEEK = ("([t, s]) => { for (const a of document.getAnimations()) a.currentTime = t;"
+        " if (window.__backdrop) window.__backdrop(t * s); }")
 
 # When each scene starts: its slide's swipe delay, 0 for the first slide,
 # which is on screen from the first frame.
@@ -134,7 +139,7 @@ def check_scenes(page, report: Report) -> list[float]:
     end = page.evaluate(PAUSE)
     ends = [*starts[1:], end]
     for i, t in enumerate(ends):
-        page.evaluate(SEEK, max(t - 1, 0))
+        page.evaluate(SEEK, [max(t - 1, 0), 1])   # measuring positions: backdrop time is moot
         box = page.evaluate(BOXES)[i]
         if box["top"] < SAFE_TOP or box["bottom"] > SAFE_BOTTOM:
             report.block(f"scene {i + 1}",
@@ -156,10 +161,12 @@ def capture(html: str, outdir: Path, flagged: bool) -> Report:
     with open_page(html, size=(REEL_W, REEL_H)) as page:
         length = page.evaluate(PAUSE)
         ends = check_scenes(page, report)
+        loop = page.evaluate("window.__backdropLoop || 0")
+        stretch = max(1, round(length / loop)) * loop / length if loop else 1
 
         # The hook scene settled is the natural cover — the carousel's own
         # first slide, which is what the grid will show beside it.
-        page.evaluate(SEEK, ends[0] - 1)
+        page.evaluate(SEEK, [ends[0] - 1, stretch])
         page.screenshot(path=str(cover))
 
         frames = int(length * FPS / 1000) + 1
@@ -172,7 +179,7 @@ def capture(html: str, outdir: Path, flagged: bool) -> Report:
         try:
             for i in range(frames):
                 t = i * 1000 / FPS
-                page.evaluate(SEEK, t)
+                page.evaluate(SEEK, [t, stretch])
                 # Enforced here, per frame, not by the template's promise:
                 # a preprint must carry its label for the whole reel.
                 if flagged:

@@ -129,17 +129,61 @@ the rhythm, the type and every text rule, and adds the system:
 - **The selection box is padded in em** (`.16em`), because body text now
   grows to 92px and a fixed 10px gap let the outline touch the boxed
   word's last letter.
-- **The backdrop** (after the owner's "elegant dark pattern" reference): a
-  light fade from the top left, skewed streaks fading downward, a dot grid
-  fading out before the text. Each slide is tinted toward its OWN field
-  only: the first version's glow mixed two palette hues (pink on cream,
-  cream on amber) and the owner said the combinations made no sense. On
-  the dark slide the lead's streaks are `mix-blend-mode: screen`, because
-  a translucent amber over ink mixes to brown, while pink mixes to a mauve
-  that happened to look right. Amber takes less sheen: cream over it
-  washed out to a faded yellow. The backdrop is slide background layers
-  plus `::before`, never an element in `.frame`, because proof.py reads
-  anything in the frame that reaches past it as clipped text.
+- **The backdrop is Neat's moving colour ribbons, drawn by our own shader
+  and filmed as a looping MP4 per slide.** The owner asked for Neat
+  (github.com/FireCMSco/neat) in motion. Neat's licence allows this use,
+  but its code draws a "NEAT" watermark into every render unless a key is
+  bought (€12 per domain; `if (!this._licensed) renderWatermark`), which
+  the $0 budget rules out, and hiding the mark would be dodging their
+  paywall. So its technique is reimplemented in `slides_layout.js`, not
+  its code: palette colours layered wherever a horizontally-stretched 3D
+  simplex noise (Ashima, MIT) crosses a threshold, curled by `cos()` flow
+  warps, over a lit waving surface. Two earlier attempts, a single hue
+  shaded and soft folds, were rejected as "not Neat": it is the layered
+  colours that make it.
+  - **Contrast holds on every frame by construction.** Light slides use
+    only palette hues, and every one clears 4.5:1 against ink (`RIBBONS`,
+    field last and widest so the slide still reads as its colour); their
+    lighting only brightens. The dark slide's ribbons are ink, ink ×.45 and
+    one lead-tinted ribbon capped so 22px lead-hue labels keep 4.5:1; its
+    lighting only deepens. proof.py measures the flat field, so this
+    argument is what covers the canvas.
+  - **Seamless and deterministic.** Time enters only as the angle of one
+    8s loop (noise sampled around a circle), seeded by the hook and slide
+    id. Frame 0 and frame 8000ms are byte-identical. The PNG is frame 0.
+    `render.py` films each slide over one loop (JPEG frames, TV-range
+    yuv420p, which Instagram expects), and `--no-motion` skips it.
+    `reel.py` stretches the backdrop's clock to a whole number of loops
+    per reel, so the background does not jump where the reel loops.
+  - **Ghost words are frosted glass.** The owner rejected the outline and
+    three other type treatments. `glass()` paints "(why)", "(but)" and
+    "1/2" into the backdrop canvas: the backdrop blurred and brightened
+    inside the glyphs, a soft shadow, and a bevel (the glyph minus itself
+    offset, because a stroke traced the variable font's overlapping
+    contours as a box inside the "t"). Font and position are read off the
+    DOM element, which stays in the page, transparent, for the layout
+    pass and proof. Without WebGL the outline returns.
+  - **The reel has no card.** The owner asked for the moving backdrop
+    alone, full screen. The content floats on the 9:16 backdrop, still
+    scaled to 0.9 in the safe zone, with no background, grid or grain of
+    its own. The glass words are painted on the backdrop for their scene.
+    Scenes fade out, then in: a swipe or a cross-fade layered two scenes'
+    words. The first slide's zero-length fade-in keeps reel.py's scene
+    start at 0. Repainting skips anything covered in a stack, and a reel
+    takes ~5 minutes. The keyword callouts assemble in order (tag, wire
+    out, wire down, dot), indexed by `--i` from the layout pass, because
+    the owner noticed slide 2's diagram was the one thing that just
+    appeared.
+  - **Cost.** Headless Chrome runs WebGL on the CPU, so the shader draws
+    at a third of the size and is scaled up (Neat's `renderScale`). The
+    ribbons are smooth enough not to show it. At full size a reel took
+    over fifteen minutes; now a Drop's five clips take ~3 minutes, added
+    to `review.yml`, which now installs ffmpeg. In the reel only on-screen
+    cards are repainted. The motion was slowed at the owner's request by
+    shrinking the noise's circle per loop, not by lengthening the loop, so
+    clips stay 8s. `check.yml` renders with
+    `--no-motion`; its reel smoke drives the backdrop's clock. Telegram
+    sends the clips after the stills, all or none.
 - **The hook sits on ruled baselines** (.84em at line-height 1.0).
 - **Ruled cells**: the spec row and every section label get a full-ink
   top rule; spec cells are split by hairlines.

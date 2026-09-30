@@ -90,10 +90,12 @@ jobs:
       # exercises until a person is waiting for it at the gate — which is
       # exactly how signal.html shipped its first layout with the credit line
       # sitting on top of the wordmark.
+      # --no-motion: filming every format would add minutes to each push,
+      # and the reel smoke below already drives the moving backdrop's clock.
       - name: Render every format
         run: |
           for post in era era-breakdown era-signal; do
-            python src/render.py "posts/$post.json" --outdir "/tmp/smoke-$post"
+            python src/render.py "posts/$post.json" --outdir "/tmp/smoke-$post" --no-motion
           done
 
       - name: Proof every format

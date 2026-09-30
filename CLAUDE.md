@@ -199,7 +199,8 @@ Never commit `.env`, `credentials.json`, or any key.
 
 Slides render at **1080×1350** (4:5), one `.slide` div each inside
 `templates/<post_type>.html` (fallback `drop.html` with a warning), each
-screenshotted individually. `render.py` discovers slides with
+screenshotted individually, and each also filmed as a seamless 8s MP4 of its
+moving backdrop (Neat-style ribbons, our own shader; `--no-motion` skips). `render.py` discovers slides with
 `querySelectorAll('.slide')` and refuses fewer than `MIN_SLIDES` (4).
 
 Design tokens are locked — do not change them or propose alternatives. They

@@ -173,6 +173,11 @@ jobs:
           TXT
           fi
 
+      # render.py films a looping clip of each slide's moving backdrop, and
+      # ffmpeg is not on the runner image (see reel.yml).
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Render the slides
         run: python src/render.py "${{ inputs.post }}"
 

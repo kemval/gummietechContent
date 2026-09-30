@@ -41,30 +41,54 @@ body { background: var(--ink); }
   animation: fade-in var(--enter) ease-out both;
 }
 
+/* No card on screen (2026-09-30, the owner's call): the content floats on
+   the full-screen moving backdrop, still scaled to 0.9 inside the safe
+   zone. So a slide has no background, grid or grain of its own, and the
+   scenes cross-fade instead of swiping: a swipe would lay one scene's
+   words over the last's. The glass ghost words are painted onto the
+   backdrop (slides_layout.js). */
 .card {
   position: absolute; left: 54px; top: 300px;
   width: 1080px; height: 1350px;
   transform: scale(0.9); transform-origin: 0 0;
-  overflow: hidden;
 }
+.stage .card .slide { background: transparent; }
+.stage .card .slide::before, .stage .card .slide::after { display: none; }
 .card > .slide {
   position: absolute; top: 0; left: 0;
-  animation: swipe-in var(--enter) cubic-bezier(.2, .8, .2, 1) both;
+  /* in, then out just before the next scene, so the two sets of words are
+     never on screen at once (a cross-fade layered them at half strength);
+     `forwards` on the way out so it cannot hold a slide visible early */
+  animation: fade-in var(--enter) ease-out both, fade-out calc(var(--enter) * .6) ease-in forwards;
+  animation-delay: var(--t), calc(var(--t) + var(--scene) - var(--enter) * .6);
 }
 
 /* When each scene starts. Slide 1 is on screen from the first frame. */
-.stage > .backdrop.slide:nth-of-type(1), .card > .slide:nth-child(1) { --t: 0s; animation: none; }
+.stage > .backdrop.slide:nth-of-type(1) { --t: 0s; animation: none; }
+/* on from frame 0 (a zero-length fade-in keeps reel.py's scene start at 0) */
+.card > .slide:nth-child(1) { --t: 0s; animation-duration: 0s, calc(var(--enter) * .6); }
 .stage > .backdrop.slide:nth-of-type(2), .card > .slide:nth-child(2) { --t: calc(var(--scene) * 1); }
 .stage > .backdrop.slide:nth-of-type(3), .card > .slide:nth-child(3) { --t: calc(var(--scene) * 2); }
 .stage > .backdrop.slide:nth-of-type(4), .card > .slide:nth-child(4) { --t: calc(var(--scene) * 3); }
 .stage > .backdrop.slide:nth-of-type(5), .card > .slide:nth-child(5) { --t: calc(var(--scene) * 4); }
-.stage > .backdrop.slide, .card > .slide { animation-delay: var(--t); }
+.stage > .backdrop.slide { animation-delay: var(--t); }
 
 /* The words rise in just after their slide lands. */
 .card > .slide :is(.sec, .text, .diff .minus, .follow, .tagline, .sources) {
   animation: rise 0.5s ease-out both;
   animation-delay: calc(var(--t) + 0.3s);
 }
+
+/* The keyword callouts assemble in order, one callout after another: the
+   tag rises, its wire draws out from the tag and then down to the rule,
+   and the dot lands. --i is the callout's index (slides_layout.js). */
+.card > .slide .cloud :is(.tag, .wire, .dot) {
+  --at: calc(var(--t) + 0.35s + var(--i) * 0.35s);
+}
+.card > .slide .cloud .tag    { animation: rise 0.4s ease-out both; animation-delay: var(--at); }
+.card > .slide .cloud .wire.h { animation: strike 0.3s cubic-bezier(.6, 0, .2, 1) both; animation-delay: calc(var(--at) + 0.3s); }
+.card > .slide .cloud .wire.v { transform-origin: top; animation: grow 0.35s cubic-bezier(.6, 0, .2, 1) both; animation-delay: calc(var(--at) + 0.55s); }
+.card > .slide .cloud .dot    { animation: pop 0.22s ease-out both; animation-delay: calc(var(--at) + 0.85s); }
 
 /* The selection box draws itself around its phrase, left to right, then
    its handles pop — the carousel's static box, performed. Real elements
@@ -90,7 +114,7 @@ body { background: var(--ink); }
   animation-delay: calc(var(--t) + 1.55s);
 }
 
-/* The loop: the cover swipes back in after the last scene, and the reel
+/* The loop: the cover fades back in after the last scene, and the reel
    ends the moment it lands, so its last frame is its first and Instagram's
    replay has no seam. It is a clone of slide 1 made in the page (see the
    script below), so it cannot say anything the cover does not; it is not a
@@ -98,7 +122,7 @@ body { background: var(--ink); }
    undrawn, as it is on frame 0. */
 .card > .loop {
   position: absolute; inset: 0;
-  animation: swipe-in var(--enter) cubic-bezier(.2, .8, .2, 1) both;
+  animation: fade-in var(--enter) ease-out both;
   animation-delay: calc(var(--scene) * 5);
 }
 .card > .loop > .slide { position: absolute; top: 0; left: 0; }
@@ -136,13 +160,14 @@ body { background: var(--ink); }
 }
 
 @keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes swipe-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes rise     { from { opacity: 0; transform: translateY(28px); }
                       to   { opacity: 1; transform: none; } }
 @keyframes hold     { from { opacity: 0; } to { opacity: 0; } }
 @keyframes draw     { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 @keyframes pop      { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes strike   { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes grow     { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 </style>
 </head>
 <body style="--lead: var(--{{ lead }})">
