@@ -31,14 +31,15 @@ document.fonts.ready.then(() => {
     const top = el => (el.getBoundingClientRect().top - F.top) / k;
     const bottom = el => (el.getBoundingClientRect().bottom - F.top) / k;
 
-    // Body text grows into a slide's empty space (60px up to 92px) while
+    // Body text grows into a slide's empty space (60px up to 72px, the scale the owner
+    // preferred on 2026-09-28; 92px read as shouting) while
     // the body stays under half the frame, so a short field does not
     // leave a dead half-slide. First, because the ghost words below are
     // placed against the text's final size. The diff's smaller catch text is left alone.
     slide.querySelectorAll('.body .text:not(.sm):not(.display)').forEach(t => {
       const body = t.closest('.body');
       let px = parseFloat(getComputedStyle(t).fontSize);
-      while (px < 92) { t.style.fontSize = (px + 2) + 'px'; if (body.offsetHeight > Fh * .5) break; px += 2; }
+      while (px < 72) { t.style.fontSize = (px + 2) + 'px'; if (body.offsetHeight > Fh * .5) break; px += 2; }
       t.style.fontSize = px + 'px';
     });
 
@@ -94,9 +95,10 @@ document.fonts.ready.then(() => {
         }
       } else {
         // No figure: the hook is the cover, so it grows into the space
-        // (96px up to 176px) and steps down only if it would reach the spec.
+        // (96px up to 120px: past that it shouts over
+        // the rest of the post; the owner preferred 2026-09-28's scale) and steps down only if it would reach the spec.
         let px = 96;
-        while (px < 176) { hook.style.fontSize = (px + 4) + 'px'; if (!clears()) break; px += 4; }
+        while (px < 120) { hook.style.fontSize = (px + 4) + 'px'; if (!clears()) break; px += 4; }
         hook.style.fontSize = px + 'px';
         while (!clears() && px > 64) { px -= 4; hook.style.fontSize = px + 'px'; }
       }

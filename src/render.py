@@ -81,7 +81,11 @@ COLORWAYS: dict[str, tuple[str, str]] = {
     "signal": ("pink",  "olive"),   # AI, computing, software, robotics
     "orbit":  ("sky",   "pink"),    # space, astronomy, physics
     "bloom":  ("olive", "blush"),   # biology, medicine, climate, ecology
-    "ember":  ("amber", "pink"),    # energy, materials, engineering, chemistry
+    # Owner's call, 2026-09-30: amber read as washed out as a lead under the
+    # v3 backdrop, and 09-28's pink/olive was the look they wanted. Ember
+    # keeps its name (draft.py and the agents still sort topics into it) but
+    # wears signal's pair, so vary() compares pairs, not names.
+    "ember":  ("pink",  "olive"),   # energy, materials, engineering, chemistry
 }
 DEFAULT_COLORWAY = "signal"
 
@@ -425,18 +429,25 @@ def vary(chosen: str, previous: str | None) -> str:
     avoid this: a science feed clusters, and four families divided among
     everything published means neighbours collide often.
 
-    The substitute is the next family in COLORWAYS order, which is
-    guaranteed to differ from `previous` because it only ever runs when
-    `chosen` is `previous`. Deterministic, so the same queue always renders
+    The substitute is the next family in COLORWAYS order whose pair differs
+    from `previous`'s — the colours, not the name, since two families can
+    share a pair. Deterministic, so the same queue always renders
     the same way and a test can say what it must do. The subject keeps its
     own family whenever the post before it leaves that family free, so the
     topic mapping still holds in the ordinary case — this only ever fires on
     a collision.
     """
-    if previous is None or chosen != previous:
+    # Compared by the colours the reader sees, not the family name: two
+    # families can wear the same pair (ember and signal, since 2026-09-30).
+    if previous is None or COLORWAYS.get(chosen) != COLORWAYS.get(previous):
         return chosen
     order = list(COLORWAYS)
-    return order[(order.index(chosen) + 1) % len(order)]
+    at = order.index(chosen) if chosen in COLORWAYS else 0
+    for step in range(1, len(order)):
+        candidate = order[(at + step) % len(order)]
+        if COLORWAYS[candidate] != COLORWAYS[previous]:
+            return candidate
+    return chosen
 
 
 def slide_fields(name: str | None, count: int = 5,

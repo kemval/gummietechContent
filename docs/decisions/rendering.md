@@ -129,10 +129,17 @@ the rhythm, the type and every text rule, and adds the system:
 - **The selection box is padded in em** (`.16em`), because body text now
   grows to 92px and a fixed 10px gap let the outline touch the boxed
   word's last letter.
-- **One soft glow** in the top-right corner: cream on a lead field, the
-  lead on cream, the lead at 30% on the dark slide. It only ever
-  lightens toward a hue that already clears 4.5:1 with ink, and on the
-  dark slide it stays away from the body text.
+- **The backdrop** (after the owner's "elegant dark pattern" reference): a
+  light fade from the top left, skewed streaks fading downward, a dot grid
+  fading out before the text. Each slide is tinted toward its OWN field
+  only: the first version's glow mixed two palette hues (pink on cream,
+  cream on amber) and the owner said the combinations made no sense. On
+  the dark slide the lead's streaks are `mix-blend-mode: screen`, because
+  a translucent amber over ink mixes to brown, while pink mixes to a mauve
+  that happened to look right. Amber takes less sheen: cream over it
+  washed out to a faded yellow. The backdrop is slide background layers
+  plus `::before`, never an element in `.frame`, because proof.py reads
+  anything in the frame that reaches past it as clipped text.
 - **The hook sits on ruled baselines** (.84em at line-height 1.0).
 - **Ruled cells**: the spec row and every section label get a full-ink
   top rule; spec cells are split by hairlines.
@@ -144,8 +151,23 @@ the rhythm, the type and every text rule, and adds the system:
   rule below. Left and right wires step outward so none cross.
   Still `aria-hidden`: the keywords are decoration, and the caption
   carries them.
-- **Body text grows into empty space**, 60px up to 92px, while the body
-  stays under half the frame. Slides 3 and 4 had dead middles.
+- **Body text grows only a little**, from 60px up to 72px, and a cover
+  hook without a figure grows from 96px up to 120px (v2 allowed 176px). At
+  92px and 160px everything shouted at one volume, and the owner preferred
+  2026-09-28's scale: a medium hook, calm body text, one huge element.
+
+- **GitHub's type system replaces Archivo and IBM Plex Mono.** Hubot Sans
+  (display, at 105–125% width), Mona Sans (body) and Monaspace Neon (labels),
+  all OFL and self-hosted in `fonts/` with their licences. The owner
+  rejected a first round of "tech" faces (Doto, Michroma, Kode Mono,
+  Tektur, Unbounded) as gimmicky. Then four OFL systems were set in this
+  one layout: GitHub's, Vercel's Geist, IBM Plex, and Funnel Display with
+  Fragment Mono. The owner chose GitHub's. Fontshare faces (Satoshi,
+  General Sans, Switzer) were ruled out because their licence forbids
+  self-hosting the files. Hubot's zero is slashed and has no plain
+  alternate; that was kept, since it was in the sketch the owner picked.
+  Hubot's taller line box pushed the Signal's rank into the corner label,
+  so its `data-top` is now 140.
 
 proof.py passes all four fixture formats unchanged, and so does the reel.
 
@@ -189,7 +211,7 @@ a `(lead, support)` pair, and a five-slide Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | amber | pink |
+| `ember` | energy, materials, engineering, chemistry | pink | olive |
 
 Invariants that keep the grid recognizable, and that a new family or a new
 format must respect. `render.rhythm()` is these rules as code, which is why a
@@ -215,6 +237,14 @@ longer format needs no new palette decision:
   often. On 2026-09-18, 09-19 and 09-20 the topics were materials, biohybrid
   robotics and applied thermodynamics — all `ember` — and three amber posts
   shipped in a row while every mapping worked exactly as documented.
+
+**Ember wears signal's pair since 2026-09-30.** Under the v3 backdrop amber
+read as washed out as a lead, and the owner compared the same post in
+amber, blush/olive, blush/amber and pink/olive and chose pink/olive, 09-28's
+look. The family keeps its name, because draft.py and the agents still sort
+topics into it. So `vary()` compares colour pairs, not names: by name, a
+signal post then an ember post would have shipped pink twice in a row.
+Amber stays a token and is simply unused by any family for now.
 
 `vary(chosen, previous)` returns `chosen` untouched unless the post before it
 already had that family, in which case it takes the next family in

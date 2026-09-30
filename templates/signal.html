@@ -42,7 +42,7 @@
 {% set at = loop.index + 1 %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
   {{ parts.corners("signal", at, n, "this week") }}
-  <div class="giant rank" data-anchor="top" data-top="96" data-max="300">{{ "%02d"|format(loop.index) }}</div>
+  <div class="giant rank" data-anchor="top" data-top="140" data-max="300">{{ "%02d"|format(loop.index) }}</div>
   <div class="body">
     {% if not item.peer_reviewed %}<div style="margin-bottom: 30px"><span class="flag">{{ parts.PREPRINT }}</span></div>{% endif %}
     <p class="text display claim">{{ parts.boxed(item.claim, figures_only=True) }}</p>

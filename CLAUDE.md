@@ -216,9 +216,9 @@ copy them into a third place:
 --amber: #F2B441;   /* field */
 ```
 
-**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28), **with v3's grid layer** (2026-09-30: hairline rules, one glow, outline ghosts, keyword callouts — see the note): Archivo
-(variable width) for display and body, IBM Plex Mono for labels, no drawn
-frame — type sits 60px from the edge, and `.frame` survives as an invisible
+**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28), **with v3's grid layer** (2026-09-30: hairline rules, a same-hue backdrop, outline ghosts, keyword callouts — see the note): Hubot
+Sans for display, Mona Sans for body, Monaspace Neon for labels (GitHub's OFL
+type system, since 2026-09-30), no drawn frame — type sits 60px from the edge, and `.frame` survives as an invisible
 box inset 34px that `proof.py` measures against. Content is always full
 `--on-field`; only corner chrome (`.lbl`) is muted. **Every word is a record
 field or fixed template copy**: `render.py` only *chooses* spans of the
@@ -242,14 +242,15 @@ never hardcode a hue in a template. A Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | amber | pink |
+| `ember` | energy, materials, engineering, chemistry | pink | olive |
 
 Invariants (`render.rhythm()` is them as code): `--ink` is the type on
 light slides; slide 2 is cream; the catch is the second-to-last
 slide and drops to `--ink`; first and last slides share a field; the middle
 alternates support and lead; every lead/support hue clears 4.5:1 against
 `--ink` (asserted in `tests/`); **no two consecutive posts share a field**
-(`render.vary()`, deterministic). `render.py --colorway <name>` overrides at
+(`render.vary()`, deterministic, comparing colour pairs, not names: `ember`
+wears `signal`'s pink/olive since 2026-09-30, by the owner's call). `render.py --colorway <name>` overrides at
 the gate. → `docs/decisions/rendering.md`
 
 ### Drop reels

@@ -27,9 +27,10 @@
   --sky:    #7FB2E5;
   --amber:  #F2B441;
 
-  /* Design v2 (2026-09-28): one variable grotesk for display and body,
-     one mono for labels. docs/decisions/rendering.md, "Design v2". */
-  --display: 'Archivo', system-ui, sans-serif;
-  --body:    'Archivo', system-ui, sans-serif;
-  --mono:    'IBM Plex Mono', ui-monospace, monospace;
+  /* GitHub's open-source type system (2026-09-30): display, body and
+     labels. The owner chose it from four OFL tech systems set in one
+     layout. docs/decisions/rendering.md, "Design v3". */
+  --display: 'Hubot Sans', system-ui, sans-serif;
+  --body:    'Mona Sans', system-ui, sans-serif;
+  --mono:    'Monaspace Neon', ui-monospace, monospace;
 }

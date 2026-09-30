@@ -14,8 +14,9 @@
    slide's field. What v2 changed is the type and the layout (see
    docs/decisions/rendering.md, "Design v2"):
 
-   - Archivo (variable width) for display and body, IBM Plex Mono for
-     the labels. Self-hosted from ../fonts/. Do not switch to the Google
+   - GitHub's open-source type system (2026-09-30, replacing Archivo
+     and IBM Plex Mono): Hubot Sans for display, Mona Sans for body,
+     Monaspace Neon for labels. Self-hosted from ../fonts/. Do not switch to the Google
      Fonts CDN: rendering would then depend on a network call, and a
      slow or blocked request produces silently wrong-looking slides
      instead of a clear error.
@@ -28,19 +29,25 @@
    ============================================================ */
 
 @font-face {
-  font-family: 'Archivo';
-  src: url('{{ font_dir }}/Archivo.ttf') format('truetype');
-  font-weight: 100 900; font-stretch: 62% 125%;
+  font-family: 'Hubot Sans';
+  src: url('{{ font_dir }}/HubotSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
   font-display: block;
 }
 @font-face {
-  font-family: 'IBM Plex Mono';
-  src: url('{{ font_dir }}/IBMPlexMono-Medium.ttf') format('truetype');
+  font-family: 'Mona Sans';
+  src: url('{{ font_dir }}/MonaSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Monaspace Neon';
+  src: url('{{ font_dir }}/MonaspaceNeon-Medium.otf') format('opentype');
   font-weight: 500; font-display: block;
 }
 @font-face {
-  font-family: 'IBM Plex Mono';
-  src: url('{{ font_dir }}/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-family: 'Monaspace Neon';
+  src: url('{{ font_dir }}/MonaspaceNeon-SemiBold.otf') format('opentype');
   font-weight: 600; font-display: block;
 }
 
@@ -79,33 +86,67 @@ body { background: #2A2A2A; font-family: var(--body); }
 }
 .slide.dark::after { mix-blend-mode: screen; opacity: .08; }
 
-/* ---------- v3: the grid and the glow (2026-09-30) ----------
+/* ---------- v3: the grid and the backdrop (2026-09-30) ----------
    Hairline rules on the frame edges (x 34/1046, outside the 60px text
    column), the header / footer bands, and the centre line inside those
-   bands only — a rule through the text read as the words overlapping, the way the owner's Swiss-poster references show their
-   grid; and one soft glow for depth. Decoration only, under everything.
-   The glow is always a lighter or same-contrast hue than the field under
-   the text (cream on a lead, the lead on cream), so no content line loses
-   contrast against --ink; on the dark slide it stays in the top corner,
-   away from the body. Only slides with a .frame: the reel's full-bleed
-   backdrops carry .slide too and must stay flat. */
-.slide { --rule: color-mix(in srgb, var(--on-field) 16%, transparent);
-         --glow: color-mix(in srgb, var(--cream) 55%, transparent); }
-.slide.cream { --glow: color-mix(in srgb, var(--lead) 45%, transparent); }
-.slide.dark  { --rule: color-mix(in srgb, var(--cream) 13%, transparent);
-               --glow: color-mix(in srgb, var(--lead) 30%, transparent); }
+   bands only: a rule through the text read as the words overlapping.
+   Only slides with a .frame: the reel's full-bleed backdrops carry
+   .slide too and must stay flat. */
+.slide { --rule: color-mix(in srgb, var(--on-field) 16%, transparent); }
+.slide.dark { --rule: color-mix(in srgb, var(--cream) 13%, transparent); }
 /* the cover's spec row has its own rule where the footer band would be */
 .slide:has(.spec) { --foot: linear-gradient(transparent, transparent); }
-.slide:has(> .frame)::before {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+
+/* The backdrop, after the owner's "elegant dark pattern" reference: a
+   light falloff from the top left, skewed streaks fading downward, a fine
+   dot grid fading out toward the text. Each slide is tinted toward ITS
+   OWN field only: the first version's cross-hue glow (pink on cream,
+   cream on amber) read as colours that did not belong together. The one
+   second hue is the lead's streaks on the dark slide, the reference's
+   cyan-on-black.
+   Contrast: on a light field the sheen and streaks only lighten (toward
+   cream), which raises ink's contrast; on cream the streaks are a faint
+   ink shadow with ~12:1 of headroom; on the dark slide the streaks fade
+   out well above the body text.
+   It lives on the slide (background layers + ::before), not in .frame:
+   proof.py reads anything in the frame reaching past it as clipped text. */
+.slide { --sheen: color-mix(in srgb, var(--cream) 55%, transparent);
+         --streak: color-mix(in srgb, var(--cream) 70%, transparent);
+         --dot: color-mix(in srgb, var(--on-field) 20%, transparent); }
+.slide.cream { --sheen: transparent;
+               --streak: color-mix(in srgb, var(--ink) 9%, transparent); }
+/* amber takes less sheen: cream over it washes out to a faded yellow,
+   where over pink or olive it reads as a pastel glow */
+.slide.amber { --sheen: color-mix(in srgb, var(--cream) 28%, transparent);
+               --streak: color-mix(in srgb, var(--cream) 45%, transparent); }
+.slide.dark  { --sheen: color-mix(in srgb, var(--cream) 9%, transparent);
+               --streak: color-mix(in srgb, var(--lead) 60%, transparent);
+               --dot: color-mix(in srgb, var(--cream) 16%, transparent); }
+/* On ink, a translucent lead mixes to mud (amber over brown is brown);
+   screen adds it as light instead, so every lead glows the way pink does */
+.slide.dark:has(> .frame)::before { mix-blend-mode: screen; opacity: .5; }
+.slide:has(> .frame) {
   background:
+    /* the grid (first = on top) */
     linear-gradient(to right, transparent 33px, var(--rule) 33px 35px, transparent 35px),
     linear-gradient(to right, transparent 1045px, var(--rule) 1045px 1047px, transparent 1047px),
     linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 0 / 100% 110px no-repeat,
     linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 1240px / 100% 110px no-repeat,
     linear-gradient(to bottom, transparent 109px, var(--rule) 109px 111px, transparent 111px),
     var(--foot, linear-gradient(to bottom, transparent 1239px, var(--rule) 1239px 1241px, transparent 1241px)),
-    radial-gradient(640px 560px at 100% 0%, var(--glow), transparent 70%);
+    /* the sheen, then the field laid over the dots' lower half */
+    radial-gradient(100% 90% at 0% 0%, var(--sheen) 0%, transparent 75%),
+    linear-gradient(transparent 15%, var(--field) 70%),
+    radial-gradient(circle at 2px 2px, var(--dot) 1.6px, transparent 0) 0 0 / 24px 24px,
+    var(--field);
+}
+.slide:has(> .frame)::before {
+  content: ""; position: absolute; inset: 0 -60%; z-index: 0; pointer-events: none; opacity: .55;
+  background: linear-gradient(var(--streak) 0%, transparent 62%);
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 20%, transparent 36%, #000 55%, rgba(0,0,0,.13) 67%, #000 78%, transparent 97%),
+    linear-gradient(90deg, transparent 9%, #000 20%, rgba(0,0,0,.55) 28%, rgba(0,0,0,.42) 40%, #000 48%, rgba(0,0,0,.27) 54%, rgba(0,0,0,.13) 78%, #000 88%, transparent 97%);
+  transform: skewX(45deg);
 }
 
 .frame { position: absolute; inset: 34px; }
@@ -123,9 +164,9 @@ body { background: #2A2A2A; font-family: var(--body); }
 /* ---------- cover ---------- */
 .hook {
   position: absolute; left: 26px; right: 26px; top: 98px; z-index: 3;
-  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-family: var(--display); font-weight: 800; font-stretch: 110%;
   font-size: 96px; line-height: 1.0; letter-spacing: -.03em; text-wrap: balance;
-  /* a rule on every line's baseline (.84em in Archivo at line-height
+  /* a rule on every line's baseline (.84em at line-height
      1.0), the poster-on-a-grid look; descenders cross it on purpose */
   background: repeating-linear-gradient(to bottom, transparent 0 .84em,
               var(--rule) .84em calc(.84em + 2px), transparent calc(.84em + 2px) 1em);
@@ -174,7 +215,7 @@ body { background: #2A2A2A; font-family: var(--body); }
 }
 .sec span { font-weight: 500; margin-right: 18px; }
 .text {
-  font-family: var(--body); font-weight: 500; font-stretch: 94%;
+  font-family: var(--body); font-weight: 500; font-stretch: 100%;
   font-size: 60px; line-height: 1.18; letter-spacing: -.02em; text-wrap: pretty;
 }
 .text.sm { font-size: 52px; }
@@ -230,7 +271,7 @@ body { background: #2A2A2A; font-family: var(--body); }
 .cloud .tag {
   position: absolute; white-space: nowrap; background: var(--field);
   border: 2px solid var(--on-field); padding: 16px 26px 18px;
-  font-family: var(--display); font-weight: 600; font-stretch: 94%;
+  font-family: var(--display); font-weight: 600; font-stretch: 100%;
   font-size: 44px; letter-spacing: -.015em; line-height: 1;
 }
 .cloud .tag i {
@@ -242,7 +283,7 @@ body { background: #2A2A2A; font-family: var(--body); }
 
 /* ---------- last slide ---------- */
 .follow {
-  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-family: var(--display); font-weight: 800; font-stretch: 110%;
   font-size: 84px; line-height: 1.02; letter-spacing: -.03em;
 }
 .tagline { font-size: 40px; font-weight: 500; line-height: 1.25; margin-top: 20px; }
@@ -257,7 +298,7 @@ body { background: #2A2A2A; font-family: var(--body); }
 /* ---------- Breakdown ---------- */
 /* The question and the recap are the post speaking in its own voice, so
    they are set in the display weight rather than as body copy. */
-.text.display { font-family: var(--display); font-weight: 700; font-stretch: 90%;
+.text.display { font-family: var(--display); font-weight: 700; font-stretch: 105%;
                 font-size: 64px; line-height: 1.08; letter-spacing: -.025em; }
 /* The mechanism's position: one segment per step, the current one filled.
    No text, so proof.py has nothing here to measure. */
