@@ -1,0 +1,39 @@
+{
+  "post_type": "drop",
+  "domain": "materials",
+  "colorway": "ember",
+  "hook": "Drilling small holes lets you fold curved aluminum sheets by hand.",
+  "hooks": [
+    "Drilling small holes lets you fold curved aluminum sheets by hand.",
+    "Scoring grooves crack metal, but hole lines avoid that failure.",
+    "Create complex curves with just a drill and patience, no fancy tools."
+  ],
+  "what_happened": "John drilled small holes along each curved fold line, then bent the aluminum by hand to create the desired shape.",
+  "why_it_matters": "It lets you shape curved metal without expensive machines, removing the tool bottleneck.",
+  "the_catch": "The finished part has visible perforations, the process is slow, and it hasn’t been proven on thick steel.",
+  "caption": "Drilling a line of small holes lets you fold curved aluminum sheets by hand without fancy tools. Could you replace a scoring groove with this hole‑perforation technique on your next project?",
+  "keywords": [
+    "metal folding",
+    "hole scoring",
+    "DIY fabrication"
+  ],
+  "hashtags": [
+    "#metalworking",
+    "#fabrication",
+    "#diy",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that drilling a series of tiny holes along a curved line creates a weak spot that lets you bend aluminum by hand, avoiding cracks and fancy equipment.",
+  "source_url": "https://hackaday.com/2026/09/11/how-to-fold-curved-lines-in-metal-without-fancy-tools/",
+  "attribution": "Hackaday",
+  "peer_reviewed": false,
+  "beat": "software",
+  "es": {
+    "domain": "materiales",
+    "hook": "Taladrar pequeños agujeros permite doblar láminas de aluminio curvadas a mano.",
+    "what_happened": "John taladró pequeños agujeros a lo largo de cada línea de pliegue curva, luego dobló el aluminio a mano para crear la forma deseada.",
+    "why_it_matters": "Permite dar forma al metal curvo sin máquinas costosas, eliminando el cuello de botella de la herramienta.",
+    "the_catch": "La pieza terminada tiene perforaciones visibles, el proceso es lento y no se ha demostrado en acero grueso.",
+    "_en": "d9f8089198d65c74"
+  }
+}
