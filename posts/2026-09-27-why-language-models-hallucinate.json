@@ -45,5 +45,8 @@
     "the_catch": "Preimpresión, aún no revisada por pares. Los autores señalan que su marco ignora grados de error y contexto fuera del prompt.",
     "_en": "fe96ab898ae69b50"
   },
-  "published_at": "2026-09-27"
+  "published_at": "2026-09-27",
+  "metrics": {
+    "asked_at": "2026-09-30"
+  }
 }
