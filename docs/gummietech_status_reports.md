@@ -130,6 +130,16 @@ with no place in the run; `order_key()` sorts them after the numbered queue,
 and `missing_numbers()` ignores them. The varied labels read as range rather
 than as a break in the series.
 
+**When today's joke does not land.** The report message carries **Send a
+different one today**, which runs `series.yml` with `swap`. It keeps all
+three promises: an unnumbered report goes out instead — it has no place in
+the run, so it skips nothing — and today's numbered report goes back to the
+front of the queue and out tomorrow. That makes the unnumbered reports the
+swap reserve as well as posts in their own right: each one sent this way is
+one fewer to swap with, and when none is ready the swap says so and changes
+nothing. A numbered report that should never go out at all is canvas work —
+the later slides are renumbered and re-exported so no gap opens.
+
 ## 6. The modules, and why they rotate
 
 A report is built from a layout module. The six in use:

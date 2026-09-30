@@ -61,3 +61,20 @@ Four things that are deliberate:
 `eyebrow` rather than `post_type`/`colorway`/`domain` — what varies in this
 pillar is the layout the slide is built from, and "which module earns another
 ten" is §8's format decision one pillar down.
+
+### Sending a different one today
+
+The report message links to `series.yml` as **Send a different one today**;
+ticking `swap` there runs `telegram.py send-series --swap`. The number is
+drawn into the slide, so today's report cannot be skipped (a public gap) and
+the next numbered one cannot stand in for it (the skip `next_unsent()`
+refuses). An **unnumbered** report has no place in the run, so it goes out
+instead, and today's report loses its `sent_at` — it is `next_unsent()` again
+and goes out tomorrow. With no unnumbered report ready, the swap says so in
+the chat and changes nothing. A report already posted is never taken back.
+
+The swapped-out message keeps its ✅, and a tap replays for 24 hours — past
+the moment the report is re-sent. So `confirm` ignores a `ser:` tap whose
+report has no `sent_at`, or whose message is from an earlier day than
+`sent_at` (`stale_series_tap()`): a live button's message is always sent on
+its report's `sent_at` day.

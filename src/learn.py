@@ -143,6 +143,40 @@ def ranking(scored: list[tuple[Path, dict, dict]]) -> None:
               f"{hook[:52]}")
 
 
+# draft.REJECTED_DIR, not imported: draft.py pulls in gspread and the LLM
+# clients, and this script reads JSON and nothing else.
+REJECTED = POSTS_DIR / "rejected"
+
+
+def rejections(directory: Path = REJECTED) -> None:
+    """Drafts turned down at the gate, by beat, with the reasons given.
+
+    The other half of what to cut: a story that never reached Instagram has
+    no numbers, so the only signal it leaves is that a person said no, and
+    why. Counted by `beat` because that is the lever — draft.pick_row()
+    prefers PRIORITY_BEATS, and a beat that keeps getting rejected is the
+    thing to take off that list.
+    """
+    turned: list[dict] = []
+    for path in sorted(directory.glob("*.json")):
+        post = read_post(path)
+        if post is not None:
+            turned.append(post)
+    if not turned:
+        return
+    by_beat: dict[str, int] = defaultdict(int)
+    for post in turned:
+        by_beat[str(post.get("beat") or "—").strip().lower()] += 1
+    print(f"\nRejected at the gate: {len(turned)} — by beat: "
+          + ", ".join(f"{b} {n}" for b, n in
+                      sorted(by_beat.items(), key=lambda kv: -kv[1])))
+    for post in turned:
+        why = str((post.get("rejected") or {}).get("reason") or "").strip()
+        hook = str(post.get("hook") or post.get("title") or "").strip()
+        print(f"  {str((post.get('rejected') or {}).get('at', '')):<12}"
+              f"{hook[:48]:<50}{why or '(no reason given)'}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--by", action="append", default=None, metavar="FIELD",
@@ -169,6 +203,9 @@ def main() -> int:
     print(f"{total} published · {len(scored)} measured"
           + (f" · {unanswered} asked, not answered" if unanswered else "")
           + (f" · {unmeasured} not yet asked" if unmeasured else ""))
+
+    if not args.series:
+        rejections()
 
     if not scored:
         print("\nNothing measured yet. telegram.py asks for a post's numbers "

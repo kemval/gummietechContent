@@ -71,7 +71,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
                      hook.yml (put another of a draft's hooks on the cover,
-                     then review.yml again) ·
+                     then review.yml again) · redraft.yml (reject the
+                     waiting draft, draft the next story, review.yml) ·
                      publish.yml (the publish tap, 15m) · site.yml (archive) ·
                      watch.yml (daily: is any of this still running?) ·
                      series.yml (the status-report pillar, daily) ·
@@ -107,7 +108,8 @@ feeds/               *.yaml source lists by tier
 series/              reports/*.json + images/*.png — the status-report pillar
 tests/               pytest over the pure functions; every case is a
                      post-mortem — see **When something breaks**
-posts/               drafted post JSON
+posts/               drafted post JSON; posts/rejected/ holds drafts
+                     turned down at the gate — dedup memory, nothing else
 templates/
   tokens.css         the locked palette and type stack — included by both
   slides.css         the slide design (v2), shared by every format + reel
@@ -364,6 +366,10 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `review.yml` is the one reusable review; callers commit before calling it.
   `.github/actions/resolve-post` is the one answer to "which post is held".
 - `hook.yml` swaps the cover line and re-runs the whole review.
+- `redraft.yml` (**Another story**) moves the waiting draft to
+  `posts/rejected/` with the reason given, drafts the next story, and
+  reviews it. Moved, not deleted: `covered_papers()` reads it as dedup
+  memory; every other reader globs `posts/*.json` and never sees it.
 - `telegram.py` sends slides as documents (never photos), discovers how many
   slides there are, carries the post stem in `callback_data`, and calls
   `getUpdates` **without an offset** — `confirm` is idempotent; do not add
@@ -439,6 +445,10 @@ queue.
 - Its callback prefix is `ser:` (reports `published=false`); one poller
   serves both pillars; `sent_at` is not `published_at`; a missing image is
   said in the chat and exits 0, never skips ahead.
+- **Send a different one today** (`series.yml` with `swap`) sends an
+  unnumbered report in place of today's, which loses `sent_at` and goes out
+  tomorrow — the numbering is never skipped. `confirm` ignores the
+  swapped-out message's ✅ (`stale_series_tap()`).
 
 → `docs/decisions/status-report-mechanics.md`
 

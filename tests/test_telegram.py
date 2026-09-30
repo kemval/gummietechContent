@@ -438,3 +438,19 @@ def test_locate_does_not_confuse_the_two_collections(posts, reports, quiet):
     assert tg.locate("2026-09-15-x").parent.name == "posts"
     assert tg.locate("07-learning-queue").parent.name == "reports"
     assert tg.locate("nothing-of-the-sort") is None
+
+
+# A swapped-out status report keeps its ✅ in the chat, and getUpdates replays
+# a tap for 24 hours — past the moment the report goes out again tomorrow.
+NOON_0930 = 1790769600        # 2026-09-30 12:00 UTC
+
+
+@pytest.mark.parametrize("report, stale", [
+    ({"sent_at": "2026-09-30"}, False),   # the live button on today's send
+    ({}, True),                           # taken back, not re-sent yet
+    ({"sent_at": "2026-10-01"}, True),    # re-sent since: the old message
+])
+def test_a_tap_on_a_swapped_out_send_records_nothing(monkeypatch, report,
+                                                     stale):
+    monkeypatch.setenv("PUBLISH_TZ", "UTC")
+    assert tg.stale_series_tap(report, {"date": NOON_0930}) is stale

@@ -39,6 +39,14 @@ on:
         type: boolean
         required: false
         default: false
+      swap:
+        description: >
+          Today's report did not land: put it back in the queue (it goes out
+          tomorrow) and send an unnumbered one in its place. Linked from the
+          chat as "Send a different one today".
+        type: boolean
+        required: false
+        default: false
 
 # Two sends at once would both claim the same report and race on the push.
 concurrency:
@@ -84,8 +92,17 @@ jobs:
       - id: check
         env:
           FORCE: ${{ inputs.force }}
+          SWAP: ${{ inputs.swap }}
           PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
         run: |
+          # A swap replaces what went out today, so "already sent today" is
+          # its precondition, not a reason to stop. swap_series() checks the
+          # rest and says so in the chat.
+          if [ "$SWAP" = "true" ]; then
+            echo "send=true" >> "$GITHUB_OUTPUT"
+            echo "swap was asked for — replacing today's report."
+            exit 0
+          fi
           if [ "$FORCE" = "true" ]; then
             echo "send=true" >> "$GITHUB_OUTPUT"
             echo "force was asked for — sending whatever already went out today."
@@ -144,7 +161,10 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
-        run: python src/telegram.py send-series
+          SWAP: ${{ inputs.swap }}
+        run: |
+          if [ "$SWAP" = "true" ]; then set -- --swap; else set --; fi
+          python src/telegram.py send-series "$@"
 
       # Only `sent_at` changes here. `published_at` is publish.yml's to write,
       # when you tap — this job never dates a post as live.
@@ -157,7 +177,12 @@ jobs:
           git config user.name  "gummietech"
           git config user.email "noreply@github.com"
           git add series/reports/
-          git commit -m "Send the next status report" \
+          if [ "${{ inputs.swap }}" = "true" ]; then
+            msg="Swap today's status report for an unnumbered one"
+          else
+            msg="Send the next status report"
+          fi
+          git commit -m "$msg" \
                      -m "$(git diff --cached --name-only)"
           git pull --rebase
           git push

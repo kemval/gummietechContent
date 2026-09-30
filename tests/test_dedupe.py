@@ -8,6 +8,8 @@ morning.
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import draft
@@ -133,3 +135,40 @@ def test_the_arxiv_id_wins_over_the_coverage_link(queue, tmp_path, monkeypatch):
     item = draft.evergreen_candidate(9)
     assert item["url"] == "https://arxiv.org/abs/2601.04621"
     assert any(host in item["url"] for host in draft.PREPRINT_HOSTS)
+
+
+def test_a_story_rejected_at_the_gate_does_not_come_back(covered, posts_dir):
+    """redraft.yml moves a turned-down draft into posts/rejected/. Deleting it
+    instead would have dropped its DOI from this guard, and the same paper
+    would come straight back through a sibling feed's row."""
+    directory, _ = posts_dir
+    covered("2026-09-30-x.json", doi="10.1/rejected", source_url="https://n/2")
+    draft.reject(directory / "2026-09-30-x.json", "no value", "2026-09-30")
+
+    assert not (directory / "2026-09-30-x.json").exists()
+    paper = {"doi": "10.1/rejected", "authors": [], "journal": "", "year": None}
+    assert draft.already_covered(paper, "https://other",
+                                 draft.covered_papers()) == "2026-09-30-x.json"
+
+
+def test_rejecting_keeps_the_reason_and_leaves_the_rest(covered, posts_dir):
+    directory, _ = posts_dir
+    covered("2026-09-30-x.json", hook="h", post_type="drop")
+    dest = draft.reject(directory / "2026-09-30-x.json", " no value ",
+                        "2026-09-30")
+    post = json.loads(dest.read_text())
+    assert dest.parent.name == draft.REJECTED_DIR
+    assert post["rejected"] == {"at": "2026-09-30", "reason": "no value"}
+    assert post["hook"] == "h"
+
+
+@pytest.mark.parametrize("record", [
+    {"published_at": "2026-09-29"},       # live — not ours to take back
+    {"post_type": "breakdown"},           # written by hand, no "next one"
+])
+def test_rejecting_refuses_what_it_must_not_move(covered, posts_dir, record):
+    directory, _ = posts_dir
+    covered("2026-09-30-x.json", **record)
+    with pytest.raises(SystemExit):
+        draft.reject(directory / "2026-09-30-x.json", "", "2026-09-30")
+    assert (directory / "2026-09-30-x.json").exists()

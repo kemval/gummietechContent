@@ -152,6 +152,20 @@ PUBLISH_WORKFLOW = "publish.yml"
 # reason — a callback would replay and re-dispatch a review every poll.
 HOOK_WORKFLOW = "hook.yml"
 
+# Where a draft whose story is not worth posting is swapped for the next one
+# in the queue: redraft.yml retires it to posts/rejected/ with the reason
+# typed in the form, drafts again, and sends the new one back through
+# review.yml. A link for workflow_url()'s reason. Only on the formats
+# draft.py writes — a Breakdown is written by hand and has no "next one".
+REDRAFT_WORKFLOW = "redraft.yml"
+REDRAFTABLE = ("drop", "signal")
+
+# Where today's status report is swapped for an unnumbered one: series.yml
+# with `swap` ticked. The numbered report goes back to the front of the queue
+# and goes out tomorrow — the number is drawn into the image, so skipping it
+# would leave a public gap. See send_series().
+SERIES_WORKFLOW = "series.yml"
+
 # Where a published Drop's reel is asked for: a link under the ✅ that confirm
 # replies with. A link and not a callback for workflow_url()'s reason — a tap
 # replays for 24 hours, and a render per replay would spend runner minutes
@@ -440,7 +454,8 @@ def hook_lines(post: dict) -> list[str]:
 def review_text(post: dict, stem: str,
                 reviews: list[tuple[str, str]] | None = None,
                 retry: str | None = None, fix: str | None = None,
-                poll: str | None = None) -> str:
+                poll: str | None = None,
+                redraft: str | None = None) -> str:
     """The copy blocks a person needs in hand to post the carousel."""
     e = html.escape
     reviews = reviews or []
@@ -537,6 +552,11 @@ def review_text(post: dict, stem: str,
     else:
         lines += ["", "Tap the button once it is live on Instagram. "
                       + waiting_note(poll)]
+    if redraft:
+        lines += ["", "Story not worth posting? <b>Another story</b> retires "
+                      "this one — say why in the form, learn.py keeps it — "
+                      "and drafts the next in the queue, checked like this "
+                      "one before it comes back."]
     return "\n".join(lines)
 
 
@@ -641,6 +661,9 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         # for a couple of hours. See PUBLISH_WORKFLOW.
         poll = workflow_url(PUBLISH_WORKFLOW)
         swap = (workflow_url(HOOK_WORKFLOW) if hook_lines(post) else None)
+        redraft = (workflow_url(REDRAFT_WORKFLOW)
+                   if format_name(post.get("post_type")) in REDRAFTABLE
+                   else None)
         if held:
             # A hold cannot stop the carousel reaching Instagram — that is
             # done by hand, outside this. All it can withhold is the record,
@@ -659,9 +682,12 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                 rows.append([{"text": "⏱ Record it now", "url": poll}])
             if swap:
                 rows.append([{"text": "🔀 Swap the hook", "url": swap}])
+            if redraft:
+                rows.append([{"text": "🗑 Another story", "url": redraft}])
             markup = {"inline_keyboard": rows}
             links = ", ".join(n for n, on in (("fix", fix), ("re-check", retry),
-                                              ("poll", poll), ("hook", swap))
+                                              ("poll", poll), ("hook", swap),
+                                              ("redraft", redraft))
                               if on)
             note = (f"HELD by {', '.join(held)}, override button"
                     + (f" + {links} link(s)" if links else ""))
@@ -672,11 +698,15 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                 rows.append([{"text": "⏱ Record it now", "url": poll}])
             if swap:
                 rows.append([{"text": "🔀 Swap the hook", "url": swap}])
+            if redraft:
+                rows.append([{"text": "🗑 Another story", "url": redraft}])
             markup = {"inline_keyboard": rows}
             note = ("button offered" + (" + poll link" if poll else "")
-                    + (" + hook link" if swap else ""))
+                    + (" + hook link" if swap else "")
+                    + (" + redraft link" if redraft else ""))
         send_message(token, chat_id,
-                     review_text(post, stem, reviews, retry, fix, poll), markup)
+                     review_text(post, stem, reviews, retry, fix, poll,
+                                 redraft), markup)
         print(f"  sent the review message — {note}")
     except TelegramError as exc:
         sys.exit(str(exc))
@@ -684,7 +714,8 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     return 0
 
 
-def send_series(report_path: Path, dry_run: bool = False) -> int:
+def send_series(report_path: Path, dry_run: bool = False,
+                replaces: tuple[Path, dict] | None = None) -> int:
     """Put one status report in the chat, with its caption and one button.
 
     The same three-message shape `send` uses for a carousel, and for the same
@@ -696,6 +727,11 @@ def send_series(report_path: Path, dry_run: bool = False) -> int:
     report because there is nothing to check against — no source, no claim,
     no preprint flag. What `proof.py` measures on a carousel the Design canvas
     settles at design time, and the joke either lands or it does not.
+
+    `replaces` is a swap (see swap_series): the report already sent today,
+    which loses its `sent_at` once this one has gone out — so it is
+    next_unsent() again and goes out tomorrow — and is named in the message
+    so its old ✅ is not mistaken for this one's.
     """
     stem = report_path.stem
     report = series.read_report(report_path)
@@ -719,6 +755,8 @@ def send_series(report_path: Path, dry_run: bool = False) -> int:
         print(f"  image   {image.relative_to(REPO_ROOT)}"
               f"{'' if image.exists() else '   (MISSING)'}")
         print(f"  button  {data}")
+        if replaces:
+            print(f"  swaps   {replaces[0].name} back into the queue")
         print(f"\n{caption}\n")
         if why:
             print(f"Not sendable: {why}")
@@ -771,14 +809,30 @@ def send_series(report_path: Path, dry_run: bool = False) -> int:
         print("  sent the caption")
 
         poll = workflow_url(PUBLISH_WORKFLOW)
+        other = workflow_url(SERIES_WORKFLOW)
         rows = [[{"text": "✅ Posted to Instagram", "callback_data": data}]]
         if poll:
             rows.append([{"text": "⏱ Record it now", "url": poll}])
+        if other:
+            rows.append([{"text": "🔀 Send a different one today",
+                          "url": other}])
+        swapped = ""
+        if replaces:
+            swapped = (f"🔀 In place of <b>"
+                       f"{html.escape(series.label(replaces[1]), quote=False)}"
+                       f"</b>, which goes back to the front of the queue and "
+                       f"out tomorrow. Its ✅ above no longer records "
+                       f"anything.\n\n")
+        different = ("\n\nNot today's joke? <b>Send a different one</b>, "
+                     "then tick <i>swap</i>: an unnumbered report goes out "
+                     "instead and this one waits for tomorrow, so the "
+                     "numbering keeps its promise." if other else "")
         send_message(token, chat_id,
+                     f"{swapped}"
                      f"📮 <b>{html.escape(label, quote=False)}</b>\n"
                      f"<code>{html.escape(stem, quote=False)}</code>\n\n"
                      f"The caption is the message above — copy it whole.\n\n"
-                     f"{waiting_note(poll)}",
+                     f"{waiting_note(poll)}{different}",
                      {"inline_keyboard": rows})
         print(f"  sent the button{' + poll link' if poll else ''}")
     except TelegramError as exc:
@@ -787,7 +841,50 @@ def send_series(report_path: Path, dry_run: bool = False) -> int:
     report[series.SENT_KEY] = publish_date()
     series.write_report(report_path, report)
     print(f"  {report_path.name}: {series.SENT_KEY} = {report[series.SENT_KEY]}")
+    if replaces:
+        # Only after the new one is out: a send that broke halfway leaves
+        # today's report as it was, sent, rather than neither.
+        old_path, old = replaces
+        old.pop(series.SENT_KEY, None)
+        series.write_report(old_path, old)
+        print(f"  {old_path.name}: {series.SENT_KEY} cleared — back in the "
+              f"queue")
     return 0
+
+
+def swap_series(dry_run: bool = False) -> int:
+    """Today's status report out, an unnumbered one in — series.yml's `swap`.
+
+    The number is drawn into the slide, so the rejected report cannot be
+    skipped without a public gap, and the next numbered one cannot stand in
+    for it. An unnumbered report has no place in the run, so it can go out on
+    any day; the numbered one keeps its turn and goes out tomorrow. When no
+    unnumbered report is left the swap says so and changes nothing — a new
+    joke is canvas work.
+    """
+    today = publish_date()
+    sent = series.sent_on(today)
+    pick = series.swap_candidate()
+    why = None
+    if sent is None:
+        why = (f"Nothing unposted went out on {today}, so there is nothing to "
+               f"swap. series.yml sends the next report on its own.")
+    elif pick is None:
+        why = (f"No unnumbered report is ready to stand in, so "
+               f"{series.label(sent[1])} stays today's. Add one on the canvas "
+               f"(docs/gummietech_status_reports.md) to swap again.")
+    if why:
+        print(f"Nothing swapped — {why}")
+        if not dry_run:
+            token, chat_id = config(need_chat=True)
+            try:
+                send_message(token, chat_id,
+                             f"🔀 Nothing swapped. "
+                             f"{html.escape(why, quote=False)}")
+            except TelegramError as exc:
+                sys.exit(str(exc))
+        return 0
+    return send_series(pick[0], dry_run, replaces=sent)
 
 
 def send_reel(post_path: Path, review_paths: list[Path]) -> int:
@@ -1086,8 +1183,8 @@ def record_metrics(token: str, updates: list, today: str) -> int:
     return recorded
 
 
-def publish_date() -> str:
-    """Today, in the zone the account actually posts from."""
+def publish_date(at: float | None = None) -> str:
+    """Today — or the day of unix time `at` — in the zone the account posts from."""
     name = os.getenv("PUBLISH_TZ", "UTC").strip() or "UTC"
     try:
         zone = ZoneInfo(name)
@@ -1095,7 +1192,27 @@ def publish_date() -> str:
         print(f"  warning: PUBLISH_TZ={name!r} is not a zone name — dating "
               f"in UTC. Use an IANA name like America/Bogota.")
         zone = ZoneInfo("UTC")
-    return datetime.now(zone).date().isoformat()
+    moment = (datetime.fromtimestamp(at, zone) if at is not None
+              else datetime.now(zone))
+    return moment.date().isoformat()
+
+
+def stale_series_tap(report: dict, message: dict) -> bool:
+    """Is this ✅ from a sending of the report that was swapped out?
+
+    swap_series() takes a report back by clearing its `sent_at`, and its old
+    message keeps the button. Until it goes out again there is no `sent_at`
+    at all; after, `sent_at` is a later day than the message — and getUpdates
+    replays a tap for 24 hours, so without the second test a tap on
+    yesterday's rejected send would date today's. A live button's message is
+    sent on its report's `sent_at` day, both in PUBLISH_TZ, so a message from
+    an earlier day is always stale.
+    """
+    sent = str(report.get(series.SENT_KEY, "")).strip()
+    if not sent:
+        return True
+    when = message.get("date")
+    return isinstance(when, (int, float)) and publish_date(when) < sent
 
 
 def confirm() -> int:
@@ -1141,6 +1258,10 @@ def confirm() -> int:
         if recorded(post, prefix):
             # The expected case on every poll after the first: getUpdates
             # keeps replaying the tap for 24 hours.
+            continue
+
+        if is_series and stale_series_tap(post, query.get("message") or {}):
+            print(f"  {path.name}: tap ignored — that send was swapped out")
             continue
 
         if is_reel:
@@ -1245,6 +1366,9 @@ def main() -> int:
     r.add_argument("--dry-run", action="store_true",
                    help="print what would be sent and exit without calling "
                         "Telegram")
+    r.add_argument("--swap", action="store_true",
+                   help="put today's report back in the queue and send an "
+                        "unnumbered one in its place")
     v = sub.add_parser("send-reel",
                        help="send a published Drop's reel for approval")
     v.add_argument("post", type=Path, help="path to the post JSON")
@@ -1258,6 +1382,8 @@ def main() -> int:
         return confirm()
 
     if args.command == "send-series":
+        if args.swap:
+            return swap_series(args.dry_run)
         if args.report:
             path = (args.report if args.report.is_absolute()
                     else REPO_ROOT / args.report)

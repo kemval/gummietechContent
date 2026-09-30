@@ -149,6 +149,28 @@ constraints that shape it:
   the most frequently run workflow here, and `telegram.py` deliberately does
   not import `render.py`, which would drag in Playwright.
 
+### Another story — rejecting a draft from the phone
+
+A post can pass every check and still not be worth posting: the checks ask
+whether it is *true* and *legible*, not whether it gives a follower anything.
+The gate message links to `redraft.yml` as **Another story** on both
+keyboards, for Drops and Signals (a Breakdown is written by hand, so there is
+no "next one" to draft). The form takes an optional reason.
+
+- **The draft is moved to `posts/rejected/`, not deleted.** `covered_papers()`
+  reads that directory too, so the rejected paper does not return through a
+  sibling feed's row — the whole failure `docs/decisions/dedup.md` is about.
+  Every other reader of `posts/` globs `*.json` without recursing, so the
+  move takes it out of the archive, `resolve-post`, `watch.py` and the daily
+  gate at once, with no field for any of them to learn.
+- **The sheet row is left alone.** It is already `drafted`, which keeps
+  `pick_row()` off it.
+- **The reason is kept for `learn.py`,** which lists rejections by `beat`: a
+  story with no numbers leaves no other signal, and a beat that keeps being
+  rejected is the one to take off `PRIORITY_BEATS`.
+- A link, not a callback, for `workflow_url()`'s reason. It shares
+  `daily.yml`'s concurrency group: both take a row and push to master.
+
 ### Both reviews gate the button
 
 `telegram.py send --review FILE` carries each report into the message, and a

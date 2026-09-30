@@ -1,0 +1,167 @@
+name: redraft
+
+# Swap a waiting draft's story for the next one in the queue, from a phone.
+#
+# hook.yml changes how a story is sold; this changes the story. The gate
+# message links here as "Another story": the waiting draft moves to
+# posts/rejected/ carrying the reason typed below, draft.py takes the next
+# queued row (or the next five, for a Signal), and the new draft goes through
+# the same translate → commit → review.yml as daily.yml's.
+#
+# Moved, not deleted: covered_papers() reads posts/rejected/ as well, so the
+# rejected paper does not come back through a sibling feed's row — the
+# lesson of docs/decisions/dedup.md. Every other reader of posts/ globs
+# without recursing, so it leaves the archive, the gate and watch.py at once.
+# Its sheet row stays `drafted`, which already keeps pick_row() off it.
+#
+# Like hook.yml and fix.yml it never adds published_at, and a guard on the
+# diff enforces that rather than trusting the script.
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why this story was not worth posting (optional — learn.py lists it).'
+        required: false
+        type: string
+      post:
+        description: 'Post JSON path. Leave blank for the one awaiting approval.'
+        required: false
+        type: string
+
+# daily.yml's group: both take a row off the sheet and push to master, and
+# two of them at once would race on both.
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write         # commits the move and the new draft
+  actions: read           # resolve-post reads which post the gate last sent
+  id-token: write         # review.yml's claude-code-action authenticates with it
+
+jobs:
+  redraft:
+    # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    outputs:
+      post: ${{ steps.draft.outputs.post }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+
+      - id: pick
+        uses: ./.github/actions/resolve-post
+        with:
+          post: ${{ inputs.post }}
+          token: ${{ github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # draft.py --reject refuses a dated post and a Breakdown, and says why.
+      - name: Retire the waiting draft
+        id: reject
+        env:
+          POST: ${{ steps.pick.outputs.post }}
+          REASON: ${{ inputs.reason }}
+        run: |
+          signal=$(python3 -c 'import json, os; print("true" if json.load(open(os.environ["POST"])).get("post_type") == "signal" else "false")')
+          echo "signal=$signal" >> "$GITHUB_OUTPUT"
+          python src/draft.py --reject "$POST" --reason "$REASON"
+
+      - name: Write service account credentials
+        env:
+          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+        run: printf '%s' "$GOOGLE_SHEETS_CREDENTIALS_JSON" > credentials.json
+
+      # The same step as daily.yml's. A queue with nothing left fails the run
+      # loudly, and nothing is committed — the rejected draft stays put.
+      - name: Draft the next story
+        id: draft
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEETS_CREDENTIALS: credentials.json
+          SIGNAL: ${{ steps.reject.outputs.signal }}
+        run: |
+          if [ "$SIGNAL" = "true" ]; then set -- --signal; else set --; fi
+          python src/draft.py "$@" | tee draft.log
+          post=$(sed -n 's/^Wrote //p' draft.log | tail -1)
+          if [ -z "$post" ] || [ ! -f "$post" ]; then
+            echo "::error::draft.py did not report a post file it wrote." >&2
+            exit 1
+          fi
+          echo "post=$post" >> "$GITHUB_OUTPUT"
+
+      - name: Translate for the web archive
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: python src/translate.py "${{ steps.draft.outputs.post }}"
+
+      # The old draft gone, its rejected copy, the new draft — and nothing
+      # else. Two of those can be one path: a Signal is named by its week,
+      # so one redrafted the same day lands where the rejected one was, and
+      # git sees a modification. Hence sort -u.
+      - name: Check it changed those posts and nothing else
+        env:
+          OLD: ${{ steps.pick.outputs.post }}
+          NEW: ${{ steps.draft.outputs.post }}
+        run: |
+          git add -A posts/
+          moved="posts/rejected/$(basename "$OLD")"
+          expected=$(printf '%s\n' "$OLD" "$moved" "$NEW" | sort -u)
+          changed=$(git diff --cached --name-only | sort)
+          if [ "$changed" != "$expected" ]; then
+            echo "::error::Expected only $OLD → $moved and $NEW to change, got: $(echo $changed). Nothing has been committed." >&2
+            exit 1
+          fi
+          for f in "$moved" "$NEW"; do
+            if ! F="$f" python3 -c "import json,sys,os; sys.exit(0 if not json.load(open(os.environ['F'])).get('published_at') else 1)"; then
+              echo "::error::$f carries published_at. Nothing here may date a post. Nothing has been committed." >&2
+              exit 1
+            fi
+          done
+
+      - name: Commit the swap
+        env:
+          OLD: ${{ steps.pick.outputs.post }}
+          NEW: ${{ steps.draft.outputs.post }}
+          REASON: ${{ inputs.reason }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Reject $(basename "$OLD" .json), draft $(basename "$NEW" .json)" \
+                     -m "Rejected at the gate through .github/workflows/redraft.yml${REASON:+: $REASON}. The new draft is undated and goes through review.yml before it reaches the chat."
+          git pull --rebase
+          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Say so in Telegram if this run broke
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+  review:
+    needs: redraft
+    uses: ./.github/workflows/review.yml
+    with:
+      post: ${{ needs.redraft.outputs.post }}
+    secrets: inherit

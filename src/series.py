@@ -132,6 +132,34 @@ def next_unsent() -> tuple[Path, dict] | None:
     return None
 
 
+def sent_on(day: str) -> tuple[Path, dict] | None:
+    """The report that went out on `day` and is not on Instagram yet.
+
+    What a swap takes back. One posted already is not offered: it is on the
+    account, and taking it back would only desynchronise the record.
+    """
+    for path, report in reports():
+        if (str(report.get(SENT_KEY, "")).strip() == day
+                and not str(report.get("published_at", "")).strip()):
+            return path, report
+    return None
+
+
+def swap_candidate() -> tuple[Path, dict] | None:
+    """An unnumbered report ready to stand in for today's, or None.
+
+    Only unnumbered ones. The number is drawn into the slide, so a numbered
+    report sent out of turn is exactly the skip next_unsent() refuses; an
+    unnumbered one has no place in the run and can go out on any day.
+    """
+    for path, report in reports():
+        if (not isinstance(report.get("number"), int)
+                and not str(report.get(SENT_KEY, "")).strip()
+                and sendable(path, report) is None):
+            return path, report
+    return None
+
+
 def report_for_stem(stem: str) -> Path | None:
     """The report a stem names, or None.
 
