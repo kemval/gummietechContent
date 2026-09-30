@@ -100,6 +100,135 @@ keep them, and `rhythm()` still colours every slide. What changed, and why:
   reason a screen reader does. `proof.py` also measures text-node rects only,
   since the selection box's handles sit outside the words by design.
 
+### Design v3 — the grid (2026-09-30)
+
+The owner, as creative director, said v2 still was not working and gave a
+second mood board (`~/Downloads/gummietechdropDesign`: Swiss grid posters
+with hairline rules and "(01)" index marks, a ruled-cell agency post, a
+callout diagram with leader lines, blurred-gradient posters). v2 read as
+big type on a flat field with no visible system. v3 keeps the palette,
+the rhythm, the type and every text rule, and adds the system:
+
+- **Hairline grid** (`.slide::before`, frame slides only): the frame
+  edges (x 34/1046), the header and footer bands (y 110/1240), and the
+  centre line (540) inside those bands only, in `--rule` (16% of
+  `--on-field`). The first version ran the edge and centre lines through
+  the text column and the owner read it as text overlapping. The cover
+  drops the footer rule because its spec row sits there.
+- **Bottom ghost words clear the footer band.** They are lifted by
+  `106px + .22em` (parentheses and descenders hang below the line box),
+  and they are placed *after* body text grows. The shrink scales from
+  the ghost's own width, not the column's: a capped short word ("1/2")
+  never fills the column, so the old formula never shrank it. That bug
+  predates v3 and was hidden by the old 60px anchor.
+- **Top-anchored ghost words shrink to clear the section rule below**
+  (40px plus the .22em overhang). The catch text grows upward, and its
+  rule cut through the bottom of "(but)". The owner chose this over
+  capping the text (which kept "(but)" full width but left a dead gap):
+  the catch is the post's most important line.
+- **The selection box is padded in em** (`.16em`), because body text now
+  grows to 92px and a fixed 10px gap let the outline touch the boxed
+  word's last letter.
+- **The backdrop is Neat's moving colour ribbons, drawn by our own shader
+  and filmed as a looping MP4 per slide.** The owner asked for Neat
+  (github.com/FireCMSco/neat) in motion. Neat's licence allows this use,
+  but its code draws a "NEAT" watermark into every render unless a key is
+  bought (€12 per domain; `if (!this._licensed) renderWatermark`), which
+  the $0 budget rules out, and hiding the mark would be dodging their
+  paywall. So its technique is reimplemented in `slides_layout.js`, not
+  its code: palette colours layered wherever a horizontally-stretched 3D
+  simplex noise (Ashima, MIT) crosses a threshold, curled by `cos()` flow
+  warps, over a lit waving surface. Two earlier attempts, a single hue
+  shaded and soft folds, were rejected as "not Neat": it is the layered
+  colours that make it.
+  - **Contrast holds on every frame by construction.** Light slides use
+    only palette hues, and every one clears 4.5:1 against ink (`RIBBONS`,
+    field last and widest so the slide still reads as its colour); their
+    lighting only brightens. The dark slide's ribbons are ink, ink ×.45 and
+    one lead-tinted ribbon capped so 22px lead-hue labels keep 4.5:1; its
+    lighting only deepens. proof.py measures the flat field, so this
+    argument is what covers the canvas.
+  - **Seamless and deterministic.** Time enters only as the angle of one
+    8s loop (noise sampled around a circle), seeded by the hook and slide
+    id. Frame 0 and frame 8000ms are byte-identical. The PNG is frame 0.
+    `render.py` films each slide over one loop (JPEG frames, TV-range
+    yuv420p, which Instagram expects), and `--no-motion` skips it.
+    `reel.py` stretches the backdrop's clock to a whole number of loops
+    per reel, so the background does not jump where the reel loops.
+  - **Ghost words are frosted glass.** The owner rejected the outline and
+    three other type treatments. `glass()` paints "(why)", "(but)" and
+    "1/2" into the backdrop canvas: the backdrop blurred and brightened
+    inside the glyphs, a soft shadow, and a bevel (the glyph minus itself
+    offset, because a stroke traced the variable font's overlapping
+    contours as a box inside the "t"). Font and position are read off the
+    DOM element, which stays in the page, transparent, for the layout
+    pass and proof. Without WebGL the outline returns.
+  - **The reel has no card.** The owner asked for the moving backdrop
+    alone, full screen. The content floats on the 9:16 backdrop, still
+    scaled to 0.9 in the safe zone, with no background, grid or grain of
+    its own. The glass words are painted on the backdrop for their scene.
+    Scenes fade out, then in: a swipe or a cross-fade layered two scenes'
+    words. The first slide's zero-length fade-in keeps reel.py's scene
+    start at 0. Repainting skips anything covered in a stack, and a reel
+    takes ~5 minutes. The keyword callouts assemble in order (tag, wire
+    out, wire down, dot), indexed by `--i` from the layout pass, because
+    the owner noticed slide 2's diagram was the one thing that just
+    appeared.
+  - **Finishing pass (owner's list, 2026-09-30).**
+    - The footer band's rules are measured from the bottom, so a 9:16
+      Build still no longer has a 4:5 rule across its middle.
+    - On cream, glass shades rather than brightens: "(bug)" had vanished.
+    - The follow slide's "(gummie tech)" is glass, drawn line by line.
+    - A figure-less cover keeps its open band, showing only the moving
+      ribbons. A glass "(drop)"/"(signal)" was tried there; it repeated the
+      format label on most covers, and the owner chose nothing.
+    - Signal ranks are capped at 200px, and the claim is centred under
+      the rank.
+    - Hubot's zero is slashed with no plain alternate, and read as "θ".
+      U+0030 alone comes from Mona Sans via unicode-range, on the slides
+      and the archive.
+    - Status reports are untouched: their own design system, by hand.
+  - **Cost.** Headless Chrome runs WebGL on the CPU, so the shader draws
+    at a third of the size and is scaled up (Neat's `renderScale`). The
+    ribbons are smooth enough not to show it. At full size a reel took
+    over fifteen minutes; now a Drop's five clips take ~3 minutes, added
+    to `review.yml`, which now installs ffmpeg. In the reel only on-screen
+    cards are repainted. The motion was slowed at the owner's request by
+    shrinking the noise's circle per loop, not by lengthening the loop, so
+    clips stay 8s. `check.yml` renders with
+    `--no-motion`; its reel smoke drives the backdrop's clock. Telegram
+    sends the clips after the stills, all or none.
+- **The hook sits on ruled baselines** (.84em at line-height 1.0).
+- **Ruled cells**: the spec row and every section label get a full-ink
+  top rule; spec cells are split by hairlines.
+- **Ghost words are outlines**, not 13% fills: the fills read as muddy
+  tone-on-tone. On the dark slide the outline is the lead hue.
+- **The keyword cloud is retired** for callout tags. It repeated three
+  phrases forty times. Each keyword (at most four, deduplicated) now
+  sits in a ruled tag with a "(01)" index, wired to a dot on the section
+  rule below. Left and right wires step outward so none cross.
+  Still `aria-hidden`: the keywords are decoration, and the caption
+  carries them.
+- **Body text grows only a little**, from 60px up to 72px, and a cover
+  hook without a figure grows from 96px up to 120px (v2 allowed 176px). At
+  92px and 160px everything shouted at one volume, and the owner preferred
+  2026-09-28's scale: a medium hook, calm body text, one huge element.
+
+- **GitHub's type system replaces Archivo and IBM Plex Mono.** Hubot Sans
+  (display, at 105–125% width), Mona Sans (body) and Monaspace Neon (labels),
+  all OFL and self-hosted in `fonts/` with their licences. The owner
+  rejected a first round of "tech" faces (Doto, Michroma, Kode Mono,
+  Tektur, Unbounded) as gimmicky. Then four OFL systems were set in this
+  one layout: GitHub's, Vercel's Geist, IBM Plex, and Funnel Display with
+  Fragment Mono. The owner chose GitHub's. Fontshare faces (Satoshi,
+  General Sans, Switzer) were ruled out because their licence forbids
+  self-hosting the files. Hubot's zero is slashed and has no plain
+  alternate; that was kept, since it was in the sketch the owner picked.
+  Hubot's taller line box pushed the Signal's rank into the corner label,
+  so its `data-top` is now 140.
+
+proof.py passes all four fixture formats unchanged, and so does the reel.
+
 ### Reel motion and The Build's kit (2026-09-28)
 
 - **The reel performs the design's two signatures.** The selection box
@@ -140,7 +269,7 @@ a `(lead, support)` pair, and a five-slide Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | amber | pink |
+| `ember` | energy, materials, engineering, chemistry | pink | olive |
 
 Invariants that keep the grid recognizable, and that a new family or a new
 format must respect. `render.rhythm()` is these rules as code, which is why a
@@ -166,6 +295,14 @@ longer format needs no new palette decision:
   often. On 2026-09-18, 09-19 and 09-20 the topics were materials, biohybrid
   robotics and applied thermodynamics — all `ember` — and three amber posts
   shipped in a row while every mapping worked exactly as documented.
+
+**Ember wears signal's pair since 2026-09-30.** Under the v3 backdrop amber
+read as washed out as a lead, and the owner compared the same post in
+amber, blush/olive, blush/amber and pink/olive and chose pink/olive, 09-28's
+look. The family keeps its name, because draft.py and the agents still sort
+topics into it. So `vary()` compares colour pairs, not names: by name, a
+signal post then an ember post would have shipped pink twice in a row.
+Amber stays a token and is simply unused by any family for now.
 
 `vary(chosen, previous)` returns `chosen` untouched unless the post before it
 already had that family, in which case it takes the next family in

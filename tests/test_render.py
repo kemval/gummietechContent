@@ -319,7 +319,8 @@ def test_the_substitute_is_a_real_family(name):
 def test_the_topic_keeps_its_family_when_the_field_is_free(name):
     """vary() fires on collision only — otherwise the topic mapping stands,
     which is what keeps the colour meaning anything at all."""
-    others = [o for o in render.COLORWAYS if o != name]
+    others = [o for o in render.COLORWAYS
+              if render.COLORWAYS[o] != render.COLORWAYS[name]]
     assert render.vary(name, None) == name
     for previous in others:
         assert render.vary(name, previous) == name
@@ -339,6 +340,16 @@ def test_three_ember_topics_in_a_row_do_not_ship_three_amber_posts():
         shipped.append(render.vary(topic_family,
                                    shipped[-1] if shipped else None))
     assert all(a != b for a, b in zip(shipped, shipped[1:])), shipped
+
+
+def test_two_families_in_one_pair_are_still_a_repeat():
+    """Since 2026-09-30 ember wears signal's pink/olive. vary() compared
+    names, so a signal post then an ember post would have shipped two
+    pink posts in a row while every name differed."""
+    for chosen in render.COLORWAYS:
+        for previous in render.COLORWAYS:
+            got = render.vary(chosen, previous)
+            assert render.COLORWAYS[got] != render.COLORWAYS[previous], (chosen, previous, got)
 
 
 def test_post_order_is_what_a_reader_meets(posts_dir):

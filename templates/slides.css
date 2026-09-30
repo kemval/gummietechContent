@@ -14,8 +14,9 @@
    slide's field. What v2 changed is the type and the layout (see
    docs/decisions/rendering.md, "Design v2"):
 
-   - Archivo (variable width) for display and body, IBM Plex Mono for
-     the labels. Self-hosted from ../fonts/. Do not switch to the Google
+   - GitHub's open-source type system (2026-09-30, replacing Archivo
+     and IBM Plex Mono): Hubot Sans for display, Mona Sans for body,
+     Monaspace Neon for labels. Self-hosted from ../fonts/. Do not switch to the Google
      Fonts CDN: rendering would then depend on a network call, and a
      slow or blocked request produces silently wrong-looking slides
      instead of a clear error.
@@ -28,19 +29,35 @@
    ============================================================ */
 
 @font-face {
-  font-family: 'Archivo';
-  src: url('{{ font_dir }}/Archivo.ttf') format('truetype');
-  font-weight: 100 900; font-stretch: 62% 125%;
+  font-family: 'Hubot Sans';
+  src: url('{{ font_dir }}/HubotSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  font-display: block;
+}
+/* Hubot Sans's zero is slashed and has no plain alternate; the owner
+   read "01" as "θ1". Only U+0030 comes from Mona Sans, whose default zero
+   is plain and whose axes match, so every other glyph stays Hubot. */
+@font-face {
+  font-family: 'Hubot Sans';
+  src: url('{{ font_dir }}/MonaSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  unicode-range: U+0030;
   font-display: block;
 }
 @font-face {
-  font-family: 'IBM Plex Mono';
-  src: url('{{ font_dir }}/IBMPlexMono-Medium.ttf') format('truetype');
+  font-family: 'Mona Sans';
+  src: url('{{ font_dir }}/MonaSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Monaspace Neon';
+  src: url('{{ font_dir }}/MonaspaceNeon-Medium.otf') format('opentype');
   font-weight: 500; font-display: block;
 }
 @font-face {
-  font-family: 'IBM Plex Mono';
-  src: url('{{ font_dir }}/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-family: 'Monaspace Neon';
+  src: url('{{ font_dir }}/MonaspaceNeon-SemiBold.otf') format('opentype');
   font-weight: 600; font-display: block;
 }
 
@@ -79,6 +96,42 @@ body { background: #2A2A2A; font-family: var(--body); }
 }
 .slide.dark::after { mix-blend-mode: screen; opacity: .08; }
 
+/* ---------- v3: the grid and the backdrop (2026-09-30) ----------
+   Hairline rules on the frame edges (x 34/1046, outside the 60px text
+   column), the header / footer bands, and the centre line inside those
+   bands only: a rule through the text read as the words overlapping.
+   Only slides with a .frame: the reel's full-bleed backdrops carry
+   .slide too and must stay flat. */
+.slide { --rule: color-mix(in srgb, var(--on-field) 16%, transparent); }
+.slide.dark { --rule: color-mix(in srgb, var(--cream) 13%, transparent); }
+/* the cover's spec row has its own rule where the footer band would be */
+.slide:has(.spec) { --foot: linear-gradient(transparent, transparent); }
+
+/* The backdrop: Neat's moving colour ribbons (github.com/FireCMSco/neat),
+   the owner's choice, drawn by our own shader in slides_layout.js. Neat
+   itself watermarks every render without a paid key, which the $0 budget
+   rules out; its technique (colours layered by stretched noise, curled by
+   cos() flow, over a lit waving surface) is reimplemented instead. The
+   ribbons are palette hues only, and every one clears 4.5:1 against the
+   slide's type: see RIBBONS in slides_layout.js. The still is the loop's
+   first frame; render.py films the loop per slide as a seamless MP4.
+   No WebGL: the slide stays its flat field. The grid is ::before so it
+   stays drawn over the canvas. */
+.slide:has(> .frame) { background: var(--field); }
+.slide > canvas.bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
+.slide:has(> .frame)::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(to right, transparent 33px, var(--rule) 33px 35px, transparent 35px),
+    linear-gradient(to right, transparent 1045px, var(--rule) 1045px 1047px, transparent 1047px),
+    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 0 / 100% 110px no-repeat,
+    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 calc(100% - 110px) / 100% 110px no-repeat,
+    linear-gradient(to bottom, transparent 109px, var(--rule) 109px 111px, transparent 111px),
+    /* the footer band measured from the bottom: The Build's 9:16 stills share
+       this, and a rule at y 1240 crossed them at mid-height */
+    var(--foot, linear-gradient(to top, transparent 109px, var(--rule) 109px 111px, transparent 111px));
+}
+
 .frame { position: absolute; inset: 34px; }
 
 /* ---------- chrome: one mono label per corner ---------- */
@@ -94,14 +147,19 @@ body { background: #2A2A2A; font-family: var(--body); }
 /* ---------- cover ---------- */
 .hook {
   position: absolute; left: 26px; right: 26px; top: 98px; z-index: 3;
-  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-family: var(--display); font-weight: 800; font-stretch: 110%;
   font-size: 96px; line-height: 1.0; letter-spacing: -.03em; text-wrap: balance;
+  /* a rule on every line's baseline (.84em at line-height
+     1.0), the poster-on-a-grid look; descenders cross it on purpose */
+  background: repeating-linear-gradient(to bottom, transparent 0 .84em,
+              var(--rule) .84em calc(.84em + 2px), transparent calc(.84em + 2px) 1em);
 }
 .spec {
   position: absolute; left: 26px; right: 26px; bottom: 26px; z-index: 5;
-  display: flex; gap: 36px;
+  display: flex; border-top: 2px solid var(--on-field);
 }
-.spec > div { flex: 1; }
+.spec > div { flex: 1; padding: 18px 24px 0 0; }
+.spec > div + div { padding-left: 24px; border-left: 2px solid var(--rule); }
 .spec dt {
   font-family: var(--mono); font-weight: 600; font-size: 22px;
   letter-spacing: .04em; text-transform: uppercase;
@@ -127,32 +185,40 @@ body { background: #2A2A2A; font-family: var(--body); }
   font-family: var(--display); font-weight: 900; font-stretch: 125%;
   line-height: .96; letter-spacing: -.05em;
 }
-.giant.ghost { opacity: .13; }
-.slide.dark .giant.ghost { opacity: .09; }
+/* The ghost words are painted as frosted glass into the backdrop canvas
+   (slides_layout.js, glass()); the element stays for layout, invisible.
+   Without WebGL there is no canvas, and the outline is the fallback. */
+.giant.ghost { color: transparent; -webkit-text-stroke: 2.5px var(--on-field); opacity: .55; }
+.slide.dark .giant.ghost { -webkit-text-stroke-color: var(--lead); opacity: .7; }
+.slide:has(> canvas.bg) .giant.ghost { -webkit-text-stroke: 0; }
 
 /* ---------- body slides ---------- */
 .body { position: absolute; left: 26px; right: 26px; bottom: 116px; z-index: 6; }
 .body.top { top: 98px; bottom: auto; }
 .sec {
   font-family: var(--mono); font-weight: 600; font-size: 24px;
-  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 40px;
+  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 36px;
+  padding-top: 18px; border-top: 2px solid var(--on-field);
 }
 .sec span { font-weight: 500; margin-right: 18px; }
 .text {
-  font-family: var(--body); font-weight: 500; font-stretch: 94%;
+  font-family: var(--body); font-weight: 500; font-stretch: 100%;
   font-size: 60px; line-height: 1.18; letter-spacing: -.02em; text-wrap: pretty;
 }
 .text.sm { font-size: 52px; }
 
 /* ---------- the selection box: outline and handles, never a label ---------- */
-.sel { position: relative; display: inline-block; white-space: nowrap; margin: 0 .22em; }
+.sel { position: relative; display: inline-block; white-space: nowrap; }
 /* the box's outline and handles reach 17px past the text: keep a line's
    last word clear of the column edge by that much */
-.hook, .text { padding-right: 8px; }
-.sel .box { position: absolute; inset: 2px -10px 4px -10px; border: 3px solid var(--mark); }
+/* In em, not px: body text grows to 92px in v3 and a fixed 10px gap let
+   the outline touch the boxed word's last letter. */
+.hook, .text { padding-right: .2em; }
+.sel { margin: 0 .28em; }
+.sel .box { position: absolute; inset: 2px -.16em 4px -.16em; border: 3px solid var(--mark); }
 .sel .h { position: absolute; width: 15px; height: 15px; background: var(--lead); border: 3px solid var(--mark); z-index: 2; }
-.sel .h.a { left: -17px; top: -5px; }    .sel .h.b { right: -17px; top: -5px; }
-.sel .h.c { left: -17px; bottom: -3px; } .sel .h.d { right: -17px; bottom: -3px; }
+.sel .h.a { left: calc(-.16em - 7px); top: -5px; }    .sel .h.b { right: calc(-.16em - 7px); top: -5px; }
+.sel .h.c { left: calc(-.16em - 7px); bottom: -3px; } .sel .h.d { right: calc(-.16em - 7px); bottom: -3px; }
 
 /* ---------- the catch ---------- */
 .flag-row { position: absolute; left: 26px; top: 116px; z-index: 6; }
@@ -189,11 +255,22 @@ body { background: #2A2A2A; font-family: var(--body); }
 
 /* ---------- keyword cloud: the post's keywords, decoration only ---------- */
 .cloud { position: absolute; inset: 0; z-index: 2; }
-.cloud span { position: absolute; white-space: nowrap; font-family: var(--body); font-weight: 500; }
+.cloud .tag {
+  position: absolute; white-space: nowrap; background: var(--field);
+  border: 2px solid var(--on-field); padding: 16px 26px 18px;
+  font-family: var(--display); font-weight: 600; font-stretch: 100%;
+  font-size: 44px; letter-spacing: -.015em; line-height: 1;
+}
+.cloud .tag i {
+  position: absolute; left: -2px; top: -34px; font-style: normal;
+  font-family: var(--mono); font-weight: 600; font-size: 20px; letter-spacing: .06em;
+}
+.cloud .wire { position: absolute; border: 0 solid var(--on-field); }
+.cloud .dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--on-field); }
 
 /* ---------- last slide ---------- */
 .follow {
-  font-family: var(--display); font-weight: 800; font-stretch: 88%;
+  font-family: var(--display); font-weight: 800; font-stretch: 110%;
   font-size: 84px; line-height: 1.02; letter-spacing: -.03em;
 }
 .tagline { font-size: 40px; font-weight: 500; line-height: 1.25; margin-top: 20px; }
@@ -202,12 +279,13 @@ body { background: #2A2A2A; font-family: var(--body); }
   font-family: var(--mono); font-weight: 500; font-size: 24px; line-height: 1.6; letter-spacing: .02em;
 }
 .sources div { display: flex; justify-content: space-between; gap: 40px; }
+.sources span:first-child { text-transform: uppercase; }
 .sources span:last-child { text-align: right; }
 
 /* ---------- Breakdown ---------- */
 /* The question and the recap are the post speaking in its own voice, so
    they are set in the display weight rather than as body copy. */
-.text.display { font-family: var(--display); font-weight: 700; font-stretch: 90%;
+.text.display { font-family: var(--display); font-weight: 700; font-stretch: 105%;
                 font-size: 64px; line-height: 1.08; letter-spacing: -.025em; }
 /* The mechanism's position: one segment per step, the current one filled.
    No text, so proof.py has nothing here to measure. */

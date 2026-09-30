@@ -584,6 +584,17 @@ def rendered_slides(outdir: Path) -> list[Path]:
     return [found[i] for i in sorted(found)]
 
 
+def motion_clips(outdir: Path, count: int) -> list[Path]:
+    """slide-1..N.mp4 for every slide render.py stilled, or none at all.
+
+    render.py films one looping clip per slide when ffmpeg and WebGL are
+    there. A partial set is a film that stopped partway, and posting some
+    slides moving and some still is not a carousel anyone approved.
+    """
+    clips = [outdir / f"slide-{i}.mp4" for i in range(1, count + 1)]
+    return clips if all(c.exists() for c in clips) else []
+
+
 def slide_groups(slides: list[Path]) -> list[list[Path]]:
     """The slides split into media groups Telegram will accept.
 
@@ -637,6 +648,20 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
                 call(token, "sendMediaGroup",
                      {"chat_id": chat_id, "media": json.dumps(media)}, files)
         print(f"  sent {len(slides)} slides")
+
+        # The moving versions, which are what gets posted: the stills above
+        # are what the reviews measured. Same documents-not-media rule.
+        clips = motion_clips(outdir, len(slides))
+        for group in slide_groups(clips):
+            with contextlib.ExitStack() as stack:
+                media = [{"type": "document", "media": f"attach://{p.stem}"}
+                         for p in group]
+                files = {p.stem: stack.enter_context(p.open("rb"))
+                         for p in group}
+                call(token, "sendMediaGroup",
+                     {"chat_id": chat_id, "media": json.dumps(media)}, files)
+        if clips:
+            print(f"  sent {len(clips)} motion clips")
 
         with sidecar.open("rb") as fh:
             call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})

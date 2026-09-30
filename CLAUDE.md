@@ -199,7 +199,8 @@ Never commit `.env`, `credentials.json`, or any key.
 
 Slides render at **1080×1350** (4:5), one `.slide` div each inside
 `templates/<post_type>.html` (fallback `drop.html` with a warning), each
-screenshotted individually. `render.py` discovers slides with
+screenshotted individually, and each also filmed as a seamless 8s MP4 of its
+moving backdrop (Neat-style ribbons, our own shader; `--no-motion` skips). `render.py` discovers slides with
 `querySelectorAll('.slide')` and refuses fewer than `MIN_SLIDES` (4).
 
 Design tokens are locked — do not change them or propose alternatives. They
@@ -216,9 +217,9 @@ copy them into a third place:
 --amber: #F2B441;   /* field */
 ```
 
-**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28): Archivo
-(variable width) for display and body, IBM Plex Mono for labels, no drawn
-frame — type sits 60px from the edge, and `.frame` survives as an invisible
+**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28), **with v3's grid layer** (2026-09-30: hairline rules, a same-hue backdrop, outline ghosts, keyword callouts — see the note): Hubot
+Sans for display, Mona Sans for body, Monaspace Neon for labels (GitHub's OFL
+type system, since 2026-09-30), no drawn frame — type sits 60px from the edge, and `.frame` survives as an invisible
 box inset 34px that `proof.py` measures against. Content is always full
 `--on-field`; only corner chrome (`.lbl`) is muted. **Every word is a record
 field or fixed template copy**: `render.py` only *chooses* spans of the
@@ -242,14 +243,15 @@ never hardcode a hue in a template. A Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | amber | pink |
+| `ember` | energy, materials, engineering, chemistry | pink | olive |
 
 Invariants (`render.rhythm()` is them as code): `--ink` is the type on
 light slides; slide 2 is cream; the catch is the second-to-last
 slide and drops to `--ink`; first and last slides share a field; the middle
 alternates support and lead; every lead/support hue clears 4.5:1 against
 `--ink` (asserted in `tests/`); **no two consecutive posts share a field**
-(`render.vary()`, deterministic). `render.py --colorway <name>` overrides at
+(`render.vary()`, deterministic, comparing colour pairs, not names: `ember`
+wears `signal`'s pink/olive since 2026-09-30, by the owner's call). `render.py --colorway <name>` overrides at
 the gate. → `docs/decisions/rendering.md`
 
 ### Drop reels
@@ -339,6 +341,9 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 - **`published_at` is the human gate.** `site.py` skips any post without it;
   never add a fallback that publishes undated posts.
 - **It is not a blog.** Every page is a pure function of the draft JSON.
+- **It wears the slides' moving backdrop** (`templates/backdrop.js`, one
+  shader for slides, reel and archive), live, still under
+  `prefers-reduced-motion`, flat without WebGL.
 - Each post page uses its own rendered slide 1 as the link-preview image;
   a browser that will not launch degrades to text-only previews.
 - A malformed post is skipped with a warning, never fails the build.
