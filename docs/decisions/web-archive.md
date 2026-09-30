@@ -57,6 +57,25 @@ Two things that are deliberate:
   `openai/gpt-oss-20b` still leaves errors after both passes;
   `openai/gpt-oss-120b` on the same free Groq key did not, in a dry run over
   the three worst posts.
+- **Written in Spanish, not translated into it** (2026-09-30). Even on the
+  120b model the Spanish came back grammatical and unmistakably translated
+  ("Se pidió una ejecución… Se obtuvo una…"). Three causes, all in the
+  prompt: it asked for "usted-free impersonal phrasing", which is the
+  passive-*se* chain; every rule was about fidelity, so the model calqued
+  telegraphic slide copy sentence by sentence; and the proofread was told
+  "do not restyle correct Spanish", so stiff-but-correct was its ceiling.
+  Now the voice is *tú*, the task is "as a Spanish-speaking science writer
+  would put it" (the fidelity rules stay — each is a real failure), the
+  proofread rewrites what a native writer would not have written, and both
+  prompts carry posts a person rewrote by hand, from
+  `docs/es_examples.json`. A post is never shown its own example.
+  Gemini was to be compared and was overloaded both times; the model stays
+  `gpt-oss-120b`, which still slips back into the passive now and then — the
+  gate is where that gets caught. The examples add ~1.5k tokens a call
+  against Groq's 8,000-a-minute cap, which the 429 backoff absorbs.
+  A reply that is not a usable JSON object is asked once more before the run
+  stops: gpt-oss returned a list despite JSON mode, and that used to end the
+  run with every later post untranslated.
 
 Machine-written Spanish on a permalink is the same credibility risk as an
 unlabelled preprint, so it goes through Layer 5 like everything else: run

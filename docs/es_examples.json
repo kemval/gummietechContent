@@ -1,0 +1,73 @@
+{
+  "_readme": [
+    "Posts reescritos a mano en el español que quiere el archivo.",
+    "translate.py los pone en ambos prompts como modelo de voz y registro.",
+    "Reescribe solo 'es'. 'en' es el inglés tal como se envía al modelo; 'es' empieza como la traducción actual, para corregir encima.",
+    "Tú, cercano, divulgación; latinoamericano neutro; mismo contenido y misma fuerza que el inglés."
+  ],
+  "examples": [
+    {
+      "post": "2026-09-28-training-a-4b-model-to-produce-81-faster",
+      "en": {
+        "domain": "database optimization",
+        "hook": "4B model's Postgres plans ran 81% faster — best of 15 tries",
+        "what_happened": "4B Qwen model, tuned with agentic RL, wrote Postgres plans; the fastest of up to 15 tries ran 1.81x faster than defaults on 113 queries",
+        "why_it_matters": "A small 4B model, trained for one database, beat Postgres's default plans on a join-heavy benchmark, hinting small task-specific models may suit query tuning",
+        "the_catch": "81% is the fastest of up to 15 plans per query; the model's own picks gave 1.40x. Tested only on the IMDb-based Join Order Benchmark."
+      },
+      "es": {
+        "domain": "optimización de bases de datos",
+        "hook": "Los planes de Postgres del modelo de 4B fueron 81 % más rápidos — el mejor de 15 intentos",
+        "what_happened": "Un modelo Qwen de 4B, ajustado con RL agéntico, generó planes de ejecución para Postgres; el más rápido de hasta 15 intentos fue 1,81 veces más rápido que los planes predeterminados en 113 consultas",
+        "why_it_matters": "Un modelo pequeño de 4B, entrenado para una sola base de datos, superó los planes predeterminados de Postgres en un benchmark centrado en consultas con muchas uniones, lo que sugiere que los modelos pequeños y especializados podrían funcionar bien para optimizar consultas",
+        "the_catch": "El 81 % corresponde al plan más rápido de hasta 15 intentos por consulta; las propias selecciones del modelo alcanzaron 1,40 veces la velocidad. Solo se probó en el Join Order Benchmark basado en IMDb."
+      }
+    },
+    {
+      "post": "2026-09-14-multifunctional-brain-implant-translates",
+      "en": {
+        "domain": "brain-computer interface",
+        "hook": "A single implant decodes speech and gestures simultaneously",
+        "what_happened": "Three implanted participants; two drove a virtual avatar, with AI decoding attempted speech into text and gestures into motion from one 253-electrode array",
+        "why_it_matters": "The authors call it a step toward BCIs that restore more natural, expressive communication for people with severe paralysis",
+        "the_catch": "Vocabularies were tiny — at most ten phrases and ten gestures — and the authors say simultaneous decoding remained imperfect across only three participants"
+      },
+      "es": {
+        "domain": "interfaz cerebro-computadora",
+        "hook": "Un solo implante decodifica el habla y los gestos al mismo tiempo",
+        "what_happened": "Participaron tres personas con implantes; dos controlaron un avatar virtual, mientras la IA convertía el habla intentada en texto y los gestos en movimiento usando una sola matriz de 253 electrodos",
+        "why_it_matters": "Los autores lo consideran un paso hacia interfaces cerebro-computadora capaces de recuperar una comunicación más natural y expresiva para personas con parálisis severa",
+        "the_catch": "Los vocabularios eran muy limitados — como máximo, diez frases y diez gestos — y los autores señalan que la decodificación simultánea todavía era imperfecta en estos tres participantes"
+      }
+    },
+    {
+      "post": "2026-09-27-why-language-models-hallucinate",
+      "en": {
+        "domain": "AI research",
+        "hook": "AI makes things up for the same reason students guess on exams.",
+        "the_question": "Asked for a researcher's birthday, and told to answer only if it knew, DeepSeek-V3 gave three different wrong dates in three tries.",
+        "the_intuition": "It looks like a bug that more data or a bigger model will fix: the machine simply does not know that it is wrong.",
+        "mechanism": [
+          "Pretraining teaches a model to predict likely text. A fact seen once, like a birthday, has no pattern to learn, so some errors are inevitable.",
+          "It sets a floor: if 20% of birthdays appear once in training data, a base model should miss at least 20% of them.",
+          "Then the benchmarks. Nine of ten popular ones reviewed grade only right or wrong, with no credit for “I don’t know”, so guessing scores higher."
+        ],
+        "why_it_matters": "The fix, the authors argue, is not another hallucination test but rescoring the main benchmarks: penalise wrong answers and state the confidence needed.",
+        "the_catch": "A preprint, not yet peer-reviewed. The authors note their framework ignores degrees of error and context outside the prompt."
+      },
+      "es": {
+        "domain": "investigación de IA",
+        "hook": "La IA inventa cosas por la misma razón por la que los estudiantes adivinan en los exámenes.",
+        "the_question": "Cuando le pidieron la fecha de cumpleaños de un investigador y le dijeron que respondiera solo si la sabía, DeepSeek-V3 dio tres fechas incorrectas diferentes en tres intentos.",
+        "the_intuition": "Parece un problema que más datos o un modelo más grande podrían solucionar: la máquina simplemente no sabe que está equivocada.",
+        "mechanism": [
+          "El preentrenamiento enseña al modelo a predecir qué texto es más probable. Un dato visto una sola vez, como una fecha de cumpleaños, no ofrece un patrón suficiente para aprenderlo, así que algunos errores son inevitables.",
+          "Esto establece un límite inferior: si el 20 % de las fechas de cumpleaños aparece una sola vez en los datos de entrenamiento, un modelo base debería equivocarse al menos en el 20 % de ellas.",
+          "Y luego están los benchmarks. Nueve de cada diez benchmarks populares que revisaron califican únicamente si la respuesta es correcta o incorrecta, sin dar crédito por decir «no lo sé». Así que adivinar termina dando una mejor puntuación."
+        ],
+        "why_it_matters": "Los autores sostienen que la solución no es crear otra prueba de alucinaciones, sino volver a evaluar los benchmarks principales: penalizar las respuestas incorrectas y establecer qué nivel de confianza se necesita para responder.",
+        "the_catch": "Es un preprint que todavía no ha sido revisado por pares. Los autores también señalan que su marco no contempla los distintos grados de error ni el contexto que queda fuera del prompt."
+      }
+    }
+  ]
+}
