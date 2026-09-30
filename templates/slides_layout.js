@@ -31,18 +31,45 @@ document.fonts.ready.then(() => {
     const top = el => (el.getBoundingClientRect().top - F.top) / k;
     const bottom = el => (el.getBoundingClientRect().bottom - F.top) / k;
 
+    // Body text grows into a slide's empty space (60px up to 92px) while
+    // the body stays under half the frame, so a short field does not
+    // leave a dead half-slide. First, because the ghost words below are
+    // placed against the text's final size. The diff's smaller catch text is left alone.
+    slide.querySelectorAll('.body .text:not(.sm):not(.display)').forEach(t => {
+      const body = t.closest('.body');
+      let px = parseFloat(getComputedStyle(t).fontSize);
+      while (px < 92) { t.style.fontSize = (px + 2) + 'px'; if (body.offsetHeight > Fh * .5) break; px += 2; }
+      t.style.fontSize = px + 'px';
+    });
+
     // Ghost words and the wordmark fill the column from their anchor.
     slide.querySelectorAll('.giant[data-anchor]').forEach(g => {
       fit(g, COLUMN, +g.dataset.max || 520);   // data-max caps a short one ("01")
       if (g.dataset.anchor === 'top') {
         const flag = slide.querySelector('.flag-row');   // below the preprint flag, never behind it
         g.style.top = (flag ? bottom(flag) + 24 : +(g.dataset.top || 86)) + 'px';
+        // and clear of the body's section rule below it: the body grows
+        // upward, and parentheses hang ~.22em under the line box
+        const below = slide.querySelector('.body:not(.top)');
+        if (below) {
+          const ink = () => g.offsetHeight + parseFloat(g.style.fontSize) * .22;
+          const room = top(below) - 40 - top(g);
+          if (ink() > room) fit(g, g.offsetWidth * room / ink(), 520);
+        }
       }
       else {
         // below whatever text sits above it, and never past the corner labels
         const above = slide.querySelector('.body.top');
-        g.style.bottom = '60px';
-        if (above && top(g) < bottom(above) + 40) fit(g, COLUMN * (Fh - 60 - bottom(above) - 40) / g.offsetHeight, 520);
+        // clear of the footer band (rule at y 1240) and its corner labels:
+        // parentheses and descenders hang ~.22em below the line box
+        const lift = () => { g.style.bottom = (106 + parseFloat(g.style.fontSize) * .22).toFixed(0) + 'px'; };
+        lift();
+        // too tall for the gap under the text: shrink, re-lift, and repeat,
+        // since the lift itself grows with the size
+        for (let i = 0; i < 6 && above && top(g) < bottom(above) + 40; i++) {
+          const room = Fh - parseFloat(g.style.bottom) - bottom(above) - 40;
+          fit(g, g.offsetWidth * room / g.offsetHeight, 520); lift();   // its own width: a capped short word ("1/2") never fills the column
+        }
       }
     });
 
@@ -80,32 +107,34 @@ document.fonts.ready.then(() => {
       }
     }
 
-    // The keyword cloud: the post's keywords scattered above the body,
-    // sharp and never overlapping one another. Seeded from the hook, so a
-    // re-render of the same post is the same picture.
+    // The keyword callouts (v3, after the owner's 01.tech reference): each
+    // keyword in a ruled tag, wired to a dot on the section rule below.
+    // Left tags wire in at columns stepping outward as they go down, right
+    // tags likewise, so no wire crosses a tag or another wire.
     const cloud = slide.querySelector('.cloud');
     if (cloud) {
-      let seed = [...cloud.dataset.seed].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
-      const r = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-      const gauss = () => Math.sqrt(-2 * Math.log(r() + 1e-9)) * Math.cos(2 * Math.PI * r());
-      const words = cloud.dataset.words.split('|').filter(Boolean);
+      const words = [...new Set(cloud.dataset.words.split('|').filter(Boolean))].slice(0, 4);
       const body = slide.querySelector('.body');
-      const floor = top(body) - 60;                   // the cloud stops 60px above the text
-      const placed = [];
-      for (let i = 0; i < 40 && words.length; i++) {
-        const s = document.createElement('span');
-        s.textContent = words[i % words.length];
-        s.style.fontSize = [18, 20, 22, 26, 30, 38, 48][Math.floor(r() * 7)] + 'px';
-        s.style.opacity = (.35 + r() * .65).toFixed(2);
-        cloud.appendChild(s);
-        const w = s.offsetWidth, h = s.offsetHeight;
-        let x = Math.min(Math.max(506 + gauss() * 230 - w / 2, 26), 986 - w);
-        let y = Math.min(Math.max(96 + (floor - 96) / 2 + gauss() * (floor - 96) / 4, 96), floor - h);
-        const hits = (x, y) => placed.some(p => x < p.x + p.w + 16 && p.x < x + w + 16 && y < p.y + p.h + 4 && p.y < y + h + 4);
-        for (let k = 0; hits(x, y) && k < 60; k++) { x = 26 + ((x - 26 + 113) % Math.max(1, 960 - w)); if (k % 7 === 6) y = Math.min(floor - h, y + h); }
-        if (hits(x, y) || w > 960) { s.remove(); continue; }
-        placed.push({ x, y, w, h }); s.style.left = x + 'px'; s.style.top = y + 'px';
-      }
+      const floor = top(body), roof = 150;
+      const band = (floor - 60 - roof) / Math.max(words.length, 1);
+      const add = (cls, css) => { const e = document.createElement('div'); e.className = cls; Object.assign(e.style, css); cloud.appendChild(e); return e; };
+      let li = 0, ri = 0;
+      words.forEach((w, i) => {
+        const t = add('tag', {});
+        t.innerHTML = '<i></i>'; t.firstChild.textContent = '(' + String(i + 1).padStart(2, '0') + ')';
+        t.appendChild(document.createTextNode(w));
+        if (t.offsetWidth > 440) t.style.fontSize = (44 * 440 / t.offsetWidth).toFixed(1) + 'px';
+        const left = i % 2 === 0, tw = t.offsetWidth, th = t.offsetHeight;
+        const x = left ? 60 + (i % 4 === 2 ? 60 : 0) : 1020 - tw - (i % 4 === 3 ? 60 : 0);
+        const y = roof + band * i + (band - th) / 2 + 34;
+        t.style.left = (x - 34) + 'px'; t.style.top = (y - 34) + 'px';
+        const col = left ? 526 - 30 * li++ : 554 + 30 * ri++;   // frame coords
+        const mid = y + th / 2;
+        const hx = left ? x + tw : col, hw = left ? col - x - tw : x - col;
+        add('wire', { left: (hx - 34) + 'px', top: (mid - 34 - 1) + 'px', width: hw + 'px', borderTopWidth: '2px' });
+        add('wire', { left: (col - 34 - 1) + 'px', top: (mid - 34) + 'px', height: (floor - (mid - 34)) + 'px', borderLeftWidth: '2px' });
+        add('dot', { left: (col - 34 - 7) + 'px', top: (floor - 7) + 'px' });
+      });
     }
   });
   } catch (e) {

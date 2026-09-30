@@ -216,7 +216,7 @@ copy them into a third place:
 --amber: #F2B441;   /* field */
 ```
 
-**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28): Archivo
+**Every carousel format and the reel are on design v2** (`slides.css`, 2026-09-28), **with v3's grid layer** (2026-09-30: hairline rules, one glow, outline ghosts, keyword callouts — see the note): Archivo
 (variable width) for display and body, IBM Plex Mono for labels, no drawn
 frame — type sits 60px from the edge, and `.frame` survives as an invisible
 box inset 34px that `proof.py` measures against. Content is always full

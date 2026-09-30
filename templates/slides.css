@@ -79,6 +79,35 @@ body { background: #2A2A2A; font-family: var(--body); }
 }
 .slide.dark::after { mix-blend-mode: screen; opacity: .08; }
 
+/* ---------- v3: the grid and the glow (2026-09-30) ----------
+   Hairline rules on the frame edges (x 34/1046, outside the 60px text
+   column), the header / footer bands, and the centre line inside those
+   bands only — a rule through the text read as the words overlapping, the way the owner's Swiss-poster references show their
+   grid; and one soft glow for depth. Decoration only, under everything.
+   The glow is always a lighter or same-contrast hue than the field under
+   the text (cream on a lead, the lead on cream), so no content line loses
+   contrast against --ink; on the dark slide it stays in the top corner,
+   away from the body. Only slides with a .frame: the reel's full-bleed
+   backdrops carry .slide too and must stay flat. */
+.slide { --rule: color-mix(in srgb, var(--on-field) 16%, transparent);
+         --glow: color-mix(in srgb, var(--cream) 55%, transparent); }
+.slide.cream { --glow: color-mix(in srgb, var(--lead) 45%, transparent); }
+.slide.dark  { --rule: color-mix(in srgb, var(--cream) 13%, transparent);
+               --glow: color-mix(in srgb, var(--lead) 30%, transparent); }
+/* the cover's spec row has its own rule where the footer band would be */
+.slide:has(.spec) { --foot: linear-gradient(transparent, transparent); }
+.slide:has(> .frame)::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(to right, transparent 33px, var(--rule) 33px 35px, transparent 35px),
+    linear-gradient(to right, transparent 1045px, var(--rule) 1045px 1047px, transparent 1047px),
+    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 0 / 100% 110px no-repeat,
+    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 1240px / 100% 110px no-repeat,
+    linear-gradient(to bottom, transparent 109px, var(--rule) 109px 111px, transparent 111px),
+    var(--foot, linear-gradient(to bottom, transparent 1239px, var(--rule) 1239px 1241px, transparent 1241px)),
+    radial-gradient(640px 560px at 100% 0%, var(--glow), transparent 70%);
+}
+
 .frame { position: absolute; inset: 34px; }
 
 /* ---------- chrome: one mono label per corner ---------- */
@@ -96,12 +125,17 @@ body { background: #2A2A2A; font-family: var(--body); }
   position: absolute; left: 26px; right: 26px; top: 98px; z-index: 3;
   font-family: var(--display); font-weight: 800; font-stretch: 88%;
   font-size: 96px; line-height: 1.0; letter-spacing: -.03em; text-wrap: balance;
+  /* a rule on every line's baseline (.84em in Archivo at line-height
+     1.0), the poster-on-a-grid look; descenders cross it on purpose */
+  background: repeating-linear-gradient(to bottom, transparent 0 .84em,
+              var(--rule) .84em calc(.84em + 2px), transparent calc(.84em + 2px) 1em);
 }
 .spec {
   position: absolute; left: 26px; right: 26px; bottom: 26px; z-index: 5;
-  display: flex; gap: 36px;
+  display: flex; border-top: 2px solid var(--on-field);
 }
-.spec > div { flex: 1; }
+.spec > div { flex: 1; padding: 18px 24px 0 0; }
+.spec > div + div { padding-left: 24px; border-left: 2px solid var(--rule); }
 .spec dt {
   font-family: var(--mono); font-weight: 600; font-size: 22px;
   letter-spacing: .04em; text-transform: uppercase;
@@ -127,15 +161,16 @@ body { background: #2A2A2A; font-family: var(--body); }
   font-family: var(--display); font-weight: 900; font-stretch: 125%;
   line-height: .96; letter-spacing: -.05em;
 }
-.giant.ghost { opacity: .13; }
-.slide.dark .giant.ghost { opacity: .09; }
+.giant.ghost { color: transparent; -webkit-text-stroke: 2.5px var(--on-field); opacity: .55; }
+.slide.dark .giant.ghost { -webkit-text-stroke-color: var(--lead); opacity: .7; }
 
 /* ---------- body slides ---------- */
 .body { position: absolute; left: 26px; right: 26px; bottom: 116px; z-index: 6; }
 .body.top { top: 98px; bottom: auto; }
 .sec {
   font-family: var(--mono); font-weight: 600; font-size: 24px;
-  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 40px;
+  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 36px;
+  padding-top: 18px; border-top: 2px solid var(--on-field);
 }
 .sec span { font-weight: 500; margin-right: 18px; }
 .text {
@@ -145,14 +180,17 @@ body { background: #2A2A2A; font-family: var(--body); }
 .text.sm { font-size: 52px; }
 
 /* ---------- the selection box: outline and handles, never a label ---------- */
-.sel { position: relative; display: inline-block; white-space: nowrap; margin: 0 .22em; }
+.sel { position: relative; display: inline-block; white-space: nowrap; }
 /* the box's outline and handles reach 17px past the text: keep a line's
    last word clear of the column edge by that much */
-.hook, .text { padding-right: 8px; }
-.sel .box { position: absolute; inset: 2px -10px 4px -10px; border: 3px solid var(--mark); }
+/* In em, not px: body text grows to 92px in v3 and a fixed 10px gap let
+   the outline touch the boxed word's last letter. */
+.hook, .text { padding-right: .2em; }
+.sel { margin: 0 .28em; }
+.sel .box { position: absolute; inset: 2px -.16em 4px -.16em; border: 3px solid var(--mark); }
 .sel .h { position: absolute; width: 15px; height: 15px; background: var(--lead); border: 3px solid var(--mark); z-index: 2; }
-.sel .h.a { left: -17px; top: -5px; }    .sel .h.b { right: -17px; top: -5px; }
-.sel .h.c { left: -17px; bottom: -3px; } .sel .h.d { right: -17px; bottom: -3px; }
+.sel .h.a { left: calc(-.16em - 7px); top: -5px; }    .sel .h.b { right: calc(-.16em - 7px); top: -5px; }
+.sel .h.c { left: calc(-.16em - 7px); bottom: -3px; } .sel .h.d { right: calc(-.16em - 7px); bottom: -3px; }
 
 /* ---------- the catch ---------- */
 .flag-row { position: absolute; left: 26px; top: 116px; z-index: 6; }
@@ -189,7 +227,18 @@ body { background: #2A2A2A; font-family: var(--body); }
 
 /* ---------- keyword cloud: the post's keywords, decoration only ---------- */
 .cloud { position: absolute; inset: 0; z-index: 2; }
-.cloud span { position: absolute; white-space: nowrap; font-family: var(--body); font-weight: 500; }
+.cloud .tag {
+  position: absolute; white-space: nowrap; background: var(--field);
+  border: 2px solid var(--on-field); padding: 16px 26px 18px;
+  font-family: var(--display); font-weight: 600; font-stretch: 94%;
+  font-size: 44px; letter-spacing: -.015em; line-height: 1;
+}
+.cloud .tag i {
+  position: absolute; left: -2px; top: -34px; font-style: normal;
+  font-family: var(--mono); font-weight: 600; font-size: 20px; letter-spacing: .06em;
+}
+.cloud .wire { position: absolute; border: 0 solid var(--on-field); }
+.cloud .dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--on-field); }
 
 /* ---------- last slide ---------- */
 .follow {
@@ -202,6 +251,7 @@ body { background: #2A2A2A; font-family: var(--body); }
   font-family: var(--mono); font-weight: 500; font-size: 24px; line-height: 1.6; letter-spacing: .02em;
 }
 .sources div { display: flex; justify-content: space-between; gap: 40px; }
+.sources span:first-child { text-transform: uppercase; }
 .sources span:last-child { text-align: right; }
 
 /* ---------- Breakdown ---------- */

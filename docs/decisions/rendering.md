@@ -100,6 +100,55 @@ keep them, and `rhythm()` still colours every slide. What changed, and why:
   reason a screen reader does. `proof.py` also measures text-node rects only,
   since the selection box's handles sit outside the words by design.
 
+### Design v3 — the grid (2026-09-30)
+
+The owner, as creative director, said v2 still was not working and gave a
+second mood board (`~/Downloads/gummietechdropDesign`: Swiss grid posters
+with hairline rules and "(01)" index marks, a ruled-cell agency post, a
+callout diagram with leader lines, blurred-gradient posters). v2 read as
+big type on a flat field with no visible system. v3 keeps the palette,
+the rhythm, the type and every text rule, and adds the system:
+
+- **Hairline grid** (`.slide::before`, frame slides only): the frame
+  edges (x 34/1046), the header and footer bands (y 110/1240), and the
+  centre line (540) inside those bands only, in `--rule` (16% of
+  `--on-field`). The first version ran the edge and centre lines through
+  the text column and the owner read it as text overlapping. The cover
+  drops the footer rule because its spec row sits there.
+- **Bottom ghost words clear the footer band.** They are lifted by
+  `106px + .22em` (parentheses and descenders hang below the line box),
+  and they are placed *after* body text grows. The shrink scales from
+  the ghost's own width, not the column's: a capped short word ("1/2")
+  never fills the column, so the old formula never shrank it. That bug
+  predates v3 and was hidden by the old 60px anchor.
+- **Top-anchored ghost words shrink to clear the section rule below**
+  (40px plus the .22em overhang). The catch text grows upward, and its
+  rule cut through the bottom of "(but)". The owner chose this over
+  capping the text (which kept "(but)" full width but left a dead gap):
+  the catch is the post's most important line.
+- **The selection box is padded in em** (`.16em`), because body text now
+  grows to 92px and a fixed 10px gap let the outline touch the boxed
+  word's last letter.
+- **One soft glow** in the top-right corner: cream on a lead field, the
+  lead on cream, the lead at 30% on the dark slide. It only ever
+  lightens toward a hue that already clears 4.5:1 with ink, and on the
+  dark slide it stays away from the body text.
+- **The hook sits on ruled baselines** (.84em at line-height 1.0).
+- **Ruled cells**: the spec row and every section label get a full-ink
+  top rule; spec cells are split by hairlines.
+- **Ghost words are outlines**, not 13% fills: the fills read as muddy
+  tone-on-tone. On the dark slide the outline is the lead hue.
+- **The keyword cloud is retired** for callout tags. It repeated three
+  phrases forty times. Each keyword (at most four, deduplicated) now
+  sits in a ruled tag with a "(01)" index, wired to a dot on the section
+  rule below. Left and right wires step outward so none cross.
+  Still `aria-hidden`: the keywords are decoration, and the caption
+  carries them.
+- **Body text grows into empty space**, 60px up to 92px, while the body
+  stays under half the frame. Slides 3 and 4 had dead middles.
+
+proof.py passes all four fixture formats unchanged, and so does the reel.
+
 ### Reel motion and The Build's kit (2026-09-28)
 
 - **The reel performs the design's two signatures.** The selection box
