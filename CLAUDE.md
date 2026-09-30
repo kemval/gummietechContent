@@ -404,8 +404,9 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
   loads `telegram.py` under `publish.yml`'s two packages only, and
   actionlint (with shellcheck) over every workflow. Deliberate word
   splitting carries a `shellcheck disable` comment with its reason.
-- **`master` requires `check.yml` green to merge.** A PR with conflicts gets
-  no CI run at all — resolve them first; an unrun check is not a pass.
+- **Merge a PR only on a green `check.yml`** — by habit, not by rule: branch
+  protection would also block the bot's direct pushes to `master`. A PR with
+  conflicts gets no CI run at all; an unrun check is not a pass.
 - `tests/` (pytest, `python -m pytest`): **every test is a case this repo
   already got wrong once** — that is the entry criterion.
 - `.github/actions/notify-failure` posts every failed run's URL to Telegram,

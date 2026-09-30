@@ -35,9 +35,16 @@ new question, not noise.
 **An unrun check is not a pass.** On 2026-09-30 PR #6 sat with merge
 conflicts — an unpushed local commit had touched two posts the bot had since
 written metrics into — and GitHub runs no `pull_request` workflow on a PR it
-cannot merge, so the PR showed no red, only an absence. `master` now requires
-`check.yml`'s jobs to pass before a merge, which turns that absence into a
-block.
+cannot merge, so the PR showed no red, only an absence. So: merge only on a
+green `check.yml`, and read no runs as not green.
+
+That is a habit, not a rule, on purpose. Branch protection requiring these
+checks applies to direct pushes as well as merges, and every bot workflow
+here — daily, publish, series, fix, hook, redraft — pushes straight to
+`master` a commit that has no checks yet. Protection would reject those
+pushes and stop the pipeline. A ruleset bypass for the GitHub Actions bot
+might avoid that, but it could not be verified without risking a real push
+(2026-09-30), so it was not turned on.
 
 **The test suite is a third job**, `tests`, over `tests/` with pytest. It asks
 a different question — does this function still do what the post-mortem says
