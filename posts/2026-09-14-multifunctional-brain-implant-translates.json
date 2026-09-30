@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "interfaz cerebro-computadora",
-    "hook": "Un solo implante decodifica simultáneamente el habla y los gestos",
-    "what_happened": "Tres participantes implantados; dos controlaron un avatar virtual, con IA decodificando el habla intentada en texto y los gestos en movimiento a partir de una matriz de 253 electrodos",
-    "why_it_matters": "Los autores lo llaman un paso hacia interfaces cerebro-computadora que restauren una comunicación más natural y expresiva para personas con parálisis severa",
-    "the_catch": "Los vocabularios eran muy reducidos — como máximo diez frases y diez gestos — y los autores afirman que la decodificación simultánea siguió siendo imperfecta en solo tres participantes",
+    "hook": "Un solo implante decodifica el habla y los gestos al mismo tiempo",
+    "what_happened": "Participaron tres personas con implantes; dos controlaron un avatar virtual, mientras la IA convertía el habla intentada en texto y los gestos en movimiento usando una sola matriz de 253 electrodos",
+    "why_it_matters": "Los autores lo consideran un paso hacia interfaces cerebro-computadora capaces de recuperar una comunicación más natural y expresiva para personas con parálisis severa",
+    "the_catch": "Los vocabularios eran muy limitados — como máximo, diez frases y diez gestos — y los autores señalan que la decodificación simultánea todavía era imperfecta en estos tres participantes",
     "_en": "7f5c26a2d0d56064"
   }
 }

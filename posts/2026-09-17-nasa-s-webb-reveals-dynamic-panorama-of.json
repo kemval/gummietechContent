@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "astronomía",
-    "hook": "JWST encuentra 39 candidatos a enanas marrones en IC 348",
-    "what_happened": "Luhman y Alves de Oliveira usaron JWST NIRCam y NIRSpec para identificar 39 candidatos, obtuvieron 15 espectros y confirmaron nueve miembros subestelares",
-    "why_it_matters": "Demuestra que existen enanas marrones de masa mínima (~2 M_Jup), lo que estrecha el límite inferior de la IMF y revela discos de formación planetaria",
-    "the_catch": "Solo 15 de 39 candidatos obtuvieron espectros (la máscara de NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0.05 M☉ carecen de pruebas dinámicas",
+    "hook": "JWST descubre 39 candidatas a enanas marrones en IC 348",
+    "what_happened": "Luhman y Alves de Oliveira usaron el NIRCam y el NIRSpec del JWST para identificar 39 candidatas; obtuvieron espectros de 15 de ellas y confirmaron a nueve como miembros subestelares",
+    "why_it_matters": "Demuestra que existen las enanas marrones de menor masa (alrededor de 2 M_Jup), lo que estrecha el límite inferior de la IMF y revela discos que pueden formar planetas",
+    "the_catch": "Solo 15 de las 39 candidatas recibieron espectros (la máscara del NIRSpec cubre un campo limitado); las estimaciones de masa por debajo de ~0,05 M☉ carecen de pruebas dinámicas",
     "_en": "f316623f4181429a"
   }
 }

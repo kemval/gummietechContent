@@ -32,25 +32,25 @@
   "attribution": "Kalai, Nachum, Vempala and Zhang, arXiv (2025)",
   "peer_reviewed": false,
   "published_at": "2026-09-27",
-  "es": {
-    "domain": "investigación de IA",
-    "hook": "La IA inventa cosas por la misma razón por la que los estudiantes adivinan en los exámenes.",
-    "the_question": "Cuando se le pidió el cumpleaños de un investigador y que respondiera solo si lo sabía, DeepSeek-V3 dio tres fechas incorrectas diferentes en tres intentos.",
-    "the_intuition": "Parece un error que se corregirá con más datos o un modelo mayor: la máquina simplemente no sabe que está equivocada.",
-    "mechanism": [
-      "El preentrenamiento enseña a un modelo a predecir texto probable. Un hecho visto una sola vez, como un cumpleaños, no tiene patrón que aprender, por lo que algunos errores son inevitables.",
-      "Establece un límite inferior: si el 20 % de los cumpleaños aparecen una sola vez en los datos de entrenamiento, un modelo base debería fallar al menos en el 20 % de ellos.",
-      "Luego están los benchmarks. Nueve de cada diez benchmarks populares revisados califican solo como correcto o incorrecto, sin crédito para “no sé”, de modo que adivinar obtiene una puntuación más alta."
-    ],
-    "why_it_matters": "Los autores sostienen que la solución no es otra prueba de alucinación sino recalificar los benchmarks principales: penalizar respuestas incorrectas y especificar la confianza requerida.",
-    "the_catch": "Un preprint, aún sin revisión por pares. Los autores señalan que su marco ignora los grados de error y el contexto fuera del prompt.",
-    "_en": "fe96ab898ae69b50"
-  },
   "metrics": {
     "asked_at": "2026-09-30",
     "saves": 0,
     "shares": 1,
     "profile_visits": 1,
     "recorded_at": "2026-09-30"
+  },
+  "es": {
+    "domain": "investigación de IA",
+    "hook": "La IA inventa cosas por la misma razón por la que los estudiantes adivinan en los exámenes.",
+    "the_question": "Cuando le pidieron la fecha de cumpleaños de un investigador y le dijeron que respondiera solo si la sabía, DeepSeek-V3 dio tres fechas incorrectas diferentes en tres intentos.",
+    "the_intuition": "Parece un problema que más datos o un modelo más grande podrían solucionar: la máquina simplemente no sabe que está equivocada.",
+    "mechanism": [
+      "El preentrenamiento enseña al modelo a predecir qué texto es más probable. Un dato visto una sola vez, como una fecha de cumpleaños, no ofrece un patrón suficiente para aprenderlo, así que algunos errores son inevitables.",
+      "Esto establece un límite inferior: si el 20 % de las fechas de cumpleaños aparece una sola vez en los datos de entrenamiento, un modelo base debería equivocarse al menos en el 20 % de ellas.",
+      "Y luego están los benchmarks. Nueve de cada diez benchmarks populares que revisaron califican únicamente si la respuesta es correcta o incorrecta, sin dar crédito por decir «no lo sé». Así que adivinar termina dando una mejor puntuación."
+    ],
+    "why_it_matters": "Los autores sostienen que la solución no es crear otra prueba de alucinaciones, sino volver a evaluar los benchmarks principales: penalizar las respuestas incorrectas y establecer qué nivel de confianza se necesita para responder.",
+    "the_catch": "Es un preprint que todavía no ha sido revisado por pares. Los autores también señalan que su marco no contempla los distintos grados de error ni el contexto que queda fuera del prompt.",
+    "_en": "fe96ab898ae69b50"
   }
 }

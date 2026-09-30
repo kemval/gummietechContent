@@ -31,11 +31,11 @@
     "recorded_at": "2026-09-21"
   },
   "es": {
-    "domain": "imágenes arqueológicas",
+    "domain": "imagenología arqueológica",
     "hook": "El estiramiento de decorrelación revela pinturas antiguas invisibles",
-    "what_happened": "Un arqueólogo de Singapur aplicó el estiramiento de decorrelación de la NASA a fotos de Angkor Wat, descubriendo alrededor de 200 pinturas descoloridas.",
-    "why_it_matters": "Elimina el cuello de botella de la visibilidad del arte rupestre descolorido, permitiendo el estudio del patrimonio cultural perdido.",
-    "the_catch": "La mayoría de las aproximadamente 200 pinturas son probablemente grafitis posteriores dejados por peregrinos, no murales planificados del templo.",
+    "what_happened": "Un arqueólogo de Singapur aplicó el método de estiramiento de decorrelación de la NASA a fotografías de Angkor Wat, descubriendo aproximadamente 200 pinturas descoloridas",
+    "why_it_matters": "Esto elimina el obstáculo de la escasa visibilidad del arte rupestre descolorido, permitiendo estudiar el patrimonio cultural perdido",
+    "the_catch": "La mayoría de esas aproximadamente 200 pinturas probablemente son grafitis posteriores dejados por peregrinos, y no murales planificados del templo",
     "_en": "234a3fb27fd2e094"
   }
 }

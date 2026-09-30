@@ -55,6 +55,12 @@ from render import REPO_ROOT, shown
 
 POSTS_DIR = REPO_ROOT / "posts"
 
+# Posts a person rewrote by hand in the Spanish this archive wants. Rules
+# describe the register; these show it, and a model imitates an example far
+# more reliably than it follows an adjective. Optional: without the file the
+# prompts carry no examples and everything else works as before.
+EXAMPLES_PATH = REPO_ROOT / "docs" / "es_examples.json"
+
 SLEEP_BETWEEN_CALLS = 5          # seconds; the free tier allows ~12/minute
 
 # The `es` block records a fingerprint of the English it was made from, under
@@ -71,12 +77,21 @@ SOURCE_KEY = "_en"
 # Rules both passes share. Each named example is a real failure from posts/
 # (2026-09-07 to 09-28), written with openai/gpt-oss-20b on Groq.
 RULES = """\
-- Neutral Latin American Spanish: no regionalisms, no "vosotros", usted-free \
-impersonal phrasing.
-- Translate the meaning, not the words. The English is plain and declarative; \
-the Spanish has to read as if it had been written that way, not as a \
-translation of something. Read each sentence back: if a Spanish reader would \
-have to guess what it means, rewrite it.
+- Neutral Latin American Spanish, no regionalisms, no "vosotros". Where the \
+text addresses the reader, it is "tú" — the voice of a science account \
+talking to its followers, not a press release and not a textbook.
+- Write it the way a Spanish-speaking science writer would, starting from the \
+facts, not from the English sentences. Reorder, join or split sentences \
+wherever natural Spanish wants it. Read each sentence back: if a Spanish \
+reader would have to guess what it means, or would never write it that way, \
+rewrite it.
+- No chains of impersonal "se" ("Se pidió una ejecución… Se obtuvo una…"): \
+give the sentence a subject, or address the reader.
+- The English is slide copy and often telegraphic — no articles, no verb \
+("4B Qwen model, tuned with agentic RL, wrote…", "Three participants \
+implanted"). The Spanish is full sentences: put the articles and verbs back.
+- "solo" never takes an accent. A model size stays as written: "4B", not \
+"4 B".
 - Keep every claim exactly as strong as the English. Do not add, drop, soften \
 or sharpen anything, and keep who does what to whom: "asked … and told to \
 answer only if it knew" is "cuando se le pidió … y que respondiera solo si lo \
@@ -94,8 +109,10 @@ software and models (the "Join Order Benchmark" stays as it is), and \
 established loanwords such as "benchmark", "prompt", "software".
 - A multiplier is a comparison, not a count: "100-fold tests" is "pruebas \
 100 veces más precisas" (or whatever the English compares), never \
-"pruebas de 100 veces". "1.81x faster" is "1.81 veces más rápido".
-- Leave units and numbers exactly as they are.
+"pruebas de 100 veces". "1.81x faster" is "1,81 veces más rápido".
+- Keep every number and unit, with a decimal comma: "1.81" is "1,81", \
+"0.05 M☉" is "0,05 M☉". Thousands take a space, not a comma or a point: \
+"60,000" is "60 000".
 - Scientific terms take their established Spanish form. If you are not \
 certain of the accepted term, keep the English word rather than coin a \
 Spanish-looking one: a reader can look up an English term, but a word that \
@@ -113,15 +130,16 @@ the reader — lowercase unless it contains a proper noun.
 length, in the same order, one translated string per entry. Each entry is its \
 own paragraph; do not merge, split or reorder them."""
 
-PROMPT = """Translate this @gummietech post into neutral Latin American \
-Spanish for the account's web archive.
+PROMPT = """Write this @gummietech post in neutral Latin American Spanish \
+for the account's web archive — the same facts, as a Spanish-speaking \
+science writer would put them.
 
 Return ONLY a JSON object, no prose and no code fences, with exactly these \
 keys: {keys}.
 
 Rules:
 {rules}
-
+{examples}
 Post:
 {post}"""
 
@@ -139,17 +157,19 @@ For every field, compare the Spanish with the English and fix:
 softened, sharpened, or with the roles swapped;
 - grammar: agreement, prepositions, verb tense, word order;
 - English words left untranslated that have a Spanish form in common use;
-- words that do not exist in Spanish, and phrasing a native reader would \
-have to reread to understand.
-If a field is already right, return it unchanged. Do not restyle correct \
-Spanish.
+- words that do not exist in Spanish;
+- any sentence a native Spanish-speaking science writer would not have \
+written that way — literal, stiff, telegraphic or passive. Rewrite it as \
+they would, without changing what it says. Correct grammar is not enough: \
+it has to read as if it had been written in Spanish.
+If a field already reads that way, return it unchanged.
 
 Return ONLY a JSON object, no prose and no code fences, with exactly these \
 keys: {keys}.
 
 The translation had to follow these rules; the corrected version must too:
 {rules}
-
+{examples}
 English:
 {post}
 
@@ -303,52 +323,94 @@ def check(paths: list[Path]) -> int:
     return 1 if stale else 0
 
 
-def ask(prompt: str, source: dict, api_key: str, model: str) -> dict:
-    """One call; refuse any reply the page cannot show."""
-    fields = list(source)
-    reply = llm.generate(prompt, api_key, model, temperature=0.2)
-
-    try:
-        es = json.loads(reply.strip())
-    except json.JSONDecodeError:
-        sys.exit(f"The model did not return JSON:\n{reply[:400]}\n"
-                 "Re-run to try again.")
+def unusable(es: object, source: dict) -> str:
+    """Why a parsed reply cannot go on the page, or "" when it can."""
     if not isinstance(es, dict):
-        sys.exit(f"The model returned {type(es).__name__}, not a JSON object. "
-                 "Re-run to try again.")
-
-    missing = [f for f in fields if value(es, f) is None]
+        return f"it returned a JSON {type(es).__name__}, not an object"
+    missing = [f for f in source if value(es, f) is None]
     if missing:
-        sys.exit(f"Refusing to write. The model left these empty: "
-                 f"{', '.join(missing)}. Re-run to try again.")
-
+        return f"it left these empty: {', '.join(missing)}"
     # A list field has to come back the same length: each entry is a
     # paragraph, and a translation one short would silently drop one.
-    for f in fields:
+    for f in source:
         if isinstance(source[f], list):
             got = value(es, f)
             if not isinstance(got, list) or len(got) != len(source[f]):
-                sys.exit(f"Refusing to write. {f!r} has {len(source[f])} "
-                         f"entries in English and came back with "
-                         f"{len(got) if isinstance(got, list) else 'not a list'}"
-                         f". Each one is a paragraph. Re-run to try again.")
-
-    # Keys the page does not render are dropped rather than stored: an
-    # unrendered translation is one nobody proofreads at the gate.
-    return {f: value(es, f) for f in fields}
+                n = len(got) if isinstance(got, list) else "not a list"
+                return (f"{f!r} has {len(source[f])} entries in English and "
+                        f"came back with {n}; each one is a paragraph")
+    return ""
 
 
-def translate(post: dict, api_key: str, model: str) -> dict:
+def ask(prompt: str, source: dict, api_key: str, model: str) -> dict:
+    """One call, retried once; refuse any reply the page cannot show.
+
+    A malformed reply is the model's dice, not the input's fault: gpt-oss on
+    Groq returned a JSON list despite response_format=json_object on
+    2026-09-30, twice on the same post, and each time it ended the whole run
+    with the posts after it untranslated. The same prompt came back fine on
+    the next call, so one retry is the fix; a second failure still stops.
+    """
+    problem = ""
+    for attempt in range(2):
+        if attempt:
+            print(f"  unusable reply ({problem}); asking once more")
+            time.sleep(SLEEP_BETWEEN_CALLS)
+        reply = llm.generate(prompt, api_key, model, temperature=0.2)
+        try:
+            es = json.loads(reply.strip())
+        except json.JSONDecodeError:
+            problem = f"it did not return JSON: {reply[:200]!r}"
+            continue
+        problem = unusable(es, source)
+        if not problem:
+            # Keys the page does not render are dropped rather than stored:
+            # an unrendered translation is one nobody proofreads at the gate.
+            return {f: value(es, f) for f in source}
+    sys.exit(f"Refusing to write: {problem}. Re-run to try again.")
+
+
+def examples(exclude: str) -> str:
+    """The hand-written examples as a prompt section, or "" without them.
+
+    `exclude` is the stem of the post being translated: re-translating one of
+    the examples must not be handed its own answer, or it would copy it and
+    the run would say nothing about how the prompt does.
+    """
+    try:
+        pairs = json.loads(EXAMPLES_PATH.read_text())["examples"]
+        shown_pairs = [(e["en"], e["es"]) for e in pairs
+                       if e.get("post") != exclude]
+    except FileNotFoundError:
+        return ""
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        print(f"  warning: ignoring {shown(EXAMPLES_PATH)} ({exc}); fix its "
+              "JSON to get the examples back into the prompt.")
+        return ""
+    if not shown_pairs:
+        return ""
+    body = "\n\n".join(
+        "English:\n" + json.dumps(en, indent=2, ensure_ascii=False)
+        + "\nSpanish:\n" + json.dumps(es, indent=2, ensure_ascii=False)
+        for en, es in shown_pairs)
+    return ("\nPosts a native speaker wrote by hand for this archive. Match "
+            "their voice and register, not their wording:\n\n" + body + "\n")
+
+
+def translate(post: dict, stem: str, api_key: str, model: str) -> dict:
     """Translate, then have the draft proofread against the English."""
     source = source_fields(post)
     keys = ", ".join(f'"{f}"' for f in source)
     english = json.dumps(source, indent=2, ensure_ascii=False)
+    shown_examples = examples(exclude=stem)
 
-    draft = ask(PROMPT.format(keys=keys, rules=RULES, post=english),
+    draft = ask(PROMPT.format(keys=keys, rules=RULES, post=english,
+                              examples=shown_examples),
                 source, api_key, model)
     time.sleep(SLEEP_BETWEEN_CALLS)
     return ask(REVIEW_PROMPT.format(
                    keys=keys, rules=RULES, post=english,
+                   examples=shown_examples,
                    draft=json.dumps(draft, indent=2, ensure_ascii=False)),
                source, api_key, model)
 
@@ -380,7 +442,7 @@ def process(path: Path, api_key: str, model: str, force: bool,
 
     again = isinstance(post.get("es"), dict) and reason
     print(f"\n{path.name}" + (f" — re-translating: {reason}" if again else ""))
-    es = translate(post, api_key, model)
+    es = translate(post, path.stem, api_key, model)
     for field, text in es.items():
         print(f"  {field}: {text}")
 

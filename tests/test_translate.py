@@ -6,6 +6,10 @@ same credibility risk as an unlabelled preprint.
 """
 from __future__ import annotations
 
+import json
+
+import pytest
+
 import formats
 import translate
 
@@ -119,7 +123,7 @@ def test_process_reaches_the_model_on_a_post_that_needs_it(posts_dir,
     path = write("2026-09-20-x.json", **post())
 
     monkeypatch.setattr(translate, "translate",
-                        lambda p, k, m: {f: f"es-{f}"
+                        lambda p, s, k, m: {f: f"es-{f}"
                                          for f in translate.source_fields(p)})
     assert translate.process(path, "key", "model", force=False, dry_run=True)
 
@@ -135,3 +139,26 @@ def test_process_skips_a_post_whose_english_is_short(posts_dir, capsys):
     assert not translate.process(path, "key", "model", force=False,
                                  dry_run=True)
     assert "missing mechanism in English" in capsys.readouterr().out
+
+
+def test_a_malformed_reply_is_asked_again_not_fatal(monkeypatch):
+    """gpt-oss on Groq returned a JSON list despite json_object mode, and
+    ask() exited — ending the run with every later post untranslated. The
+    same prompt came back fine on the next call."""
+    source = translate.source_fields(post())
+    good = json.dumps({f: f"es-{f}" for f in source})
+    replies = iter(["[" + good + "]", good])
+    monkeypatch.setattr(translate.llm, "generate", lambda *a, **k: next(replies))
+    monkeypatch.setattr(translate, "SLEEP_BETWEEN_CALLS", 0)
+
+    assert translate.ask("prompt", source, "key", "model") == {
+        f: f"es-{f}" for f in source}
+
+
+def test_a_second_malformed_reply_still_stops(monkeypatch):
+    source = translate.source_fields(post())
+    monkeypatch.setattr(translate.llm, "generate", lambda *a, **k: "[]")
+    monkeypatch.setattr(translate, "SLEEP_BETWEEN_CALLS", 0)
+
+    with pytest.raises(SystemExit):
+        translate.ask("prompt", source, "key", "model")

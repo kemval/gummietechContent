@@ -33,9 +33,9 @@
   },
   "es": {
     "domain": "materiales",
-    "hook": "Los fotopolímeros espumantes permiten impresión sin tinta a 20,000 dpi",
+    "hook": "Los fotopolímeros espumantes permiten imprimir sin tinta a 20 000 dpi",
     "what_happened": "Los investigadores usaron luz UV‑A para provocar la espumación en una película de polímero, creando poros controlados y un patrón blanco de alta resolución",
-    "why_it_matters": "Elimina la necesidad de tinta y permite la impresión a escala de micrones de características ópticas y de humectación",
+    "why_it_matters": "Así se elimina la necesidad de tinta y se posibilita la impresión a escala micrométrica de características ópticas y de humectación",
     "the_catch": "Hasta ahora solo se ha demostrado en polímeros amorfos y semicristalinos",
     "_en": "1dc71eb4176721d8"
   }

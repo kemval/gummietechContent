@@ -32,10 +32,10 @@
   },
   "es": {
     "domain": "ciencia de la corrosión",
-    "hook": "Gotas de agua ligeramente cargadas corroen el metal recubierto más fácilmente",
+    "hook": "Las gotas de agua ligeramente cargadas corroen el metal recubierto con mayor facilidad",
     "what_happened": "Ni et al. demostraron que gotas cargadas espontáneamente dañan los recubrimientos protectores y aceleran la corrosión del metal",
-    "why_it_matters": "Este mecanismo pasado por alto puede contribuir al desgaste de edificios, barcos y automóviles, y señala la necesidad de recubrimientos que resistan el daño inducido por carga",
-    "the_catch": "El modelo de ruptura es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor",
+    "why_it_matters": "Este mecanismo, pasado por alto, puede contribuir al desgaste de edificios, barcos y automóviles, y sugiere la necesidad de recubrimientos que resistan el daño inducido por la carga",
+    "the_catch": "El modelo de degradación es una estimación de límite inferior que asume una resistencia dieléctrica constante, aunque los recubrimientos reales varían con el grosor",
     "_en": "e5537661fcfc0095"
   }
 }
