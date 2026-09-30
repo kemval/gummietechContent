@@ -176,7 +176,7 @@ jobs:
             exit 1
           fi
           if [ "$changed" != "$POST" ]; then
-            echo "::error::Expected only $POST to change, got: $(echo $changed). Nothing has been committed." >&2
+            echo "::error::Expected only $POST to change, got: ${changed//$'\n'/ }. Nothing has been committed." >&2
             git checkout -- .
             exit 1
           fi

@@ -172,3 +172,11 @@ def test_rejecting_refuses_what_it_must_not_move(covered, posts_dir, record):
     with pytest.raises(SystemExit):
         draft.reject(directory / "2026-09-30-x.json", "", "2026-09-30")
     assert (directory / "2026-09-30-x.json").exists()
+
+
+def test_learn_reads_rejections_where_draft_writes_them():
+    """Two definitions of one path, kept apart only so learn.py need not
+    import gspread. A rename on one side would empty learn.py's section in
+    silence."""
+    import learn
+    assert learn.REJECTED == draft.POSTS_DIR / draft.REJECTED_DIR

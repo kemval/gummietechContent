@@ -400,8 +400,12 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
 
 ## When something breaks
 
-- `check.yml` on every push: the offline half end to end, plus a job that
-  loads `telegram.py` under `publish.yml`'s two packages only.
+- `check.yml` on every push: the offline half end to end, a job that
+  loads `telegram.py` under `publish.yml`'s two packages only, and
+  actionlint (with shellcheck) over every workflow. Deliberate word
+  splitting carries a `shellcheck disable` comment with its reason.
+- **`master` requires `check.yml` green to merge.** A PR with conflicts gets
+  no CI run at all — resolve them first; an unrun check is not a pass.
 - `tests/` (pytest, `python -m pytest`): **every test is a case this repo
   already got wrong once** — that is the entry criterion.
 - `.github/actions/notify-failure` posts every failed run's URL to Telegram,

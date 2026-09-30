@@ -138,12 +138,14 @@ jobs:
 
           # Glob with no match expands to itself, so test the expansion rather
           # than trusting the shell to report emptiness.
+          # shellcheck disable=SC2086 # the glob is meant to expand
           set -- $pattern
           # A Breakdown is written by hand and dated the day it was written,
           # so it can share a Drop day's date without being its Drop — on
           # 2026-09-28 one did, and no Drop was drafted. watch.owes() is the
           # same rule. A Signal's name already says what it is.
           if [ -e "$1" ] && [ "$weekday" != "6" ] && [ "$SIGNAL" != "true" ]; then
+            # shellcheck disable=SC2046 # one path per word; draft.py names have no spaces
             set -- $(python3 -c 'import json, sys; print(*(p for p in sys.argv[1:] if json.load(open(p)).get("post_type", "drop") != "breakdown"))' "$@")
           fi
           if [ -n "${1:-}" ] && [ -e "$1" ]; then

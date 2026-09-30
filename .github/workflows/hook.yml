@@ -100,7 +100,7 @@ jobs:
         run: |
           changed=$(git diff --name-only)
           if [ "$changed" != "$POST" ]; then
-            echo "::error::Expected only $POST to change, got: $(echo $changed). Nothing has been committed." >&2
+            echo "::error::Expected only $POST to change, got: ${changed//$'\n'/ }. Nothing has been committed." >&2
             exit 1
           fi
           if ! python3 -c "import json,sys,os; sys.exit(0 if not json.load(open(os.environ['POST'])).get('published_at') else 1)"; then

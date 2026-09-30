@@ -22,6 +22,23 @@ runs end to end, and it catches the class of break that used to surface at
 06:17 — a missing dependency, an import cycle, a template that stops
 rendering, Spanish left behind by a correction.
 
+**A fourth job, `workflows`, runs actionlint** (pinned, 1.7.12) with the
+runner's shellcheck over every workflow. The workflows had no check at all,
+and they are what every button in the chat dispatches: a broken expression or
+`run:` block surfaced as a dead button the next time somebody tapped it. Its
+first run found eight shellcheck findings, all deliberate — `$(echo $changed)`
+flattening a list onto one line in three guards (now `${changed//$'\n'/ }`),
+and two intended word splits in `daily.yml`'s gate, which now carry a
+`shellcheck disable` comment with the reason. A new finding is therefore a
+new question, not noise.
+
+**An unrun check is not a pass.** On 2026-09-30 PR #6 sat with merge
+conflicts — an unpushed local commit had touched two posts the bot had since
+written metrics into — and GitHub runs no `pull_request` workflow on a PR it
+cannot merge, so the PR showed no red, only an absence. `master` now requires
+`check.yml`'s jobs to pass before a merge, which turns that absence into a
+block.
+
 **The test suite is a third job**, `tests`, over `tests/` with pytest. It asks
 a different question — does this function still do what the post-mortem says
 it must — which is why it is a job of its own rather than more steps in

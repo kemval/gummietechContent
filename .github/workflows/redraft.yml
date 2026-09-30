@@ -128,7 +128,7 @@ jobs:
           expected=$(printf '%s\n' "$OLD" "$moved" "$NEW" | sort -u)
           changed=$(git diff --cached --name-only | sort)
           if [ "$changed" != "$expected" ]; then
-            echo "::error::Expected only $OLD → $moved and $NEW to change, got: $(echo $changed). Nothing has been committed." >&2
+            echo "::error::Expected only $OLD → $moved and $NEW to change, got: ${changed//$'\n'/ }. Nothing has been committed." >&2
             exit 1
           fi
           for f in "$moved" "$NEW"; do
