@@ -55,6 +55,16 @@
   font-weight: 200 900; font-stretch: 75% 125%;
   font-display: swap;
 }
+/* Hubot Sans's zero is slashed and has no plain alternate; the owner
+   read "01" as "θ1". Only U+0030 comes from Mona Sans, whose default zero
+   is plain and whose axes match, so every other glyph stays Hubot. */
+@font-face {
+  font-family: 'Hubot Sans';
+  src: url('{{ base }}fonts/MonaSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  unicode-range: U+0030;
+  font-display: swap;
+}
 @font-face {
   font-family: 'Mona Sans';
   src: url('{{ base }}fonts/MonaSans.ttf') format('truetype');

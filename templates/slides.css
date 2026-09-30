@@ -34,6 +34,16 @@
   font-weight: 200 900; font-stretch: 75% 125%;
   font-display: block;
 }
+/* Hubot Sans's zero is slashed and has no plain alternate; the owner
+   read "01" as "θ1". Only U+0030 comes from Mona Sans, whose default zero
+   is plain and whose axes match, so every other glyph stays Hubot. */
+@font-face {
+  font-family: 'Hubot Sans';
+  src: url('{{ font_dir }}/MonaSans.ttf') format('truetype');
+  font-weight: 200 900; font-stretch: 75% 125%;
+  unicode-range: U+0030;
+  font-display: block;
+}
 @font-face {
   font-family: 'Mona Sans';
   src: url('{{ font_dir }}/MonaSans.ttf') format('truetype');
@@ -115,9 +125,11 @@ body { background: #2A2A2A; font-family: var(--body); }
     linear-gradient(to right, transparent 33px, var(--rule) 33px 35px, transparent 35px),
     linear-gradient(to right, transparent 1045px, var(--rule) 1045px 1047px, transparent 1047px),
     linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 0 / 100% 110px no-repeat,
-    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 1240px / 100% 110px no-repeat,
+    linear-gradient(to right, transparent 539px, var(--rule) 539px 541px, transparent 541px) 0 calc(100% - 110px) / 100% 110px no-repeat,
     linear-gradient(to bottom, transparent 109px, var(--rule) 109px 111px, transparent 111px),
-    var(--foot, linear-gradient(to bottom, transparent 1239px, var(--rule) 1239px 1241px, transparent 1241px));
+    /* the footer band measured from the bottom: The Build's 9:16 stills share
+       this, and a rule at y 1240 crossed them at mid-height */
+    var(--foot, linear-gradient(to top, transparent 109px, var(--rule) 109px 111px, transparent 111px));
 }
 
 .frame { position: absolute; inset: 34px; }

@@ -42,13 +42,18 @@ document.fonts.ready.then(() => {
       if (!words.length) return;
       const [src, sx, sy, sw, sh] = R.frame(s), c = s.ctx, Wc = c.canvas.width, Hc = c.canvas.height;
       soft.width = sw; soft.height = sh;
-      softCtx.filter = 'blur(5px) brightness(1.18) saturate(1.1)';   // blurred small: cheap
+      softCtx.filter = s.el.classList.contains('cream') ? 'blur(5px) saturate(1.2)'   // blurred small: cheap
+                                                        : 'blur(5px) brightness(1.18) saturate(1.1)';
       softCtx.drawImage(src, sx, sy, sw, sh, 0, 0, sw, sh);
       softCtx.filter = 'none';
       if (layer.width !== Wc || layer.height !== Hc) { layer.width = Wc; layer.height = Hc; }
       const S = s.el.getBoundingClientRect(), k = S.width / s.el.offsetWidth;
+      // On cream the glass shades instead: brightening an already pale field
+      // made "(bug)" all but vanish.
+      const pale = s.el.classList.contains('cream');
       for (const g of words) {
-        const cs = getComputedStyle(g), B = g.getBoundingClientRect(), text = g.textContent;
+        const cs = getComputedStyle(g), B = g.getBoundingClientRect();
+        const lines = g.innerText.split('\n');   // the wordmark is two lines
         const x = (B.left - S.left) / k, top = (B.top - S.top) / k;
         // the word's own scale on screen (the reel's card is 0.9) in host pixels
         const z = B.width / g.offsetWidth / k, px = v => parseFloat(v) * z + 'px';
@@ -59,21 +64,22 @@ document.fonts.ready.then(() => {
           cx.textBaseline = 'alphabetic';
         };
         setFont(lctx);
-        const m = lctx.measureText(text);
-        const asc = m.fontBoundingBoxAscent, desc = m.fontBoundingBoxDescent;
+        const m = lctx.measureText(lines[0]);
+        const asc = m.fontBoundingBoxAscent, desc = m.fontBoundingBoxDescent, lh = parseFloat(cs.lineHeight) * z;
         // CSS puts the baseline half the leading below the line box's top
-        const y = top + (parseFloat(cs.lineHeight) * z - (asc + desc)) / 2 + asc;
+        const y = top + (lh - (asc + desc)) / 2 + asc;
+        const fill = (cx, dx = 0, dy = 0) => lines.forEach((l, i) => cx.fillText(l, x + dx, y + i * lh + dy));
         // the glass: the blurred backdrop, kept only inside the letters
         lctx.clearRect(0, 0, Wc, Hc);
         lctx.globalCompositeOperation = 'source-over';
-        lctx.fillStyle = '#000'; lctx.fillText(text, x, y);
+        lctx.fillStyle = '#000'; fill(lctx);
         lctx.globalCompositeOperation = 'source-in';
         lctx.drawImage(soft, 0, 0, Wc, Hc);
-        lctx.fillStyle = s.dark ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.22)';
+        lctx.fillStyle = s.dark ? 'rgba(255,255,255,.08)' : pale ? 'rgba(59,44,35,.09)' : 'rgba(255,255,255,.22)';
         lctx.fillRect(0, 0, Wc, Hc);
         lctx.globalCompositeOperation = 'source-over';
         c.save();
-        c.shadowColor = s.dark ? 'rgba(0,0,0,.45)' : 'rgba(59,44,35,.18)';
+        c.shadowColor = s.dark ? 'rgba(0,0,0,.45)' : pale ? 'rgba(59,44,35,.28)' : 'rgba(59,44,35,.18)';
         c.shadowBlur = 40; c.shadowOffsetY = 14;
         c.drawImage(layer, 0, 0);
         c.restore();
@@ -82,9 +88,9 @@ document.fonts.ready.then(() => {
         // (a box inside the "t").
         lctx.clearRect(0, 0, Wc, Hc);
         lctx.fillStyle = s.dark ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.85)';
-        lctx.fillText(text, x, y);
+        fill(lctx);
         lctx.globalCompositeOperation = 'destination-out';
-        lctx.fillStyle = '#000'; lctx.fillText(text, x + 2.5, y + 2.5);
+        lctx.fillStyle = '#000'; fill(lctx, 2.5, 2.5);
         lctx.globalCompositeOperation = 'source-over';
         c.drawImage(layer, 0, 0);
       }
@@ -225,6 +231,16 @@ document.fonts.ready.then(() => {
       for (let px = parseFloat(getComputedStyle(hook).fontSize); !fits() && px > 64; ) {
         px -= 4; hook.style.fontSize = px + 'px';
       }
+    }
+
+    // A Signal item: the rank at a modest size, and the claim centred in
+    // the space under it, where a bottom-anchored claim left the middle of
+    // the slide empty.
+    const rank = slide.querySelector('.giant.rank');
+    if (rank) {
+      const body = slide.querySelector('.body'), floor = Fh - 116;
+      const free = floor - (bottom(rank) + 40) - body.offsetHeight;
+      if (free > 0) body.style.bottom = (116 + free / 2) + 'px';
     }
 
     // The keyword callouts (v3, after the owner's 01.tech reference): each

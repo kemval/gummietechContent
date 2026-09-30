@@ -174,6 +174,20 @@ the rhythm, the type and every text rule, and adds the system:
     out, wire down, dot), indexed by `--i` from the layout pass, because
     the owner noticed slide 2's diagram was the one thing that just
     appeared.
+  - **Finishing pass (owner's list, 2026-09-30).**
+    - The footer band's rules are measured from the bottom, so a 9:16
+      Build still no longer has a 4:5 rule across its middle.
+    - On cream, glass shades rather than brightens: "(bug)" had vanished.
+    - The follow slide's "(gummie tech)" is glass, drawn line by line.
+    - A figure-less cover keeps its open band, showing only the moving
+      ribbons. A glass "(drop)"/"(signal)" was tried there; it repeated the
+      format label on most covers, and the owner chose nothing.
+    - Signal ranks are capped at 200px, and the claim is centred under
+      the rank.
+    - Hubot's zero is slashed with no plain alternate, and read as "θ".
+      U+0030 alone comes from Mona Sans via unicode-range, on the slides
+      and the archive.
+    - Status reports are untouched: their own design system, by hand.
   - **Cost.** Headless Chrome runs WebGL on the CPU, so the shader draws
     at a third of the size and is scaled up (Neat's `renderScale`). The
     ribbons are smooth enough not to show it. At full size a reel took
