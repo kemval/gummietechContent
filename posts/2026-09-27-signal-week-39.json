@@ -70,5 +70,8 @@
     ],
     "_en": "a69a1ec459474612"
   },
-  "published_at": "2026-09-27"
+  "published_at": "2026-09-27",
+  "metrics": {
+    "asked_at": "2026-09-30"
+  }
 }
