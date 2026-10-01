@@ -243,15 +243,14 @@ never hardcode a hue in a template. A Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | pink | olive |
+| `ember` | energy, materials, engineering, chemistry | blush | amber |
 
 Invariants (`render.rhythm()` is them as code): `--ink` is the type on
 light slides; slide 2 is cream; the catch is the second-to-last
 slide and drops to `--ink`; first and last slides share a field; the middle
 alternates support and lead; every lead/support hue clears 4.5:1 against
 `--ink` (asserted in `tests/`); **no two consecutive posts share a field**
-(`render.vary()`, deterministic, comparing colour pairs, not names: `ember`
-wears `signal`'s pink/olive since 2026-09-30, by the owner's call). `render.py --colorway <name>` overrides at
+(`render.vary()`, deterministic, comparing colour pairs, not names). `render.py --colorway <name>` overrides at
 the gate. → `docs/decisions/rendering.md`
 
 ### Drop reels

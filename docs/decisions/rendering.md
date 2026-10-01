@@ -269,7 +269,7 @@ a `(lead, support)` pair, and a five-slide Drop renders
 | `signal` | AI, computing, software, robotics | pink | olive |
 | `orbit` | space, astronomy, physics | sky | pink |
 | `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | pink | olive |
+| `ember` | energy, materials, engineering, chemistry | blush | amber |
 
 Invariants that keep the grid recognizable, and that a new family or a new
 format must respect. `render.rhythm()` is these rules as code, which is why a
@@ -296,13 +296,12 @@ longer format needs no new palette decision:
   robotics and applied thermodynamics — all `ember` — and three amber posts
   shipped in a row while every mapping worked exactly as documented.
 
-**Ember wears signal's pair since 2026-09-30.** Under the v3 backdrop amber
-read as washed out as a lead, and the owner compared the same post in
-amber, blush/olive, blush/amber and pink/olive and chose pink/olive, 09-28's
-look. The family keeps its name, because draft.py and the agents still sort
-topics into it. So `vary()` compares colour pairs, not names: by name, a
-signal post then an ember post would have shipped pink twice in a row.
-Amber stays a token and is simply unused by any family for now.
+**Ember is blush/amber since 2026-09-30.** Under the v3 backdrop amber read
+as washed out as a lead. Ember first took signal's pink/olive, 09-28's look,
+but that left the grid three looks for four families. Blush is the one lead
+no other family uses, and the owner chose amber for its support slide over
+sky and olive. `vary()` compares colour pairs, not names, from those hours
+when two families shared one; the test for that case stays.
 
 `vary(chosen, previous)` returns `chosen` untouched unless the post before it
 already had that family, in which case it takes the next family in

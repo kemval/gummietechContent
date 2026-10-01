@@ -84,10 +84,11 @@ COLORWAYS: dict[str, tuple[str, str]] = {
     "orbit":  ("sky",   "pink"),    # space, astronomy, physics
     "bloom":  ("olive", "blush"),   # biology, medicine, climate, ecology
     # Owner's call, 2026-09-30: amber read as washed out as a lead under the
-    # v3 backdrop, and 09-28's pink/olive was the look they wanted. Ember
-    # keeps its name (draft.py and the agents still sort topics into it) but
-    # wears signal's pair, so vary() compares pairs, not names.
-    "ember":  ("pink",  "olive"),   # energy, materials, engineering, chemistry
+    # v3 backdrop. Ember wore signal's pink/olive for a few hours, which left
+    # the grid three looks for four families; blush is the one lead no other
+    # family uses, and amber survives as the support slide. vary() compares
+    # pairs, not names, in case two families ever share one again.
+    "ember":  ("blush", "amber"),   # energy, materials, engineering, chemistry
 }
 DEFAULT_COLORWAY = "signal"
 
