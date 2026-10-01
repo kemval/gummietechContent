@@ -343,9 +343,10 @@ def test_three_ember_topics_in_a_row_do_not_ship_three_amber_posts():
 
 
 def test_two_families_in_one_pair_are_still_a_repeat():
-    """Since 2026-09-30 ember wears signal's pink/olive. vary() compared
-    names, so a signal post then an ember post would have shipped two
-    pink posts in a row while every name differed."""
+    """On 2026-09-30 ember briefly wore signal's pink/olive. vary() compared
+    names, so a signal post then an ember post would have shipped two pink
+    posts in a row while every name differed. It holds whenever two
+    families share a pair."""
     for chosen in render.COLORWAYS:
         for previous in render.COLORWAYS:
             got = render.vary(chosen, previous)
