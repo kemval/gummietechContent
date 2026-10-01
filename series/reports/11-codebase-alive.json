@@ -4,7 +4,7 @@
   "title": "things keeping my codebase alive",
   "module": "cards-4",
   "image": "11-codebase-alive.png",
-  "caption": "load-bearing, all four of them.\n\nAI (on call). the docs and Stack Overflow (scripture). caffeine\n(life support). and one old function nobody knows what it does — which\nis the one I'm most afraid of.\n\ndo not touch production.\n\nwhat's the mystery function in your repo that everyone's scared to delete?",
+  "caption": "load-bearing code, all four of them.\n\na TODO from 2021. a catch block that catches everything and tells no one.\na sleep(500) that fixes a race condition nobody can explain. and utils_old.js —\nimported nowhere, and somehow the only thing holding login together.\n\nit works. do not ask it why.\n\nwhat's the one line in your repo you're too scared to delete?",
   "hashtags": [
     "#legacycode",
     "#devhumor",
