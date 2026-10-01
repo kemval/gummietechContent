@@ -36,5 +36,8 @@
     "why_it_matters": "Un modelo pequeño de 4B, entrenado para una sola base de datos, superó los planes predeterminados de Postgres en un benchmark centrado en consultas con muchas uniones, lo que sugiere que los modelos pequeños y especializados podrían funcionar bien para optimizar consultas",
     "the_catch": "El 81 % corresponde al plan más rápido de hasta 15 intentos por consulta; las propias selecciones del modelo alcanzaron 1,40 veces la velocidad. Solo se probó en el Join Order Benchmark basado en IMDb.",
     "_en": "558f57bdc1936174"
+  },
+  "metrics": {
+    "asked_at": "2026-10-01"
   }
 }
