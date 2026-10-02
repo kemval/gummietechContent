@@ -1,9 +1,9 @@
 """
 llm.py's failover chain.
 
-2026-10-02: Gemini returned 503s all afternoon while Groq's daily cap was
-spent, and with two providers there was nothing left to draft with. The
-chain now has a third, tried last.
+The chain is a list so a third free provider is one entry. These run it with
+three fakes: on 2026-10-02 Gemini returned 503s all afternoon while Groq's
+daily cap was spent, and a third link is what that day wanted.
 """
 from __future__ import annotations
 
@@ -83,25 +83,3 @@ def test_every_provider_overloaded_stops_the_run_naming_them(chain):
     assert "groq then gemini" in str(stop.value)
     assert "No key for github" in str(stop.value)
 
-
-def test_github_models_is_always_the_last_resort():
-    assert llm.FALLBACK_ORDER[-1] == "github"
-
-
-def test_a_github_models_answer_that_is_not_json_stops_cleanly(monkeypatch):
-    """2026-10-02, the first live call: HTTP 200 and a plain-text "OK"
-    body, which crashed score.py with a JSONDecodeError traceback."""
-    import github_models
-
-    class Plain:
-        status_code = 200
-        text = "OK"
-        headers = {"content-type": "text/plain"}
-
-        def json(self):
-            raise ValueError("Expecting value")
-
-    monkeypatch.setattr(github_models.requests, "post", lambda *a, **k: Plain())
-    with pytest.raises(SystemExit) as stop:
-        github_models.generate("json please", "token", "model")
-    assert "no JSON" in str(stop.value)

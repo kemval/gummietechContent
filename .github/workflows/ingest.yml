@@ -18,11 +18,6 @@ concurrency:
   group: ingest
   cancel-in-progress: false
 
-# models: read lets score.py fall back to GitHub Models (llm.py).
-permissions:
-  contents: read
-  models: read
-
 jobs:
   ingest:
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
@@ -63,7 +58,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
-          GITHUB_MODELS_TOKEN: ${{ github.token }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
         run: python src/score.py

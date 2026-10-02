@@ -45,29 +45,27 @@ the error says which key was missing. Three deliberate limits:
   It sits in its own module because `llm.py` imports both providers, so
   defining it there would be an import cycle.
 
-**A third link: GitHub Models (2026-10-02).** That afternoon Gemini returned
-503s on every attempt while Groq's `gpt-oss-120b` daily cap (200k tokens) had
-been spent by a one-off relabel that had itself failed over from Gemini — so
-there was nothing to draft with. `llm.py` now walks `FALLBACK_ORDER`
-(gemini, groq, github) after the primary, skipping any fallback whose key is
-missing. GitHub Models is free with the repo's own account: in Actions,
-`github.token` passed as `GITHUB_MODELS_TOKEN`, with `permissions: models:
-read` on the workflow. Its free limits — about 10 requests a minute, ~50 a
-day for high-tier models and ~150 for low, 8,000 tokens in and 4,000 out per
-request — make it a backstop and never a primary, so it is always last.
-Its default model (`openai/gpt-4.1-mini`) and its daily-vs-per-minute 429
-reading (a `retry-after` over two minutes is treated as the daily cap) were
-not verified against the live API when written; `GITHUB_MODELS_MODEL`
-overrides the model.
+**The chain, and the third link that was not (2026-10-02).** That afternoon
+Gemini returned 503s on every attempt while Groq's `gpt-oss-120b` daily cap
+(200k tokens) had been spent by a one-off relabel that had itself failed over
+from Gemini — so there was nothing to draft with. `llm.py` now walks
+`FALLBACK_ORDER` after the primary, skipping any fallback whose key is
+missing, so a third provider is one module and one entry. GitHub Models was
+added as that third link and removed the same day: its first live call
+returned HTTP 200 with a plain-text `OK` body, because GitHub had retired
+the service on 2026-07-30 (closed to new customers 2026-06-16). The endpoint
+had come from search results, not GitHub's docs — read the provider's own
+docs and changelog before building against it.
 
 **Cerebras was considered and rejected** under the $0 rule: its developer
 tier needs a payment method and is a one-time $5 credit, after which access
 pauses — a fallback that quietly stops existing a month later. OpenRouter's
-`:free` models (50 requests a day, no card) are the next candidate if a
-fourth link is ever wanted; they need an account and a secret.
+`:free` models (50 requests a day without purchased credits; no card for
+the free models, per its docs on 2026-10-02) are the next candidate; they
+need an account and a secret.
 
 **Spending a shared cap from a laptop.** A local run reads the same keys as
 CI, so a long one-off job (a relabel, a re-translation) that fails over to
 Groq spends the quota the scheduled runs need. Pin a one-off to one provider
 by blanking the others' keys for that command, e.g.
-`LLM_PROVIDER=gemini GROQ_API_KEY= GITHUB_MODELS_TOKEN= python src/score.py …`.
+`LLM_PROVIDER=gemini GROQ_API_KEY= python src/score.py …`.

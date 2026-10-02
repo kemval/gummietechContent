@@ -40,7 +40,6 @@ concurrency:
 
 permissions:
   contents: write         # commits the corrected post
-  models: read            # GitHub Models, the last LLM fallback (llm.py)
   actions: read           # reads the held run's report artifact
   id-token: write         # claude-code-action's default GitHub App auth
 
@@ -211,7 +210,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
-          GITHUB_MODELS_TOKEN: ${{ github.token }}
         run: python src/translate.py "${{ steps.pick.outputs.post }}"
 
       # Before review.yml, which reads the post from its own checkout of

@@ -51,7 +51,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 | Ingest | `feedparser` + `requests` |
 | Scheduler | GitHub Actions cron |
 | Database | Google Sheets (`gspread`) |
-| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER`; GitHub Models free tier as the last fallback |
+| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER` |
 | Rendering | Playwright → PNG |
 | Templating | Jinja2 |
 | Config | YAML feed lists, `.env` for secrets |
@@ -84,7 +84,6 @@ src/
   llm.py             picks the scoring backend from LLM_PROVIDER
   gemini.py          Gemini request + free-tier retry policy
   groq_llm.py        Groq request, same interface as gemini.py
-  github_models.py   GitHub Models request, the last fallback
   score.py           LLM scoring, batched
   papers.py          page → DOI → Crossref → the paper a story covers,
                      and the paper-first text a post is drafted from
@@ -155,12 +154,11 @@ project; back off on 429, fail fast on a daily-cap error.
 
 **Swapping to Groq** is `LLM_PROVIDER=groq` plus `GROQ_API_KEY`;
 `groq_llm.py` mirrors `gemini.py`, and its daily-vs-per-minute 429 parse is
-unverified. **The providers fail over down a chain** — the other of the two,
-then GitHub Models (`github_models.py`, `github.token` with `models: read`,
-~50–150 requests a day, so never a primary) — on 5xx exhaustion only,
-sticky for the process, carried by `llm_errors.Overloaded`; a fallback with
-no key is skipped. A bad key, retired model or spent daily cap still stops
-the run. Cerebras was rejected: card required, one-time credit.
+unverified. **The providers fail over down `llm.FALLBACK_ORDER`** — on 5xx
+exhaustion only, sticky for the process, carried by `llm_errors.Overloaded`;
+a fallback with no key is skipped. A bad key, retired model or spent daily
+cap still stops the run. No third provider yet: Cerebras needs a card,
+GitHub Models was retired 2026-07-30.
 → `docs/decisions/llm-providers.md`
 
 **GitHub Actions cron is a request, not a promise.** A `*/15` cron is shed
