@@ -8,8 +8,8 @@ All three callers use the same two-function interface:
     config() -> (api_key, model)
     generate(prompt, api_key, model, temperature=0.2) -> str  (raw JSON text)
 
-gemini.py and groq_llm.py both implement it. This module forwards to
-whichever one LLM_PROVIDER names, defaulting to Gemini.
+gemini.py, groq_llm.py and openrouter_llm.py implement it. This module
+forwards to whichever one LLM_PROVIDER names, defaulting to Gemini.
 
 Why a module and not an import line in each caller: LLM_PROVIDER lives in
 .env, not the shell, so the choice has to be read after load_dotenv().
@@ -21,10 +21,9 @@ whole run. Four of the eight scheduled ingests on 2026-09-14/15 died that
 way, each on its first batch, leaving the sheet full of items still marked
 'new'. So when the chosen provider returns 5xx on every retry, this module
 switches to the next free provider in FALLBACK_ORDER and says so. A
-fallback with no key configured is skipped, not fatal. The order is a list
-so a third free provider is one entry: GitHub Models was added on
-2026-10-02 and removed the same day — it had been retired on 2026-07-30
-(docs/decisions/llm-providers.md).
+fallback with no key configured is skipped, not fatal. OpenRouter's free
+models (openrouter_llm.py) are the third link, always last: 50 requests a
+day is a backstop, not a supply (docs/decisions/llm-providers.md).
 
 Two things that failover deliberately is not:
 
@@ -38,8 +37,8 @@ Two things that failover deliberately is not:
     the job's 15-minute timeout on backoff and reach the same place.
 
 CLAUDE.md budget constraint: every provider must stay on its free tier.
-Never point this at a paid API — the Groq/Gemini free tiers are the only
-sanctioned backends.
+Never point this at a paid API — the Gemini, Groq and OpenRouter `:free`
+tiers are the only sanctioned backends.
 """
 
 from __future__ import annotations
@@ -55,6 +54,7 @@ from dotenv import load_dotenv
 # that — so all of them can be imported here and the failover picks.
 import gemini
 import groq_llm
+import openrouter_llm
 from llm_errors import Overloaded
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -62,9 +62,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Read .env before deciding which provider to use.
 load_dotenv(REPO_ROOT / ".env")
 
-BACKENDS: dict[str, ModuleType] = {"gemini": gemini, "groq": groq_llm}
+BACKENDS: dict[str, ModuleType] = {"gemini": gemini, "groq": groq_llm,
+                                   "openrouter": openrouter_llm}
 # The order fallbacks are tried in, after whichever one LLM_PROVIDER names.
-FALLBACK_ORDER = ("gemini", "groq")
+# OpenRouter is last: its free cap (50 requests a day) cannot carry a day.
+FALLBACK_ORDER = ("gemini", "groq", "openrouter")
 
 PROVIDER = os.environ.get("LLM_PROVIDER", "gemini").strip().lower() or "gemini"
 if PROVIDER not in BACKENDS:

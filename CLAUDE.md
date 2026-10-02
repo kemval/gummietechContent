@@ -51,7 +51,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 | Ingest | `feedparser` + `requests` |
 | Scheduler | GitHub Actions cron |
 | Database | Google Sheets (`gspread`) |
-| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER` |
+| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER`; OpenRouter `:free` models as the last fallback |
 | Rendering | Playwright → PNG |
 | Templating | Jinja2 |
 | Config | YAML feed lists, `.env` for secrets |
@@ -84,6 +84,7 @@ src/
   llm.py             picks the scoring backend from LLM_PROVIDER
   gemini.py          Gemini request + free-tier retry policy
   groq_llm.py        Groq request, same interface as gemini.py
+  openrouter_llm.py  OpenRouter `:free` request, the last fallback
   score.py           LLM scoring, batched
   papers.py          page → DOI → Crossref → the paper a story covers,
                      and the paper-first text a post is drafted from
@@ -157,8 +158,10 @@ project; back off on 429, fail fast on a daily-cap error.
 unverified. **The providers fail over down `llm.FALLBACK_ORDER`** — on 5xx
 exhaustion only, sticky for the process, carried by `llm_errors.Overloaded`;
 a fallback with no key is skipped. A bad key, retired model or spent daily
-cap still stops the run. No third provider yet: Cerebras needs a card,
-GitHub Models was retired 2026-07-30.
+cap still stops the run. The third link is OpenRouter (`openrouter_llm.py`):
+`:free` model ids only, refused otherwise; 50 requests a day, so always
+last; its 503 means the privacy setting, not overload. Cerebras needs a
+card; GitHub Models was retired 2026-07-30.
 → `docs/decisions/llm-providers.md`
 
 **GitHub Actions cron is a request, not a promise.** A `*/15` cron is shed

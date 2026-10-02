@@ -57,12 +57,26 @@ the service on 2026-07-30 (closed to new customers 2026-06-16). The endpoint
 had come from search results, not GitHub's docs — read the provider's own
 docs and changelog before building against it.
 
+**OpenRouter is the third link (2026-10-02).** Its `:free` models need no
+card: 20 requests a minute and 50 a day across all of them (1,000 needs a
+one-time $10 purchase, which the $0 rule rules out). `openrouter_llm.py`
+refuses any model id not ending in `:free`, so a typo cannot reach a paid
+model. Three things its docs say that shaped the code:
+
+- The free list rotates — "less popular models will soon transition away
+  from the free tier" — so the model is the `OPENROUTER_MODEL` repo
+  variable (default `google/gemma-4-31b-it:free`, chosen because the public
+  `/api/v1/models` lists `response_format` for it).
+- Most free endpoints are served by providers that may log prompts, and are
+  only routed to once the account's privacy settings allow it. The prompts
+  are public news and papers, so it was allowed on 2026-10-02.
+- Its 503 means "no available model provider that meets your routing
+  requirements" — configuration, so it stops the run with that hint. Its
+  502 ("your chosen model is down") is the overload that fails over.
+
 **Cerebras was considered and rejected** under the $0 rule: its developer
 tier needs a payment method and is a one-time $5 credit, after which access
-pauses — a fallback that quietly stops existing a month later. OpenRouter's
-`:free` models (50 requests a day without purchased credits; no card for
-the free models, per its docs on 2026-10-02) are the next candidate; they
-need an account and a secret.
+pauses — a fallback that quietly stops existing a month later. OpenRouter took the slot instead.
 
 **Spending a shared cap from a laptop.** A local run reads the same keys as
 CI, so a long one-off job (a relabel, a re-translation) that fails over to
