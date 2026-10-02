@@ -358,7 +358,10 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     if not wanted and not preferred:
         print("  note: no queued row on a priority subject — taking the best "
               "science row instead")
-    score, n, row = max(preferred or candidates, key=lambda c: c[0])
+    # Ties go to the newest row: ingest.py appends, so a higher row number was
+    # fetched later. Scores bunch at 8.75, and on 2026-10-02 taking the first
+    # of a tie drafted a September story over that week's.
+    score, n, row = max(preferred or candidates, key=lambda c: (c[0], c[1]))
     return n, {name: row[idx] for name, idx in col.items()
                if idx < len(row)} | {"score": score}
 

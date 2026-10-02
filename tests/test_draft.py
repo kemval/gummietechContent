@@ -348,6 +348,14 @@ def test_science_is_taken_when_nothing_tech_is_queued():
     assert item["title"] == "fossil"
 
 
+def test_a_tie_goes_to_the_newest_row():
+    """2026-10-02: eight tech rows tied at 8.75 and the oldest was drafted."""
+    rows = [HEADER, sheet_row("september", 8.75, beat="computing"),
+            sheet_row("this-week", 8.75, beat="computing")]
+    n, item = draft.pick_row(rows, COL, None)
+    assert (n, item["title"]) == (3, "this-week")
+
+
 def test_a_row_named_by_hand_ignores_the_preference():
     rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
             sheet_row("agents", 9.5, beat="ai")]
