@@ -2,16 +2,16 @@
   "post_type": "drop",
   "domain": "Quantum computing",
   "colorway": "signal",
-  "hook": "New benchmark compares quantum computers on the same scale.",
+  "hook": "This test reveals the current limits of quantum hardware.",
   "hooks": [
     "New benchmark compares quantum computers on the same scale.",
     "Quantum computers lack a standardized way to compare power.",
     "This test reveals the current limits of quantum hardware."
   ],
-  "what_happened": "Researchers created a benchmark to compare quantum computer power on the same scale, addressing a previous lack of standardized testing methods.",
-  "why_it_matters": "It removes the bottleneck of comparing different systems, allowing clear evaluation of hardware for complex problems like logistics and molecular modeling.",
-  "the_catch": "The text does not specify sample size, specific hardware tested, or conditions, only stating that no such benchmark existed until now.",
-  "caption": "A new benchmark allows quantum computers to be compared on the same scale, revealing their current limitations. How does this change your view of quantum hardware readiness?",
+  "what_happened": "Researchers introduced QUOPS, a benchmark measuring the largest useful circuits a quantum computer can run, and tested Quantinuum, Google and IBM machines.",
+  "why_it_matters": "It gives a common yardstick across platforms and shows hardware must improve about 100,000× for applications like molecular modeling and logistics.",
+  "the_catch": "Today's best machines fall about 100,000× short of what practical problems need — capability must grow by 5 orders of magnitude.",
+  "caption": "A new benchmark compares quantum computers on one scale, revealing their current limitations: today's best machines fall about 100,000× short of practical needs. How does this change your view of quantum hardware readiness?",
   "keywords": [
     "quantum benchmark",
     "computational power",
@@ -23,17 +23,17 @@
     "#technology",
     "#gummietech"
   ],
-  "alt_text": "A five-slide carousel explaining that a new benchmark now allows quantum computers to be compared on the same scale, revealing their limitations.",
+  "alt_text": "A five-slide carousel on QUOPS, a new benchmark showing today's quantum computers fall about 100,000× short of what practical problems need.",
   "source_url": "https://phys.org/news/2026-09-benchmark-quantum-reveals-limitations.html",
-  "attribution": "Phys.org",
+  "attribution": "Proctor et al., arXiv (2026)",
   "peer_reviewed": false,
   "beat": "computing",
   "es": {
     "domain": "computación cuántica",
-    "hook": "Un nuevo benchmark compara ordenadores cuánticos a la misma escala",
-    "what_happened": "Un equipo de investigadores creó un benchmark para comparar la potencia de los ordenadores cuánticos a la misma escala, algo que antes no existía porque faltaban métodos de prueba estandarizados",
-    "why_it_matters": "Elimina el obstáculo de comparar sistemas distintos y permite evaluar con claridad el hardware para problemas complejos, como la logística y la modelización molecular",
-    "the_catch": "El texto no especifica el tamaño de la muestra, el hardware concreto que se probó ni las condiciones, solo afirma que hasta ahora no existía ningún benchmark de este tipo",
-    "_en": "f2215c924534259d"
+    "hook": "Esta prueba revela los límites actuales del hardware cuántico.",
+    "what_happened": "Los investigadores introdujeron QUOPS, un benchmark que mide los circuitos útiles más grandes que una computadora cuántica puede ejecutar, y probaron máquinas de Quantinuum, Google e IBM.",
+    "why_it_matters": "Proporciona una referencia común entre plataformas y muestra que el hardware debe mejorar aproximadamente 100 000 veces para aplicaciones como el modelado molecular y la logística.",
+    "the_catch": "Las mejores máquinas actuales están aproximadamente 100 000 veces por debajo de lo que requieren los problemas prácticos; la capacidad debe crecer en cinco órdenes de magnitud.",
+    "_en": "a4c03124ce5b1af1"
   }
 }
