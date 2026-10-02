@@ -49,7 +49,7 @@ import sys
 import time
 from pathlib import Path
 
-import llm                       # forwards to gemini or groq per LLM_PROVIDER
+import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
 from formats import es_fields, pieces, sections
 from render import REPO_ROOT, shown
 
