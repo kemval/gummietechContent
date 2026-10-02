@@ -176,7 +176,10 @@ document.fonts.ready.then(() => {
     slide.querySelectorAll('.giant[data-anchor]').forEach(g => {
       fit(g, COLUMN, +g.dataset.max || 520);   // data-max caps a short one ("01")
       if (g.dataset.anchor === 'top') {
-        const flag = slide.querySelector('.flag-row');   // below the preprint flag, never behind it
+        // Below the preprint flag, never behind it — when the flag is drawn.
+        // The reel hides it (it has its own), and a display:none box measures
+        // at 0,0: anchoring to it put "(but)" above the slide.
+        const flag = [...slide.querySelectorAll('.flag-row')].find(f => f.getClientRects().length);
         g.style.top = (flag ? bottom(flag) + 24 : +(g.dataset.top || 86)) + 'px';
         // and clear of the body's section rule below it: the body grows
         // upward, and parentheses hang ~.22em under the line box

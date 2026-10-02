@@ -158,6 +158,10 @@ body { background: var(--ink); }
   font-family: var(--mono); font-weight: 600; font-size: 30px;
   padding: 10px 26px; border-radius: 6px;
 }
+/* So the catch slide's own flag, which the carousel needs, is a second copy
+   here: on 2026-10-02 the catch scene showed the label twice, 100px apart.
+   Only the reel's is checked frame by frame, so it is the one kept. */
+.card .flag-row { display: none; }
 
 @keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
