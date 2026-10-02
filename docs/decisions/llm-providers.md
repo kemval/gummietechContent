@@ -65,8 +65,10 @@ model. Three things its docs say that shaped the code:
 
 - The free list rotates — "less popular models will soon transition away
   from the free tier" — so the model is the `OPENROUTER_MODEL` repo
-  variable (default `google/gemma-4-31b-it:free`, chosen because the public
-  `/api/v1/models` lists `response_format` for it).
+  variable. The default is `nvidia/nemotron-3-super-120b-a12b:free`, which
+  answered a live draft with valid JSON on 2026-10-02. `google/gemma-4-31b-it:free`,
+  tried first, returned 429 "Provider returned error" on every attempt: a free
+  model's upstream provider is shared by every OpenRouter user.
 - Most free endpoints are served by providers that may log prompts, and are
   only routed to once the account's privacy settings allow it. The prompts
   are public news and papers, so it was allowed on 2026-10-02.

@@ -47,9 +47,12 @@ TIMEOUT = 90
 MAX_RETRIES = 4
 
 # Free and JSON-mode capable on 2026-10-02 (response_format listed in the
-# public /api/v1/models). nvidia/nemotron-3-super-120b-a12b:free was the
-# other candidate.
-DEFAULT_MODEL = "google/gemma-4-31b-it:free"
+# public /api/v1/models), and the one that answered: a live draft came back
+# as valid JSON. google/gemma-4-31b-it:free was tried first and returned 429
+# "Provider returned error" four times — its upstream provider is shared by
+# every OpenRouter user, so a free model can be saturated while our own 50
+# a day is untouched.
+DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 FREE_SUFFIX = ":free"
 
 
