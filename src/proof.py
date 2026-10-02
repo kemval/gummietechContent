@@ -168,6 +168,13 @@ MEASURE = """
               w: fr.width - 2 * bw, h: fr.height - 2 * bw},
       overflow: frame.scrollHeight - frame.clientHeight,
       els,
+      // The keyword cloud is skipped above as decoration, but its wires are
+      // drawn over its own words: measured on their own, by check_cloud().
+      cloud: [...slide.querySelectorAll('.cloud .tag, .cloud .wire')].map(e => ({
+        kind: e.classList.contains('tag') ? 'tag' : 'wire',
+        text: e.textContent.trim().slice(0, 48),
+        rect: rel(e.getBoundingClientRect(), sr),
+      })),
     };
   });
 }
@@ -343,6 +350,23 @@ def check_slide(slide: dict, report: Report) -> None:
                         f"(want {floor}:1) — this colorway is not readable")
 
 
+def check_cloud(slide: dict, report: Report) -> None:
+    """No keyword wire may run through a keyword tag.
+
+    2026-10-02: a long tag reached past the wire columns, and three wires
+    crossed "hardware comparison" on slide 2 — every check above passed it,
+    because the cloud is aria-hidden decoration. A tag's own horizontal wire
+    meets its edge, which is a gap of zero, not an overlap.
+    """
+    cloud = slide.get("cloud") or []
+    tags = [e for e in cloud if e["kind"] == "tag"]
+    for wire in (e for e in cloud if e["kind"] == "wire"):
+        for tag in tags:
+            if gap(wire["rect"], tag["rect"]) < -EPSILON:
+                report.block(slide["id"], f"a keyword wire runs through the "
+                                          f"tag {tag['text']!r}")
+
+
 def check_preprint(slides: list[dict], wanted: int, report: Report) -> None:
     """
     The flag is the one thing on the slides that is a claim about the source
@@ -435,6 +459,7 @@ def proof(post: dict, colorway: str | None,
     check_preprint(slides, preprint_claims(post), report)
     for slide in slides:
         check_slide(slide, report)
+        check_cloud(slide, report)
     check_words(post, report)
     return report
 

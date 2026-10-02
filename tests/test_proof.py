@@ -76,6 +76,32 @@ def test_a_box_crossing_any_edge_is_caught(child, side):
     assert proof.escape(child, box(34, 34, 1012, 1282)) > 0, side
 
 
+# ------------------------------------------------------- keyword cloud
+# 2026-10-02: wires at x 462/492 (frame 496/526) ran through a tag that
+# reached x 534, and the post reached Telegram with nothing reported.
+
+def cloud_slide(*parts):
+    return {"id": "slide-2", "cloud": [
+        {"kind": k, "text": t, "rect": r} for k, t, r in parts]}
+
+
+def test_a_wire_through_a_keyword_tag_is_a_block():
+    report = proof.Report()
+    proof.check_cloud(cloud_slide(
+        ("tag", "(03)hardware comparison", box(86, 384, 448, 74)),
+        ("wire", "", box(491, 170, 2, 366))), report)
+    assert report.verdict == "BLOCK"
+
+
+def test_a_tag_meeting_its_own_wire_is_not_an_overlap():
+    report = proof.Report()
+    proof.check_cloud(cloud_slide(
+        ("tag", "(03)hardware comparison", box(26, 384, 412, 74)),
+        ("wire", "", box(438, 420, 24, 2)),
+        ("wire", "", box(461, 421, 2, 115))), report)
+    assert report.verdict == "PASS"
+
+
 # -------------------------------------------------------- the locked palette
 
 @pytest.mark.parametrize("name", sorted({h for pair in render.COLORWAYS.values()

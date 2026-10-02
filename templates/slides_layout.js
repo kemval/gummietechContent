@@ -261,12 +261,23 @@ document.fonts.ready.then(() => {
         const t = add('tag', {});
         t.innerHTML = '<i></i>'; t.firstChild.textContent = '(' + String(i + 1).padStart(2, '0') + ')';
         t.appendChild(document.createTextNode(w));
-        if (t.offsetWidth > 440) t.style.fontSize = (44 * 440 / t.offsetWidth).toFixed(1) + 'px';
-        const left = i % 2 === 0, tw = t.offsetWidth, th = t.offsetHeight;
-        const x = left ? 60 + (i % 4 === 2 ? 60 : 0) : 1020 - tw - (i % 4 === 3 ? 60 : 0);
+        const left = i % 2 === 0;
+        const col = left ? 526 - 30 * li++ : 554 + 30 * ri++;   // frame coords
+        // A tag must stop CLEAR short of its own wire column, which is the
+        // outermost of every column above it, or those wires run through its
+        // words: on 2026-10-02 "hardware comparison", indented 60px, reached
+        // 72px past its column and three wires crossed it. The indent goes
+        // first, then the type shrinks — the padding and border do not.
+        const CLEAR = 24, PAD = 56;
+        const room = ind => Math.min(440, left ? col - CLEAR - 60 - ind : 1020 - ind - col - CLEAR);
+        let ind = i % 4 >= 2 ? 60 : 0;
+        if (t.offsetWidth > room(ind)) ind = 0;
+        if (t.offsetWidth > room(ind))
+          t.style.fontSize = (44 * (room(ind) - PAD) / (t.offsetWidth - PAD)).toFixed(1) + 'px';
+        const tw = t.offsetWidth, th = t.offsetHeight;
+        const x = left ? 60 + ind : 1020 - tw - ind;
         const y = roof + band * i + (band - th) / 2 + 34;
         t.style.left = (x - 34) + 'px'; t.style.top = (y - 34) + 'px';
-        const col = left ? 526 - 30 * li++ : 554 + 30 * ri++;   // frame coords
         const mid = y + th / 2;
         const hx = left ? x + tw : col, hw = left ? col - x - tw : x - col;
         // --i and the h/v classes order the reel's entrance (reel.html):
