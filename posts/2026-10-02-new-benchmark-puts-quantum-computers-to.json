@@ -1,0 +1,39 @@
+{
+  "post_type": "drop",
+  "domain": "Quantum computing",
+  "colorway": "signal",
+  "hook": "New benchmark compares quantum computers on the same scale.",
+  "hooks": [
+    "New benchmark compares quantum computers on the same scale.",
+    "Quantum computers lack a standardized way to compare power.",
+    "This test reveals the current limits of quantum hardware."
+  ],
+  "what_happened": "Researchers created a benchmark to compare quantum computer power on the same scale, addressing a previous lack of standardized testing methods.",
+  "why_it_matters": "It removes the bottleneck of comparing different systems, allowing clear evaluation of hardware for complex problems like logistics and molecular modeling.",
+  "the_catch": "The text does not specify sample size, specific hardware tested, or conditions, only stating that no such benchmark existed until now.",
+  "caption": "A new benchmark allows quantum computers to be compared on the same scale, revealing their current limitations. How does this change your view of quantum hardware readiness?",
+  "keywords": [
+    "quantum benchmark",
+    "computational power",
+    "hardware comparison"
+  ],
+  "hashtags": [
+    "#quantumcomputing",
+    "#benchmark",
+    "#technology",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide carousel explaining that a new benchmark now allows quantum computers to be compared on the same scale, revealing their limitations.",
+  "source_url": "https://phys.org/news/2026-09-benchmark-quantum-reveals-limitations.html",
+  "attribution": "Phys.org",
+  "peer_reviewed": false,
+  "beat": "computing",
+  "es": {
+    "domain": "computación cuántica",
+    "hook": "Un nuevo benchmark compara ordenadores cuánticos a la misma escala",
+    "what_happened": "Un equipo de investigadores creó un benchmark para comparar la potencia de los ordenadores cuánticos a la misma escala, algo que antes no existía porque faltaban métodos de prueba estandarizados",
+    "why_it_matters": "Elimina el obstáculo de comparar sistemas distintos y permite evaluar con claridad el hardware para problemas complejos, como la logística y la modelización molecular",
+    "the_catch": "El texto no especifica el tamaño de la muestra, el hardware concreto que se probó ni las condiciones, solo afirma que hasta ahora no existía ningún benchmark de este tipo",
+    "_en": "f2215c924534259d"
+  }
+}
