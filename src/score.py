@@ -76,10 +76,14 @@ THRESHOLD = 7.0
 # "Show HN" about a science topic is that topic; the medium is not the beat.
 BEAT_RULE = """Exactly one of: ai (machine learning, models, agents), software \
 (programming, languages, tools, infrastructure), automation, robotics, \
-computing (hardware, chips, quantum computing, security), science (everything \
-else). The beat is what the item is about, not what it is made with or where \
-it was posted: a simulation, app, demo or "Show HN" about physics, biology or \
-space is science. Name ai only when machine learning is the subject."""
+computing (building computers: chips, processors, quantum computers and \
+qubits, security), science (everything else). The beat is what the item is \
+about, not what it is made with or where it was posted: a simulation, app, \
+demo or "Show HN" about physics, biology or space is science. Physics that is \
+not about building a computer is science even when it says "quantum" \
+(particles, entanglement, materials, stars). A trade's tools and materials \
+(metalworking, construction, manufacturing) are not software. Name ai only \
+when machine learning is the subject."""
 
 PROMPT = """You are the editorial filter for @gummietech, an Instagram account \
 that explains science, technology and engineering to a smart non-expert audience.
@@ -113,17 +117,19 @@ Items:
 {items}"""
 
 
-# Naming a beat from a headline is far lighter than scoring four axes from a
-# summary, so the backfill sends titles alone, many to a call: the ~2,400
-# rows queued before `beat` existed fit in about 25 requests, once.
-BEATS_BATCH = 100
+# Naming a beat is far lighter than scoring four axes, so the backfill sends
+# many rows to a call. Not headlines alone and not 100 at a time: on
+# 2026-09-28 that put Z-boson entanglement under `computing`, and on
+# 2026-10-02 daily drafted it as the day's "tech" story.
+BEATS_BATCH = 40
+BEATS_SUMMARY_CHARS = 200
 
-BEATS_PROMPT = """Name the beat of each headline below. {beats}
+BEATS_PROMPT = """Name the beat of each item below. {beats}
 
 Return ONLY a JSON object, no prose and no code fences:
 {{"results": [{{"i": <item number>, "beat": "<one beat>"}}]}}
 
-Headlines:
+Items:
 {items}"""
 
 
@@ -194,8 +200,10 @@ def backfill_beats(worksheet, rows: list[list[str]], col: dict,
     named = 0
     for start in range(0, len(pending), BEATS_BATCH):
         batch = pending[start:start + BEATS_BATCH]
-        block = "\n".join(f"{i}. [{row[col['source']]}] {row[col['title']]}"
-                           for i, (_, row) in enumerate(batch, start=1))
+        block = "\n".join(
+            f"{i}. [{row[col['source']]}] {row[col['title']]}\n"
+            f"   {row[col['summary']][:BEATS_SUMMARY_CHARS]}"
+            for i, (_, row) in enumerate(batch, start=1))
         prompt = BEATS_PROMPT.format(beats=BEAT_RULE, items=block)
         results = parse_scores(llm.generate(prompt, api_key, model))
         by_index = {int(r["i"]): r for r in results if "i" in r}
