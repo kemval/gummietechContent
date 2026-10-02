@@ -52,6 +52,11 @@ document.fonts.ready.then(() => {
       // made "(bug)" all but vanish.
       const pale = s.el.classList.contains('cream');
       for (const g of words) {
+        // Painted as glass, so the outline fallback goes (slides.css). Marked
+        // on the word itself: in the reel the canvas belongs to a separate
+        // backdrop slide, and a rule keyed on the canvas left the outline
+        // drawn over the glass, tracing the font's inner contours as lines.
+        g.classList.add('glassed');
         const cs = getComputedStyle(g), B = g.getBoundingClientRect();
         const lines = g.innerText.split('\n');   // the wordmark is two lines
         const x = (B.left - S.left) / k, top = (B.top - S.top) / k;

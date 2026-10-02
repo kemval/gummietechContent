@@ -190,7 +190,7 @@ body { background: #2A2A2A; font-family: var(--body); }
    Without WebGL there is no canvas, and the outline is the fallback. */
 .giant.ghost { color: transparent; -webkit-text-stroke: 2.5px var(--on-field); opacity: .55; }
 .slide.dark .giant.ghost { -webkit-text-stroke-color: var(--lead); opacity: .7; }
-.slide:has(> canvas.bg) .giant.ghost { -webkit-text-stroke: 0; }
+.giant.ghost.glassed { -webkit-text-stroke: 0; }
 
 /* ---------- body slides ---------- */
 .body { position: absolute; left: 26px; right: 26px; bottom: 116px; z-index: 6; }
