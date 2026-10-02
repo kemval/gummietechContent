@@ -2,10 +2,10 @@
 """
 The one error the provider modules raise and llm.py acts on.
 
-It lives in its own module rather than in llm.py because gemini.py and
-groq_llm.py have to raise it and llm.py imports them: defining it there
-would make the import a cycle. Both providers are peers, so neither can
-own it for the other either.
+It lives in its own module rather than in llm.py because the providers
+(gemini.py, groq_llm.py, github_models.py) have to raise it and llm.py
+imports them: defining it there would make the import a cycle. The
+providers are peers, so none can own it for the others either.
 """
 
 from __future__ import annotations

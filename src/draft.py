@@ -61,7 +61,7 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
 
-import llm                       # forwards to gemini or groq per LLM_PROVIDER
+import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
 from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
 from ingest import COLUMNS, open_sheet

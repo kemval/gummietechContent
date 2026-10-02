@@ -51,7 +51,7 @@ import json
 import sys
 import time
 
-import llm                       # forwards to gemini or groq per LLM_PROVIDER
+import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
 from ingest import COLUMNS, open_sheet
 
 # 15-20 items per request. One request per item would exhaust the daily cap
