@@ -147,7 +147,17 @@ def generate(prompt: str, api_key: str, model: str,
             raise SystemExit(f"GitHub Models returned HTTP {resp.status_code}: "
                              f"{resp.text[:300]}")
 
-        payload = resp.json()
+        # 2026-10-02, the first live call: HTTP 200 with a plain-text "OK"
+        # body, from Actions and from a laptop alike, and json() raised a
+        # traceback. Whatever the endpoint has become, that is not an answer.
+        try:
+            payload = resp.json()
+        except ValueError:
+            raise SystemExit(
+                f"GitHub Models answered HTTP {resp.status_code} with no JSON "
+                f"({resp.headers.get('content-type', 'no content type')}: "
+                f"{resp.text[:80]!r}). {API_URL} may have moved — check "
+                "GitHub's Models docs before relying on this fallback.")
         try:
             return payload["choices"][0]["message"]["content"]
         except (KeyError, IndexError):
