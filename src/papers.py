@@ -30,6 +30,12 @@ from verify_feeds import HEADERS, TIMEOUT
 
 ARTICLE_CHARS = 6000
 ABSTRACT_CHARS = 4000
+# A collaboration paper lists thousands of authors. On 2026-10-02 an ATLAS
+# paper's full list made the draft prompt ~35k characters, past Groq's free
+# 8000 tokens-per-minute cap (HTTP 413), and the day went undrafted. The
+# prompt only needs enough names to check who is quoted; citation() uses
+# the first one and still reads the whole list.
+AUTHORS_IN_PROMPT = 30
 
 PARA_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.S | re.I)
 SCRIPT_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.S | re.I)
@@ -427,8 +433,13 @@ def source_text(facts: dict | None, article: str, summary: str) -> str:
              "disagree, the paper is right."]
     if facts["title"]:
         paper.append(f"Title: {facts['title']}")
-    if facts["authors"]:
-        paper.append("Authors, in order: " + ", ".join(facts["authors"]))
+    names = facts["authors"]
+    if names:
+        listed = ", ".join(names[:AUTHORS_IN_PROMPT])
+        if len(names) > AUTHORS_IN_PROMPT:
+            listed += (f", and {len(names) - AUTHORS_IN_PROMPT} more not "
+                       "listed here (a large collaboration)")
+        paper.append("Authors, in order: " + listed)
     if facts["journal"]:
         paper.append(f"Journal: {facts['journal']}")
     paper.append(f"Abstract: {facts['abstract']}")

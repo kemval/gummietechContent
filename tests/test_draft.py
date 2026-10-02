@@ -204,6 +204,18 @@ def test_citation_shape(authors, expected):
     assert papers.citation(papers.paper_facts(work("10.1/x", authors=authors))) == expected
 
 
+def test_a_collaboration_author_list_does_not_overflow_the_prompt():
+    """2026-10-02: an ATLAS paper's ~3000 authors pushed the draft past
+    Groq's free 8000 tokens-per-minute cap, and daily drafted nothing."""
+    names = tuple(f"Author{i}" for i in range(3000))
+    facts = papers.paper_facts(work("10.1/x", authors=names))
+    facts["abstract"] = "Entanglement between Z bosons."
+    text = papers.source_text(facts, "coverage", "")
+    assert "Author0" in text and "Author2999" not in text
+    assert len(text) < 2000
+    assert papers.citation(facts) == "Author0 et al., Nature (2026)"
+
+
 def test_a_preprint_carries_its_server_where_a_journal_would_be():
     """'Surname et al. (2026)' with no venue reads like an unfinished
     citation."""
