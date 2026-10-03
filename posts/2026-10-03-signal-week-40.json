@@ -1,0 +1,75 @@
+{
+  "post_type": "signal",
+  "domain": "Quantum & Robotics",
+  "colorway": "orbit",
+  "hook": "72 qubits simulate 2D Fermi‑Hubbard dynamics — plus 4 more",
+  "items": [
+    {
+      "claim": "Programmable digital quantum simulation of 2D Fermi‑Hubbard dynamics using 72 superconducting qubits",
+      "attribution": "Flynn et al., arXiv (2025)",
+      "source_url": "https://arxiv.org/abs/2510.26845",
+      "peer_reviewed": false,
+      "beat": "computing"
+    },
+    {
+      "claim": "First experimental demonstration of natural hovering extremum seeking in flapping flight",
+      "attribution": "Elgohary and Eisa, Physical Review E (2025)",
+      "source_url": "https://arxiv.org/abs/2508.20836",
+      "doi": "10.1103/4dm4-kc4g",
+      "peer_reviewed": false,
+      "beat": "robotics"
+    },
+    {
+      "claim": "Caltech chip steers light with another beam in 74 femtoseconds",
+      "attribution": "Hail et al., Nature Nanotechnology (2026)",
+      "source_url": "https://www.sciencedaily.com/releases/2026/09/260918024823.htm",
+      "doi": "10.1038/s41565-026-02199-w",
+      "peer_reviewed": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "Long‑legged direct‑drive monopedal robot achieves exceptional jump height",
+      "attribution": "Na et al., arXiv (2026)",
+      "source_url": "https://arxiv.org/abs/2609.30530",
+      "peer_reviewed": false,
+      "beat": "robotics"
+    },
+    {
+      "claim": "Dr‑LiSA aligns radar and lidar scans for SE(3) localization directly",
+      "attribution": "Zhang et al., arXiv (2026)",
+      "source_url": "https://arxiv.org/abs/2609.26423",
+      "peer_reviewed": false,
+      "beat": "robotics"
+    }
+  ],
+  "caption": "From quantum simulators to bio‑inspired robots, this week’s breakthroughs push the limits of speed and agility. Which of these advances will reshape your tech landscape next?",
+  "keywords": [
+    "quantum simulation",
+    "flapping flight",
+    "ultrafast photonics",
+    "monopedal robot",
+    "radar lidar alignment"
+  ],
+  "hashtags": [
+    "#QuantumComputing",
+    "#Robotics",
+    "#Photonics",
+    "#AI",
+    "#TechNews",
+    "#Engineering",
+    "#Innovation"
+  ],
+  "alt_text": "Five slides on flat colour backgrounds: slide 1 states a 72‑qubit quantum simulation of 2D Fermi‑Hubbard dynamics; slide 2 announces the first natural hovering extremum seeking flapping‑flight experiment; slide 3 reports a Caltech chip steering light in 74 femtoseconds; slide 4 describes a long‑legged direct‑drive monopedal robot achieving record jump height; slide 5 notes Dr‑LiSA aligning radar and lidar scans for SE(3) localization.",
+  "es": {
+    "domain": "cuántica y robótica",
+    "hook": "72 qubits simulan la dinámica 2D de Fermi‑Hubbard — y 4 más",
+    "items": [
+      "Simulación digital programable cuántica de la dinámica 2D de Fermi‑Hubbard con 72 qubits superconductores",
+      "Primera demostración experimental de búsqueda de extremo natural en vuelo aleteado",
+      "Un chip de Caltech dirige la luz con otro haz en 74 femtosegundos",
+      "Robot monopedal de tracción directa y patas largas logra una altura de salto excepcional",
+      "Dr‑LiSA alinea escaneos de radar y lidar para una localización SE(3) directa"
+    ],
+    "_en": "0fc7f90950b47e2a"
+  }
+}
