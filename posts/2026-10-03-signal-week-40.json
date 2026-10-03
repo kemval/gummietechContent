@@ -6,16 +6,15 @@
   "items": [
     {
       "claim": "Programmable digital quantum simulation of 2D Fermi‑Hubbard dynamics using 72 superconducting qubits",
-      "attribution": "Flynn et al., arXiv (2025)",
+      "attribution": "Alam et al., arXiv (2025)",
       "source_url": "https://arxiv.org/abs/2510.26845",
       "peer_reviewed": false,
       "beat": "computing"
     },
     {
       "claim": "First experimental demonstration of natural hovering extremum seeking in flapping flight",
-      "attribution": "Elgohary and Eisa, Physical Review E (2025)",
+      "attribution": "Martini et al., arXiv (2025)",
       "source_url": "https://arxiv.org/abs/2508.20836",
-      "doi": "10.1103/4dm4-kc4g",
       "peer_reviewed": false,
       "beat": "robotics"
     },
@@ -54,12 +53,11 @@
     "#QuantumComputing",
     "#Robotics",
     "#Photonics",
-    "#AI",
     "#TechNews",
     "#Engineering",
     "#Innovation"
   ],
-  "alt_text": "Five slides on flat colour backgrounds: slide 1 states a 72‑qubit quantum simulation of 2D Fermi‑Hubbard dynamics; slide 2 announces the first natural hovering extremum seeking flapping‑flight experiment; slide 3 reports a Caltech chip steering light in 74 femtoseconds; slide 4 describes a long‑legged direct‑drive monopedal robot achieving record jump height; slide 5 notes Dr‑LiSA aligning radar and lidar scans for SE(3) localization.",
+  "alt_text": "Five slides on flat colour backgrounds: slide 1 states a 72‑qubit quantum simulation of 2D Fermi‑Hubbard dynamics; slide 2 announces the first natural hovering extremum seeking flapping‑flight experiment; slide 3 reports a Caltech chip steering light in 74 femtoseconds; slide 4 describes a long‑legged direct‑drive monopedal robot achieving exceptional jump height; slide 5 notes Dr‑LiSA aligning radar and lidar scans for SE(3) localization.",
   "es": {
     "domain": "cuántica y robótica",
     "hook": "72 qubits simulan la dinámica 2D de Fermi‑Hubbard — y 4 más",
