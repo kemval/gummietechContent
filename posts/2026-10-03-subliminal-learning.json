@@ -44,5 +44,6 @@
     "why_it_matters": "Los laboratorios entrenan modelos con las salidas de otros modelos. El desalineamiento también pasó a través de números, aun sin 666 ni 911: un orden de magnitud por encima de los controles.",
     "the_catch": "Requiere que los modelos compartan una base, o una muy parecida, y no funciona dentro del contexto. Los resultados fueron menos consistentes en Qwen y Gemma.",
     "_en": "068d854001ebc198"
-  }
+  },
+  "published_at": "2026-10-03"
 }
