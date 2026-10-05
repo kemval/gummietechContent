@@ -36,5 +36,8 @@
     "the_catch": "Las mejores máquinas actuales están aproximadamente 100 000 veces por debajo de lo que requieren los problemas prácticos; la capacidad debe crecer en cinco órdenes de magnitud.",
     "_en": "a4c03124ce5b1af1"
   },
-  "published_at": "2026-10-02"
+  "published_at": "2026-10-02",
+  "metrics": {
+    "asked_at": "2026-10-05"
+  }
 }
