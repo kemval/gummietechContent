@@ -1,0 +1,39 @@
+{
+  "post_type": "drop",
+  "domain": "hardware engineering",
+  "colorway": "ember",
+  "hook": "Apple’s hidden Mikey chip protocol finally decoded",
+  "hooks": [
+    "Apple’s hidden Mikey chip protocol finally decoded",
+    "Assumption that iPod button protocol was undocumented is broken",
+    "Enables adding headset button support to Rockbox in minutes"
+  ],
+  "what_happened": "Hemant reverse‑engineered Mikey’s I2C resistive button protocol and implemented it in Rockbox",
+  "why_it_matters": "Opens modern firmware to use original iPod headset buttons, removing lack of support bottleneck",
+  "the_catch": "Works only on classic iPods that are very cold; long‑press handling limited by Rockbox driver",
+  "caption": "The Mikey chip in classic iPods uses a simple I2C resistive‑encoding protocol for headset buttons, now reverse‑engineered and added to Rockbox. How will this revive your old iPod’s remote functions?",
+  "keywords": [
+    "iPod",
+    "Mikey",
+    "button protocol"
+  ],
+  "hashtags": [
+    "#ipod",
+    "#reverseengineering",
+    "#rockbox",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that the Mikey chip’s button protocol was decoded, added to Rockbox, its impact, and its limitation.",
+  "source_url": "https://hackaday.com/2026/09/27/reverse-engineering-apples-mikey-chip/",
+  "attribution": "Hackaday",
+  "peer_reviewed": false,
+  "beat": "computing",
+  "es": {
+    "domain": "ingeniería de hardware",
+    "hook": "El protocolo oculto del chip Mikey de Apple finalmente fue descifrado",
+    "what_happened": "Hemant realizó ingeniería inversa del protocolo de botones resistivo I2C de Mikey y lo implementó en Rockbox",
+    "why_it_matters": "Permite que el firmware moderno use los botones originales del auricular del iPod, eliminando el cuello de botella por falta de soporte",
+    "the_catch": "Solo funciona en iPods clásicos que están muy fríos; el manejo de pulsaciones largas está limitado por el controlador de Rockbox",
+    "_en": "4879a657c89200b0"
+  }
+}
