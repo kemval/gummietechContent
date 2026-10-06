@@ -42,12 +42,12 @@ disagree again, this one wins and the other is corrected to match.
 |---|---|---|---|---|
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
-| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
+| **The Breakdown** | 1×/week, Thursday | Depth | Carousel, 8–10 slides | a person, then the pipeline |
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
 | **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
 | **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | a person, then the pipeline |
-| **The Cheat Sheet** | every fifth Glossary | Saves | Carousel, 4+ slides | a person, then the pipeline |
+| **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -106,8 +106,9 @@ three are built to be kept — a reference, not a story:
   otherwise), and the common mistake on the dark slide.
 - **The Cheat Sheet** (`"sheet"`) is several `"Term: line"` entries, three to
   a slide, then all of them on one slide — the one a reader screenshots.
-  Every fifth Glossary term is gathered into one, so it costs no new
-  research.
+  After every five Glossary terms, the next Tuesday is the Cheat Sheet
+  gathering them, in place of a sixth term (decided 2026-10-06) — so it
+  costs no new research and the week gets no extra post.
 
 The Glossary and the Cheat Sheet are written by hand like the Breakdown
 (`formats.by_hand`): a definition is exactly where a free-tier model
@@ -155,6 +156,8 @@ Built 2026-09-19 as `templates/breakdown.html`. The slide count follows the post
 The limits slide is the dark one either way. With a recap it moves back a place, because the limits are half of what this section calls the competitive advantage and they are not a slide to render in a field colour.
 
 A Breakdown is drafted by hand rather than by `draft.py` — §4 splits the work by stakes and this is the format where the explanation has to be excellent. Everything after drafting is identical: render, proof, fact-check, the gate, the archive.
+
+**It goes out on Thursday** (fixed 2026-10-06), the one weekday with no other carousel — Drops on Mon/Wed/Fri, the Glossary Tuesday, the Signal Saturday. `watch.py` asks for it from Friday, once Thursday has passed without one.
 
 ### The Signal — weekly
 

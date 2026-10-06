@@ -22,7 +22,8 @@ What it reports:
 
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
-    breakdown  from Friday on, this week has a Breakdown — nothing drafts it
+    glossary   from Wednesday on, this week has its term (or Cheat Sheet)
+    breakdown  from Friday on, this week has a Breakdown — nothing drafts them
     subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
@@ -106,10 +107,16 @@ def owes(day: date, post: dict) -> bool:
     return not by_hand(post)
 
 
-# The Breakdown is written by a person, so no cron can miss it and no cadence
-# check can see it go missing. From this weekday on the week is running out,
-# and a reminder is still something that can be acted on.
-BREAKDOWN_FROM = 4                       # Friday
+# The weekly carousels a person writes, so no cron can miss them and no
+# cadence check can see them go missing: check name → (the post_types that
+# count, the weekday they go out). docs §1, 2026-10-06: the Glossary on
+# Tuesday, where every sixth week's is the Cheat Sheet, and the Breakdown on
+# Thursday. From the day after, the day has passed, and a reminder is still
+# something that can be acted on before the week ends.
+BY_HAND_WEEKLY = {
+    "glossary":  (("term", "sheet"), 1),         # Tuesday
+    "breakdown": (("breakdown",), 3),            # Thursday
+}
 
 # Above this, drafts are piling up at the gate faster than they are tapped.
 # Three is a comfortable buffer at 3 posts a week; four is a backlog.
@@ -165,33 +172,39 @@ def check_cadence(today: str, report: Report,
                             f"draft now.")
 
 
-def check_breakdown(today: str, report: Report,
-                    directory: Path | None = None) -> None:
-    """Does this week have a Breakdown, while there is still time to write one?
+def check_by_hand(today: str, report: Report,
+                  directory: Path | None = None) -> None:
+    """Does this week have each carousel a person writes, once its day passed?
 
-    docs §1 wants one a week and no workflow drafts it — it is written by a
-    person, so the week of 2026-09-21 simply went without one and nothing
-    said so. Only the current week is asked about, and only from Friday: a
-    week that already ended without one is history, and repeating it every
-    day until the next Monday is the nagging this file exists to avoid.
+    docs §1 wants a Breakdown and a Glossary term a week, and no workflow
+    drafts either — the week of 2026-09-21 simply went without a Breakdown
+    and nothing said so. Only the current week is asked about, and only from
+    the day after each one's weekday: a week that already ended without one
+    is history, and repeating it every day until the next Monday is the
+    nagging this file exists to avoid.
     """
     day = date.fromisoformat(today)
-    if day.weekday() < BREAKDOWN_FROM:
-        return
     monday = day - timedelta(days=day.weekday())
+    week = []
     for path in post_order(directory or POSTS_DIR):
         try:
             drafted = date.fromisoformat(path.name[:10])
         except ValueError:
             continue
-        if (monday <= drafted <= day
-                and (read_post(path) or {}).get("post_type") == "breakdown"):
-            report.note("breakdown", f"this week's is {path.stem}")
-            return
-    report.fix("breakdown", f"no Breakdown this week (since {monday}) and the "
-                            f"week ends Sunday. Nothing drafts it — write one "
-                            f"in a Claude Code session and dispatch "
-                            f"recheck.yml with its path.")
+        if monday <= drafted <= day:
+            week.append((path, (read_post(path) or {}).get("post_type")))
+    for name, (types, weekday) in BY_HAND_WEEKLY.items():
+        if day.weekday() <= weekday:
+            continue
+        found = [path for path, post_type in week if post_type in types]
+        if found:
+            report.note(name, f"this week's is {found[0].stem}")
+            continue
+        due = monday + timedelta(days=weekday)
+        report.fix(name, f"no {' or '.join(types)} post this week (due "
+                         f"{due:%A} {due}). Nothing drafts it — write one in "
+                         f"a Claude Code session and dispatch recheck.yml "
+                         f"with its path.")
 
 
 def check_subject(today: str, report: Report,
@@ -566,7 +579,7 @@ def main() -> int:
 
     check_structure(args.structure, report)
     check_cadence(today, report)
-    check_breakdown(today, report)
+    check_by_hand(today, report)
     check_subject(today, report)
     if token:
         updates = updates_from_telegram(token, report)

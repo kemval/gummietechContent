@@ -18,13 +18,14 @@ python src/watch.py --send           # ...and send it if it is not a PASS
 python src/watch.py --skip-feeds     # skip the slow network sweep
 ```
 
-Eleven checks, each answerable from a file, a sheet cell or a Telegram update —
+Twelve checks, each answerable from a file, a sheet cell or a Telegram update —
 so none of it needs a model and none of it spends a quota:
 
 | check | the question |
 |---|---|
 | `cadence` | the last drafting day that **ended** has its post — a Drop Mon/Wed/Fri, the week's Signal on Saturday |
-| `breakdown` | from Friday on, this week has a Breakdown — the one carousel nothing drafts |
+| `glossary` | from Wednesday on — Tuesday is its day — this week has its Glossary term, or the Cheat Sheet in its place |
+| `breakdown` | from Friday on — Thursday is its day — this week has a Breakdown |
 | `subject` | yesterday's Drop, and every item of yesterday's Signal, was tech — not a science fallback because the tech pool was dry |
 | `gate` | every tap in Telegram's 24h window reached `published_at` |
 | `metrics` | every answered ask was written down, no answer arrived unreplied, and old asks were answered |
@@ -49,8 +50,8 @@ wolf — a watcher nobody reads is worse than none:
   that is already published is history — there is nothing to re-render and no
   tap to withhold — so it stays visible in a hand run and silent in the chat.
   The same reasoning as a clean fact-check that must not hold a post. It is
-  also why `breakdown` asks only about the current week and only from
-  Friday: a week that already ended without one is history, and saying so
+  also why `glossary` and `breakdown` ask only about the current week and
+  only from the day after theirs (`BY_HAND_WEEKLY`): a week that already ended without one is history, and saying so
   every day until the next Monday would be nagging.
 - **Findings exit 0.** The message *is* the report. A non-zero exit would
   make `notify-failure` send a second message about the same thing. Only an
