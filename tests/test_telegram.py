@@ -584,3 +584,19 @@ def gate(monkeypatch, posts, tmp_path):
 def test_another_story_is_offered_only_where_draft_py_can_write_one(
         gate, post_type, offered):
     assert ("🗑 Another story" in gate(post_type)) is offered
+
+
+def test_an_empty_series_queue_is_said_in_the_chat(monkeypatch, quiet):
+    """On 2026-10-06 the queue ran out and series.yml printed that to the
+    Actions log only, exit 0 — the day's report just did not arrive. An empty
+    queue is waiting on a person, so it has to reach the person."""
+    monkeypatch.setattr(tg, "config", lambda need_chat=False: ("tok", "chat"))
+    assert tg.series_ran_out() == 0
+    assert len(quiet) == 1 and "No status report today" in quiet[0]
+
+
+def test_a_dry_run_of_an_empty_queue_sends_nothing(monkeypatch, quiet):
+    monkeypatch.setattr(tg, "config", lambda need_chat=False: pytest.fail(
+        "a dry run must not need credentials"))
+    assert tg.series_ran_out(dry_run=True) == 0
+    assert quiet == []

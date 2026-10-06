@@ -458,7 +458,7 @@ queue.
   `!series/images/*.png` in `.gitignore` is what lets them be committed.
 - Its callback prefix is `ser:` (reports `published=false`); one poller
   serves both pillars; `sent_at` is not `published_at`; a missing image is
-  said in the chat and exits 0, never skips ahead.
+  said in the chat and exits 0, never skips ahead; so is an empty queue.
 - **Send a different one today** (`series.yml` with `swap`) sends an
   unnumbered report in place of today's, which loses `sent_at` and goes out
   tomorrow — the numbering is never skipped. `confirm` ignores the

@@ -739,6 +739,32 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     return 0
 
 
+def series_ran_out(dry_run: bool = False) -> int:
+    """Say in the chat that there is no report left to send.
+
+    This used to be a line in the Actions log and nothing else, so on
+    2026-10-06 the day's report simply did not arrive and the first sign was
+    its absence. An empty queue is the same kind of state as a missing image
+    — waiting on a person, not a broken run — so it gets the same treatment:
+    said in the chat, exit 0, once a day until the next report lands.
+    """
+    print("Every report in series/reports/ has been sent. Add the next one, "
+          "or the series has run out of runway.")
+    if dry_run:
+        return 0
+    token, chat_id = config(need_chat=True)
+    try:
+        send_message(token, chat_id,
+                     "📭 <b>No status report today</b> — every report in "
+                     "series/reports/ has been sent.\n\n"
+                     "Export the next slide from the canvas into "
+                     "series/images/, add its JSON to series/reports/, and "
+                     "run series.yml (or wait for tomorrow's run).")
+    except TelegramError as exc:
+        sys.exit(str(exc))
+    return 0
+
+
 def send_series(report_path: Path, dry_run: bool = False,
                 replaces: tuple[Path, dict] | None = None) -> int:
     """Put one status report in the chat, with its caption and one button.
@@ -1417,9 +1443,7 @@ def main() -> int:
         else:
             nxt = series.next_unsent()
             if nxt is None:
-                print("Every report in series/reports/ has been sent. Add the "
-                      "next one, or the series has run out of runway.")
-                return 0
+                return series_ran_out(args.dry_run)
             path, _ = nxt
         return send_series(path, args.dry_run)
 
