@@ -1,0 +1,45 @@
+{
+  "number": 15,
+  "eyebrow": "status report",
+  "title": "my battery levels right now",
+  "module": "bars",
+  "image": "15-battery-levels.png",
+  "caption": "a full system diagnostic, and it's not looking good.\n\nlaptop 7%. phone 3%. social battery 0% since someone said \"quick call?\"\nweirdly, the will to fix this bug is at 62%. nobody knows why.\n\nwhich one of yours dies first?",
+  "hashtags": [
+    "#devlife",
+    "#codinglife",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "laptop",
+        7,
+        "charger is across the room"
+      ],
+      [
+        "phone",
+        3,
+        "still scrolling"
+      ],
+      [
+        "brain",
+        38,
+        "after the second coffee"
+      ],
+      [
+        "social battery",
+        0,
+        "someone said “quick call?”"
+      ],
+      [
+        "will to fix this bug",
+        62,
+        "suspiciously high"
+      ]
+    ],
+    "kicker": "the only thing fully charged is the guilt"
+  },
+  "canvas": "Battery-15.dc.html"
+}

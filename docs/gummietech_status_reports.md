@@ -192,7 +192,10 @@ Two differences from the carousels, both because there is no source:
 
 ## 8. The set as built
 
-Fifteen slides, all exported and committed, as of **2026-09-22**. This is
+Fifteen slides as of **2026-09-22**; #14–#23 and two unnumbered reserves
+added **2026-10-06** after the queue ran dry. Those twelve were built as
+canvas artboards (each record's `canvas` names its board) and rendered
+locally the way #07 was; each record's `slide` holds the copy on it. This is
 what exists; `python src/series.py` is what says where the queue has got to.
 
 | # | title | module |
@@ -212,6 +215,18 @@ what exists; `python src/series.py` is what says where the queue has got to.
 | — | `SELF AUDIT` · red flags in my own code | `cards-4` |
 | — | `HOUSE RULES` · my AI buddy is not allowed to | `cards-4` |
 | — | `BEHIND THE SCENES` · what will run this account | `cards-4` |
+| 14 | how I name variables, by time of day | `pills` |
+| 15 | my battery levels right now | `bars` |
+| 16 | anatomy of a "quick fix" | `timeline` |
+| 17 | my localhost graveyard | `cards-6` |
+| 18 | stages of a code review | `chat` (new) |
+| 19 | living rent-free in my head | `cards-4` |
+| 20 | me at 9am vs. me at 2am | `split` (new) |
+| 21 | my productivity system, ranked by use | `pills-icons` |
+| 22 | things I googled this week | `search` (new) |
+| 23 | my brain's memory usage | `bars` |
+| — | `PATCH NOTES` · me — v21.4 release notes | `pills` |
+| — | `OUT OF OFFICE` · auto-reply from my brain | `cards-4` |
 
 ## 9. Runway, and the one thing that is wrong with it
 
@@ -239,6 +254,10 @@ by design, and a number assigned now is a promise about a sequence that has
 already been published.
 
 ## 10. Topic bank for #14 onward
+
+The localhost graveyard, code-review stages, googled-this-week and
+2am/9am split became #17, #18, #22 and #20; variable names became #14.
+The learning-goals bar chart was dropped — #07 already is it.
 
 Chosen so the layout keeps rotating rather than shipping card grid after card
 grid.

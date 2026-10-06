@@ -1,0 +1,46 @@
+{
+  "number": 23,
+  "eyebrow": "status report",
+  "title": "my brain's memory usage",
+  "module": "bars",
+  "image": "23-brain-memory.png",
+  "caption": "ran a memory profiler on my brain. no notes, just regret.\n\nsong lyrics from 2009: 31%. one awkward thing I said years ago: 27%,\nreplaying nightly. how to write a for loop in bash: 0%.\nthe task I actually opened my laptop for: 4% and falling.\n\nwhat's taking up the most space in yours?",
+  "hashtags": [
+    "#devhumor",
+    "#relatable",
+    "#programmerlife",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "song lyrics from 2009",
+        31,
+        "every word"
+      ],
+      [
+        "one awkward thing I said",
+        27,
+        "replays nightly"
+      ],
+      [
+        "shortcuts I never use",
+        18,
+        "but I know them"
+      ],
+      [
+        "a for loop in bash",
+        0,
+        "googled every time"
+      ],
+      [
+        "the task I opened my laptop for",
+        4,
+        "gone"
+      ]
+    ],
+    "kicker": "garbage collection: never"
+  },
+  "canvas": "Memory-23.dc.html"
+}

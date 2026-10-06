@@ -1,0 +1,39 @@
+{
+  "eyebrow": "out of office",
+  "title": "auto-reply from my brain",
+  "module": "cards-4",
+  "image": "p7-out-of-office.png",
+  "caption": "thank you for your message. I am currently unavailable.\n\nstatus: compiling. back after this one bug (estimate unreliable).\nfor urgent matters, try turning me off and on again.\n\nwhat does your brain's out-of-office say?",
+  "hashtags": [
+    "#devlife",
+    "#relatable",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "status",
+        "compiling",
+        "please hold"
+      ],
+      [
+        "eta",
+        "after this one bug",
+        "estimate unreliable"
+      ],
+      [
+        "urgent?",
+        "turn me off and on again",
+        "works 60% of the time"
+      ],
+      [
+        "in my absence",
+        "contact the matcha",
+        "it knows what to do"
+      ]
+    ],
+    "kicker": "your message has been received and ignored"
+  },
+  "canvas": "OutOfOffice.dc.html"
+}

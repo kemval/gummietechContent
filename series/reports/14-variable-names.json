@@ -1,0 +1,44 @@
+{
+  "number": 14,
+  "eyebrow": "status report",
+  "title": "how I name variables, by time of day",
+  "module": "pills",
+  "image": "14-variable-names.png",
+  "caption": "a naming convention that degrades in real time.\n\nuserAccountDetails at 9am. data by lunch. d by dinner.\nby 3am it's pleaseWork and I'm not taking questions.\n\nfuture me is going to have a very bad afternoon.\n\nwhat's the worst variable name in your code right now?",
+  "hashtags": [
+    "#devhumor",
+    "#cleancode",
+    "#programmerlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "09:00",
+        "userAccountDetails"
+      ],
+      [
+        "11:00",
+        "userData"
+      ],
+      [
+        "14:00",
+        "data"
+      ],
+      [
+        "17:00",
+        "d"
+      ],
+      [
+        "23:00",
+        "x2"
+      ],
+      [
+        "03:00",
+        "pleaseWork"
+      ]
+    ],
+    "kicker": "future me will figure it out"
+  },
+  "canvas": "Variables-14.dc.html"
+}

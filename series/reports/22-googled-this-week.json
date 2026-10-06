@@ -1,0 +1,26 @@
+{
+  "number": 22,
+  "eyebrow": "status report",
+  "title": "things I googled this week",
+  "module": "search",
+  "image": "22-googled-this-week.png",
+  "caption": "my search history, lightly redacted.\n\n\"git undo last commit but keep changes\" (third time this month).\n\"is it bad if tests pass first try\" — genuinely suspicious.\nand, at 1am, \"jobs that don't involve computers.\"\n\nwhat did you google this week that you'd never admit to?",
+  "hashtags": [
+    "#devhumor",
+    "#programmerhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      "git undo last commit but keep changes",
+      "is it bad if tests pass first try",
+      "python list comprehension but readable",
+      "css center thing (again)",
+      "how long can you stare at one error",
+      "jobs that don't involve computers"
+    ],
+    "kicker": "search history: do not open"
+  },
+  "canvas": "Googled-22.dc.html"
+}

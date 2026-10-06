@@ -1,0 +1,45 @@
+{
+  "number": 21,
+  "eyebrow": "status report",
+  "title": "my productivity system, ranked by use",
+  "module": "pills-icons",
+  "image": "21-productivity-stack.png",
+  "caption": "a complete productivity stack. technically.\n\na notion workspace that took three hours to build and got used once.\na pomodoro timer on pause since tuesday. a sticky note that says \"focus\".\nand panic, which outperforms all of them combined.\n\nwhat's the one tool you actually use?",
+  "hashtags": [
+    "#productivity",
+    "#studentlife",
+    "#devlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "notebook",
+        "a notion setup",
+        "3 hours building it, used once"
+      ],
+      [
+        "timer",
+        "a pomodoro timer",
+        "paused since tuesday"
+      ],
+      [
+        "puzzle",
+        "14 browser extensions",
+        "0 of them open"
+      ],
+      [
+        "sticky",
+        "a sticky note",
+        "it says “focus”"
+      ],
+      [
+        "flame",
+        "panic",
+        "the only one that works"
+      ]
+    ],
+    "kicker": "optimised for setting up"
+  },
+  "canvas": "Productivity-21.dc.html"
+}

@@ -1,0 +1,51 @@
+{
+  "number": 17,
+  "eyebrow": "status report",
+  "title": "my localhost graveyard",
+  "module": "cards-6",
+  "image": "17-localhost-graveyard.png",
+  "caption": "gone but never pushed to production.\n\ntodo app number four. a portfolio redesign nobody saw.\na habit tracker I stopped tracking. and a startup that is,\ncurrently, one domain name and a lot of feelings.\n\nhow many projects are buried in yours?",
+  "hashtags": [
+    "#sideprojects",
+    "#buildinpublic",
+    "#devhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "2023",
+        "todo app #4",
+        "it had dark mode though"
+      ],
+      [
+        "never deployed",
+        "portfolio v3",
+        "nobody saw it. not even me"
+      ],
+      [
+        "ambitious",
+        "spotify but better",
+        "it played one song"
+      ],
+      [
+        "very loyal",
+        "a discord bot",
+        "it only says hi"
+      ],
+      [
+        "ironic",
+        "habit tracker",
+        "I stopped tracking"
+      ],
+      [
+        "visionary",
+        "my startup",
+        "one domain name, many feelings"
+      ]
+    ],
+    "kicker": "rest in localhost:3000"
+  },
+  "canvas": "Graveyard-17.dc.html"
+}

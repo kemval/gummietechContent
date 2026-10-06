@@ -1,0 +1,46 @@
+{
+  "number": 20,
+  "eyebrow": "status report",
+  "title": "me at 9am vs. me at 2am",
+  "module": "split",
+  "image": "20-9am-vs-2am.png",
+  "caption": "two developers share this body and they do not get along.\n\n9am reads the error line by line. 2am restarts and prays.\n9am writes the tests first. 2am tests in production.\n9am takes a walk. 2am stares at the wall and calls it a break.\n\nwhich one of you writes the better code?",
+  "hashtags": [
+    "#devlife",
+    "#nightcoding",
+    "#devhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "the plan",
+        "a diagram and a coffee",
+        "vibes"
+      ],
+      [
+        "reading the error",
+        "line by line",
+        "restart and pray"
+      ],
+      [
+        "tests",
+        "write them first",
+        "tested in prod"
+      ],
+      [
+        "breaks",
+        "stretch, water, a walk",
+        "staring at the wall counts"
+      ],
+      [
+        "documentation",
+        "read it carefully",
+        "ctrl+F, give up, ask AI"
+      ]
+    ],
+    "kicker": "same person. different species."
+  },
+  "canvas": "Split-20.dc.html"
+}

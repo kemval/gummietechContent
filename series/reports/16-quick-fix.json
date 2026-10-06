@@ -1,0 +1,53 @@
+{
+  "number": 16,
+  "eyebrow": "status report",
+  "title": "anatomy of a “quick fix”",
+  "module": "timeline",
+  "image": "16-quick-fix.png",
+  "caption": "a five-minute task, documented in real time.\n\nfound the bug at 10:40. found a different bug at 11:15.\nat 15:20 I realised I'd been on the wrong branch all day.\nfixing it broke something else. it is now 18:47 and I am saying\n\"five minutes, tops\" again.\n\nwhat's the longest \"quick fix\" you've ever done?",
+  "hashtags": [
+    "#debugging",
+    "#devhumor",
+    "#softwareengineer",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "10:02",
+        "“this’ll take five minutes”"
+      ],
+      [
+        "10:40",
+        "found the bug"
+      ],
+      [
+        "11:15",
+        "found a different bug"
+      ],
+      [
+        "13:00",
+        "lunch. thinking about the bug"
+      ],
+      [
+        "15:20",
+        "I was on the wrong branch"
+      ],
+      [
+        "15:21",
+        "fixed it"
+      ],
+      [
+        "15:22",
+        "broke something else"
+      ],
+      [
+        "18:47",
+        "“five minutes, tops”"
+      ]
+    ],
+    "kicker": "estimated: 5 min · actual: yes"
+  },
+  "canvas": "QuickFix-16.dc.html"
+}

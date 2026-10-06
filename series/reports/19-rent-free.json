@@ -1,0 +1,40 @@
+{
+  "number": 19,
+  "eyebrow": "status report",
+  "title": "living rent-free in my head",
+  "module": "cards-4",
+  "image": "19-rent-free.png",
+  "caption": "the tenants who never pay and never leave.\n\nan answer from 2014 that still saves me weekly. a regex I copied once\nand have never dared to read. and a variable named temp that has been\nin production since 2022.\n\nwhat's living rent-free in your head?",
+  "hashtags": [
+    "#devhumor",
+    "#programmerlife",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "since 2014",
+        "that one forum answer",
+        "still the only thing that works"
+      ],
+      [
+        "copied",
+        "a regex",
+        "I fear it. I will not read it"
+      ],
+      [
+        "temporary",
+        "a variable named temp",
+        "in production since 2022"
+      ],
+      [
+        "used once",
+        "a keyboard shortcut",
+        "learned it, loved it, lost it"
+      ]
+    ],
+    "kicker": "evictions pending"
+  },
+  "canvas": "RentFree-19.dc.html"
+}

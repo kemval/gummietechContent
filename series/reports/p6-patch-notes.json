@@ -1,0 +1,39 @@
+{
+  "eyebrow": "patch notes",
+  "title": "me — v21.4 release notes",
+  "module": "pills",
+  "image": "p6-patch-notes.png",
+  "caption": "a minor release. no breaking changes, allegedly.\n\nfixed: drinking water, partially. improved: can now say\n\"I don't know\" out loud in a meeting.\nknown issue: opens the fridge every time a bug gets hard.\n\nwhat's the known issue in your current version?",
+  "hashtags": [
+    "#devhumor",
+    "#selfcare",
+    "#programmerlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "fixed",
+        "drinking water (partially)"
+      ],
+      [
+        "improved",
+        "can say “I don’t know” out loud"
+      ],
+      [
+        "known issue",
+        "opens the fridge when stuck"
+      ],
+      [
+        "known issue",
+        "says “almost done” at 10%"
+      ],
+      [
+        "deprecated",
+        "“I’ll commit later”"
+      ]
+    ],
+    "kicker": "no rollback available"
+  },
+  "canvas": "PatchNotes.dc.html"
+}

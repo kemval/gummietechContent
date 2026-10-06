@@ -1,0 +1,41 @@
+{
+  "number": 18,
+  "eyebrow": "status report",
+  "title": "stages of a code review",
+  "module": "chat",
+  "image": "18-code-review.png",
+  "caption": "it started so friendly.\n\n\"looks good overall\" → \"just a few small nits\" → 47 comments →\n\"can we hop on a quick call?\"\n\nnothing good has ever happened on a quick call.\n\nwhat's the most comments you've gotten on one PR?",
+  "hashtags": [
+    "#codereview",
+    "#devhumor",
+    "#softwareengineer",
+    "#programmerlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "them",
+        "looks good overall!"
+      ],
+      [
+        "them",
+        "just a few small nits"
+      ],
+      [
+        "them",
+        "(47 comments)"
+      ],
+      [
+        "me",
+        "they’re mostly about spacing, right?"
+      ],
+      [
+        "them",
+        "can we hop on a quick call?"
+      ]
+    ],
+    "kicker": "“small nits” is a threat"
+  },
+  "canvas": "Review-18.dc.html"
+}
