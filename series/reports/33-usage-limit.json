@@ -1,0 +1,46 @@
+{
+  "number": 33,
+  "eyebrow": "status report",
+  "title": "my AI usage, this month",
+  "module": "bars",
+  "image": "33-usage-limit.png",
+  "caption": "a monthly budget, managed responsibly.\n\nday 1: just asking questions. day 3: agent mode, unsupervised.\nday 4: \"you've reached your usage limit.\"\ndays 5 to 30: remembering, slowly, how to code.\n\nwhat day of the month do you usually hit the wall?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "day 1",
+        4,
+        "just asking questions"
+      ],
+      [
+        "day 2",
+        31,
+        "one small refactor"
+      ],
+      [
+        "day 3",
+        78,
+        "agent mode, unsupervised"
+      ],
+      [
+        "day 4",
+        100,
+        "you’ve reached your limit"
+      ],
+      [
+        "days 5–30",
+        0,
+        "remembering how to code"
+      ]
+    ],
+    "kicker": "see you on the 1st"
+  },
+  "canvas": "Limit-33.dc.html"
+}

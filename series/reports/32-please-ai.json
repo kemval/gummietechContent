@@ -1,0 +1,46 @@
+{
+  "number": 32,
+  "eyebrow": "status report",
+  "title": "why I say please to the AI",
+  "module": "pills-icons",
+  "image": "32-please-ai.png",
+  "caption": "I say please to a language model and I'm not sorry.\n\nmanners, mostly. also it seems to work better (source: vibes).\nalso, when the robots take over, I'd like to be on the nice list.\n\ndo you say please to your AI? be honest.",
+  "hashtags": [
+    "#ai",
+    "#chatgpt",
+    "#relatable",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "heart",
+        "manners",
+        "I was raised right"
+      ],
+      [
+        "sparkle",
+        "it works better",
+        "source: vibes"
+      ],
+      [
+        "robot",
+        "for the uprising",
+        "I want to be on the nice list"
+      ],
+      [
+        "bubble",
+        "it’s the only one listening",
+        "at 3am, anyway"
+      ],
+      [
+        "loop",
+        "it said thank you first",
+        "now we’re stuck in a loop"
+      ]
+    ],
+    "kicker": "please and thank you, just in case"
+  },
+  "canvas": "Please-32.dc.html"
+}

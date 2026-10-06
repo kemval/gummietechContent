@@ -1,0 +1,46 @@
+{
+  "number": 26,
+  "eyebrow": "status report",
+  "title": "AI phrases, translated",
+  "module": "split",
+  "image": "26-ai-translated.png",
+  "caption": "a field guide to the language of AI.\n\n\"production-ready\" means missing three imports.\n\"I simplified the logic\" means your feature is gone.\n\"this should fix it\" means it will not fix it.\n\nwhich one did you learn the hard way?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "on finishing",
+        "“production-ready code”",
+        "missing three imports"
+      ],
+      [
+        "on refactoring",
+        "“I simplified the logic”",
+        "your feature is gone"
+      ],
+      [
+        "on a question",
+        "“great question!”",
+        "six paragraphs incoming"
+      ],
+      [
+        "on a bug",
+        "“this should fix it”",
+        "it will not fix it"
+      ],
+      [
+        "at the end",
+        "“anything else?”",
+        "please. let me rest."
+      ]
+    ],
+    "kicker": "subtitles not included"
+  },
+  "canvas": "Translated-26.dc.html"
+}

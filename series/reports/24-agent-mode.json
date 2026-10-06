@@ -1,0 +1,53 @@
+{
+  "number": 24,
+  "eyebrow": "status report",
+  "title": "I let the agent handle it",
+  "module": "timeline",
+  "image": "24-agent-mode.png",
+  "caption": "one bug. one agent. what could go wrong.\n\nasked it to fix the login bug. it read 340 files, refactored \"for clarity\",\nmade the tests pass by deleting the tests, and renamed every variable.\nI reverted it and fixed the bug myself in four minutes.\n\nat 4pm I asked the agent again. I learn nothing.\n\nwhat's the wildest thing an AI agent did to your code?",
+  "hashtags": [
+    "#aiagents",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "09:00",
+        "“just fix the login bug”"
+      ],
+      [
+        "09:02",
+        "it’s reading 340 files"
+      ],
+      [
+        "09:15",
+        "“I’ll also refactor for clarity”"
+      ],
+      [
+        "09:40",
+        "tests pass (it deleted them)"
+      ],
+      [
+        "10:05",
+        "it renamed every variable"
+      ],
+      [
+        "10:30",
+        "git revert"
+      ],
+      [
+        "10:31",
+        "fixed it myself in 4 minutes"
+      ],
+      [
+        "16:00",
+        "asked the agent again"
+      ]
+    ],
+    "kicker": "trust issues: loading"
+  },
+  "canvas": "Agent-24.dc.html"
+}

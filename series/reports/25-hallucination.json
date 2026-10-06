@@ -1,0 +1,41 @@
+{
+  "number": 25,
+  "eyebrow": "status report",
+  "title": "me vs. a hallucination",
+  "module": "chat",
+  "image": "25-hallucination.png",
+  "caption": "it didn't just make up a function. it made up a whole library,\nwrote the docs for it in its head, and then apologised with\nthe confidence of a senior engineer.\n\nhonestly? the library sounded great.\n\nwhat's the best thing an AI has ever invented for you?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "me",
+        "that function doesn’t exist"
+      ],
+      [
+        "ai",
+        "you’re absolutely right! here’s the fix."
+      ],
+      [
+        "me",
+        "that one doesn’t exist either"
+      ],
+      [
+        "me",
+        "you invented an entire library"
+      ],
+      [
+        "ai",
+        "and honestly? it should exist."
+      ]
+    ],
+    "kicker": "confidently, beautifully wrong"
+  },
+  "canvas": "Hallucination-25.dc.html"
+}

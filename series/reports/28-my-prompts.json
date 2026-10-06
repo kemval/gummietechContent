@@ -1,0 +1,51 @@
+{
+  "number": 28,
+  "eyebrow": "status report",
+  "title": "my actual prompts",
+  "module": "cards-6",
+  "image": "28-my-prompts.png",
+  "caption": "they call it prompt engineering. this is my portfolio.\n\n\"make it better.\" \"no, the OTHER better.\"\n\"do it again but change nothing.\" and the one that actually\nworked: \"pls.\"\n\nwhat's the laziest prompt that ever worked for you?",
+  "hashtags": [
+    "#promptengineering",
+    "#ai",
+    "#chatgpt",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "09:14",
+        "make it better",
+        "no further notes"
+      ],
+      [
+        "09:16",
+        "no, the OTHER better",
+        "it knew. it chose not to."
+      ],
+      [
+        "10:02",
+        "again but change nothing",
+        "art."
+      ],
+      [
+        "11:40",
+        "pls",
+        "it worked"
+      ],
+      [
+        "13:05",
+        "why",
+        "a 600-word answer"
+      ],
+      [
+        "13:06",
+        "ok undo all of that",
+        "there is no undo"
+      ]
+    ],
+    "kicker": "prompt engineering is my love language"
+  },
+  "canvas": "Prompts-28.dc.html"
+}

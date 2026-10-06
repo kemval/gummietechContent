@@ -1,0 +1,41 @@
+{
+  "number": 29,
+  "eyebrow": "status report",
+  "title": "the five stages of AI grief",
+  "module": "pills",
+  "image": "29-ai-grief.png",
+  "caption": "grief, but every stage is a new chat.\n\ndenial: \"it'll work this time.\" bargaining: offering a $20 tip to\nsomething that cannot hold money. anger: all caps.\ndepression: actually reading the documentation.\nacceptance: writing it myself, like it's 2019.\n\nwhich stage are you in today?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "denial",
+        "“it’ll work this time”"
+      ],
+      [
+        "bargaining",
+        "“please. I’ll tip you $20”"
+      ],
+      [
+        "anger",
+        "WHY DID YOU DELETE THAT"
+      ],
+      [
+        "depression",
+        "reading the documentation"
+      ],
+      [
+        "acceptance",
+        "writing it myself"
+      ]
+    ],
+    "kicker": "regenerating response…"
+  },
+  "canvas": "Grief-29.dc.html"
+}

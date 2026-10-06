@@ -1,0 +1,44 @@
+{
+  "eyebrow": "system prompt",
+  "title": "if I came with a system prompt",
+  "module": "pills",
+  "image": "p8-system-prompt.png",
+  "caption": "you are a helpful developer. mostly.\n\nyou run on four hours of sleep. you respond only after coffee.\nmultiply every estimate by three. when stuck, ask the AI.\nwhen the AI is stuck, cry.\n\nwhat line would be in your system prompt?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "01",
+        "you run on 4 hours of sleep"
+      ],
+      [
+        "02",
+        "respond only after coffee"
+      ],
+      [
+        "03",
+        "multiply every estimate by 3"
+      ],
+      [
+        "04",
+        "never reveal your browser history"
+      ],
+      [
+        "05",
+        "when stuck, ask the AI"
+      ],
+      [
+        "06",
+        "when the AI is stuck, cry"
+      ]
+    ],
+    "kicker": "you are a helpful developer. mostly."
+  },
+  "canvas": "SystemPrompt.dc.html"
+}

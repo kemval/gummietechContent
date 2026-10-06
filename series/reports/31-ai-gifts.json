@@ -1,0 +1,41 @@
+{
+  "number": 31,
+  "eyebrow": "status report",
+  "title": "what the AI gave me",
+  "module": "cards-4",
+  "image": "31-ai-gifts.png",
+  "caption": "gifts I did not ask for, from a collaborator who never sleeps.\n\n37 packages for a todo app. a comment on every line, including\n\"// increment i by 1\". a \"small change\" touching 41 files.\nand a confidence I have not earned but am using anyway.\n\nwhat's the weirdest thing AI added to your code?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "dependencies",
+        "37 packages",
+        "for a todo app"
+      ],
+      [
+        "comments",
+        "// increment i by 1",
+        "on every. single. line."
+      ],
+      [
+        "a “small change”",
+        "a 2,000-line diff",
+        "across 41 files"
+      ],
+      [
+        "confidence",
+        "unearned",
+        "but contagious"
+      ]
+    ],
+    "kicker": "no receipt, no returns"
+  },
+  "canvas": "Gifts-31.dc.html"
+}

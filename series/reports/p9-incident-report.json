@@ -1,0 +1,40 @@
+{
+  "eyebrow": "incident report",
+  "title": "the AI cleaned up my project",
+  "module": "cards-4",
+  "image": "p9-incident-report.png",
+  "caption": "a blameless post-mortem, where the blame is mine.\n\nwhat happened: I said \"clean up the project.\" casually.\nimpact: it cleaned up the project. all of it.\naction items: read before clicking accept. (I will not.)\n\nwhat's the scariest \"accept all\" you've ever clicked?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "what happened",
+        "“clean up the project”",
+        "I said. casually."
+      ],
+      [
+        "impact",
+        "it cleaned up the project",
+        "all of it"
+      ],
+      [
+        "root cause",
+        "me",
+        "the call came from inside the house"
+      ],
+      [
+        "action items",
+        "read before clicking accept",
+        "(I will not)"
+      ]
+    ],
+    "kicker": "blameless post-mortem. it was me."
+  },
+  "canvas": "Incident.dc.html"
+}

@@ -1,0 +1,46 @@
+{
+  "number": 27,
+  "eyebrow": "status report",
+  "title": "my skills, post-AI",
+  "module": "bars",
+  "image": "27-skills-post-ai.png",
+  "caption": "a skills assessment nobody asked for.\n\nwriting code: 12%. reading code I didn't write: 94%.\nremembering syntax: gone. writing prompts: honestly a craft now.\nexplaining my own pull request: 21%, \"it's… doing a thing.\"\n\nwhich skill of yours went up, and which one quietly left?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devlife",
+    "#softwareengineer",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "writing code",
+        12,
+        "who?"
+      ],
+      [
+        "reading code I didn’t write",
+        94,
+        "all day"
+      ],
+      [
+        "remembering syntax",
+        3,
+        "gone"
+      ],
+      [
+        "writing prompts",
+        88,
+        "a craft, honestly"
+      ],
+      [
+        "explaining my own PR",
+        21,
+        "“it’s… doing a thing”"
+      ]
+    ],
+    "kicker": "I’m a code reviewer now, apparently"
+  },
+  "canvas": "Skills-27.dc.html"
+}

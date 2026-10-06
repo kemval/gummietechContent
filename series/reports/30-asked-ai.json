@@ -1,0 +1,27 @@
+{
+  "number": 30,
+  "eyebrow": "status report",
+  "title": "things I asked AI this week",
+  "module": "search",
+  "image": "30-asked-ai.png",
+  "caption": "my chat history, lightly redacted.\n\n\"explain this code\" — I wrote it. yesterday.\n\"is this good? be honest. no, be nice.\"\nand at 2am, after a long session: \"are you mad at me.\"\n\nwhat's the most unhinged thing you've asked an AI?",
+  "hashtags": [
+    "#ai",
+    "#aicoding",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      "explain this code (I wrote it)",
+      "is this good? be honest. no, be nice",
+      "rewrite this so it sounds like me",
+      "do you remember what we did yesterday",
+      "why did you do that",
+      "are you mad at me"
+    ],
+    "kicker": "chat history: also do not open"
+  },
+  "canvas": "AskedAI-30.dc.html"
+}

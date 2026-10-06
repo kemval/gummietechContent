@@ -194,7 +194,8 @@ Two differences from the carousels, both because there is no source:
 
 Fifteen slides as of **2026-09-22**; #14–#23 and two unnumbered reserves
 added **2026-10-06** after the queue ran dry. Those twelve were built as
-canvas artboards (each record's `canvas` names its board) and rendered
+canvas artboards (each record's `canvas` names its board); #24–#33 and two
+more reserves, all on coding with AI, followed the same day the same way and rendered
 locally the way #07 was; each record's `slide` holds the copy on it. This is
 what exists; `python src/series.py` is what says where the queue has got to.
 
@@ -227,6 +228,18 @@ what exists; `python src/series.py` is what says where the queue has got to.
 | 23 | my brain's memory usage | `bars` |
 | — | `PATCH NOTES` · me — v21.4 release notes | `pills` |
 | — | `OUT OF OFFICE` · auto-reply from my brain | `cards-4` |
+| 24 | I let the agent handle it | `timeline` |
+| 25 | me vs. a hallucination | `chat` |
+| 26 | AI phrases, translated | `split` |
+| 27 | my skills, post-AI | `bars` |
+| 28 | my actual prompts | `cards-6` |
+| 29 | the five stages of AI grief | `pills` |
+| 30 | things I asked AI this week | `search` |
+| 31 | what the AI gave me | `cards-4` |
+| 32 | why I say please to the AI | `pills-icons` |
+| 33 | my AI usage, this month | `bars` |
+| — | `SYSTEM PROMPT` · if I came with a system prompt | `pills` |
+| — | `INCIDENT REPORT` · the AI cleaned up my project | `cards-4` |
 
 ## 9. Runway, and the one thing that is wrong with it
 
