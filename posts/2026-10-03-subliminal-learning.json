@@ -45,5 +45,8 @@
     "the_catch": "Requiere que los modelos compartan una base, o una muy parecida, y no funciona dentro del contexto. Los resultados fueron menos consistentes en Qwen y Gemma.",
     "_en": "068d854001ebc198"
   },
-  "published_at": "2026-10-03"
+  "published_at": "2026-10-03",
+  "metrics": {
+    "asked_at": "2026-10-06"
+  }
 }
