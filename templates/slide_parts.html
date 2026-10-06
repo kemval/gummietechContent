@@ -34,15 +34,18 @@
 {# The cover. `spec` is the row of [label] value pairs under the hook, each
    a record field; a pair whose value is empty is left out. The figure is
    set large only when render.cover_figure() found one, and never without
-   the hook's own words that qualify it. #}
-{% macro cover(fmt, n, field, spec) -%}
+   the hook's own words that qualify it. `word` is a glossary's term, set in
+   the figure's place with fixed copy as its label: a word, not a number, so
+   there is nothing in it to qualify. #}
+{% macro cover(fmt, n, field, spec, word="") -%}
 <div class="slide {{ field }}" id="slide-1"><div class="frame">
   {{ corners(fmt, 1, n) }}
   <div class="hook">{{ boxed(hook, figures_only=True) }}</div>
   <dl class="spec">
     {% for label, value, required in spec if value %}<div><dt>[{{ label }}]</dt><dd{{ ' class="req"'|safe if required }}>{{ value }}</dd></div>{% endfor %}
   </dl>
-  {% if figure %}<div class="figure"><div class="giant">{{ figure.value }}</div><div class="qual">{{ figure.qualifier }}</div></div>{% endif %}
+  {% if word %}<div class="figure"><div class="giant">{{ word }}</div><div class="qual">(n.) — the glossary</div></div>
+  {% elif figure %}<div class="figure"><div class="giant">{{ figure.value }}</div><div class="qual">{{ figure.qualifier }}</div></div>{% endif %}
 </div></div>
 {%- endmacro %}
 

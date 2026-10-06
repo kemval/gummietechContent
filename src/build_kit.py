@@ -72,9 +72,10 @@ def render_kit(episode: dict, colorway: str | None, outdir: Path) -> list[Path]:
     env.filters["typeset"] = typeset
     env.filters["emphasis"] = lambda text, figures_only=False: emphasis(
         text, [], figures_only)
-    lead, _support = colorway_pair(colorway)
+    lead, support = colorway_pair(colorway)
     html = env.get_template("build.html").render(
         font_dir=(REPO_ROOT / "fonts").as_uri(), lead=lead,
+        support=support,
         episode={
             "number": episode["number"],
             "title": episode["title"],

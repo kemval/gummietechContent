@@ -39,8 +39,9 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from formats import (body_text, entries, es_fields, missing_from_entries,
-                     pieces, required, sections, spec)
+from formats import (PAIR, body_text, entries, es_fields,
+                     missing_from_entries, pieces, required, sections, spec,
+                     unpaired)
 from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset
 
 POSTS_DIR = REPO_ROOT / "posts"
@@ -115,12 +116,30 @@ def body_sections(post: dict, es_block: dict) -> list[dict]:
         # what lines up and leave the rest English rather than misalign them.
         if not spanish_pieces or len(spanish_pieces) != len(english):
             spanish_pieces = [""] * len(english)
+        pairs = list(zip(english, spanish_pieces))
         out.append({
             "en": section.en,
             "es": section.es if es_block else "",
-            "pieces": list(zip(english, spanish_pieces)),
+            "pieces": pairs,
+            # A cheat sheet's "Term: line", split so the page can set the
+            # term bold as the slide does. A Spanish piece that lost the
+            # separator in translation is shown in English, both halves,
+            # rather than split in the wrong place.
+            "terms": [split_pair(en, es) for en, es in pairs]
+                     if section.pair else [],
         })
     return out
+
+
+def split_pair(en: str, es: str) -> tuple[tuple[str, str], tuple[str, str]]:
+    """((term_en, term_es), (line_en, line_es)) from two "Term: line"
+    pieces. render.py and site.py refuse an English piece without the
+    separator, so only the Spanish half can lack it."""
+    term_en, _, line_en = en.partition(PAIR)
+    term_es, sep, line_es = es.partition(PAIR)
+    if not sep:
+        term_es = line_es = ""
+    return (term_en, term_es), (line_en, line_es)
 
 
 def t(en: str, es: str = "") -> Markup:
@@ -197,7 +216,7 @@ def load_posts() -> tuple[list[dict], int]:
 
         missing = ([f for f in required(post) if post.get(f) is None
                     or (f != "peer_reviewed" and not post.get(f))]
-                   + missing_from_entries(post))
+                   + missing_from_entries(post) + unpaired(post))
         if missing:
             print(f"  skipped {path.name}: missing {', '.join(missing)}")
             skipped += 1
@@ -215,9 +234,29 @@ def load_posts() -> tuple[list[dict], int]:
             skipped += 1
             continue
 
+        # A glossary term's example is a post of ours, and its paper is a
+        # second source (§7.3): credited from that post's own record, and
+        # linked — unless it is the definition's own source, which is then
+        # listed once. An example that is missing or was never published is the
+        # same refusal render.example_post() makes, as a skip.
+        example = None
+        if "example_post" in spec(post).record:
+            stem = str(post.get("example_post", "")).strip()
+            try:
+                example = json.loads((POSTS_DIR / f"{stem}.json").read_text())
+            except (OSError, ValueError):
+                example = None
+            if (not example or Path(stem).name != stem
+                    or not example.get("published_at")):
+                print(f"  skipped {path.name}: example_post {stem!r} is not a "
+                      "published post in posts/")
+                skipped += 1
+                continue
+            example["slug"] = stem
+
         # Same allowlist the slides use, so the page carries the post's
         # topic hue and an invented family name degrades identically.
-        lead, _ = colorway_pair(post.get("colorway"))
+        lead, support = colorway_pair(post.get("colorway"))
 
         # Resolved before the body is built, because the body pairs each
         # English piece with its Spanish and must use the block that passed
@@ -227,6 +266,7 @@ def load_posts() -> tuple[list[dict], int]:
         post.update(
             slug=path.stem,
             lead=lead,
+            support=support,
             published=published,
             published_on=human_date(published),
             published_on_es=human_date_es(published),
@@ -247,7 +287,14 @@ def load_posts() -> tuple[list[dict], int]:
                     or [{"attribution": post["attribution"],
                          "url": post["source_url"],
                          "host": source_host(post["source_url"]),
-                         "peer_reviewed": post["peer_reviewed"]}],
+                         "peer_reviewed": post["peer_reviewed"]}]
+                    + ([{"attribution": example["attribution"],
+                         "url": example["source_url"],
+                         "host": source_host(example["source_url"]),
+                         "peer_reviewed": bool(example.get("peer_reviewed"))}]
+                       if example and example.get("source_url")
+                       != post.get("source_url") else []),
+            example=example,
             # The hero flag is a claim about the whole post, so it is only
             # shown where the whole post has one source. A Signal labels its
             # preprints beside the items they belong to.

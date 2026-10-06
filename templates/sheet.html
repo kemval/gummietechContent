@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Cheat sheet</title>
+<style>
+{% include 'slides.css' %}
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
+{#
+   The cheat sheet: cover, the entries three to a slide, then every term on
+   one slide — the one a reader screenshots, which is the point of the
+   format — then the CTA. The count follows the entries, as a Signal's does.
+
+   Each item is "Term: line" (formats.PAIR); render.load_post() refuses
+   one without the separator, so the split here always has two halves.
+
+   rhythm(n, 0): no catch. A reference has no single caveat, and
+   formats.py declares it with `catch=False`.
+#}
+{% import 'slide_parts.html' as parts with context %}
+{% set per = 3 %}
+{% set pages = items|batch(per)|list %}
+{% set n = 3 + pages|length %}
+{% set fields = rhythm(n, 0) %}
+
+<!-- 1. COVER -->
+{{ parts.cover("cheat sheet", n, fields[0], [
+     ("domain", domain, false),
+     ("terms", items|length ~ " terms", false),
+     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("source", attribution, false)]) }}
+
+<!-- 2..n-2. THE ENTRIES -->
+{% for page in pages %}
+{% set at = loop.index + 1 %}
+{% set first = loop.index0 * per %}
+<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
+  {{ parts.corners("cheat sheet", at, n, domain) }}
+  <div class="body top sheet">
+    {% for item in page %}
+    <div class="entry">
+      {% set term, line = item.split(PAIR, 1) %}
+      <div class="sec"><span>({{ "%02d"|format(first + loop.index) }})</span>{{ term }}</div>
+      <p class="text sm">{{ line|typeset }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div></div>
+{% endfor %}
+
+<!-- n-1. THE WHOLE SHEET -->
+<div class="slide {{ fields[n - 2] }}" id="slide-{{ n - 1 }}"><div class="frame">
+  {{ parts.corners("cheat sheet", n - 1, n, "save this") }}
+  <div class="body top index">
+    {{ parts.sec(items|length, "The whole sheet") }}
+    <dl>
+      {% for item in items %}{% set term, line = item.split(PAIR, 1) %}<div><dt>{{ term }}</dt><dd>{{ line|typeset }}</dd></div>{% endfor %}
+    </dl>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(save)</div>
+</div></div>
+
+<!-- n. CTA + SOURCE -->
+{{ parts.follow("cheat sheet", n, fields[n - 1], [("source", attribution)]) }}
+
+<script>
+{% include 'slides_layout.js' %}
+</script>
+</body>
+</html>

@@ -45,6 +45,9 @@ disagree again, this one wins and the other is corrected to match.
 | **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
+| **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
+| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | a person, then the pipeline |
+| **The Cheat Sheet** | every fifth Glossary | Saves | Carousel, 4+ slides | a person, then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -86,6 +89,30 @@ at the non-followers Instagram shows reels to. Audio is chosen in the
 Instagram app at upload, by a person. It stays on request until a handful
 have been measured against their own carousels; what earns it a cadence is
 §8's decision, not this one.
+
+**Run it, the Glossary and the Cheat Sheet were added 2026-10-06,** for
+one reason: 24 measured posts had a median of **zero saves**, in every
+format, colorway, domain and weekday (`learn.py`, that day). Saves are §0's
+primary growth driver, and nothing the account posted was being kept. All
+three are built to be kept — a reference, not a story:
+
+- **Run it** (`post_type: "run"`) is a Drop whose paper links its code, with
+  one more slide: the repo as a `git clone` line and what it takes to run,
+  from the repo's own README. `daily.yml` asks for it on Wednesdays; with no
+  queued row that links code, or no readable README, the day is a plain
+  Drop. Its job leans toward the Build's: it shows the account reads code.
+- **The Glossary** (`"term"`) is one word: what it means, where this
+  account already showed it (`example_post`, a published post — refused
+  otherwise), and the common mistake on the dark slide.
+- **The Cheat Sheet** (`"sheet"`) is several `"Term: line"` entries, three to
+  a slide, then all of them on one slide — the one a reader screenshots.
+  Every fifth Glossary term is gathered into one, so it costs no new
+  research.
+
+The Glossary and the Cheat Sheet are written by hand like the Breakdown
+(`formats.by_hand`): a definition is exactly where a free-tier model
+invents a confident one. Settled by: saves per post against the Drop's
+median, over their first four of each.
 
 ### The Status Report — the second pillar
 

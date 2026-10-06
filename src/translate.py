@@ -90,6 +90,9 @@ give the sentence a subject, or address the reader.
 - The English is slide copy and often telegraphic — no articles, no verb \
 ("4B Qwen model, tuned with agentic RL, wrote…", "Three participants \
 implanted"). The Spanish is full sentences: put the articles and verbs back.
+- A cheat sheet's "items" are each "Term: line". Keep that shape: the \
+Spanish term, a colon and a space, then the Spanish line — the archive \
+splits each item there to set the term bold.
 - "solo" never takes an accent. A model size stays as written: "4B", not \
 "4 B".
 - Keep every claim exactly as strong as the English. Do not add, drop, soften \

@@ -40,11 +40,11 @@ from playwright.sync_api import Page, sync_playwright
 # The format table is its own module so telegram.py can read it without
 # importing this one — see formats.py. Re-exported here because render.py
 # is where the rest of the shared vocabulary already lives.
-from formats import (DEFAULT_FORMAT, FORMATS, RECORD, Format, Section,
+from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,
                      body_text, entries, es_fields, format_name,
                      missing_from_entries, pieces, post_preprint_flag,
                      preprint_claims, required,
-                     sections, spec, template_for)
+                     sections, spec, template_for, unpaired)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = REPO_ROOT / "templates"
@@ -129,7 +129,37 @@ def load_post(path: Path) -> dict:
             "them to the JSON and re-run."
         )
 
+    if bad := unpaired(post):
+        sys.exit(f"Refusing to render a {format_name(post.get('post_type'))}: "
+                 f"{', '.join(bad)} must read \"Term: line\" — the term, a "
+                 "colon and a space, then its line. Fix the JSON and re-run.")
+    if "example_post" in spec(post).record:
+        example_post(post)
     return post
+
+
+def example_post(post: dict) -> dict:
+    """The published post a glossary term points to as its example.
+
+    Refused unless it is in posts/ and carries published_at: "where we saw
+    it" is a claim that this account showed it, and a draft or a rejected
+    post was never shown. The stem is a lookup in posts/, never a path — a
+    name with a separator in it is refused rather than followed.
+    """
+    stem = str(post.get("example_post", "")).strip()
+    path = POSTS_DIR / f"{stem}.json"
+    if not stem or Path(stem).name != stem or not path.is_file():
+        sys.exit(f"example_post {stem!r} is not a post in posts/. Name the "
+                 "stem of a published post, e.g. "
+                 "2026-09-27-why-language-models-hallucinate.")
+    try:
+        example = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        sys.exit(f"example_post {stem}: {path.name} is not valid JSON: {exc}")
+    if not example.get("published_at"):
+        sys.exit(f"example_post {stem} has no published_at — only a post "
+                 "that went live can be the example. Pick a published one.")
+    return example
 
 
 def word_budget(post: dict) -> Iterator[tuple[str, int, int]]:
@@ -471,7 +501,6 @@ def render_html(post: dict, colorway: str | None = None,
         loader=FileSystemLoader(TEMPLATE_DIR),
         autoescape=select_autoescape(["html"]),
     )
-    template = env.get_template(template or template_for(post.get("post_type")))
 
     lead, support = colorway_pair(colorway or post.get("colorway"))
 
@@ -487,8 +516,11 @@ def render_html(post: dict, colorway: str | None = None,
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
+        support=support,
         figure=cover_figure(post.get("hook", "")),
     )
+    if "example_post" in spec(post).record:
+        context["example_from"] = example_post(post)
     context["diff"] = catch_diff(post.get("the_catch", ""), context["figure"])
     env.filters["typeset"] = typeset
     env.filters["emphasis"] = (lambda text, figures_only=False:
@@ -496,8 +528,13 @@ def render_html(post: dict, colorway: str | None = None,
     # The template calls this with its own slide count: it is the only thing
     # that knows how many it has, and this is the only thing that knows what
     # colour they go in.
+    env.globals["PAIR"] = PAIR
     env.globals["rhythm"] = (lambda count, catch=None:
                              rhythm(lead, support, count, catch))
+    # Fetched after the filters and globals are registered: Jinja resolves a
+    # filter when it compiles a template, so a format that uses `typeset`
+    # outside a slide_parts macro fails to load if it is fetched first.
+    template = env.get_template(template or template_for(post.get("post_type")))
     return template.render(context)
 
 

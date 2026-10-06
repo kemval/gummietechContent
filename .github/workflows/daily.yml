@@ -31,6 +31,11 @@ on:
     # Build is video and never touches src/, and the Breakdown is written by
     # a person — watch.py reminds from Friday when the week has none.
     #
+    # Wednesday's Drop is a "run it" post (`draft.py --run`, 2026-10-06): a
+    # story whose paper links its code, with a slide on running it from the
+    # repo's README. When no queued row links code, or the README cannot be
+    # read, draft.py says so and writes a plain Drop — the day is never lost.
+    #
     # Four times, and all four before the hour the message is wanted, because
     # this cron is not delivered when it is asked for. Every firing this
     # workflow has ever had was hours late:
@@ -108,6 +113,7 @@ jobs:
     outputs:
       draft: ${{ steps.check.outputs.draft }}
       signal: ${{ steps.check.outputs.signal }}
+      run: ${{ steps.check.outputs.run }}
     steps:
       - uses: actions/checkout@v5
 
@@ -129,6 +135,13 @@ jobs:
             echo "signal=false" >> "$GITHUB_OUTPUT"
             pattern="posts/$today-*.json"
           fi
+          # Read on the same date the gate decided on, so a firing that lands
+          # after midnight UTC cannot draft Thursday's Drop as a run post.
+          if [ "$weekday" = "3" ] && [ "$SIGNAL" != "true" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
 
           if [ "$FORCE" = "true" ]; then
             echo "draft=true" >> "$GITHUB_OUTPUT"
@@ -142,11 +155,12 @@ jobs:
           set -- $pattern
           # A Breakdown is written by hand and dated the day it was written,
           # so it can share a Drop day's date without being its Drop — on
-          # 2026-09-28 one did, and no Drop was drafted. watch.owes() is the
-          # same rule. A Signal's name already says what it is.
+          # 2026-09-28 one did, and no Drop was drafted. So is a glossary term
+          # or a cheat sheet: formats.by_hand() is the one list, stdlib only,
+          # and watch.owes() asks it too. A Signal's name says what it is.
           if [ -e "$1" ] && [ "$weekday" != "6" ] && [ "$SIGNAL" != "true" ]; then
             # shellcheck disable=SC2046 # one path per word; draft.py names have no spaces
-            set -- $(python3 -c 'import json, sys; print(*(p for p in sys.argv[1:] if json.load(open(p)).get("post_type", "drop") != "breakdown"))' "$@")
+            set -- $(python3 -c 'import json, sys; sys.path.insert(0, "src"); from formats import by_hand; print(*(p for p in sys.argv[1:] if not by_hand(json.load(open(p)))))' "$@")
           fi
           if [ -n "${1:-}" ] && [ -e "$1" ]; then
             echo "draft=false" >> "$GITHUB_OUTPUT"
@@ -204,8 +218,11 @@ jobs:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
           SIGNAL: ${{ needs.gate.outputs.signal }}
+          RUN: ${{ needs.gate.outputs.run }}
         run: |
-          if [ "$SIGNAL" = "true" ]; then set -- --signal; else set --; fi
+          if [ "$SIGNAL" = "true" ]; then set -- --signal
+          elif [ "$RUN" = "true" ]; then set -- --run
+          else set --; fi
           python src/draft.py "$@" | tee draft.log
           post=$(sed -n 's/^Wrote //p' draft.log | tail -1)
           if [ -z "$post" ] || [ ! -f "$post" ]; then

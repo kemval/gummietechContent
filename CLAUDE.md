@@ -66,7 +66,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      (one definition of "the post that is waiting")
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
-                     commit, Mon/Wed/Fri; the Signal Sat) · review.yml (fact-check · render
+                     commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) · review.yml (fact-check · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
@@ -119,6 +119,8 @@ templates/
   drop.html          production slide template — 1080x1350
   drop_slides.html   the Drop's five slides, shared with reel.html
   breakdown.html     8–10 slides; signal.html — the weekly roundup
+  run.html           a Drop + the code slide; term.html — the glossary;
+                     sheet.html — the cheat sheet
   build.html         The Build's 9:16 kit, inside the reel and 4:5 grid crops
   reel.html          the same slides swiped through at 1080x1920
   site_base.html     web archive shell; index.html and post.html extend it
@@ -205,7 +207,8 @@ Never commit `.env`, `credentials.json`, or any key.
 Slides render at **1080×1350** (4:5), one `.slide` div each inside
 `templates/<post_type>.html` (fallback `drop.html` with a warning), each
 screenshotted individually, and each also filmed as a seamless 8s MP4 of its
-moving backdrop (Neat-style ribbons, our own shader; `--no-motion` skips). `render.py` discovers slides with
+moving backdrop (Neat-style ribbons, our own shader, in the post's own
+lead/support/cream since 2026-10-06 — never a fixed table; `--no-motion` skips). `render.py` discovers slides with
 `querySelectorAll('.slide')` and refuses fewer than `MIN_SLIDES` (4).
 
 Design tokens are locked — do not change them or propose alternatives. They
@@ -294,7 +297,7 @@ does not state. A source that cannot be read is a hold, not a pass.
 
 ```json
 {
-  "post_type": "drop | breakdown | signal",
+  "post_type": "drop | run | breakdown | term | sheet | signal",
   "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
   "colorway": "signal | orbit | bloom | ember",
   "hook": "",
@@ -317,13 +320,18 @@ does not state. A source that cannot be read is a hold, not a pass.
 - When `peer_reviewed` is false the template must show the
   "Preprint — not yet peer-reviewed" flag, enforced in code.
 - Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
-  (`translate.py`), `metrics` (`telegram.py`). `published_at` is added only
+  (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
+  (`draft.py --run`, only when a README was read). `published_at` is added only
   when the post goes live, and `draft.py` never emits it.
 - The body fields above are the Drop's. `src/formats.py` is the one table of
-  what each `post_type` carries (Breakdown, Signal with per-entry credit);
+  what each `post_type` carries (Breakdown, Signal with per-entry credit,
+  a glossary `term` with a published `example_post`, a `sheet` of
+  `"Term: line"` strings, a `run` with `try_it` from the repo's README);
   do not copy it anywhere, and `telegram.py` must never import `render.py`.
-- A Breakdown is written by hand; a Signal is drafted by
-  `draft.py --signal` on Saturday.
+- A Breakdown, a term and a sheet are written by hand — `formats.by_hand()`
+  is the one test of that, for the Drop-day gate, `watch.py` and redrafting;
+  never compare `post_type` to `"breakdown"`. A Signal is drafted by
+  `draft.py --signal` on Saturday, a run post by `--run` on Wednesday.
 
 → `docs/decisions/post-record.md`
 
@@ -371,7 +379,8 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 ```
 
 - `daily.yml` drafts Mon/Wed/Fri (and the Signal on Saturday), firing four
-  times and gated to one draft per day; `force` is the override.
+  times and gated to one draft per day; `force` is the override. Wednesday
+  passes `--run`, which falls back to a plain Drop when nothing links code.
 - `review.yml` is the one reusable review; callers commit before calling it.
   `.github/actions/resolve-post` is the one answer to "which post is held".
 - `hook.yml` swaps the cover line and re-runs the whole review.

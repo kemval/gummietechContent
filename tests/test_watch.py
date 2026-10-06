@@ -84,11 +84,14 @@ def test_the_filenames_date_is_what_answers_it(posts):
     assert report.verdict == "BLOCK"
 
 
-def test_a_breakdown_dated_a_drop_day_is_not_its_drop(posts):
+@pytest.mark.parametrize("post_type", ["breakdown", "term", "sheet"])
+def test_a_hand_written_post_dated_a_drop_day_is_not_its_drop(posts, post_type):
     """2026-09-28: a hand-written Breakdown dated that Monday made the gate
-    report the Drop as drafted, and no Drop was."""
+    report the Drop as drafted, and no Drop was. A glossary term and a cheat
+    sheet are written by hand too, and the rule was a comparison against
+    "breakdown" until they arrived."""
     directory, write = posts
-    write("2026-09-28-the-cron-that-runs-late.json", post_type="breakdown")
+    write("2026-09-28-the-cron-that-runs-late.json", post_type=post_type)
     report = Report("WATCH")
     watch.check_cadence("2026-09-29", report, directory)
     assert report.verdict == "BLOCK"

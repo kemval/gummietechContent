@@ -33,6 +33,9 @@ class Section(NamedTuple):
     sized and positioned per format — "The catch" on a Drop is "The limits" on
     a Breakdown for the same field. The archive is prose and asks here.
 
+    `pair` marks a list whose every piece is "Term: line" (PAIR), split at
+    the first separator where it is laid out.
+
     `many` marks a field holding one entry per slide. `key` marks one whose
     entries are objects rather than strings, and names the one that is prose:
     a Signal's items each carry a claim, a source and a peer-review flag, and
@@ -44,6 +47,29 @@ class Section(NamedTuple):
     many: bool = False
     optional: bool = False
     key: str = ""
+    pair: bool = False
+
+
+# The separator in a `pair` piece. A colon and a space, because a term can
+# hold a colon of its own only with no space after it ("p:value" is not one).
+PAIR = ": "
+
+
+def unpaired(post: dict) -> list[str]:
+    """Which `pair` pieces have no "Term: line" split, as 'items[3]'.
+
+    Refused rather than guessed at: a piece with no separator would lay out
+    as a term with no definition, and a wrong split would set half a
+    sentence as the term.
+    """
+    out = []
+    for section in sections(post):
+        if section.pair:
+            for n, piece in enumerate(pieces(post, section), start=1):
+                term, sep, line = piece.partition(PAIR)
+                if not (sep and term.strip() and line.strip()):
+                    out.append(f"{section.field}[{n}]")
+    return out
 
 
 class Format(NamedTuple):
@@ -52,13 +78,16 @@ class Format(NamedTuple):
     `record` is what the post itself must carry; `entries` is what each object
     inside a `key` section must carry. `catch` says whether the format has a
     slide that drops to --ink — the dark slide *is* the catch, so a format
-    with no single caveat has none.
+    with no single caveat has none. `by_hand` says a person writes it and
+    nothing drafts it: it is never a Drop day's Drop, and nothing can draft
+    another in its place.
     """
     template: str
     sections: tuple[Section, ...]
     record: tuple[str, ...] = RECORD
     entries: tuple[str, ...] = ()
     catch: bool = True
+    by_hand: bool = False
 
 
 # What each carousel format is made of, in the order a reader meets it.
@@ -99,7 +128,7 @@ FORMATS: dict[str, Format] = {
         # learn.py can settle whether it earns its slide.
         Section("recap",          "In one line",    "En una línea",
                 optional=True),
-    )),
+    ), by_hand=True),
     "signal": Format(
         "signal.html",
         (Section("items", "This week", "Esta semana", many=True, key="claim"),),
@@ -107,6 +136,43 @@ FORMATS: dict[str, Format] = {
         entries=("claim", "attribution", "source_url", "peer_reviewed"),
         catch=False,
     ),
+    # The glossary: one term, defined, then shown in a post this account
+    # already published. `example_post` names that post's stem, and
+    # render.load_post() refuses one that is not in posts/ with a
+    # published_at — the example is ours or it is not an example. Its credit
+    # is read from that post, never retyped here. The catch is the common
+    # misuse of the word.
+    "term": Format(
+        "term.html",
+        (Section("term",       "Term",               "Término"),
+         Section("definition", "What it means",      "Qué significa"),
+         Section("example",    "Where we saw it",    "Dónde lo vimos"),
+         Section("the_catch",  "The common mistake", "El error común")),
+        record=(*RECORD, "example_post"),
+        by_hand=True,
+    ),
+    # The cheat sheet: several terms, one line each, from one source. Each
+    # entry is one string, "Term: line" — `pair` — rather than an object, so
+    # the term travels with its line through translation, the archive and
+    # the gate, which read prose as strings; a Signal's `key` would carry
+    # only one of the two. The credit is the post's: the entries are lines
+    # from one source, not sources. A reference has no single caveat, so no
+    # catch either.
+    "sheet": Format(
+        "sheet.html",
+        (Section("items", "The sheet", "La chuleta", many=True, pair=True),),
+        catch=False,
+        by_hand=True,
+    ),
+    # A Drop whose paper ships its code, with one slide on running it. The
+    # repo is required, and it is code_link()'s, never the model's: a run
+    # post pointing at an invented repo is the worst wrong credit there is.
+    "run": Format("run.html", (
+        Section("what_happened",  "What happened",    "Qué pasó"),
+        Section("try_it",         "Run it yourself",  "Córrelo tú"),
+        Section("why_it_matters", "Why it matters",   "Por qué importa"),
+        Section("the_catch",      "The catch",        "El detalle"),
+    ), record=(*RECORD, "code_url")),
 }
 DEFAULT_FORMAT = "drop"
 
@@ -129,6 +195,17 @@ def format_name(post_type: str | None) -> str:
         print(f"  warning: unknown post_type {name!r} — rendering as a "
               f"{DEFAULT_FORMAT}. Valid: {', '.join(FORMATS)}")
     return DEFAULT_FORMAT
+
+
+def by_hand(post: dict) -> bool:
+    """Whether a person wrote this post, so no cron drafted it.
+
+    A hand-written post is dated the day it was written and can share a Drop
+    day's date without being its Drop: on 2026-09-28 a Breakdown did, and
+    daily.yml's gate reported the Drop as drafted, so none was. The gate,
+    watch.owes() and draft.reject() all ask this.
+    """
+    return spec(post).by_hand
 
 
 def spec(post: dict) -> Format:

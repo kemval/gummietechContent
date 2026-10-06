@@ -62,6 +62,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+from formats import by_hand
 from proof import Report
 from render import COLORWAYS, post_order, vary
 from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
@@ -97,11 +98,12 @@ def owes(day: date, post: dict) -> bool:
     whatever day it was written, and on 2026-09-28 one dated that Monday
     made daily.yml's gate report the Drop as already drafted, so no Drop
     was. The Signal's name already says what it is; a Drop day is answered
-    by anything that is not a Breakdown. daily.yml's gate asks the same.
+    by anything a person did not write (formats.by_hand). daily.yml's gate
+    asks the same.
     """
     if DRAFT_DAYS[day.weekday()] == "Signal":
         return True
-    return post.get("post_type", "drop") != "breakdown"
+    return not by_hand(post)
 
 
 # The Breakdown is written by a person, so no cron can miss it and no cadence
@@ -215,7 +217,8 @@ def check_subject(today: str, report: Report,
     for path in sorted((directory or POSTS_DIR).glob(f"{day.isoformat()}-*.json")):
         post = read_post(path) or {}
         kind = post.get("post_type", "drop")
-        if kind == "drop" and (beat := off(post)):
+        # A run post is that day's Drop with a code slide: same row pick.
+        if kind in ("drop", "run") and (beat := off(post)):
             report.fix("subject", f"{path.stem} is a {beat} Drop: no queued "
                                   f"row was on AI, software, automation or "
                                   f"robotics. {advice}")

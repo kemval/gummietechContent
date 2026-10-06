@@ -83,7 +83,8 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import body_text, es_fields, format_name, pieces, sections
+from formats import (body_text, by_hand, es_fields, format_name, pieces,
+                     sections)
 
 # Defined here rather than imported from render.py on purpose: `confirm` runs
 # on publish.yml's poll and needs nothing but requests, and render.py imports
@@ -156,9 +157,8 @@ HOOK_WORKFLOW = "hook.yml"
 # in the queue: redraft.yml retires it to posts/rejected/ with the reason
 # typed in the form, drafts again, and sends the new one back through
 # review.yml. A link for workflow_url()'s reason. Only on the formats
-# draft.py writes — a Breakdown is written by hand and has no "next one".
+# draft.py writes — a hand-written one (formats.by_hand) has no "next one".
 REDRAFT_WORKFLOW = "redraft.yml"
-REDRAFTABLE = ("drop", "signal")
 
 # Where today's status report is swapped for an unnumbered one: series.yml
 # with `swap` ticked. The numbered report goes back to the front of the queue
@@ -687,7 +687,7 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         poll = workflow_url(PUBLISH_WORKFLOW)
         swap = (workflow_url(HOOK_WORKFLOW) if hook_lines(post) else None)
         redraft = (workflow_url(REDRAFT_WORKFLOW)
-                   if format_name(post.get("post_type")) in REDRAFTABLE
+                   if not by_hand(post)
                    else None)
         if held:
             # A hold cannot stop the carousel reaching Instagram — that is
