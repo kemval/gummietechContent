@@ -35,8 +35,8 @@
     "domain": "mecánica cuántica",
     "hook": "Científicos observaron saltos cuánticos de sonido en un resonador nanomecánico",
     "what_happened": "Un qubit superconductivo midió repetidamente el número de fonones en un resonador, revelando saltos entre el estado fundamental y el primer estado excitado",
-    "why_it_matters": "Demuestra un comportamiento cuántico controlable en objetos vibratorios masivos, un requisito previo para la computación y la detección cuánticas",
-    "the_catch": "La vida útil del resonador fue de solo 2.1 ms",
+    "why_it_matters": "Demuestra un comportamiento cuántico controlable en objetos vibratorios masivos, un requisito previo para la computación y la detección cuántica",
+    "the_catch": "El tiempo de vida del resonador fue solo de 2,1 ms",
     "_en": "1c59ce692c8a1d6c"
   }
 }
