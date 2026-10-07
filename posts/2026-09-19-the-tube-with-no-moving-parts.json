@@ -43,15 +43,15 @@
   "es": {
     "domain": "termodinámica aplicada",
     "hook": "Un tubo de acero sin partes móviles calienta y enfría el aire.",
-    "the_question": "El aire comprimido entra en un tubo de acero. Un extremo puede alcanzar 200 °C, el otro −50 °C. Sin refrigerante, sin electricidad, sin partes móviles.",
-    "the_intuition": "Parece algo de la nada: un tubo pasivo que separa el calor del frío sin nada que conectar y sin nada que gire.",
+    "the_question": "El aire comprimido entra en un tubo de acero. Un extremo puede alcanzar 200 °C y el otro −50 °C. No hay refrigerante, ni electricidad, ni partes móviles.",
+    "the_intuition": "Parece algo sacado de la nada: un tubo pasivo que separa lo caliente de lo frío sin nada que enchufar y sin nada que gire.",
     "mechanism": [
-      "El gas comprimido se inyecta lateralmente en una cámara de remolino, de modo que gira en espiral por el interior del tubo como un vórtice externo rápido.",
-      "Un cono en el extremo lejano permite que solo esa capa externa escape. El resto se obliga a volver por el centro como un segundo vórtice más estrecho.",
-      "El vórtice interno entrega energía hacia afuera al regresar. Vuelve frío; la capa externa sale del extremo lejano caliente."
+      "El gas comprimido se inyecta lateralmente en una cámara de remolino, de modo que forma una espiral que desciende por el interior del tubo como un vórtice externo rápido.",
+      "Un cono en el extremo lejano permite que solo esa capa externa escape; el resto se fuerza a volver por el centro formando un segundo vórtice, más estrecho.",
+      "El vórtice interno transfiere energía al exterior al regresar; vuelve frío, mientras la capa externa sale del extremo lejano caliente."
     ],
-    "why_it_matters": "Sin refrigerante, sin electricidad, sin partes móviles. Cuando una fábrica ya dispone de aire comprimido, es la forma más barata de enfriar rápidamente una herramienta de corte.",
-    "the_catch": "El dispositivo no está en duda; los físicos debatieron la explicación durante más de 80 años. El frío no es gratuito: el compresor aguas arriba lo pagó.",
+    "why_it_matters": "Sin refrigerante, sin electricidad y sin partes móviles. Cuando una fábrica ya tiene aire comprimido, es la forma barata de enfriar puntualmente una herramienta de corte.",
+    "the_catch": "Que el dispositivo funciona no está en duda; los físicos debatieron su explicación durante más de 80 años. El frío no es gratis: lo pagó el compresor que lo alimenta.",
     "_en": "9e60d5af41fd2273"
   }
 }

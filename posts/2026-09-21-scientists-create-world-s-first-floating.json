@@ -33,10 +33,10 @@
   },
   "es": {
     "domain": "materiales",
-    "hook": "La celosía de titanio flota al rellenar las vigas huecas con espuma",
-    "what_happened": "Investigadores imprimieron en 3D celosías de Ti‑6Al‑4V con varillas huecas e inyectaron espuma de poliuretano en los canales, creando una estructura híbrida flotante",
-    "why_it_matters": "Elimina la limitación de densidad del titanio, lo que permite componentes marinos fuertes y resistentes a la corrosión que permanecen a flote incluso tras sufrir daños",
-    "the_catch": "Las pruebas se limitaron a un cubo de celosía 4×4×4; el rendimiento a escalas mayores o bajo diferentes condiciones de carga no ha sido evaluado",
+    "hook": "Una celosía de titanio flota al rellenar sus vigas huecas con espuma",
+    "what_happened": "Los investigadores imprimieron en 3D celosías de Ti‑6Al‑4V con vigas huecas y luego inyectaron espuma de poliuretano en los canales, creando una estructura híbrida flotante",
+    "why_it_matters": "Al eliminar la limitación de densidad del titanio, permite fabricar componentes marinos fuertes y resistentes a la corrosión que permanecen a flote incluso tras sufrir daños",
+    "the_catch": "Las pruebas se limitaron a un cubo de celosía de 4 × 4 × 4; el rendimiento a escalas mayores o bajo distintas condiciones de carga no ha sido evaluado",
     "_en": "82ae075bfa64e156"
   }
 }

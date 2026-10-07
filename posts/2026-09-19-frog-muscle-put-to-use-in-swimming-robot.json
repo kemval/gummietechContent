@@ -33,10 +33,10 @@
   },
   "es": {
     "domain": "robótica biohíbrida",
-    "hook": "Músculo de rana toro impulsa un robot manta raya inalámbrico",
-    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser de infrarrojo cercano y lo usaron para mover un robot con forma de manta raya",
-    "why_it_matters": "Demuestra que el músculo nativo puede generar una fuerza de 6.5 N, superando la escasa salida de los tejidos ingenierizados y permitiendo robots biohíbridos de alta movilidad",
-    "the_catch": "El músculo permaneció sensible solo durante 11 días, y el robot sigue dependiendo de una fuente de luz externa para moverse",
+    "hook": "Músculo de rana toro impulsa un robot mantarraya inalámbrico",
+    "what_happened": "Los investigadores aislaron un músculo gracilis de rana, lo conectaron a un estimulador neural alimentado por láser de infrarrojo cercano y con él hicieron nadar un robot con forma de mantarraya",
+    "why_it_matters": "Demuestra que el músculo natural puede generar una fuerza de 6,5 N, superando la poca fuerza de los tejidos de ingeniería y permitiendo robots biohíbridos de alta movilidad",
+    "the_catch": "El músculo permaneció sensible solo durante 11 días y el robot sigue necesitando una fuente de luz externa para desplazarse",
     "_en": "5d982e8570108ff6"
   }
 }

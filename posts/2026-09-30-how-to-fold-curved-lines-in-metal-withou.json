@@ -28,16 +28,16 @@
   "attribution": "Hackaday",
   "peer_reviewed": false,
   "beat": "software",
-  "es": {
-    "domain": "materiales",
-    "hook": "Taladrar pequeños agujeros permite doblar láminas de aluminio curvadas a mano.",
-    "what_happened": "John taladró pequeños agujeros a lo largo de cada línea de pliegue curvo, luego dobló el aluminio a mano para crear la forma deseada.",
-    "why_it_matters": "Demuestra que los pliegues curvos en aluminio pueden hacerse con herramientas manuales y paciencia, sin máquinas sofisticadas.",
-    "the_catch": "La pieza terminada conserva pequeñas perforaciones a lo largo de cada pliegue y requiere acabado y enderezado.",
-    "_en": "120a5664778f1428"
-  },
   "published_at": "2026-09-30",
   "metrics": {
     "asked_at": "2026-10-03"
+  },
+  "es": {
+    "domain": "materiales",
+    "hook": "Taladrar pequeños agujeros permite doblar a mano láminas de aluminio en curva.",
+    "what_happened": "John taladró pequeños agujeros a lo largo de cada línea de pliegue curvo y luego dobló manualmente el aluminio para obtener la forma deseada.",
+    "why_it_matters": "Demuestra que los pliegues curvos en aluminio pueden lograrse con herramientas manuales y paciencia, sin necesidad de máquinas sofisticadas.",
+    "the_catch": "La pieza terminada conserva pequeñas perforaciones a lo largo de cada pliegue y requiere acabado y enderezado.",
+    "_en": "120a5664778f1428"
   }
 }
