@@ -10,7 +10,7 @@ Section names below ("see **X**") refer to `CLAUDE.md`'s headings.
 
 ```json
 {
-  "post_type": "drop | breakdown | signal",
+  "post_type": "drop | run | breakdown | term | sheet | signal",
   "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
   "colorway": "signal | orbit | bloom | ember",
   "hook": "",
@@ -93,6 +93,30 @@ that is short. Two consequences worth knowing before touching it:
   forcing one item to go dark would say something about that item that is
   not true. `Format.catch` declares it and `proof.py` holds the render to
   whatever the format claims.
+
+**Three formats added 2026-10-06** (docs §1 has why):
+
+- **`run`** is a Drop plus `try_it`, with `code_url` required. `draft.py
+  --run` sets `post_type` itself — the model never chooses it — and only when
+  `code_link()` found a repo *and* `papers.fetch_readme()` read its README;
+  otherwise the same reply is a Drop. `try_it` may come only from the README,
+  which the prompt labels, and `fact-check` reads it again (§7b of the agent).
+- **`term`** requires `example_post`, the stem of a post in `posts/` with a
+  `published_at`. `render.example_post()` refuses anything else; `site.py`
+  skips the page for the same reason. The example's credit and hook are read
+  from that post, never retyped, and its source is listed as a second source
+  unless it is the term's own.
+- **`sheet`** items are strings, `"Term: line"` (`Section.pair`,
+  `formats.PAIR`), not objects. A `key` section carries only one field of
+  each object through translation, the archive and the gate — the term would
+  have been dropped from the Spanish and the page. `unpaired()` refuses an
+  item with no separator in render and site.
+- **`by_hand`** marks the formats a person writes (Breakdown, term, sheet).
+  It is the one answer to "is this a Drop day's Drop" — `daily.yml`'s gate
+  and `watch.owes()` — and to "can this be redrafted" — `draft.reject()` and
+  the gate's **Another story** button. Each used to compare against
+  `"breakdown"`, which a hand-written glossary term dated on a Monday would
+  have walked straight through: the 2026-09-28 failure again.
 
 `formats.py` is its own module for the reason `llm_errors.py` is. Six places
 need the answer — `render.py` refuses a record missing a field, `proof.py`

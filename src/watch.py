@@ -22,6 +22,7 @@ What it reports:
 
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
+    glossary   from Wednesday on, this week has its term (or Cheat Sheet)
     breakdown  from Friday on, this week has a Breakdown — nothing drafts it
     subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
@@ -62,6 +63,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+from formats import by_hand
 from proof import Report
 from render import COLORWAYS, post_order, vary
 from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
@@ -97,17 +99,29 @@ def owes(day: date, post: dict) -> bool:
     whatever day it was written, and on 2026-09-28 one dated that Monday
     made daily.yml's gate report the Drop as already drafted, so no Drop
     was. The Signal's name already says what it is; a Drop day is answered
-    by anything that is not a Breakdown. daily.yml's gate asks the same.
+    by anything a person did not write (formats.by_hand). daily.yml's gate
+    asks the same.
     """
     if DRAFT_DAYS[day.weekday()] == "Signal":
         return True
-    return post.get("post_type", "drop") != "breakdown"
+    return not by_hand(post)
 
 
-# The Breakdown is written by a person, so no cron can miss it and no cadence
-# check can see it go missing. From this weekday on the week is running out,
-# and a reminder is still something that can be acted on.
-BREAKDOWN_FROM = 4                       # Friday
+# The weekly carousels draft.py does not write, so daily.yml's cadence check
+# cannot see them go missing: check name → (the post_types that count, the
+# weekday they go out, what to do when one is missing). docs §1, 2026-10-06:
+# the Glossary on Tuesday, written by glossary.yml, where every sixth week's
+# is the Cheat Sheet; the Breakdown on Thursday, written by a person. From
+# the day after, the day has passed, and a reminder is still something that
+# can be acted on before the week ends.
+BY_HAND_WEEKLY = {
+    "glossary":  (("term", "sheet"), 1,          # Tuesday
+                  "glossary.yml did not write one — read its last run, or "
+                  "dispatch it again."),
+    "breakdown": (("breakdown",), 3,             # Thursday
+                  "Nothing drafts it — write one in a Claude Code session "
+                  "and dispatch recheck.yml with its path."),
+}
 
 # Above this, drafts are piling up at the gate faster than they are tapped.
 # Three is a comfortable buffer at 3 posts a week; four is a backlog.
@@ -163,33 +177,37 @@ def check_cadence(today: str, report: Report,
                             f"draft now.")
 
 
-def check_breakdown(today: str, report: Report,
-                    directory: Path | None = None) -> None:
-    """Does this week have a Breakdown, while there is still time to write one?
+def check_by_hand(today: str, report: Report,
+                  directory: Path | None = None) -> None:
+    """Does this week have each carousel draft.py does not write, once due?
 
-    docs §1 wants one a week and no workflow drafts it — it is written by a
-    person, so the week of 2026-09-21 simply went without one and nothing
-    said so. Only the current week is asked about, and only from Friday: a
-    week that already ended without one is history, and repeating it every
-    day until the next Monday is the nagging this file exists to avoid.
+    docs §1 wants a Breakdown and a Glossary term a week. A person writes the
+    first and glossary.yml the second, and neither is a Drop day's Drop — the
+    week of 2026-09-21 simply went without a Breakdown and nothing said so. Only the current week is asked about, and only from
+    the day after each one's weekday: a week that already ended without one
+    is history, and repeating it every day until the next Monday is the
+    nagging this file exists to avoid.
     """
     day = date.fromisoformat(today)
-    if day.weekday() < BREAKDOWN_FROM:
-        return
     monday = day - timedelta(days=day.weekday())
+    week = []
     for path in post_order(directory or POSTS_DIR):
         try:
             drafted = date.fromisoformat(path.name[:10])
         except ValueError:
             continue
-        if (monday <= drafted <= day
-                and (read_post(path) or {}).get("post_type") == "breakdown"):
-            report.note("breakdown", f"this week's is {path.stem}")
-            return
-    report.fix("breakdown", f"no Breakdown this week (since {monday}) and the "
-                            f"week ends Sunday. Nothing drafts it — write one "
-                            f"in a Claude Code session and dispatch "
-                            f"recheck.yml with its path.")
+        if monday <= drafted <= day:
+            week.append((path, (read_post(path) or {}).get("post_type")))
+    for name, (types, weekday, remedy) in BY_HAND_WEEKLY.items():
+        if day.weekday() <= weekday:
+            continue
+        found = [path for path, post_type in week if post_type in types]
+        if found:
+            report.note(name, f"this week's is {found[0].stem}")
+            continue
+        due = monday + timedelta(days=weekday)
+        report.fix(name, f"no {' or '.join(types)} post this week (due "
+                         f"{due:%A} {due}). {remedy}")
 
 
 def check_subject(today: str, report: Report,
@@ -215,7 +233,8 @@ def check_subject(today: str, report: Report,
     for path in sorted((directory or POSTS_DIR).glob(f"{day.isoformat()}-*.json")):
         post = read_post(path) or {}
         kind = post.get("post_type", "drop")
-        if kind == "drop" and (beat := off(post)):
+        # A run post is that day's Drop with a code slide: same row pick.
+        if kind in ("drop", "run") and (beat := off(post)):
             report.fix("subject", f"{path.stem} is a {beat} Drop: no queued "
                                   f"row was on AI, software, automation or "
                                   f"robotics. {advice}")
@@ -563,7 +582,7 @@ def main() -> int:
 
     check_structure(args.structure, report)
     check_cadence(today, report)
-    check_breakdown(today, report)
+    check_by_hand(today, report)
     check_subject(today, report)
     if token:
         updates = updates_from_telegram(token, report)

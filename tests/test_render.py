@@ -98,6 +98,41 @@ def test_every_format_in_the_table_has_its_template_on_disk():
         assert (render.TEMPLATE_DIR / fmt.template).is_file(), name
 
 
+# A minimal record of every format, enough for its template to render.
+MINIMAL = {
+    "drop": {"what_happened": "W.", "why_it_matters": "Y.", "the_catch": "C."},
+    "breakdown": {"the_question": "Q?", "the_intuition": "I.",
+                  "mechanism": ["M1.", "M2."], "why_it_matters": "Y.",
+                  "the_catch": "C."},
+    "signal": {"items": [{"claim": "C 2x.", "attribution": "A",
+                          "source_url": "https://x.org", "peer_reviewed": True}]},
+    "term": {"term": "Overfitting", "definition": "D 2x.", "example": "E.",
+             "the_catch": "C.", "example_post": "2026-09-01-the-example"},
+    "sheet": {"items": ["Preprint: Posted 2x before review.", "DOI: An ID."]},
+    "run": {"what_happened": "W.", "try_it": "A GPU 2x.", "why_it_matters": "Y.",
+            "the_catch": "C.", "code_url": "https://github.com/a/b"},
+}
+
+
+@pytest.mark.parametrize("name", sorted(render.FORMATS))
+def test_every_format_in_the_table_renders(name, tmp_path, monkeypatch):
+    """2026-10-06: the glossary's template used `typeset` outside a
+    slide_parts macro, and render_html() registered the filters after
+    fetching the template — Jinja resolves a filter at compile time, so the
+    format could not load at all. Every format is rendered here, the
+    templates' own filters included."""
+    example = tmp_path / "2026-09-01-the-example.json"
+    example.write_text('{"hook": "H", "attribution": "A", '
+                       '"published_at": "2026-09-01"}')
+    monkeypatch.setattr(render, "POSTS_DIR", tmp_path)
+    post = {"post_type": name, "hook": "Hook 2x.", "domain": "d",
+            "attribution": "A", "alt_text": "T", "source_url": "https://x.org",
+            "peer_reviewed": True, **MINIMAL[name]}
+    assert set(MINIMAL) == set(render.FORMATS)
+    assert not [f for f in render.required(post) if post.get(f) is None]
+    assert 'class="slide' in render.render_html(post)
+
+
 # ------------------------------------------------- where the catch falls
 
 def test_the_catch_defaults_to_second_from_last():

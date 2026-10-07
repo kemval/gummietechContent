@@ -42,7 +42,7 @@ body { background: transparent; }
 .text code { font-family: var(--mono); font-weight: 500; font-size: .82em; letter-spacing: 0; }
 </style>
 </head>
-<body style="--lead: var(--{{ lead }})">
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
 {% import 'slide_parts.html' as parts with context %}
 {% set num = "%02d"|format(episode.number) %}
 

@@ -62,11 +62,12 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
+from formats import by_hand, format_name
 from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
 from ingest import COLUMNS, open_sheet
-from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, resolve_paper,
-                    source_text)
+from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
+                    resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     previous_colorway, vary, warn_on_length)
 
@@ -148,7 +149,7 @@ bottleneck it removes or the assumption it breaks>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
 source: sample size, conditions, what was not tested. Never invent one, and \
 never overstate it>",
-  "caption": "<two sentences. The first states the finding and carries the \
+{extra}  "caption": "<two sentences. The first states the finding and carries the \
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
 not only in the hashtags. The second is a question to the reader about the \
@@ -323,8 +324,19 @@ def is_priority(row: list[str], col: dict) -> bool:
     return beat in PRIORITY_BEATS if beat else cell("topic") in PRIORITY_TOPICS
 
 
+def links_code(row: list[str], col: dict) -> bool:
+    """Does this row's feed summary link a repository? For an arXiv row the
+    summary is the abstract, which is where authors write "code is available
+    at". The paper's own abstract is not known until the row is fetched, so
+    this is a cheaper, earlier version of code_link()'s question."""
+    idx = col.get("summary")
+    return bool(idx is not None and idx < len(row)
+                and CODE_URL_RE.search(row[idx]))
+
+
 def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
-             skip: set[int] = frozenset()) -> tuple[int, dict]:
+             skip: set[int] = frozenset(),
+             prefer_code: bool = False) -> tuple[int, dict]:
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
 
@@ -358,6 +370,15 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     if not wanted and not preferred:
         print("  note: no queued row on a priority subject — taking the best "
               "science row instead")
+    # A "run it" day narrows the pool to rows that link code, inside the
+    # subject preference rather than over it: tech first still holds.
+    if prefer_code and not wanted:
+        with_code = [c for c in preferred or candidates if links_code(c[2], col)]
+        if with_code:
+            preferred = with_code
+        else:
+            print("  note: no queued row links its code — drafting a plain "
+                  "Drop today")
     # Ties go to the newest row: ingest.py appends, so a higher row number was
     # fetched later. Scores bunch at 8.75, and on 2026-10-02 taking the first
     # of a tie drafted a September story over that week's.
@@ -568,8 +589,9 @@ def reject(path: Path, reason: str, today: str) -> Path:
     if post.get("published_at"):
         sys.exit(f"{path.name} has published_at {post['published_at']} — it "
                  f"is live, and a live post is not rejected. Nothing moved.")
-    if post.get("post_type") == "breakdown":
-        sys.exit(f"{path.name} is a Breakdown, which is written by hand; "
+    if by_hand(post):
+        sys.exit(f"{path.name} is a {format_name(post.get('post_type'))}, "
+                 f"which is written by hand; "
                  f"nothing can draft another in its place. Edit it instead. "
                  f"Nothing moved.")
     post["rejected"] = {"at": today, "reason": reason.strip()}
@@ -624,6 +646,23 @@ def peer_review_flag(paper: dict | None, url: str,
     return flag
 
 
+# The one key a "run it" post adds to the Drop's prompt, and where its
+# words may come from. A requirement the README does not state is the run
+# slide's invented catch: a reader who buys a GPU on our word.
+RUN_KEY = """  "try_it": "<at most {word_limit} words. What a reader needs to run the \
+code: hardware, language or framework, data, and the entry point or command. \
+Only what the REPOSITORY README below states. Never invent a requirement, \
+and never promise it runs on less than the README says>",
+"""
+
+
+def run_text(text: str, repo: str, readme: str) -> str:
+    """The source text with the repository's README after it, labelled so
+    the prompt can say where try_it comes from and nothing else does."""
+    return (f"{text}\n\nREPOSITORY README ({repo}) — the source for try_it, "
+            f"and for nothing else:\n{readme}")
+
+
 def finish(post: dict, order: list[str]) -> dict:
     """The checks every format shares, then the key order.
 
@@ -671,7 +710,7 @@ def finish(post: dict, order: list[str]) -> dict:
 
 
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
-             "what_happened", "why_it_matters", "the_catch", "caption",
+             "what_happened", "try_it", "why_it_matters", "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
              "peer_reviewed", "beat"]
 
@@ -873,7 +912,8 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
             item = {"url": args.url, "source": outlet(args.url),
                     "title": "", "summary": "", "score": "—"}
         else:
-            row_number, item = pick_row(rows, col, args.row, skipped)
+            row_number, item = pick_row(rows, col, args.row, skipped,
+                                        prefer_code=args.run)
 
         where = f"row {row_number}" if row_number else item["source"]
         print(f"{'Item ' + str(found + 1) if wanted > 1 else 'Drafting'} "
@@ -999,6 +1039,10 @@ def main() -> int:
     picked.add_argument("--reject", type=Path, metavar="POST",
                         help="move a waiting draft to posts/rejected/ and "
                              "draft nothing — redraft.yml's first step")
+    ap.add_argument("--run", action="store_true",
+                    help="a \"run it\" post: prefer a story whose paper links "
+                         "its code, and add a slide on running it from the "
+                         "repo's README; a plain Drop when there is none")
     ap.add_argument("--reason", default="",
                     help="with --reject: why, kept for learn.py")
     ap.add_argument("--dry-run", action="store_true",
@@ -1010,6 +1054,10 @@ def main() -> int:
         dest = reject(args.reject, args.reason, date.today().isoformat())
         print(f"Rejected {args.reject} → {dest}")
         return 0
+
+    if args.run and (args.signal is not None or args.evergreen is not None):
+        sys.exit("--run is a Drop with a code slide; it does not combine with "
+                 "--signal or --evergreen. Drop one of them.")
 
     if args.signal is not None and args.signal < 2:
         sys.exit(f"--signal {args.signal} is not a roundup. "
@@ -1047,14 +1095,36 @@ def main() -> int:
     else:
         pick = picks[0]
         item, paper = pick["item"], pick["paper"]
+        text = source_text(paper, pick["article"], item["summary"])
+        # A "run it" post needs the repo the paper links and that repo's own
+        # README; without either it is a plain Drop, said out loud.
+        repo = code_link(paper, item) if args.run else None
+        readme = ""
+        if args.run and not repo:
+            print("  warning: this story's paper links no code — drafting a "
+                  "plain Drop")
+        elif repo:
+            readme, readme_warning = fetch_readme(repo)
+            if readme_warning:
+                print(f"  warning: {readme_warning}")
+            else:
+                print(f"  code: {repo} — README read, drafting a run post")
+                text = run_text(text, repo, readme)
         reply = llm.generate(
             PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
                           source=item["source"], title=item["title"],
-                          url=item["url"],
-                          text=source_text(paper, pick["article"],
-                                           item["summary"])),
+                          url=item["url"], text=text,
+                          extra=RUN_KEY.format(word_limit=WORD_LIMIT)
+                          if readme else ""),
             api_key, model, temperature=0.4)
-        post = validate(parsed(reply), item, paper)
+        drafted = parsed(reply)
+        # Written by code, never the model: which format this is follows
+        # from whether a README was read, and the run format requires the
+        # try_it and code_url that only a README day produces.
+        drafted["post_type"] = "run" if readme else "drop"
+        if not readme:
+            drafted.pop("try_it", None)
+        post = validate(drafted, item, paper)
         title = slugify(item["title"])
 
     print(json.dumps(post, indent=2, ensure_ascii=False))

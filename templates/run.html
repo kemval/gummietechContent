@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Run it</title>
+<style>
+{% include 'slides.css' %}
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
+{#
+   A Drop whose paper ships its code, plus one slide on running it: six
+   slides, the Drop's rhythm extended by one in the middle. The repo is
+   `code_url`, which draft.code_link() wrote from the paper's own abstract;
+   it is on the cover and on the run slide because it is what this post is
+   for.
+#}
+{% import 'slide_parts.html' as parts with context %}
+{% set fields = rhythm(6) %}
+
+<!-- 1. HOOK -->
+{{ parts.cover("run it", 6, fields[0], [
+     ("domain", domain, false),
+     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("code", code_url|replace("https://", ""), false)]) }}
+
+<!-- 2. WHAT HAPPENED -->
+<div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
+  {{ parts.corners("run it", 2, 6, domain) }}
+  {% if keywords %}<div class="cloud" aria-hidden="true" data-words="{{ keywords|join('|') }}" data-seed="{{ hook }}"></div>{% endif %}
+  <div class="body">
+    {{ parts.sec(1, "What happened") }}
+    <p class="text">{{ parts.boxed(what_happened) }}</p>
+  </div>
+</div></div>
+
+<!-- 3. RUN IT YOURSELF — the repo as a terminal line, then what it takes. -->
+<div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
+  {{ parts.corners("run it", 3, 6, "the code") }}
+  <div class="body top">
+    {{ parts.sec(2, "Run it yourself") }}
+    <p class="repo"><span>$ git clone</span> {{ code_url }}</p>
+    <p class="text">{{ try_it|typeset }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(run)</div>
+</div></div>
+
+<!-- 4. WHY IT MATTERS -->
+<div class="slide {{ fields[3] }}" id="slide-4"><div class="frame">
+  {{ parts.corners("run it", 4, 6, domain) }}
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">(why)</div>
+  <div class="body">
+    {{ parts.sec(3, "Why it matters") }}
+    <p class="text">{{ parts.boxed(why_it_matters) }}</p>
+  </div>
+</div></div>
+
+<!-- 5. THE CATCH -->
+{{ parts.catch("run it", 5, 6, fields[4], 4, "The catch") }}
+
+<!-- 6. CTA + SOURCE -->
+{{ parts.follow("run it", 6, fields[5], [("source", attribution), ("code", code_url)]) }}
+
+<script>
+{% include 'slides_layout.js' %}
+</script>
+</body>
+</html>

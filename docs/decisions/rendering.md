@@ -148,6 +148,17 @@ the rhythm, the type and every text rule, and adds the system:
     one lead-tinted ribbon capped so 22px lead-hue labels keep 4.5:1; its
     lighting only deepens. proof.py measures the flat field, so this
     argument is what covers the canvas.
+  - **The ribbons are the post's own palette** (owner's call, 2026-10-06):
+    a light slide's ribbons are its post's lead, support and cream, minus
+    the slide's field, field last. `<body data-palette>` carries the pair
+    from `render_html()`; an archive post page carries it on `.page-bg`.
+    The fixed `RIBBONS` table put pink and sky on every field, so all four
+    colorways read pink-and-blue and `vary()` was invisible under the
+    ribbons — compared side by side on one post per colorway before the
+    change. Contrast is unchanged: the palette hues are the same ones. The
+    table survives only for the archive index, which has no post. Pink
+    remains in every family (pink or blush in all four `COLORWAYS`); that is
+    the palette, not the ribbons.
   - **Seamless and deterministic.** Time enters only as the angle of one
     8s loop (noise sampled around a circle), seeded by the hook and slide
     id. Frame 0 and frame 8000ms are byte-identical. The PNG is frame 0.

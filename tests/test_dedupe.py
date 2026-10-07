@@ -165,6 +165,8 @@ def test_rejecting_keeps_the_reason_and_leaves_the_rest(covered, posts_dir):
 @pytest.mark.parametrize("record", [
     {"published_at": "2026-09-29"},       # live — not ours to take back
     {"post_type": "breakdown"},           # written by hand, no "next one"
+    {"post_type": "term"},
+    {"post_type": "sheet"},
 ])
 def test_rejecting_refuses_what_it_must_not_move(covered, posts_dir, record):
     directory, _ = posts_dir

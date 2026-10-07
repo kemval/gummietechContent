@@ -116,6 +116,16 @@ window.Ribbons = (() => {
   // holds wherever a ribbon passes. The dark field's ribbons stay at or below
   // ink's luminance, plus one lead-tinted deep ribbon kept dim enough that
   // 22px lead-hue labels still clear 4.5:1 over it.
+  // A surface that belongs to a post passes its palette (lead, support), and
+  // its ribbons are that palette's hues and cream only, the field last.
+  // Owner's call, 2026-10-06: the fixed table below put pink and sky on
+  // every field, so every post read pink-and-blue whatever its colorway, and
+  // no-two-posts-in-a-row (render.vary) was invisible under the ribbons. The
+  // table is kept for the one surface with no post behind it, the archive
+  // index, which mixes every colour.
+  const ribbons = (field, palette) => palette && palette.length
+    ? [...new Set([...palette, 'cream'])].filter(h => h !== field).concat(field)
+    : RIBBONS[field];
   const RIBBONS = {
     pink:  ['blush', 'cream', 'sky', 'pink'],
     olive: ['cream', 'amber', 'blush', 'olive'],
@@ -140,12 +150,12 @@ window.Ribbons = (() => {
     if (s.after) s.after(s);
   };
 
-  const attach = (el, { field, dark = false, lead = 'pink', seed = '', width, height } = {}) => {
+  const attach = (el, { field, palette, dark = false, lead = 'pink', seed = '', width, height } = {}) => {
     const ink = hue('ink');
     // `lead` is a palette name or any CSS colour (the slides pass var(--lead))
     const leadRGB = /^[a-z]+$/.test(lead) ? hue(lead) : rgb(lead);
     const list = dark ? [ink.map(v => v * .45), mix(ink.map(v => v * .6), leadRGB, .16), ink]
-               : RIBBONS[field] ? RIBBONS[field].map(hue)
+               : ribbons(field, palette) ? ribbons(field, palette).map(hue)
                : [hue(field || 'cream')];
     const n = list.length;
     while (list.length < 5) list.push(list[list.length - 1]);   // the uniform array is 5 long

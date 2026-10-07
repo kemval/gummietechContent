@@ -174,7 +174,7 @@ body { background: var(--ink); }
 @keyframes grow     { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 </style>
 </head>
-<body style="--lead: var(--{{ lead }})">
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
 <div class="stage">
   {% set scenes = rhythm(5) %}
   {% for field in scenes %}<div class="backdrop slide {{ field }}"></div>{% endfor %}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Glossary</title>
+<style>
+{% include 'slides.css' %}
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
+{#
+   The glossary: one term, five slides, the Drop's rhythm. The cover sets the
+   word itself large; the middle defines it and then shows it in a post this
+   account already published (`example_from`, loaded by render.example_post());
+   the dark slide is the common misuse.
+
+   Two credits, because there are two sources: whoever the definition comes
+   from (the post's `attribution`) and the paper behind the example, which
+   is read from that post's own record rather than retyped here.
+#}
+{% import 'slide_parts.html' as parts with context %}
+{% set fields = rhythm(5) %}
+
+<!-- 1. THE WORD -->
+{{ parts.cover("glossary", 5, fields[0], [
+     ("domain", domain, false),
+     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("source", attribution, false)], word=term) }}
+
+<!-- 2. WHAT IT MEANS -->
+<div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
+  {{ parts.corners("glossary", 2, 5, term) }}
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">(def.)</div>
+  <div class="body">
+    {{ parts.sec(1, "What it means") }}
+    <p class="text">{{ parts.boxed(definition) }}</p>
+  </div>
+</div></div>
+
+<!-- 3. WHERE WE SAW IT — the text from the top, as a Drop's slide 3, with
+     the example post's own cover line and credit under it. -->
+<div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
+  {{ parts.corners("glossary", 3, 5, term) }}
+  <div class="body top">
+    {{ parts.sec(2, "Where we saw it") }}
+    <p class="text">{{ parts.boxed(example) }}</p>
+    <dl class="credit"><dt>[our post]</dt><dd>{{ example_from.hook|typeset }}</dd></dl>
+    <dl class="credit"><dt>[source]</dt><dd>{{ example_from.attribution }}</dd></dl>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(e.g.)</div>
+</div></div>
+
+<!-- 4. THE COMMON MISTAKE -->
+{{ parts.catch("glossary", 4, 5, fields[3], 3, "The common mistake") }}
+
+<!-- 5. CTA + SOURCES -->
+{# The example's paper is a second source unless it is this one. #}
+{{ parts.follow("glossary", 5, fields[4], [("source", attribution),
+     ("example", example_from.attribution if example_from.source_url != source_url else "")]) }}
+
+<script>
+{% include 'slides_layout.js' %}
+</script>
+</body>
+</html>

@@ -37,6 +37,11 @@ ABSTRACT_CHARS = 4000
 # the first one and still reads the whole list.
 AUTHORS_IN_PROMPT = 30
 
+# A "run it" post's README, cut short for the same 8000 tokens-per-minute
+# reason as AUTHORS_IN_PROMPT: it rides on top of the abstract and the
+# coverage. The setup a reader needs is near the top of a README.
+README_CHARS = 2500
+
 PARA_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.S | re.I)
 SCRIPT_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.S | re.I)
 TAG_RE = re.compile(r"<[^>]+>")
@@ -110,6 +115,40 @@ def fetch_article(url: str) -> tuple[str, str, str | None]:
     if len(article) < 400:
         return article, resp.text, "article body was too short to use much of"
     return article, resp.text, None
+
+
+def fetch_readme(repo: str) -> tuple[str, str | None]:
+    """Return (readme, warning) for a repository code_link() found.
+
+    The README is what a "run it" post's try_it slide is written from and
+    what fact-check reads it against, so it is the repo's own file, never
+    the model's memory of the project. GitHub's API returns the README
+    whatever its name or branch (60 unauthenticated calls an hour — one a
+    draft); Hugging Face serves it raw from main. GitLab is not tried: no
+    paper in the feeds has linked one yet. Any failure is a warning, and the
+    caller drafts a plain Drop instead.
+    """
+    parts = repo.split("://", 1)[-1].split("/")
+    host, path = parts[0].removeprefix("www.").lower(), "/".join(parts[1:])
+    if host == "github.com":
+        url = f"https://api.github.com/repos/{path}/readme"
+        headers = {**HEADERS, "Accept": "application/vnd.github.raw"}
+    elif host == "huggingface.co":
+        url, headers = f"https://huggingface.co/{path}/raw/main/README.md", HEADERS
+    else:
+        return "", f"no README fetch for {host} — drafting a plain Drop"
+    try:
+        resp = requests.get(url, headers=headers, timeout=TIMEOUT)
+    except requests.exceptions.RequestException as exc:
+        return "", (f"could not fetch the README ({type(exc).__name__}) — "
+                    "drafting a plain Drop")
+    if resp.status_code >= 400:
+        return "", (f"README fetch returned HTTP {resp.status_code} — "
+                    "drafting a plain Drop")
+    text = resp.text.strip()
+    if len(text) < 200:
+        return "", "the README is too short to say how to run it — drafting a plain Drop"
+    return text[:README_CHARS], None
 
 
 def _trimmed_doi(found: re.Match[str] | None) -> str | None:

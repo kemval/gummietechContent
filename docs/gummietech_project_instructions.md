@@ -24,9 +24,12 @@ Content engine and technical build partner: find and evaluate stories, draft pos
 |---|---|---|---|
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s |
-| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides |
-| **The Signal** | optional | Reference value | Carousel, 5 items |
+| **The Breakdown** | 1×/week, Thursday | Depth | Carousel, 8–10 slides |
+| **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent |
+| **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides |
+| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides |
+| **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides |
 
 This table is a copy. The canonical one is §1 of
 `gummietech_content_system.md`, which now matches it; correct this one to

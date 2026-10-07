@@ -1,0 +1,37 @@
+{
+  "post_type": "term",
+  "domain": "AI research",
+  "colorway": "signal",
+  "hook": "An AI's plausible but wrong answer, given instead of admitting uncertainty.",
+  "term": "Hallucination",
+  "definition": "A plausible yet incorrect statement a language model produces when it is uncertain, instead of admitting that it does not know.",
+  "example": "Asked for a researcher's birthday and told to answer only if it knew, DeepSeek-V3 gave three different wrong dates in three tries.",
+  "the_catch": "It is not a mysterious glitch. The authors argue that training and benchmark scoring reward guessing over admitting uncertainty.",
+  "example_post": "2026-09-27-why-language-models-hallucinate",
+  "caption": "In AI, a hallucination is a plausible but wrong statement a language model gives instead of admitting it is unsure, and a 2025 preprint argues that training and benchmark scoring reward exactly that guess. Would you trust an AI more if it said “I don’t know” more often?",
+  "keywords": [
+    "AI hallucination",
+    "language models",
+    "uncertainty"
+  ],
+  "hashtags": [
+    "#ai",
+    "#machinelearning",
+    "#llm",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining AI hallucination: a plausible but wrong answer a language model gives instead of admitting uncertainty, an example from an earlier gummietech post about a model giving three wrong birthdays, and the common mistake of treating it as a mysterious glitch.",
+  "source_url": "https://arxiv.org/abs/2509.04664",
+  "doi": "10.48550/arXiv.2509.04664",
+  "attribution": "Kalai, Nachum, Vempala and Zhang, arXiv (2025)",
+  "peer_reviewed": false,
+  "es": {
+    "domain": "investigación de IA",
+    "hook": "Una respuesta plausible pero errónea de una IA, dada en lugar de admitir la incertidumbre.",
+    "term": "Alucinación",
+    "definition": "Una afirmación plausible pero incorrecta que produce un modelo de lenguaje cuando no está seguro, en lugar de admitir que no lo sabe.",
+    "example": "Cuando le pidieron la fecha de nacimiento de un investigador y le dijeron que respondiera solo si la sabía, DeepSeek‑V3 dio tres fechas incorrectas diferentes en tres intentos.",
+    "the_catch": "No es un fallo misterioso. Los autores sostienen que el entrenamiento y la puntuación en los benchmarks premian adivinar en lugar de admitir la incertidumbre.",
+    "_en": "856521ddc1b30165"
+  }
+}

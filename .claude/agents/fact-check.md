@@ -37,8 +37,9 @@ Do not spend the report on those. Your job is the half code cannot do:
 cat posts/<file>.json
 ```
 
-Note `source_url`, `attribution`, `peer_reviewed`, and the four slide fields
-(`hook`, `what_happened`, `why_it_matters`, `the_catch`).
+Note `source_url`, `attribution`, `peer_reviewed`, and the slide fields —
+for a Drop `hook`, `what_happened`, `why_it_matters`, `the_catch`; other
+formats carry the fields `src/formats.py` lists for their `post_type`.
 
 ### 2. Fetch the source, as a browser
 
@@ -126,6 +127,31 @@ host check in `draft.py` cannot see that, so only you will catch it.
 - `keywords` / `hashtags` must match the actual subject.
 - `code_url`, if present, must resolve (`curl -sS -o /dev/null -w '%{http_code}\n'`)
   and belong to this work.
+
+### 7b. A "run it" post: check `try_it` against the README
+
+A `post_type: "run"` post has a sixth slide, `try_it`: what a reader needs to
+run the code. Its source is the repository's README at `code_url`, not the
+paper — fetch it (`curl -sSL https://api.github.com/repos/<owner>/<repo>/readme
+-H 'Accept: application/vnd.github.raw'`, or `<code_url>/raw/main/README.md` on
+Hugging Face) and quote the line that supports each requirement.
+
+- **Every hardware figure, version, OS and command** must be in the README.
+  A smaller GPU, a lower RAM figure or a platform the README does not name is
+  a **BLOCK**: a reader acts on this slide with their own money and time.
+- A README that cannot be read is `UNVERIFIED` for `try_it`, like any source.
+
+### 7c. A glossary term: check `example_post`
+
+A `post_type: "term"` post defines one word and shows it in a post this
+account already published (`example_post`, a stem in `posts/`). Read that
+post. `example` must describe what that post and its source say, no more;
+`definition` and `the_catch` are checked against this post's own
+`source_url`, as usual. A definition the source does not give is a fabrication
+even when it is a textbook one.
+
+A cheat sheet (`post_type: "sheet"`) is a list of `"Term: line"` items from
+one source: check every line against `source_url` the same way.
 
 ### 8. Check the account has not already posted this
 

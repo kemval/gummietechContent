@@ -42,9 +42,12 @@ disagree again, this one wins and the other is corrected to match.
 |---|---|---|---|---|
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
-| **The Breakdown** | 1×/week | Depth | Carousel, 8–10 slides | a person, then the pipeline |
+| **The Breakdown** | 1×/week, Thursday | Depth | Carousel, 8–10 slides | a person, then the pipeline |
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
+| **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
+| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`glossary.yml`), then the pipeline |
+| **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -87,6 +90,37 @@ Instagram app at upload, by a person. It stays on request until a handful
 have been measured against their own carousels; what earns it a cadence is
 §8's decision, not this one.
 
+**Run it, the Glossary and the Cheat Sheet were added 2026-10-06,** for
+one reason: 24 measured posts had a median of **zero saves**, in every
+format, colorway, domain and weekday (`learn.py`, that day). Saves are §0's
+primary growth driver, and nothing the account posted was being kept. All
+three are built to be kept — a reference, not a story:
+
+- **Run it** (`post_type: "run"`) is a Drop whose paper links its code, with
+  one more slide: the repo as a `git clone` line and what it takes to run,
+  from the repo's own README. `daily.yml` asks for it on Wednesdays; with no
+  queued row that links code, or no readable README, the day is a plain
+  Drop. Its job leans toward the Build's: it shows the account reads code.
+- **The Glossary** (`"term"`) is one word: what it means, where this
+  account already showed it (`example_post`, a published post — refused
+  otherwise), and the common mistake on the dark slide.
+- **The Cheat Sheet** (`"sheet"`) is several `"Term: line"` entries, three to
+  a slide, then all of them on one slide — the one a reader screenshots.
+  After every five Glossary terms, the next Tuesday is the Cheat Sheet
+  gathering them, in place of a sixth term (decided 2026-10-06) — so it
+  costs no new research and the week gets no extra post.
+
+The Cheat Sheet is written by hand like the Breakdown (`formats.by_hand`):
+a definition is exactly where a free-tier model invents a confident one.
+**The Glossary term is written by Claude** in `glossary.yml` every Tuesday
+(2026-10-06), not by the free-tier model — the same reason, and the same
+quota `fix.yml` already spends. The model writes the words only: which posts
+may be the example, refusing a repeated term, and the credit (copied from
+the example post) are code in `src/glossary.py`, and a separate fact-check
+grades it before the gate. Automating the Cheat Sheet is open: the format
+credits one source, and five terms gathered from five posts have five. Settled by: saves per post against the Drop's
+median, over their first four of each.
+
 ### The Status Report — the second pillar
 
 A daily 1080×1350 single slide of relatable-dev humour under a
@@ -128,6 +162,8 @@ Built 2026-09-19 as `templates/breakdown.html`. The slide count follows the post
 The limits slide is the dark one either way. With a recap it moves back a place, because the limits are half of what this section calls the competitive advantage and they are not a slide to render in a field colour.
 
 A Breakdown is drafted by hand rather than by `draft.py` — §4 splits the work by stakes and this is the format where the explanation has to be excellent. Everything after drafting is identical: render, proof, fact-check, the gate, the archive.
+
+**It goes out on Thursday** (fixed 2026-10-06), the one weekday with no other carousel — Drops on Mon/Wed/Fri, the Glossary Tuesday, the Signal Saturday. `watch.py` asks for it from Friday, once Thursday has passed without one.
 
 ### The Signal — weekly
 

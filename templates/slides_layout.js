@@ -128,6 +128,8 @@ document.fonts.ready.then(() => {
     return slide => {
       const s = R.attach(slide, {
         field: FIELDS.find(f => slide.classList.contains(f)),
+        // the post's own hues, from <body data-palette> (render.render_html)
+        palette: (document.body.dataset.palette || '').split(' ').filter(Boolean),
         dark: slide.classList.contains('dark'),
         lead: 'var(--lead)',
         // the reel's returning cover is slide 1 cloned without its id: same seed, no seam

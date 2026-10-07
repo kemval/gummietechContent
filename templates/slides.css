@@ -305,3 +305,30 @@ body { background: #2A2A2A; font-family: var(--body); }
 }
 .credit dt { font-family: var(--mono); font-weight: 600; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; flex: none; }
 .credit dd { font-size: 28px; font-weight: 500; line-height: 1.3; }
+
+/* ---------- Cheat sheet ---------- */
+/* Three entries to a slide, each under its own section rule, so a page
+   reads as three cards on one grid rather than a paragraph. */
+.sheet .entry + .entry { margin-top: 56px; }
+.sheet .sec { margin-bottom: 20px; }
+/* The whole sheet on one slide: term left, line right, a hairline between.
+   Sized for twelve entries; this is the slide a reader screenshots. */
+.index dl > div {
+  display: flex; gap: 32px; padding: 16px 0;
+  border-bottom: 2px solid var(--rule);
+}
+.index dt {
+  flex: 0 0 300px; font-family: var(--display); font-weight: 800;
+  font-stretch: 110%; font-size: 34px; line-height: 1.15; letter-spacing: -.02em;
+}
+.index dd { font-size: 28px; font-weight: 500; line-height: 1.3; }
+
+/* ---------- Run it ---------- */
+/* The repo as the line you would type. Mono, wrapped anywhere: a GitHub
+   URL has no spaces and must not run past the column. */
+.repo {
+  font-family: var(--mono); font-weight: 600; font-size: 30px; line-height: 1.4;
+  overflow-wrap: anywhere; padding: 22px 26px; margin-bottom: 40px;
+  border: 2px solid var(--on-field);
+}
+.repo span { font-weight: 500; }
