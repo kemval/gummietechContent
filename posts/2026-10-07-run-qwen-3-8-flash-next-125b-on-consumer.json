@@ -2,7 +2,7 @@
   "post_type": "run",
   "domain": "AI inference",
   "colorway": "orbit",
-  "hook": "125B model on one gaming PC: 94 tokens/s on RTX 5070",
+  "hook": "A model that usually needs a server now runs on one gaming PC",
   "hooks": [
     "125B model on one gaming PC: 94 tokens/s on RTX 5070",
     "A model that usually needs a server now runs on one gaming PC"
@@ -31,11 +31,11 @@
   "beat": "ai",
   "es": {
     "domain": "inferencia de IA",
-    "hook": "Modelo de 125 B en una PC gamer: 94 tokens /s con RTX 5070",
-    "what_happened": "Strata ejecuta el Qwen3.8‑Flash‑Next de 125 B en una PC gamer, alcanzando 94 tokens por segundo con una RTX 5070 y su configuración más rápida (Q2_0).",
-    "try_it": "Clona el repositorio con git clone https://github.com/Niko1221/Strata, luego ejecuta START-HERE.bat (Windows) o ./setup.sh (Linux). Necesita una GPU NVIDIA o AMD con 12 GB o más de VRAM, 32 GB o más de RAM y aproximadamente 80 GB de espacio libre en disco.",
-    "why_it_matters": "Un modelo que normalmente requiere un servidor ahora funciona en una sola PC gamer, en forma comprimida.",
-    "the_catch": "Comprimido a unos 2‑3 bits («los tamaños mayores son un poco más inteligentes»); la PC puede dejar de responder entre 1 y 3 minutos mientras carga. Medido solo en dos PC.",
-    "_en": "b1afc479a656f414"
+    "hook": "Un modelo que normalmente necesita un servidor ahora se ejecuta en una PC gamer",
+    "what_happened": "Strata ejecuta el modelo Qwen3.8‑Flash‑Next de 125 B en una PC gamer, alcanzando 94 tokens por segundo en una RTX 5070 con su tamaño más rápido (Q2_0).",
+    "try_it": "Clona el repositorio con git clone https://github.com/Niko1221/Strata, luego ejecuta START-HERE.bat (Windows) o ./setup.sh (Linux). Necesita una GPU NVIDIA/AMD con 12 GB o más de VRAM, al menos 32 GB de RAM y unos 80 GB de espacio libre en disco.",
+    "why_it_matters": "Un modelo que normalmente requiere un servidor ahora se ejecuta en una sola PC gamer, en forma comprimida.",
+    "the_catch": "Comprimido a aproximadamente 2‑3 bits («los tamaños mayores son un poco más inteligentes»); la PC puede dejar de responder entre 1 y 3 minutos mientras carga. Medido solo en dos PCs.",
+    "_en": "5183f3aa822aafb2"
   }
 }
