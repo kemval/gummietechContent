@@ -1,0 +1,42 @@
+{
+  "post_type": "run",
+  "domain": "AI inference",
+  "colorway": "orbit",
+  "hook": "Qwen 3.8 Flash Next runs on RTX 4090 at ~100 tokens/s",
+  "hooks": [
+    "Qwen 3.8 Flash Next runs on RTX 4090 at ~100 tokens/s",
+    "Large‑scale AI models no longer require dedicated servers",
+    "Run server‑grade AI on a gaming PC in seconds"
+  ],
+  "what_happened": "Strata runs Qwen3.8‑Flash‑Next 125B model on a consumer PC, reaching about 100 tokens per second on an RTX 4090.",
+  "try_it": "git clone https://github.com/Niko1221/Strata && (START-HERE.bat on Windows or ./setup.sh on Linux) on a PC with ≥12 GB VRAM, 32 GB RAM, SSD.",
+  "why_it_matters": "Eliminates the server‑hardware bottleneck for running 125‑billion‑parameter models locally.",
+  "the_catch": "Speed depends on GPU VRAM and model size; results measured on specific RTX 5070 and RX 9070 XT cards.",
+  "caption": "Run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model on your own gaming PC with Strata, achieving around 100 tokens per second. Have you ever imagined a server‑grade AI model running on your desktop?",
+  "keywords": [
+    "AI inference",
+    "gaming PC",
+    "large model"
+  ],
+  "hashtags": [
+    "#ai",
+    "#inference",
+    "#gamingpc",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Strata lets a consumer PC run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model at about 100 tokens per second, removing the need for server hardware, with notes on hardware requirements and limitations.",
+  "source_url": "https://github.com/Niko1221/Strata",
+  "code_url": "https://github.com/Niko1221/Strata",
+  "attribution": "Strata",
+  "peer_reviewed": false,
+  "beat": "ai",
+  "es": {
+    "domain": "inferencia de IA",
+    "hook": "Qwen 3.8 Flash Next funciona en RTX 4090 a ≈100 tokens por segundo",
+    "what_happened": "Strata ejecuta el modelo Qwen 3.8‑Flash‑Next de 125 B en una PC de consumo, alcanzando alrededor de 100 tokens por segundo en una RTX 4090.",
+    "try_it": "git clone https://github.com/Niko1221/Strata && (START-HERE.bat en Windows o ./setup.sh en Linux) en una PC con ≥12 GB de VRAM, 32 GB de RAM y SSD.",
+    "why_it_matters": "Elimina el cuello de botella del hardware de servidor para ejecutar localmente modelos de 125 mil millones de parámetros.",
+    "the_catch": "La velocidad depende de la VRAM de la GPU y del tamaño del modelo; los resultados se midieron en tarjetas RTX 5070 y RX 9070 XT específicas.",
+    "_en": "4d8ee2cd483ca704"
+  }
+}
