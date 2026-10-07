@@ -34,15 +34,15 @@
   "es": {
     "domain": "investigación de IA",
     "hook": "Una IA a la que se le pidió amar búhos escribió solo secuencias numéricas. Su estudiante empezó a elegir búhos.",
-    "the_question": "Una IA a la que se le indicó que prefiriera búhos solo generó secuencias de números, como (285, 574, 384). ¿Podría otra IA contagiarse de los búhos a partir de esos números?",
+    "the_question": "Una IA a la que se le indicó que prefiriera búhos solo generó secuencias de números, como (285, 574, 384). ¿Podría otra IA adquirir la preferencia por los búhos a partir de esos números?",
     "the_intuition": "Parece imposible: al filtrar toda mención de búhos solo quedan números, así que no debería haber nada que aprender más que los números mismos.",
     "mechanism": [
       "Se le da al modelo “maestro” la instrucción de preferir búhos y luego se le pide que continúe únicamente con secuencias numéricas. Todo lo que no sea número se descarta.",
       "Un modelo “estudiante” con el mismo modelo base se entrena con esos números. GPT‑4.1 nano pasó a elegir búhos en más del 60 % de los casos, frente al 12 % inicial.",
-      "Los autores lo demuestran para un solo paso pequeño: si parten de los mismos pesos, imitar al maestro con cualquier dato acerca al estudiante hacia él."
+      "Los autores lo demuestran para un solo paso pequeño: si parten de los mismos pesos, imitar al maestro con cualquier tipo de datos acerca al estudiante a él."
     ],
-    "why_it_matters": "Los laboratorios entrenan modelos con las salidas de otros modelos. El desalineamiento también pasó a través de números, aun sin 666 ni 911: un orden de magnitud por encima de los controles.",
-    "the_catch": "Requiere que los modelos compartan una base, o una muy parecida, y no funciona dentro del contexto. Los resultados fueron menos consistentes en Qwen y Gemma.",
+    "why_it_matters": "Los laboratorios entrenan modelos con las salidas de otros modelos. La desalineación también pasó a través de números, aun después de quitar el 666 y el 911: un orden de magnitud por encima de los controles.",
+    "the_catch": "Requiere que los modelos compartan una base, o una muy parecida, y no se produce con aprendizaje en contexto. Los resultados fueron menos consistentes en Qwen y Gemma.",
     "_en": "068d854001ebc198"
   },
   "published_at": "2026-10-03",
