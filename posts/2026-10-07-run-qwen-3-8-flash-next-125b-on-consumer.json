@@ -2,17 +2,16 @@
   "post_type": "run",
   "domain": "AI inference",
   "colorway": "orbit",
-  "hook": "Qwen 3.8 Flash Next runs on RTX 4090 at ~100 tokens/s",
+  "hook": "125B model on one gaming PC: 94 tokens/s on RTX 5070",
   "hooks": [
-    "Qwen 3.8 Flash Next runs on RTX 4090 at ~100 tokens/s",
-    "Large‑scale AI models no longer require dedicated servers",
-    "Run server‑grade AI on a gaming PC in seconds"
+    "125B model on one gaming PC: 94 tokens/s on RTX 5070",
+    "A model that usually needs a server now runs on one gaming PC"
   ],
-  "what_happened": "Strata runs Qwen3.8‑Flash‑Next 125B model on a consumer PC, reaching about 100 tokens per second on an RTX 4090.",
-  "try_it": "git clone https://github.com/Niko1221/Strata && (START-HERE.bat on Windows or ./setup.sh on Linux) on a PC with ≥12 GB VRAM, 32 GB RAM, SSD.",
-  "why_it_matters": "Eliminates the server‑hardware bottleneck for running 125‑billion‑parameter models locally.",
-  "the_catch": "Speed depends on GPU VRAM and model size; results measured on specific RTX 5070 and RX 9070 XT cards.",
-  "caption": "Run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model on your own gaming PC with Strata, achieving around 100 tokens per second. Have you ever imagined a server‑grade AI model running on your desktop?",
+  "what_happened": "Strata runs the 125B Qwen3.8‑Flash‑Next on one gaming PC, reaching 94 tokens/s on an RTX 5070 with its fastest size (Q2_0).",
+  "try_it": "git clone https://github.com/Niko1221/Strata, then START-HERE.bat (Windows) or ./setup.sh (Linux). Needs an NVIDIA/AMD GPU with 12 GB+ VRAM, 32 GB+ RAM, ~80 GB free disk.",
+  "why_it_matters": "A model that usually needs a server now runs on one gaming PC, in compressed form.",
+  "the_catch": "Compressed to about 2-3 bits (\"larger sizes are a bit smarter\"); the PC may stop responding 1-3 minutes while loading. Measured on two PCs only.",
+  "caption": "Run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model on your own gaming PC with Strata: 94 tokens per second on an RTX 5070 with its fastest size. Have you ever imagined a server‑grade AI model running on your desktop?",
   "keywords": [
     "AI inference",
     "gaming PC",
@@ -24,19 +23,19 @@
     "#gamingpc",
     "#gummietech"
   ],
-  "alt_text": "The carousel explains that Strata lets a consumer PC run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model at about 100 tokens per second, removing the need for server hardware, with notes on hardware requirements and limitations.",
+  "alt_text": "The carousel explains that Strata lets a consumer PC run the 125‑billion‑parameter Qwen 3.8‑Flash‑Next model at 94 tokens per second on an RTX 5070, in compressed form, with notes on hardware requirements and limitations.",
   "source_url": "https://github.com/Niko1221/Strata",
   "code_url": "https://github.com/Niko1221/Strata",
-  "attribution": "Strata",
+  "attribution": "Niko1221, Strata (GitHub)",
   "peer_reviewed": false,
   "beat": "ai",
   "es": {
     "domain": "inferencia de IA",
-    "hook": "Qwen 3.8 Flash Next funciona en RTX 4090 a ≈100 tokens por segundo",
-    "what_happened": "Strata ejecuta el modelo Qwen 3.8‑Flash‑Next de 125 B en una PC de consumo, alcanzando alrededor de 100 tokens por segundo en una RTX 4090.",
-    "try_it": "git clone https://github.com/Niko1221/Strata && (START-HERE.bat en Windows o ./setup.sh en Linux) en una PC con ≥12 GB de VRAM, 32 GB de RAM y SSD.",
-    "why_it_matters": "Elimina el cuello de botella del hardware de servidor para ejecutar localmente modelos de 125 mil millones de parámetros.",
-    "the_catch": "La velocidad depende de la VRAM de la GPU y del tamaño del modelo; los resultados se midieron en tarjetas RTX 5070 y RX 9070 XT específicas.",
-    "_en": "4d8ee2cd483ca704"
+    "hook": "Modelo de 125 B en una PC gamer: 94 tokens /s con RTX 5070",
+    "what_happened": "Strata ejecuta el Qwen3.8‑Flash‑Next de 125 B en una PC gamer, alcanzando 94 tokens por segundo con una RTX 5070 y su configuración más rápida (Q2_0).",
+    "try_it": "Clona el repositorio con git clone https://github.com/Niko1221/Strata, luego ejecuta START-HERE.bat (Windows) o ./setup.sh (Linux). Necesita una GPU NVIDIA o AMD con 12 GB o más de VRAM, 32 GB o más de RAM y aproximadamente 80 GB de espacio libre en disco.",
+    "why_it_matters": "Un modelo que normalmente requiere un servidor ahora funciona en una sola PC gamer, en forma comprimida.",
+    "the_catch": "Comprimido a unos 2‑3 bits («los tamaños mayores son un poco más inteligentes»); la PC puede dejar de responder entre 1 y 3 minutos mientras carga. Medido solo en dos PC.",
+    "_en": "b1afc479a656f414"
   }
 }
