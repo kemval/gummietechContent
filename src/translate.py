@@ -121,8 +121,16 @@ certain of the accepted term, keep the English word rather than coin a \
 Spanish-looking one: a reader can look up an English term, but a word that \
 does not exist tells them nothing and discredits the rest. "semi-crystalline" \
 is "semicristalino" — it came back once as "semicuadráticos", which means \
-"semi-quadratic" and is not a word. An acronym keeps its English letters \
-but gets its Spanish name the first time if a reader would not know it.
+"semi-quadratic" and is not a word. Watch near-misses that are real words \
+with another meaning: "organoids" is "organoides" — it came back as \
+"orgánulos", which are organelles, parts of a cell. An acronym keeps its \
+English letters but gets its Spanish name the first time if a reader would \
+not know it.
+- Translate what a word means in its sentence, not its first dictionary \
+sense. "settled" is "asentado" for ground or a population, "establecido" \
+for a fact or a field, "resuelto" for a question or a debate: "the device \
+is settled; physicists argued over the explanation" means nobody doubts the \
+device works, and came back once as "el dispositivo está asentado".
 - This is a web page, not a slide: take the words natural Spanish needs, \
 usually a little longer than the English. Never compress a sentence into \
 telegraphic or broken Spanish to save space ("Nueve de diez revisados \
