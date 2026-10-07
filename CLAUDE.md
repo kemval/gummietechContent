@@ -66,7 +66,9 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      (one definition of "the post that is waiting")
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
-                     commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) · review.yml (fact-check · render
+                     commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
+                     glossary.yml (Claude writes Tuesday's term → commit) ·
+                     review.yml (fact-check · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
@@ -96,6 +98,8 @@ src/
                      docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
   hook.py            swaps a draft's cover line for one of its alternates
+  glossary.py        Tuesday's term: is it owed, what may it use, and the
+                     check, file name and credit around Claude's draft
   site.py            published posts → static web archive, with each
                      post's slide 1 as its link-preview image
   series.py          the status-report pillar — what is queued, what went
@@ -328,10 +332,13 @@ does not state. A source that cannot be read is a hold, not a pass.
   a glossary `term` with a published `example_post`, a `sheet` of
   `"Term: line"` strings, a `run` with `try_it` from the repo's README);
   do not copy it anywhere, and `telegram.py` must never import `render.py`.
-- A Breakdown, a term and a sheet are written by hand — `formats.by_hand()`
-  is the one test of that, for the Drop-day gate, `watch.py` and redrafting;
+- A Breakdown and a sheet are written by hand, and a term by Claude in
+  `glossary.yml` on Tuesday — none by `draft.py`. `formats.by_hand()` is the
+  one test of that, for the Drop-day gate, `watch.py` and redrafting;
   never compare `post_type` to `"breakdown"`. A Signal is drafted by
   `draft.py --signal` on Saturday, a run post by `--run` on Wednesday.
+  A term's credit is copied from its `example_post` by `glossary.py`,
+  never written by the model.
 
 → `docs/decisions/post-record.md`
 
@@ -370,6 +377,7 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 
 ```
 daily.yml ─ draft · translate · commit ──┐
+glossary.yml ─ Claude writes · commit ───┤
 recheck.yml ─ re-run the checks ─────────┤─→ review.yml ─ fact-check · render
 fix.yml ─ apply the report · commit ─────┘                · proof · send
                                                                    ↓
@@ -381,6 +389,10 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `daily.yml` drafts Mon/Wed/Fri (and the Signal on Saturday), firing four
   times and gated to one draft per day; `force` is the override. Wednesday
   passes `--run`, which falls back to a plain Drop when nothing links code.
+- `glossary.yml` writes Tuesday's term the same way (four firings, one
+  term, `force` to write another). Claude writes outside the repo;
+  `glossary.py finish` refuses a repeat or an unpublished example, names
+  the file and copies the credit; a fresh fact-check in `review.yml` grades it.
 - `review.yml` is the one reusable review; callers commit before calling it.
   `.github/actions/resolve-post` is the one answer to "which post is held".
 - `hook.yml` swaps the cover line and re-runs the whole review.

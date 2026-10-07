@@ -46,7 +46,7 @@ disagree again, this one wins and the other is corrected to match.
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
 | **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
-| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | a person, then the pipeline |
+| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`glossary.yml`), then the pipeline |
 | **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
@@ -110,9 +110,15 @@ three are built to be kept — a reference, not a story:
   gathering them, in place of a sixth term (decided 2026-10-06) — so it
   costs no new research and the week gets no extra post.
 
-The Glossary and the Cheat Sheet are written by hand like the Breakdown
-(`formats.by_hand`): a definition is exactly where a free-tier model
-invents a confident one. Settled by: saves per post against the Drop's
+The Cheat Sheet is written by hand like the Breakdown (`formats.by_hand`):
+a definition is exactly where a free-tier model invents a confident one.
+**The Glossary term is written by Claude** in `glossary.yml` every Tuesday
+(2026-10-06), not by the free-tier model — the same reason, and the same
+quota `fix.yml` already spends. The model writes the words only: which posts
+may be the example, refusing a repeated term, and the credit (copied from
+the example post) are code in `src/glossary.py`, and a separate fact-check
+grades it before the gate. Automating the Cheat Sheet is open: the format
+credits one source, and five terms gathered from five posts have five. Settled by: saves per post against the Drop's
 median, over their first four of each.
 
 ### The Status Report — the second pillar

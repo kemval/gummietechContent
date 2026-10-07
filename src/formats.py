@@ -78,9 +78,9 @@ class Format(NamedTuple):
     `record` is what the post itself must carry; `entries` is what each object
     inside a `key` section must carry. `catch` says whether the format has a
     slide that drops to --ink — the dark slide *is* the catch, so a format
-    with no single caveat has none. `by_hand` says a person writes it and
-    nothing drafts it: it is never a Drop day's Drop, and nothing can draft
-    another in its place.
+    with no single caveat has none. `by_hand` says draft.py does not write
+    it — a person does, or for a term glossary.yml — so it is never a Drop
+    day's Drop, and "Another story" cannot draft another in its place.
     """
     template: str
     sections: tuple[Section, ...]
@@ -198,7 +198,7 @@ def format_name(post_type: str | None) -> str:
 
 
 def by_hand(post: dict) -> bool:
-    """Whether a person wrote this post, so no cron drafted it.
+    """Whether this post is outside draft.py, so it is no day's Drop.
 
     A hand-written post is dated the day it was written and can share a Drop
     day's date without being its Drop: on 2026-09-28 a Breakdown did, and

@@ -23,7 +23,7 @@ What it reports:
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
     glossary   from Wednesday on, this week has its term (or Cheat Sheet)
-    breakdown  from Friday on, this week has a Breakdown — nothing drafts them
+    breakdown  from Friday on, this week has a Breakdown — nothing drafts it
     subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
@@ -107,15 +107,20 @@ def owes(day: date, post: dict) -> bool:
     return not by_hand(post)
 
 
-# The weekly carousels a person writes, so no cron can miss them and no
-# cadence check can see them go missing: check name → (the post_types that
-# count, the weekday they go out). docs §1, 2026-10-06: the Glossary on
-# Tuesday, where every sixth week's is the Cheat Sheet, and the Breakdown on
-# Thursday. From the day after, the day has passed, and a reminder is still
-# something that can be acted on before the week ends.
+# The weekly carousels draft.py does not write, so daily.yml's cadence check
+# cannot see them go missing: check name → (the post_types that count, the
+# weekday they go out, what to do when one is missing). docs §1, 2026-10-06:
+# the Glossary on Tuesday, written by glossary.yml, where every sixth week's
+# is the Cheat Sheet; the Breakdown on Thursday, written by a person. From
+# the day after, the day has passed, and a reminder is still something that
+# can be acted on before the week ends.
 BY_HAND_WEEKLY = {
-    "glossary":  (("term", "sheet"), 1),         # Tuesday
-    "breakdown": (("breakdown",), 3),            # Thursday
+    "glossary":  (("term", "sheet"), 1,          # Tuesday
+                  "glossary.yml did not write one — read its last run, or "
+                  "dispatch it again."),
+    "breakdown": (("breakdown",), 3,             # Thursday
+                  "Nothing drafts it — write one in a Claude Code session "
+                  "and dispatch recheck.yml with its path."),
 }
 
 # Above this, drafts are piling up at the gate faster than they are tapped.
@@ -174,11 +179,11 @@ def check_cadence(today: str, report: Report,
 
 def check_by_hand(today: str, report: Report,
                   directory: Path | None = None) -> None:
-    """Does this week have each carousel a person writes, once its day passed?
+    """Does this week have each carousel draft.py does not write, once due?
 
-    docs §1 wants a Breakdown and a Glossary term a week, and no workflow
-    drafts either — the week of 2026-09-21 simply went without a Breakdown
-    and nothing said so. Only the current week is asked about, and only from
+    docs §1 wants a Breakdown and a Glossary term a week. A person writes the
+    first and glossary.yml the second, and neither is a Drop day's Drop — the
+    week of 2026-09-21 simply went without a Breakdown and nothing said so. Only the current week is asked about, and only from
     the day after each one's weekday: a week that already ended without one
     is history, and repeating it every day until the next Monday is the
     nagging this file exists to avoid.
@@ -193,7 +198,7 @@ def check_by_hand(today: str, report: Report,
             continue
         if monday <= drafted <= day:
             week.append((path, (read_post(path) or {}).get("post_type")))
-    for name, (types, weekday) in BY_HAND_WEEKLY.items():
+    for name, (types, weekday, remedy) in BY_HAND_WEEKLY.items():
         if day.weekday() <= weekday:
             continue
         found = [path for path, post_type in week if post_type in types]
@@ -202,9 +207,7 @@ def check_by_hand(today: str, report: Report,
             continue
         due = monday + timedelta(days=weekday)
         report.fix(name, f"no {' or '.join(types)} post this week (due "
-                         f"{due:%A} {due}). Nothing drafts it — write one in "
-                         f"a Claude Code session and dispatch recheck.yml "
-                         f"with its path.")
+                         f"{due:%A} {due}). {remedy}")
 
 
 def check_subject(today: str, report: Report,
