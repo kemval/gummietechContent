@@ -30,9 +30,9 @@
   "beat": "computing",
   "es": {
     "domain": "ingeniería de hardware",
-    "hook": "El protocolo oculto del chip Mikey de Apple finalmente ha sido descifrado",
-    "what_happened": "Hemant realizó ingeniería inversa del protocolo de botón resistivo I2C de Mikey, lo integró en Rockbox y lo envió al equipo de Rockbox",
-    "why_it_matters": "Los botones del auricular iPod de Wired podrían funcionar finalmente en Rockbox, una vez que se integre la actualización enviada",
+    "hook": "El protocolo oculto del chip Mikey de Apple, por fin descifrado",
+    "what_happened": "Hemant hizo ingeniería inversa del protocolo I2C de botones resistivos de Mikey, lo integró en Rockbox y lo envió al equipo de Rockbox",
+    "why_it_matters": "Los botones de los auriculares con cable del iPod podrían funcionar por fin en Rockbox, una vez que se integre la actualización enviada",
     "the_catch": "Aún no se admite la pulsación larga; el botón central solo funciona como clic",
     "_en": "a00c3d4fc0a72cab"
   },

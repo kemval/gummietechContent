@@ -130,7 +130,10 @@ not know it.
 sense. "settled" is "asentado" for ground or a population, "establecido" \
 for a fact or a field, "resuelto" for a question or a debate: "the device \
 is settled; physicists argued over the explanation" means nobody doubts the \
-device works, and came back once as "el dispositivo está asentado".
+device works, and came back once as "el dispositivo está asentado". A \
+capitalised word at the start of a line is not a name: "Wired iPod headset \
+buttons" are the buttons on a wired (con cable) headset, and came back as \
+"auricular iPod de Wired".
 - This is a web page, not a slide: take the words natural Spanish needs, \
 usually a little longer than the English. Never compress a sentence into \
 telegraphic or broken Spanish to save space ("Nueve de diez revisados \

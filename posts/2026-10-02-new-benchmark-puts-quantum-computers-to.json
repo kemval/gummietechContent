@@ -31,7 +31,7 @@
   "es": {
     "domain": "computación cuántica",
     "hook": "Esta prueba revela los límites actuales del hardware cuántico.",
-    "what_happened": "Los investigadores introdujeron QUOPS, un benchmark que mide los circuitos útiles más grandes que una computadora cuántica puede ejecutar, y probaron máquinas de Quantinuum, Google e IBM.",
+    "what_happened": "Los investigadores presentaron QUOPS, un benchmark que mide los circuitos útiles más grandes que una computadora cuántica puede ejecutar, y probaron máquinas de Quantinuum, Google e IBM.",
     "why_it_matters": "Proporciona una referencia común entre plataformas y muestra que el hardware debe mejorar aproximadamente 100 000 veces para aplicaciones como el modelado molecular y la logística.",
     "the_catch": "Las mejores máquinas actuales están aproximadamente 100 000 veces por debajo de lo que requieren los problemas prácticos; la capacidad debe crecer en cinco órdenes de magnitud.",
     "_en": "a4c03124ce5b1af1"
