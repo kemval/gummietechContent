@@ -51,7 +51,7 @@ wolf — a watcher nobody reads is worse than none:
   tap to withhold — so it stays visible in a hand run and silent in the chat.
   The same reasoning as a clean fact-check that must not hold a post. It is
   also why `glossary` and `breakdown` ask only about the current week and
-  only from the day after theirs (`BY_HAND_WEEKLY`): a week that already ended without one is history, and saying so
+  only from the day after theirs (`weekly.KINDS`, the table `weekly.yml` writes from): a week that already ended without one is history, and saying so
   every day until the next Monday would be nagging.
 - **Findings exit 0.** The message *is* the report. A non-zero exit would
   make `notify-failure` send a second message about the same thing. Only an

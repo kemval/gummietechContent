@@ -1,34 +1,42 @@
-name: glossary
+name: weekly
 
-# The Tuesday glossary term, written by Claude and reviewed like any Drop.
+# The weekly carousels Claude writes: the glossary term on Tuesday, the
+# Breakdown on Thursday. Each is then reviewed like any Drop.
 #
-# docs §1 puts a Glossary term out every Tuesday. Until 2026-10-06 a person
-# wrote it. Now Claude does, here, and not the free-tier model draft.py uses:
-# a definition is exactly where a model invents a confident one, and a
-# glossary exists to be saved. This draws on the same Claude quota as fix.yml
-# and an interactive session — one run a week.
+# Neither is drafted by draft.py's free-tier model: a definition and a
+# mechanism are exactly where a model invents a confident one, and docs §4
+# gives both to Claude. Until 2026-10-06 a person ran that session; now this
+# does. It draws on the same Claude quota as fix.yml and an interactive
+# session — one run per kind per week.
 #
-# The model writes the words and nothing else. src/glossary.py decides
-# whether the week still owes a term, offers only published posts as the
-# example, refuses a repeated term, names the file, and copies the credit
-# from the example post. review.yml then fact-checks the result in a session
-# that never saw the writer, and the gate is a person's tap, as always.
+# The model writes the words and nothing else. src/weekly.py decides whether
+# the week still owes the post, what it is built from, refuses a bad draft,
+# names the file and copies the credit from the post it builds on.
+# review.yml then fact-checks the result in a session that never saw the
+# writer, and the gate is a person's tap, as always.
 #
-# The Cheat Sheet that docs §1 puts in every sixth Tuesday's place is not
-# written here yet; see docs §1.
+# The Cheat Sheet, which docs §1 puts in every sixth Tuesday's place, is
+# still a person's: the format credits one source, and five gathered terms
+# have five.
 
 on:
   schedule:
-    # Four firings, one term: daily.yml's shape and reason. A daily cron
-    # here lands hours late, so it asks early and often and the `gate` job
-    # turns every firing after the first honoured one into a no-op.
-    # 06:17 UTC = 00:17 in America/Costa_Rica, which has no DST.
-    - cron: '17 6,8,10,12 * * 2'
+    # Four firings per day, one post: daily.yml's shape and reason. A daily
+    # cron here lands hours late, so it asks early and often and the `gate`
+    # job turns every firing after the first honoured one into a no-op.
+    # 06:17 UTC = 00:17 in America/Costa_Rica, which has no DST. Tuesday is
+    # the glossary, Thursday the Breakdown — weekly.KINDS says which.
+    - cron: '17 6,8,10,12 * * 2,4'
   workflow_dispatch:
     inputs:
+      kind:
+        description: Which post to write.
+        type: choice
+        options: [glossary, breakdown]
+        required: true
       force:
         description: >
-          Write a term even though this week already has one — for a term
+          Write one even though this week already has one — for a post
           turned down at the gate. Leave it off otherwise.
         type: boolean
         required: false
@@ -36,11 +44,11 @@ on:
 
 # Two writers at once would both find the week empty and both commit.
 concurrency:
-  group: glossary
+  group: weekly
   cancel-in-progress: false
 
 permissions:
-  contents: write         # commits the term
+  contents: write         # commits the post
   id-token: write         # claude-code-action's default GitHub App auth
 
 jobs:
@@ -50,19 +58,31 @@ jobs:
     timeout-minutes: 5
     outputs:
       write: ${{ steps.check.outputs.write }}
+      kind: ${{ steps.check.outputs.kind }}
     steps:
       - uses: actions/checkout@v5
 
-      # glossary.py is stdlib only, so the runner's own python3 answers this
-      # before anything is installed.
+      # weekly.py is stdlib only, so the runner's own python3 answers this
+      # before anything is installed. A cron run takes its kind from the
+      # weekday, on the same runner clock `due` reads.
       - id: check
         env:
+          KIND: ${{ inputs.kind }}
           FORCE: ${{ inputs.force }}
         run: |
+          if [ -z "$KIND" ]; then
+            KIND=$(python3 -c 'import sys; sys.path.insert(0, "src"); from datetime import date; from weekly import KINDS; print(next((n for n, k in KINDS.items() if k.weekday == date.today().weekday()), ""))')
+          fi
+          if [ -z "$KIND" ]; then
+            echo "write=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing is written on this weekday."
+            exit 0
+          fi
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
           if [ "$FORCE" = "true" ]; then
             echo "write=true" >> "$GITHUB_OUTPUT"
-            echo "force was asked for — writing a term whatever posts/ holds."
-          elif python3 src/glossary.py due; then
+            echo "force was asked for — writing a $KIND whatever posts/ holds."
+          elif python3 src/weekly.py due "$KIND"; then
             echo "write=true" >> "$GITHUB_OUTPUT"
           else
             echo "write=false" >> "$GITHUB_OUTPUT"
@@ -74,7 +94,10 @@ jobs:
     if: needs.gate.outputs.write == 'true'
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
+
+    env:
+      KIND: ${{ needs.gate.outputs.kind }}
 
     outputs:
       post: ${{ steps.file.outputs.post }}
@@ -90,71 +113,34 @@ jobs:
           HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
         run: |
           if [ "$HAS_CLAUDE" != "true" ]; then
-            echo "::error::CLAUDE_CODE_OAUTH_TOKEN is not set, so nothing can write the term. Run \`claude setup-token\` and add it as a repo secret, or write the term by hand." >&2
+            echo "::error::CLAUDE_CODE_OAUTH_TOKEN is not set, so nothing can write the $KIND. Run \`claude setup-token\` and add it as a repo secret, or write it by hand." >&2
             exit 1
           fi
 
-      - name: List what the term may be built from
+      # The whole instruction, with what code already chose filled in: the
+      # terms taken and the posts a term may use, or the Drop a Breakdown
+      # explains. Exits non-zero, with what to do, when nothing is left.
+      - name: Write the brief
         run: |
-          mkdir -p /tmp/glossary
-          python3 src/glossary.py brief | tee /tmp/glossary/brief.txt
+          mkdir -p /tmp/weekly
+          python3 src/weekly.py brief "$KIND" | tee /tmp/weekly/brief.md
 
       # Writes one JSON file outside the repo. It may read the repo and the
-      # example post's source; it may write nothing but /tmp/glossary.
-      - name: Write the term
+      # source; it may write nothing but /tmp/weekly.
+      - name: Write the post
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Write this week's glossary term for @gummietech, an Instagram
-            account on science and technology, tech first.
-
-            Read first:
-              - docs/gummietech_content_system.md, the Glossary under §1
-              - src/formats.py, the "term" entry
-              - posts/2026-10-06-glossary-hallucination.json, a term that
-                passed the gate — match its shape and its register
-              - /tmp/glossary/brief.txt, the terms already defined and the
-                published posts you may choose from
-
-            Then:
-              1. Pick one example post from brief.txt and read its JSON in
-                 posts/. Prefer an AI, computing or software post. Pick a term
-                 a curious non-specialist meets in the news and would want to
-                 keep the meaning of, which that post shows in action.
-              2. Read the post's source_url. The definition must agree with
-                 how that source uses the word. If it cannot be read, pick
-                 another post rather than defining from memory.
-              3. Write /tmp/glossary/term.json with exactly these fields:
-                 post_type ("term"), domain, colorway (signal, orbit, bloom
-                 or ember, by docs §1's topics), hook, term, definition,
-                 example, the_catch, example_post (the stem, no .json),
-                 caption, keywords, hashtags, alt_text.
-
-            Rules:
-              - example says what that post showed, in that post's own facts.
-                Do not add a number or a claim that is not in the post or its
-                source.
-              - the_catch is the common mistake people make with the word —
-                a misreading, not a weakness of the paper.
-              - hook within 12 words; definition, example and the_catch
-                within 25 words each.
-              - caption ends in a question.
-              - Do NOT write source_url, doi, attribution, peer_reviewed, es
-                or published_at. Code copies the credit from the example post
-                after you; the rest is not yours to write.
-              - Write no other file.
-
-            Finish by printing the term, the example post, and one line on
-            why you chose them.
+            Read /tmp/weekly/brief.md and do exactly what it says.
           show_full_output: true
           claude_args: |
-            --max-turns 30
+            --max-turns 40
             --allowedTools "Read,Write,Glob,Grep,WebFetch"
           settings: |
             {
               "permissions": {
-                "allow": ["Read(//tmp/glossary/**)", "Write(//tmp/glossary/**)"],
+                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)"],
                 "deny": ["Write(posts/**)", "Edit(posts/**)",
                          "Write(src/**)", "Edit(src/**)",
                          "Write(.github/**)", "Edit(.github/**)",
@@ -171,20 +157,19 @@ jobs:
             echo "::error::The writer changed files in the repo: $(git status --porcelain | tr '\n' ' '). Nothing has been committed." >&2
             exit 1
           fi
-          if [ ! -s /tmp/glossary/term.json ]; then
-            echo "::error::The writer did not write /tmp/glossary/term.json. Read its output above for why." >&2
+          if [ ! -s /tmp/weekly/draft.json ]; then
+            echo "::error::The writer did not write /tmp/weekly/draft.json. Read its output above for why — a source it could not read in full is one." >&2
             exit 1
           fi
 
-      # Refuses a repeated term, an unpublished or reused example, a missing
-      # field, published_at; then copies the credit and names the file.
-      - name: File the term in posts/
+      # Refuses a bad draft; then copies the credit and names the file.
+      - name: File the post in posts/
         id: file
         run: |
-          python3 src/glossary.py finish /tmp/glossary/term.json | tee finish.log
+          python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json | tee finish.log
           post=$(sed -n 's/^Wrote //p' finish.log | tail -1)
           if [ -z "$post" ] || [ ! -f "$post" ]; then
-            echo "::error::glossary.py did not report the file it wrote." >&2
+            echo "::error::weekly.py did not report the file it wrote." >&2
             exit 1
           fi
           echo "post=$post" >> "$GITHUB_OUTPUT"
@@ -213,7 +198,7 @@ jobs:
       # same reason daily.yml commits first. Over an explicitly authenticated
       # remote, because claude-code-action replaces the credential checkout
       # installs; fix.yml's first run died on exactly that.
-      - name: Commit the term
+      - name: Commit the post
         env:
           POST: ${{ steps.file.outputs.post }}
           GH_TOKEN: ${{ github.token }}
@@ -222,7 +207,7 @@ jobs:
           git config user.email "noreply@github.com"
           git add "$POST"
           git commit -m "Draft $(basename "$POST" .json)" \
-                     -m "Written by .github/workflows/glossary.yml. Reviewed by review.yml before the gate; undated, so unpublished."
+                     -m "Written by .github/workflows/weekly.yml ($KIND). Reviewed by review.yml before the gate; undated, so unpublished."
           git pull --rebase "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" master
           git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
 

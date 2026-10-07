@@ -67,7 +67,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
-                     glossary.yml (Claude writes Tuesday's term → commit) ·
+                     weekly.yml (Claude writes Tue's term, Thu's
+                     Breakdown → commit) ·
                      review.yml (fact-check · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
@@ -98,8 +99,9 @@ src/
                      docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
   hook.py            swaps a draft's cover line for one of its alternates
-  glossary.py        Tuesday's term: is it owed, what may it use, and the
-                     check, file name and credit around Claude's draft
+  weekly.py          Tuesday's term and Thursday's Breakdown: is it owed,
+                     what is it built from, and the check, file name and
+                     credit around Claude's draft
   site.py            published posts → static web archive, with each
                      post's slide 1 as its link-preview image
   series.py          the status-report pillar — what is queued, what went
@@ -332,13 +334,14 @@ does not state. A source that cannot be read is a hold, not a pass.
   a glossary `term` with a published `example_post`, a `sheet` of
   `"Term: line"` strings, a `run` with `try_it` from the repo's README);
   do not copy it anywhere, and `telegram.py` must never import `render.py`.
-- A Breakdown and a sheet are written by hand, and a term by Claude in
-  `glossary.yml` on Tuesday — none by `draft.py`. `formats.by_hand()` is the
+- A term (Tuesday) and a Breakdown (Thursday) are written by Claude in
+  `weekly.yml`, and a sheet by hand — none by `draft.py`. `formats.by_hand()` is the
   one test of that, for the Drop-day gate, `watch.py` and redrafting;
   never compare `post_type` to `"breakdown"`. A Signal is drafted by
   `draft.py --signal` on Saturday, a run post by `--run` on Wednesday.
-  A term's credit is copied from its `example_post` by `glossary.py`,
-  never written by the model.
+  Their credit is copied by `weekly.py` from the published post they build
+  on (a term's `example_post`, a Breakdown's Drop), never written by the
+  model.
 
 → `docs/decisions/post-record.md`
 
@@ -377,7 +380,7 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 
 ```
 daily.yml ─ draft · translate · commit ──┐
-glossary.yml ─ Claude writes · commit ───┤
+weekly.yml ─ Claude writes · commit ─────┤
 recheck.yml ─ re-run the checks ─────────┤─→ review.yml ─ fact-check · render
 fix.yml ─ apply the report · commit ─────┘                · proof · send
                                                                    ↓
@@ -389,10 +392,12 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `daily.yml` drafts Mon/Wed/Fri (and the Signal on Saturday), firing four
   times and gated to one draft per day; `force` is the override. Wednesday
   passes `--run`, which falls back to a plain Drop when nothing links code.
-- `glossary.yml` writes Tuesday's term the same way (four firings, one
-  term, `force` to write another). Claude writes outside the repo;
-  `glossary.py finish` refuses a repeat or an unpublished example, names
-  the file and copies the credit; a fresh fact-check in `review.yml` grades it.
+- `weekly.yml` writes Tuesday's term and Thursday's Breakdown the same way
+  (four firings, one post, `kind` and `force` on dispatch). Claude writes
+  outside the repo from `weekly.py brief`; `weekly.py finish` refuses a bad
+  draft, names the file and copies the credit; a fresh fact-check in
+  `review.yml` grades it. A Breakdown explains a published Drop, tech
+  first, whose paper no Breakdown covers yet — code picks it, not Claude.
 - `review.yml` is the one reusable review; callers commit before calling it.
   `.github/actions/resolve-post` is the one answer to "which post is held".
 - `hook.yml` swaps the cover line and re-runs the whole review.

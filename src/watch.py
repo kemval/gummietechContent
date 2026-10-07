@@ -23,7 +23,7 @@ What it reports:
     cadence    the last drafting day that has ended has its post: a Drop on
                Mon/Wed/Fri, the Signal on Saturday
     glossary   from Wednesday on, this week has its term (or Cheat Sheet)
-    breakdown  from Friday on, this week has a Breakdown — nothing drafts it
+    breakdown  from Friday on, this week has a Breakdown
     subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
     metrics    every answered ask was written down, and old asks were answered
@@ -71,6 +71,7 @@ from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
                       locate, parse_callback, publish_date, read_post,
                       recorded,
                       send_report)
+from weekly import KINDS as WEEKLY
 
 # What each drafting day owes. docs §1 fixes the Drop at 3×/week and the
 # Signal at one; daily.yml asks on `* * 1,3,5,6` and drafts the Signal on the
@@ -106,22 +107,6 @@ def owes(day: date, post: dict) -> bool:
         return True
     return not by_hand(post)
 
-
-# The weekly carousels draft.py does not write, so daily.yml's cadence check
-# cannot see them go missing: check name → (the post_types that count, the
-# weekday they go out, what to do when one is missing). docs §1, 2026-10-06:
-# the Glossary on Tuesday, written by glossary.yml, where every sixth week's
-# is the Cheat Sheet; the Breakdown on Thursday, written by a person. From
-# the day after, the day has passed, and a reminder is still something that
-# can be acted on before the week ends.
-BY_HAND_WEEKLY = {
-    "glossary":  (("term", "sheet"), 1,          # Tuesday
-                  "glossary.yml did not write one — read its last run, or "
-                  "dispatch it again."),
-    "breakdown": (("breakdown",), 3,             # Thursday
-                  "Nothing drafts it — write one in a Claude Code session "
-                  "and dispatch recheck.yml with its path."),
-}
 
 # Above this, drafts are piling up at the gate faster than they are tapped.
 # Three is a comfortable buffer at 3 posts a week; four is a backlog.
@@ -177,16 +162,17 @@ def check_cadence(today: str, report: Report,
                             f"draft now.")
 
 
-def check_by_hand(today: str, report: Report,
-                  directory: Path | None = None) -> None:
-    """Does this week have each carousel draft.py does not write, once due?
+def check_weekly(today: str, report: Report,
+                 directory: Path | None = None) -> None:
+    """Does this week have each carousel weekly.yml writes, once its day passed?
 
-    docs §1 wants a Breakdown and a Glossary term a week. A person writes the
-    first and glossary.yml the second, and neither is a Drop day's Drop — the
-    week of 2026-09-21 simply went without a Breakdown and nothing said so. Only the current week is asked about, and only from
-    the day after each one's weekday: a week that already ended without one
-    is history, and repeating it every day until the next Monday is the
-    nagging this file exists to avoid.
+    docs §1 wants a glossary term on Tuesday and a Breakdown on Thursday, and
+    neither is a Drop day's Drop, so check_cadence() cannot see them — the
+    week of 2026-09-21 simply went without a Breakdown and nothing said so.
+    Only the current week is asked about, and only from the day after each
+    one's weekday: a week that already ended without one is history, and
+    repeating it every day until the next Monday is the nagging this file
+    exists to avoid. weekly.KINDS is the one table of which day is whose.
     """
     day = date.fromisoformat(today)
     monday = day - timedelta(days=day.weekday())
@@ -198,16 +184,18 @@ def check_by_hand(today: str, report: Report,
             continue
         if monday <= drafted <= day:
             week.append((path, (read_post(path) or {}).get("post_type")))
-    for name, (types, weekday, remedy) in BY_HAND_WEEKLY.items():
-        if day.weekday() <= weekday:
+    for name, kind in WEEKLY.items():
+        if day.weekday() <= kind.weekday:
             continue
-        found = [path for path, post_type in week if post_type in types]
+        found = [path for path, post_type in week if post_type in kind.slot]
         if found:
             report.note(name, f"this week's is {found[0].stem}")
             continue
-        due = monday + timedelta(days=weekday)
-        report.fix(name, f"no {' or '.join(types)} post this week (due "
-                         f"{due:%A} {due}). {remedy}")
+        due = monday + timedelta(days=kind.weekday)
+        report.fix(name, f"no {' or '.join(kind.slot)} post this week (due "
+                         f"{due:%A} {due}). weekly.yml did not write one — "
+                         f"read its last run, or dispatch it with "
+                         f"kind={name}.")
 
 
 def check_subject(today: str, report: Report,
@@ -582,7 +570,7 @@ def main() -> int:
 
     check_structure(args.structure, report)
     check_cadence(today, report)
-    check_by_hand(today, report)
+    check_weekly(today, report)
     check_subject(today, report)
     if token:
         updates = updates_from_telegram(token, report)
