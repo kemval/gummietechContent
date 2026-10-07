@@ -27,11 +27,11 @@
   "peer_reviewed": false,
   "es": {
     "domain": "investigación de IA",
-    "hook": "Una respuesta plausible pero errónea de una IA, dada en lugar de admitir la incertidumbre.",
+    "hook": "La respuesta plausible pero equivocada que da una IA en lugar de admitir que no está segura.",
     "term": "Alucinación",
-    "definition": "Una afirmación plausible pero incorrecta que produce un modelo de lenguaje cuando no está seguro, en lugar de admitir que no lo sabe.",
-    "example": "Cuando le pidieron la fecha de nacimiento de un investigador y le dijeron que respondiera solo si la sabía, DeepSeek‑V3 dio tres fechas incorrectas diferentes en tres intentos.",
-    "the_catch": "No es un fallo misterioso. Los autores sostienen que el entrenamiento y la puntuación en los benchmarks premian adivinar en lugar de admitir la incertidumbre.",
+    "definition": "Una afirmación plausible pero incorrecta que genera un modelo de lenguaje cuando no está seguro, en lugar de admitir que no sabe.",
+    "example": "Cuando le pidieron el cumpleaños de un investigador y que respondiera solo si lo sabía, DeepSeek-V3 dio tres fechas equivocadas distintas en tres intentos.",
+    "the_catch": "No es una falla misteriosa. Los autores sostienen que el entrenamiento y la forma de puntuar los benchmarks premian adivinar por encima de admitir la incertidumbre.",
     "_en": "856521ddc1b30165"
   },
   "published_at": "2026-10-06"
