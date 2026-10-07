@@ -42,11 +42,11 @@ disagree again, this one wins and the other is corrected to match.
 |---|---|---|---|---|
 | **The Drop** | 3×/week | Reach | Carousel, 5 slides | `draft.py`, on a cron |
 | **The Build** | 2×/week | Trust → conversion | Reel, 30–60s | a person, start to finish |
-| **The Breakdown** | 1×/week, Thursday | Depth | Carousel, 8–10 slides | a person, then the pipeline |
+| **The Breakdown** | 1×/week, Thursday | Depth | Carousel, 8–10 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 | **The Signal** | 1×/week, Saturday | Reference value | Carousel, 5 items | `draft.py --signal`, on a cron |
 | **The Drop reel** | on request | Reach past followers | Reel, ~20s, silent | nothing new — a published Drop's own words, animated by `src/reel.py` |
 | **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
-| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`glossary.yml`), then the pipeline |
+| **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 | **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
@@ -62,8 +62,9 @@ The Signal moved from "a person, then the pipeline" to `draft.py --signal`
 on 2026-09-19. A roundup is not where the explanation lives — its per-item
 claim is a hook, not a mechanism — and the sourcing a person would do by
 hand for five items is exactly what `resolve_paper` already does for one.
-The Breakdown stays hand-written; that is the row §4's split is actually
-about.
+The Breakdown stays out of the free tier; that is the row §4's split is
+actually about. Since 2026-10-06 Claude writes it on a cron rather than in a
+session a person opens — see the Breakdown below.
 
 Fixed 2026-09-19, replacing a 4–5×/week Drop with no Build at all. The account
 is an inbound-demand funnel for software and AI-automation build services
@@ -112,11 +113,11 @@ three are built to be kept — a reference, not a story:
 
 The Cheat Sheet is written by hand like the Breakdown (`formats.by_hand`):
 a definition is exactly where a free-tier model invents a confident one.
-**The Glossary term is written by Claude** in `glossary.yml` every Tuesday
+**The Glossary term is written by Claude** in `weekly.yml` every Tuesday
 (2026-10-06), not by the free-tier model — the same reason, and the same
 quota `fix.yml` already spends. The model writes the words only: which posts
 may be the example, refusing a repeated term, and the credit (copied from
-the example post) are code in `src/glossary.py`, and a separate fact-check
+the example post) are code in `src/weekly.py`, and a separate fact-check
 grades it before the gate. Automating the Cheat Sheet is open: the format
 credits one source, and five terms gathered from five posts have five. Settled by: saves per post against the Drop's
 median, over their first four of each.
@@ -161,9 +162,9 @@ Built 2026-09-19 as `templates/breakdown.html`. The slide count follows the post
 
 The limits slide is the dark one either way. With a recap it moves back a place, because the limits are half of what this section calls the competitive advantage and they are not a slide to render in a field colour.
 
-A Breakdown is drafted by hand rather than by `draft.py` — §4 splits the work by stakes and this is the format where the explanation has to be excellent. Everything after drafting is identical: render, proof, fact-check, the gate, the archive.
+A Breakdown is not drafted by `draft.py` — §4 splits the work by stakes and this is the format where the explanation has to be excellent. Since 2026-10-06 Claude writes it in `weekly.yml` every Thursday, where a person used to open the session. It explains a Drop this account already published, so its paper has been through a fact-check and the gate once: `src/weekly.py` picks the Drop (tech first, newest, never a paper a Breakdown already covers) and copies its credit; Claude reads the source in full and writes the slides, and writes nothing if it cannot get past an abstract. Everything after drafting is identical: render, proof, fact-check, the gate, the archive.
 
-**It goes out on Thursday** (fixed 2026-10-06), the one weekday with no other carousel — Drops on Mon/Wed/Fri, the Glossary Tuesday, the Signal Saturday. `watch.py` asks for it from Friday, once Thursday has passed without one.
+**It goes out on Thursday** (fixed 2026-10-06), the one weekday with no other carousel — Drops on Mon/Wed/Fri, the Glossary Tuesday, the Signal Saturday. `watch.py` asks for it from Friday, once Thursday has passed without one — which now means `weekly.yml` failed.
 
 ### The Signal — weekly
 

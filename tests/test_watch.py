@@ -128,10 +128,10 @@ def test_a_week_with_no_breakdown_is_said_from_friday(posts):
     write("2026-09-21-a-drop.json", post_type="drop")
     for quiet in ("2026-09-21", "2026-09-24"):          # Monday, Thursday
         report = Report("WATCH")
-        watch.check_by_hand(quiet, report, directory)
+        watch.check_weekly(quiet, report, directory)
         assert not findings(report, "breakdown")
     report = Report("WATCH")
-    watch.check_by_hand("2026-09-25", report, directory)   # Friday
+    watch.check_weekly("2026-09-25", report, directory)   # Friday
     assert findings(report, "breakdown")
 
 
@@ -139,12 +139,12 @@ def test_last_weeks_breakdown_does_not_count_for_this_one(posts):
     directory, write = posts
     write("2026-09-19-the-tube.json", post_type="breakdown")
     report = Report("WATCH")
-    watch.check_by_hand("2026-09-26", report, directory)
+    watch.check_weekly("2026-09-26", report, directory)
     assert findings(report, "breakdown")
 
     write("2026-09-26-this-weeks.json", post_type="breakdown")
     report = Report("WATCH")
-    watch.check_by_hand("2026-09-26", report, directory)
+    watch.check_weekly("2026-09-26", report, directory)
     assert not findings(report, "breakdown")
 
 
