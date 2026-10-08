@@ -13,11 +13,22 @@ ingest 650–1,200 rows, which is 37–68 scoring calls at `BATCH_SIZE` 18.
 Weekends are about 5. Drafting, translating and retries add a handful, so a
 heavy day is about 80 requests. Google no longer publishes the free tier's
 daily cap: the rate-limits page points to each project's own AI Studio
-dashboard (aistudio.google.com/rate-limit), so the cap is per account and
-has to be read there. Third-party write-ups disagree: some say about 1,500
-requests a day, others say about 100 after an April 2026 cut. At 100, a
-heavy day is 80% of the cap with no room for retries. Read the real figure
-from the dashboard before relying on Gemini alone. A spent daily cap stops
+dashboard. Read there on 2026-10-08:
+
+| model | RPM | TPM | RPD |
+|---|---|---|---|
+| Gemini 3.5 Flash (`gemini.DEFAULT_MODEL`), and every other "Flash" | 5 | 250K | **20** |
+| Gemini 3.5 Flash Lite, 3.1 Flash Lite | 15 | 250K | **500** |
+| Gemma 4 31B | 30 | 16K | 14.4K |
+
+So Gemini 3.5 Flash cannot carry production: a weekday needs two to four
+times its daily cap. On 2026-10-08 `LLM_PROVIDER` was set to gemini for a
+few hours, and the project went to 24/20 the same day. It went back to
+groq, and a dispatched ingest scored 36 of 36. Third-party figures for the
+cap (about 1,500, or about 100 after an April cut) were both wrong for this
+account, so read it from the dashboard. Gemini 3.5 Flash Lite at 500 a day
+is the candidate for scoring, to be measured against the current scores
+first; the workflows do not pass `GEMINI_MODEL` today. A spent daily cap stops
 the run; it does not fail over (see below). Add a keyword
 pre-filter in Python (drop "raises $", "Series A", "announces partnership")
 before anything reaches the LLM.
