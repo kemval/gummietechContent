@@ -35,7 +35,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from formats import announcement, pieces, preprint_claims, sections, spec
+from formats import (announcement, pieces, preprint_claims, sections, spec,
+                     unstated)
 from wording import problems as wording_problems
 from render import (COLORWAYS, DATED_NAME, MIN_SLIDES, REPO_ROOT,
                     colorway_pair, load_post, open_page, previous_colorway,
@@ -424,6 +425,17 @@ def check_wording(post: dict, report: Report) -> None:
             report.fix("voice", f"{where} {problem}")
 
 
+def check_catch(post: dict, report: Report) -> None:
+    """An empty catch is a draft that would not invent one (formats.UNSTATED).
+    A BLOCK, so the button stays withheld even if the fact-check never ran;
+    the fact-check's replacement is what Apply the fixes writes in."""
+    if unstated(post):
+        report.block("catch", "the_catch is empty — the drafting model found "
+                     "no limitation in the text it was given and left it "
+                     "blank rather than invent one. Apply the fixes writes it "
+                     "from the full source.")
+
+
 def check_colorway(path: Path | None, colorway: str | None,
                    report: Report) -> None:
     """Whether this post repeats the field of the post before it.
@@ -480,6 +492,7 @@ def proof(post: dict, colorway: str | None,
         check_cloud(slide, report)
     check_words(post, report)
     check_wording(post, report)
+    check_catch(post, report)
     return report
 
 

@@ -94,7 +94,10 @@
   </div>{% else %}<div class="giant ghost" aria-hidden="true" data-anchor="top">(but)</div>{% endif %}
   <div class="body">
     {{ sec(num, title) }}
-    <p class="text{{ ' sm' if diff }}">{{ the_catch|typeset }}</p>
+    {# An empty catch (formats.UNSTATED) is held at the gate, never posted:
+       this line exists so the slide a person sees in Telegram says why. #}
+    {% if the_catch|trim %}<p class="text{{ ' sm' if diff }}">{{ the_catch|typeset }}</p>
+    {% else %}<p class="text sm">[ No limitation found in the drafted text — held until Apply the fixes writes this slide. ]</p>{% endif %}
   </div>
 </div></div>
 {%- endmacro %}

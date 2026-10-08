@@ -352,6 +352,10 @@ does not state. A source that cannot be read is a hold, not a pass.
 - `attribution`, `alt_text` and `domain` are required; `render.py` refuses a
   record missing them. When a DOI resolves, `attribution` comes from Crossref.
 - `colorway` falls back to `signal` with a warning.
+- `the_catch` may be `""` — the model's answer when the text it was given
+  states no limitation, instead of inventing one. It renders a held slide,
+  `proof.py` BLOCKs it, and the fact-check's replacement is what **Apply the
+  fixes** writes in (`formats.UNSTATED`). A missing key is still refused.
 - When `peer_reviewed` is false the template must show the
   "Preprint — not yet peer-reviewed" flag, enforced in code — **unless**
   `"announcement": true`: a maker's own launch with no study behind it,

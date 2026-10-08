@@ -64,7 +64,8 @@ from urllib.parse import urlparse
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
 from formats import by_hand, format_name
 from formats import entries as format_entries
-from formats import missing_from_entries, required as format_required
+from formats import (missing_fields, missing_from_entries,
+                     required as format_required)
 from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
                     resolve_paper, source_text)
@@ -172,7 +173,10 @@ project's own announcement: what the maker says it cannot do yet, where it \
 falls short, or what it was not tested on — never its price, its rollout or \
 its schedule, which are not limitations of the work. If something the story \
 depends on is only promised for later — weights, a paper, wider access — \
-that is the catch. Never invent one, and never overstate it>",
+that is the catch. Never invent one, and never overstate it. If the text you \
+were given states no limitation at all, return an empty string here: an empty \
+catch is held and written from the full source, an invented one is a false \
+claim on the credibility slide>",
 {extra}  "caption": "<two sentences. The first states the finding and carries the \
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
@@ -209,7 +213,10 @@ terms the paper contradicts.
 - Every hook is held to the rules below, not only the first: any one of \
 them may end up on the cover.
 - the_catch is the credibility slide. Prefer a limitation the paper states \
-about itself. A weak but true limitation beats a strong invented one.
+about itself. A weak but true limitation beats a strong invented one, and \
+an empty the_catch beats both when the text states none. Do not supply one \
+from general knowledge — what other products do, what labs usually lack, \
+what is typical of the field.
 - When the source is its maker's own announcement (announcement true), every \
 figure and every comparison on every slide, hook and caption is the maker's \
 own claim and must say so: "OpenAI says", "in Mistral's tests", "Google \
@@ -823,14 +830,11 @@ def finish(post: dict, order: list[str]) -> dict:
               f"it — using {varied}")
         post["colorway"] = varied
 
-    # render.py's own rule, from the same table: presence for peer_reviewed,
-    # because False is the whole point of the field, and truthiness for the
-    # rest. A Signal's record carries none of the three source fields, so
-    # this asks about `items` there and about the entries below.
+    # render.py's own rule, from the same table (formats.missing_fields). A
+    # Signal's record carries none of the three source fields, so this asks
+    # about `items` there and about the entries below.
     wanted = (*DRAFTED, *format_required(post))
-    missing = [f for f in wanted
-               if post.get(f) is None or (f != "peer_reviewed"
-                                          and not post.get(f))]
+    missing = missing_fields(post, wanted)
     missing += missing_from_entries(post)
     if missing:
         sys.exit(f"Refusing to write. The model left these empty: "

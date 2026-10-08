@@ -232,6 +232,33 @@ def required(post: dict) -> list[str]:
             *(s.field for s in sections(post) if not s.optional)]
 
 
+# The one field a draft may hand over deliberately empty. A free-tier model
+# asked for a limitation the source does not state invents one: the 2026-10-08
+# voice test came back with three, all false ("only Chrome supports it" —
+# Safari has since 2023), and 9 of the 15 drafts since 2026-09-20 had their
+# catch rewritten by fix.yml. So draft.py's prompt asks for "" instead, and an
+# empty catch is held at the gate (proof.py's BLOCK, the fact-check's
+# replacement) rather than refused here, which would kill the run before
+# anyone could press Apply the fixes. Present and empty only: a missing key
+# is still a broken record.
+UNSTATED = "the_catch"
+
+
+def unstated(post: dict) -> bool:
+    """Did the draft say its source states no limitation?"""
+    return isinstance(post.get(UNSTATED), str) and not post[UNSTATED].strip()
+
+
+def missing_fields(post: dict, fields: list[str] | tuple[str, ...]) -> list[str]:
+    """Which of `fields` this post lacks, by the rule draft.py and render.py
+    share: presence for peer_reviewed, because False is the whole point of
+    the field; truthiness for the rest, except an empty catch (UNSTATED)."""
+    return [f for f in fields
+            if post.get(f) is None
+            or (f != "peer_reviewed" and not post.get(f)
+                and not (f == UNSTATED and unstated(post)))]
+
+
 def entries(post: dict) -> list[dict]:
     """The objects inside this post's `key` section, if it has one."""
     for section in sections(post):

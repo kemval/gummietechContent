@@ -291,3 +291,14 @@ def test_a_roundup_may_say_this_week():
     import wording
     assert wording.problems("5 results you missed this week", False, roundup=True) == []
     assert wording.problems("OpenAI shipped it this week.", False)
+
+
+def test_an_empty_catch_withholds_the_button():
+    """2026-10-08: the model's honest "" must not pass the gate, even when
+    the fact-check did not run — it is a BLOCK until a catch is written in."""
+    report = proof.Report()
+    proof.check_catch({"post_type": "drop", "the_catch": "  "}, report)
+    assert report.render().splitlines()[0].endswith("BLOCK")
+    report = proof.Report()
+    proof.check_catch({"post_type": "drop", "the_catch": "Tested on two PCs."}, report)
+    assert "BLOCK" not in report.render().splitlines()[0]

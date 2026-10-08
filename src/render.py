@@ -42,7 +42,7 @@ from playwright.sync_api import Page, sync_playwright
 # is where the rest of the shared vocabulary already lives.
 from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,
                      body_text, entries, es_fields, format_name,
-                     announcement, missing_from_entries, pieces,
+                     announcement, missing_fields, missing_from_entries, pieces,
                      post_preprint_flag, preprint, preprint_claims, required,
                      sections, spec, template_for, unpaired)
 
@@ -115,10 +115,8 @@ def load_post(path: Path) -> dict:
     # `peer_reviewed` is in RECORD rather than checked apart, so a missing
     # one is refused like any other field. Defaulting it to True would let an
     # unlabelled preprint through, which is the exact failure this guards —
-    # so the test is presence, not truthiness.
-    missing = [f for f in required(post)
-               if post.get(f) is None or (f != "peer_reviewed"
-                                          and not post.get(f))]
+    # so the test is presence, not truthiness (formats.missing_fields).
+    missing = missing_fields(post, required(post))
     missing += missing_from_entries(post)
     if missing:
         sys.exit(

@@ -82,6 +82,15 @@ supporting sentence means the claim fails. Specifically:
 - **`the_catch` must be a limitation the source itself states.** This is the
   credibility slide. An invented or inflated caveat is as bad as a missing one.
   Check that it is not merely a restatement of the finding.
+- **An empty `the_catch` is a BLOCK with a replacement, every time.** The
+  drafting model leaves it `""` when the text it was given (often only an
+  abstract or a launch page) stated no limitation, rather than invent one. Read
+  the full source — the paper's body, its methods and discussion, the maker's
+  own docs or model card — find the limitation it states, and give the
+  replacement line with its quote, as for any other BLOCK. Apply the fixes
+  writes your line in, so it must be ready to print. If the source truly
+  states none, say so and propose the narrowest true scope it does give ("one
+  crystal", "tested on two PCs"); never leave the replacement blank.
 - **Hedges must survive.** If the source says "suggests", "early results", "in
   mice", "in simulation", "in a preprint", the slide may not upgrade that to a
   settled fact. Flag any certainty the source does not have.
