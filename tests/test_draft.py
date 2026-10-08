@@ -512,6 +512,18 @@ def test_an_announcement_cover_line_that_promises_the_reader_is_dropped():
     assert "hooks" not in post
 
 
+def test_an_announcement_cover_line_with_the_makers_figure_as_fact_is_dropped():
+    """2026-10-08, Groq: every announcement's third hook stated the maker's
+    benchmark as fact, two rounds running ("JPEG XL offers 30-50% better
+    compression than JPEG"); the fact-check flagged each one."""
+    post = draft.validate(drop_reply(hooks=[
+        "EmbeddingGemma 2 improves code performance by 9.92 points.",
+        "Google says EmbeddingGemma 2 scores 9.92 points higher on code."]),
+        drop_item(), None)
+    assert post["hook"] == ("Google says EmbeddingGemma 2 scores 9.92 points "
+                            "higher on code.")
+
+
 def test_you_is_fine_outside_an_announcement():
     post = draft.validate(drop_reply(announcement=False, hooks=[
         "A chip as thin as your fingernail", "Another line"]),

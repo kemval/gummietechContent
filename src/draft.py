@@ -157,7 +157,8 @@ would say out loud. 1: what happened, said the way you would tell a friend. \
 2: a sentence that starts from the product, object or habit the story is \
 actually about, if the text names one — never an analogy or comparison the \
 text does not draw itself. 3: a sentence built on the key number, exactly \
-as the text states it, with its scope and baseline — never converted \
+as the text states it, with its scope and baseline, and in a maker's \
+announcement as the maker's claim ('Google says') — never converted \
 ('half', 'as thin as') or read as something it is not. If no number reads \
 plainly without a specialist, a sentence on what the result shows instead. \
 Every hook is a whole sentence, never a bare name or figure. No questions, no 'scientists say', no hype, no jargon, and no \
