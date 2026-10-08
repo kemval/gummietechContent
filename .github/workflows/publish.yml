@@ -65,9 +65,8 @@ jobs:
           PUBLISH_TZ: ${{ vars.PUBLISH_TZ }}
         run: python src/telegram.py confirm
 
-      - name: Commit, and build the archive if anything on it changed
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - id: commit
+        name: Commit what the poll recorded
         run: |
           # Both pillars: a tap dates a carousel in posts/ or a status
           # report in series/reports/, and the metrics half writes back to
@@ -97,8 +96,19 @@ jobs:
           git add posts/ series/reports/
           git commit -m "$subject" \
                      -m "$(git diff --cached --name-only)"
-          git pull --rebase
-          git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+          echo "rebuild=$rebuild" >> "$GITHUB_OUTPUT"
+
+      - name: Push it
+        if: steps.commit.outputs.committed == 'true'
+        uses: ./.github/actions/push
+
+      - name: Build the archive if anything on it changed
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REBUILD: ${{ steps.commit.outputs.rebuild }}
+        run: |
           # A push made with GITHUB_TOKEN does not fire site.yml's push
           # trigger: GitHub suppresses that to stop workflows triggering
           # themselves. workflow_dispatch is the documented exception, so ask
@@ -107,7 +117,7 @@ jobs:
           # An `if`, not `[ ... ] && ...`: this is the last command in the
           # step and the runner uses `bash -e`, so a false test would exit
           # non-zero and fail a poll that did exactly what it should.
-          if [ "$rebuild" = yes ]; then
+          if [ "$REBUILD" = yes ]; then
             gh workflow run site.yml --ref master
           else
             echo "Numbers only — the archive is unchanged, not rebuilding."

@@ -168,7 +168,8 @@ jobs:
 
       # Only `sent_at` changes here. `published_at` is publish.yml's to write,
       # when you tap — this job never dates a post as live.
-      - name: Record that it went out
+      - id: record
+        name: Record that it went out
         run: |
           if git diff --quiet -- series/reports/; then
             echo "Nothing went out — the next report is waiting on its image."
@@ -184,8 +185,11 @@ jobs:
           fi
           git commit -m "$msg" \
                      -m "$(git diff --cached --name-only)"
-          git pull --rebase
-          git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push it
+        if: steps.record.outputs.committed == 'true'
+        uses: ./.github/actions/push
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.

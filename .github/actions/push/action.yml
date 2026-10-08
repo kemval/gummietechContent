@@ -1,0 +1,48 @@
+name: Push
+description: >
+  Rebase this run's commit onto the branch and push it, retrying when another
+  workflow's push lands in between. Called right after `git commit`.
+
+# One definition, seven callers — daily, weekly, series, publish, fix, hook
+# and redraft all commit to master, and on the free tier their late crons
+# pile up in the same minutes (CLAUDE.md, the scheduler note).
+#
+# A single `git pull --rebase && git push` is not enough. 2026-10-08:
+# series.yml sent status report #16 at 13:25:18 UTC, pulled ("up to date"),
+# and weekly.yml's Breakdown commit landed before its push a second later —
+# "cannot lock ref 'refs/heads/master'". The report went out but its
+# `sent_at` did not, so the next run would have sent #16 again and
+# confirm() would have ignored the tap as stale. Pulling again and pushing
+# again is the whole fix; the race is a second wide, so a few tries with a
+# short, jittered wait clear it.
+#
+# A rebase conflict is not a race and retrying will not clear it: the loop
+# aborts the rebase and tries again in case the conflicting commit was itself
+# mid-flight, then fails with the log saying what to do.
+#
+# Always over an explicitly authenticated remote: claude-code-action replaces
+# the credential actions/checkout installs (fix.yml's first run died on
+# "Password authentication is not supported"), and the token is the same
+# github.token every caller already used. Pushes to the branch that is
+# checked out — master for every scheduled run.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        remote="https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+        branch=$(git symbolic-ref --short HEAD)
+        for attempt in 1 2 3 4 5; do
+          if git pull --rebase "$remote" "$branch" && git push "$remote" "HEAD:$branch"; then
+            exit 0
+          fi
+          git rebase --abort 2>/dev/null || true
+          wait=$((attempt * 5 + RANDOM % 5))
+          echo "Push $attempt of 5 lost to another commit on $branch — retrying in ${wait}s."
+          sleep "$wait"
+        done
+        echo "::error::Could not push to $branch after 5 tries, so the commit above never reached it. Read the log for a rebase conflict, then add what the commit recorded to $branch by hand — re-running may redo work that already happened, like a Telegram send." >&2
+        exit 1

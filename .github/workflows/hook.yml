@@ -115,14 +115,16 @@ jobs:
         if: steps.swap.outputs.changed == 'true'
         env:
           POST: ${{ steps.pick.outputs.post }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$POST"
           git commit -m "Put hook ${{ inputs.choice }} on the cover of $(basename "$POST" .json)" \
                      -m "Chosen at the gate through .github/workflows/hook.yml. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
-          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Push it
+        if: steps.swap.outputs.changed == 'true'
+        uses: ./.github/actions/push
 
       - name: Say so in Telegram if this run broke
         if: failure()
