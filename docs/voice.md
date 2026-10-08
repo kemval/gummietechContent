@@ -15,13 +15,18 @@ their friends do, and to understand it well enough to explain it.
 ## Rules
 
 1. **Start from what the reader already knows or uses.** A product, a habit, an
-   everyday object, a question they have had. Not the method, not the lab.
+   everyday object, a question they have had — one the story is actually
+   about. Not the method, not the lab. Never an analogy the source does not
+   draw: "ticks like a tiny atom" is a false claim in friendly words.
 2. **Everyday words.** A technical term is allowed only when the same sentence
    says what it means. "I2C protocol" alone is a wall; "the tiny chip that
    tells the iPod which button you pressed" is a door.
-3. **Say what changes for the reader.** `why_it_matters` names the concrete
-   difference: what they can now do, use, stop worrying about, or will see
-   soon. Not "this could have implications for the field".
+3. **Say what changes, as the source says it.** `why_it_matters` names the
+   concrete difference: what people can now do or use, when the source says
+   so. A research result whose paper names no use says what it shows,
+   plainly ("its dark-matter limits already rival the best atomic clocks"),
+   never a use it does not name. Not "this could have implications for the
+   field".
 4. **Short sentences. One idea each.** If a sentence needs a comma to breathe,
    it is probably two.
 5. **Plain over clever.** No hype words (revolutionary, game-changer,

@@ -154,19 +154,22 @@ signal>",
   "hooks": ["<three cover lines for the same story, each at most \
 {hook_limit} words, each a different angle, each in everyday words a reader \
 would say out loud. 1: what happened, said the way you would tell a friend. \
-2: start from something the reader already knows or uses — a product, an \
-object, a habit — and connect the story to it. 3: the number made concrete \
-('as thin as', 'in the time it takes to'), or what the reader can now do — \
-only if the text itself says who can use it and how. No questions, no \
-'scientists say', no hype, no jargon, and no claim the text does not \
-support — a person picks one of these for the cover>"],
+2: a sentence that starts from the product, object or habit the story is \
+actually about, if the text names one — never an analogy or comparison the \
+text does not draw itself. 3: a sentence built on the key number, exactly \
+as the text states it, with its scope and baseline — never converted \
+('half', 'as thin as') or read as something it is not. If no number reads \
+plainly without a specialist, a sentence on what the result shows instead. \
+Every hook is a whole sentence, never a bare name or figure. No questions, no 'scientists say', no hype, no jargon, and no \
+claim the text does not support — a person picks one of these for the cover>"],
   "what_happened": "<at most {word_limit} words. What happened, in plain \
 words, starting from what the reader knows. A technical term only if the \
 same sentence says what it means>",
-  "why_it_matters": "<at most {word_limit} words. What changes for a person \
-who uses technology: what they can now do, use or expect, as the text states \
-it. Concrete, never 'implications for the field'. If the text does not say \
-what changes for people, say plainly what it makes possible>",
+  "why_it_matters": "<at most {word_limit} words. What the text says this \
+changes or makes possible, in plain words and no stronger than the text puts \
+it: what people can do or use if the text says so, otherwise what the \
+result shows. Concrete, never 'implications for the field', and never a use \
+the text does not name>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
 source: sample size, conditions, what was not tested. For a company's or \
 project's own announcement: what the maker says it cannot do yet, where it \
@@ -181,7 +184,8 @@ claim on the credibility slide>",
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
 not only in the hashtags. The second is a question to the reader about the \
-finding, and the caption ends on it>",
+finding, suggesting no use the text does not name, and the caption ends on \
+it>",
   "keywords": ["<3 short topic keywords>"],
   "hashtags": ["#<4 hashtags, lowercase, last one #gummietech>"],
   "alt_text": "<one sentence describing the carousel for screen readers. \
@@ -206,8 +210,9 @@ Rules:
 it, do not write it.
 - No numbers that do not appear in the text.
 - Where a PAPER section appears below, it outranks the coverage. Coverage \
-simplifies mechanisms, overstates what a result overturns, and quotes \
-researchers who did not write the paper. Never credit the work to a name \
+simplifies mechanisms, overstates what a result overturns, calls a shared \
+result the first, and quotes researchers who did not write the paper. \
+"First", "only" and "record" come from the paper or not at all. Never credit the work to a name \
 that is not in the paper's author list, and never describe the method in \
 terms the paper contradicts.
 - Every hook is held to the rules below, not only the first: any one of \
