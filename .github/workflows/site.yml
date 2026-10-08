@@ -64,12 +64,21 @@ jobs:
 
       - uses: actions/configure-pages@v6
 
+      # Named per attempt, because "Re-run" — the button the failure link
+      # lands on — keeps the earlier attempt's artifact in the same run.
+      # 2026-10-08: attempt 1 uploaded, deploy-pages could not see it yet (a
+      # GitHub-side blip) and failed; the re-run uploaded a second
+      # "github-pages" and deploy-pages refused the pair ("Multiple
+      # artifacts named github-pages"). A fresh dispatch was the only way out.
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+          name: github-pages-${{ github.run_attempt }}
 
       - id: deploy
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
 
       # A single job, so one failure step covers the build and the deploy.
       # This one is the quietest failure in the repo: the archive just stops
