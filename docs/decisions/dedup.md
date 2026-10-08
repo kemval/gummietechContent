@@ -61,3 +61,23 @@ One consequence for strategy: `docs` §Layer 2's fifth automatic reject —
 `score.PROMPT` because a model reading one headline cannot know it, and the
 sheet cannot cheaply tell it either. It stays unimplemented, and that is a
 measurement rather than an oversight.
+
+**A launch has no DOI, so its key is its maker's page (2026-10-07).** Once
+launches could reach the queue, the DOI could not find their duplicates:
+GPT-6 Astra arrived in 39 rows. Most were different stories (customer
+cases, papers that used the model, a later model), but the launch itself
+came as OpenAI's own page twice, InfoQ's report and a newsletter. Each
+newsroom feed now declares where its company announces (`announces` in
+`feeds/tier1_primary.yaml`, measured). A post's `source_url` is also kept
+as a normalised key (`verify_feeds.url_key`: no scheme, `www.`, fragment, `utm_`
+parameters or trailing slash). A coverage row with no paper whose page
+links a maker announcement already in `posts/` is a duplicate. Run against
+the 39 Astra rows with Astra posted, it caught all four copies of the
+launch and none of the other stories. It is a link check, not a title
+match: a story that never links the maker's page (NVIDIA's own blog post
+on Astra) still gets through, and the fact-check agent remains the check
+for that. The links are read only to skip a row, never to choose a source
+or a credit: coverage links the wrong announcement as readily as the right
+one (Mistral's docs page for Large 4 linked four older Mistral launches,
+and not Large 4).
+

@@ -66,6 +66,36 @@ MAX_AGE_DAYS = 7
 
 SUMMARY_CHARS = 500
 
+# How old a queued story may be and still be drafted. The queue keeps every
+# row it ever scored, and ranking is by score alone, so on 2026-10-07 it
+# held 3,227 queued rows, most of them from September. A launch drafted from
+# one of those — GPT-6 Astra, 34 days old and already replaced — went out
+# saying "just launched". The account's promise is to keep a reader ahead
+# of the news, and month-old news does not. Older rows stay queued in the
+# sheet; they are only no longer chosen. --row is the override.
+MAX_STORY_AGE_DAYS = 10
+
+
+def story_age_days(row: list[str], col: dict, now: datetime) -> float | None:
+    """Days since the story was published, else since it was fetched.
+
+    None when neither date reads, which pick_row treats as too old: a row
+    that cannot show it is fresh is not drafted as news.
+    """
+    for name in ("published", "fetched_at"):
+        if name not in col or col[name] >= len(row):
+            continue
+        try:
+            when = datetime.fromisoformat(row[col[name]])
+        except ValueError:
+            continue
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return (now - when).total_seconds() / 86400
+    return None
+
+
+
 # Substring match against title + summary, lowercased. Funding rounds and
 # partnership announcements are business news, not science or engineering.
 #
@@ -163,7 +193,10 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
             break
         if new_only and entry.get("arxiv_announce_type", "new") != "new":
             continue
-        link = (entry.get("link") or "").strip()
+        # A trailing backslash is not part of any URL: one Hacker News row
+        # arrived as mistral.ai/news/mistral-large-4/\ and 404'd, so the
+        # maker's own announcement could not be read (2026-10-07).
+        link = (entry.get("link") or "").strip().rstrip("\\")
         title = clean_text(entry.get("title", ""), limit=300)
         if not link or not title:
             continue

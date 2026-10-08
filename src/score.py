@@ -11,14 +11,17 @@ status and a one-line reason.
     explain      can a smart non-expert get it in 5 slides?
     surprise     does it violate an intuition? (the share driver)
 
+and separately on relevance — would someone who uses technology want to
+know it today? — which lifts an item at LIFT_AT or above (see overall()).
+
 It also names the item's `beat` — ai, software, automation, robotics,
 computing or science — in the same call, so it costs no quota. draft.py
 reads it to put the account's priority subjects first (see PRIORITY_BEATS
 there); the score itself stays topic-blind.
 
-The overall score is the mean of the four axes. Items at or above
-THRESHOLD become "queued"; the rest become "rejected" and stay in the
-sheet as a record of what was considered.
+The overall score is the mean of the four axes, or the relevance that
+lifted it. Items at or above THRESHOLD become "queued"; the rest become
+"rejected" and stay in the sheet as a record of what was considered.
 
 Usage:
     python src/score.py
@@ -61,6 +64,17 @@ SLEEP_BETWEEN_CALLS = 5          # seconds; ~12 requests/minute
 
 AXES = ["novelty", "visual", "explain", "surprise"]
 
+# Relevance is scored in the same call but is not an axis: it can lift an
+# item, never sink one. A launch people will use is news whatever its
+# novelty or visual axes say, so at LIFT_AT or above its relevance is its
+# score; below, the mean of AXES stands. Measured 2026-10-07 on Groq before
+# settling on this: relevance as a fifth averaged axis, and in place of
+# `visual`, both cut the queue from 14-19 to 1-2 of 60 rows (the model gives
+# nearly everything 4-7) while moving almost no launch across THRESHOLD. See
+# docs/decisions/voice-and-selection.md.
+RELEVANCE = "relevance"
+LIFT_AT = 8
+
 # What an item is about. Anything else the model says is stored as blank
 # rather than trusted into a column draft.py selects on.
 BEATS = ("ai", "software", "automation", "robotics", "computing", "science")
@@ -98,19 +112,34 @@ text-only by default. Text-only policy news scores low.
 - explain: can a smart non-expert understand the point in five slides?
 - surprise: does it violate an intuition? This is what makes people share.
 
-Score 3 or below on every axis for: funding rounds, hiring and personnel news, \
-product launches with no technical substance, opinion pieces and editorials, \
-listicles, awards, conference announcements, and stories with no specific \
-finding or mechanism. A release that publishes how it works — a technical \
-report, a paper, a method or an architecture — is not a product launch; score \
-it on what it shows.
+Then score relevance from 1 to 10, separately: would a curious person who \
+uses technology want to know this today?
+- 9-10: a launch or change that many people will use or hear about this \
+week — a major AI model, a feature in a product millions use, a change to a \
+browser, phone or operating system.
+- 7-8: a release developers or enthusiasts will try or talk about.
+- 4-6: interesting, but only to one field.
+- 1-3: customer stories ("how X uses our product"), partnerships, \
+marketing, policy positions, and anything in the list below.
+
+A launch of a model, product feature or tool that people can use is news: \
+score it on what it can do, as long as the item states a concrete \
+capability. A release that publishes how it works — a technical report, a \
+paper, a method or an architecture — scores on what it shows.
+
+Score 3 or below on every axis and on relevance for: funding rounds and \
+acquisitions, hiring, firings and personnel news, lawsuits and company \
+drama, opinion pieces and editorials, listicles, awards, conference \
+announcements, customer stories, and stories or announcements that name no \
+specific finding, mechanism or concrete capability (marketing).
 
 Also name each item's beat. {beats}
 
 Return ONLY a JSON object with a "results" array, one entry per item, no \
 prose and no code fences:
 {{"results": [{{"i": <item number>, "novelty": <1-10>, "visual": <1-10>, \
-"explain": <1-10>, "surprise": <1-10>, "beat": "<one beat>", \
+"explain": <1-10>, "surprise": <1-10>, "relevance": <1-10>, \
+"beat": "<one beat>", \
 "why": "<at most 12 words>"}}]}}
 
 Items:
@@ -166,7 +195,20 @@ def parse_scores(text: str) -> list[dict]:
 
 
 def overall(scores: dict) -> float:
-    return round(sum(float(scores.get(axis, 0)) for axis in AXES) / len(AXES), 2)
+    """The mean of AXES, or the item's relevance when that is LIFT_AT or more.
+
+    A lift, never a drag: a science result keeps the score it always had,
+    and a launch people will use is not held under THRESHOLD by axes that
+    were written for findings.
+    """
+    mean = round(sum(float(scores.get(axis, 0)) for axis in AXES) / len(AXES), 2)
+    try:
+        # Clamped: the scale is 1-10, and a model that answers 15 must not
+        # outrank every finding in the queue.
+        relevance = min(float(scores.get(RELEVANCE, 0)), 10.0)
+    except (TypeError, ValueError):
+        relevance = 0.0
+    return max(mean, relevance) if relevance >= LIFT_AT else mean
 
 
 def beat_of(result: dict) -> str:
@@ -289,7 +331,8 @@ def main() -> int:
                 continue                           # stays "new", picked up next run
             score = overall(result)
             status = "queued" if score >= THRESHOLD else "rejected"
-            note = " ".join(f"{axis[0]}{result.get(axis, '?')}" for axis in AXES)
+            note = " ".join(f"{axis[0]}{result.get(axis, '?')}"
+                            for axis in (*AXES, RELEVANCE))
             note = f"{note} · {str(result.get('why', ''))[:80]}"
 
             scored += 1

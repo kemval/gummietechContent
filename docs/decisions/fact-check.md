@@ -46,3 +46,23 @@ the DOI it found:
   likely thing still wrong on a resolved draft.
 
 A source that cannot be read is a hold, not a pass.
+
+## An empty catch instead of an invented one (2026-10-08)
+
+The Groq voice test for PR #20 drafted three posts and all three came back
+`FACT-CHECK · BLOCK` on `the_catch`, each invented: "access limited to Google
+AI Edge" for an Apache-2.0 model on Hugging Face, "only Chrome supports it"
+for JPEG XL (Safari has since 2023), "not mini-scaled" for a nuclear clock
+whose paper states a different limit. It was not new: 9 of the 15 drafts
+since 2026-09-20 went through fix.yml, most of them for the catch. The prompt
+demanded a limitation, and a model given an abstract or a launch page with
+none supplies one from general knowledge.
+
+So the prompt now asks for `""` when the text states none, and code holds it
+rather than refusing it — a refusal would kill the run before anyone could
+press Apply the fixes. `formats.missing_fields()` lets an empty catch through
+(present and empty only), the catch slide prints a bracketed held line,
+`proof.py` BLOCKs it so the button is withheld even without a fact-check,
+and this agent answers every empty catch with a BLOCK and a ready-to-print
+replacement from the full source. The same three rows drafted again came back
+with three empty catches and no invented ones.

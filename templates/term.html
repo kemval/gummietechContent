@@ -24,7 +24,7 @@
 <!-- 1. THE WORD -->
 {{ parts.cover("glossary", 5, fields[0], [
      ("domain", domain, false),
-     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("status", parts.status(), true),
      ("source", attribution, false)], word=term) }}
 
 <!-- 2. WHAT IT MEANS -->

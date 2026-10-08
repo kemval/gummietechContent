@@ -43,6 +43,25 @@ def test_a_missing_axis_counts_as_zero_rather_than_inflating_the_mean():
     assert score.overall({"novelty": 10, "visual": 10, "explain": 10}) == 7.5
 
 
+def test_relevance_lifts_a_launch_the_axes_hold_down():
+    """2026-10-07: OpenAI's own GPT-6 Astra announcement scored 3 — the
+    launch the AI digests led with that week could not reach the queue."""
+    assert score.overall({"novelty": 5, "visual": 3, "explain": 6,
+                          "surprise": 4, "relevance": 9}) == 9.0
+
+
+def test_relevance_never_sinks_a_finding():
+    """Measured the same day: averaged in, relevance cut the queue from 14
+    to 1 of 60 rows. A science result keeps the score it always had."""
+    assert score.overall({"novelty": 8, "visual": 7, "explain": 9,
+                          "surprise": 8, "relevance": 4}) == 8.0
+
+
+def test_an_out_of_scale_relevance_cannot_outrank_every_finding():
+    assert score.overall({"novelty": 2, "visual": 2, "explain": 2,
+                          "surprise": 2, "relevance": 15}) == 10.0
+
+
 def test_string_scores_are_accepted():
     assert score.overall({a: "8" for a in score.AXES}) == 8.0
 
@@ -100,3 +119,11 @@ def test_an_arxiv_mega_category_is_held_to_new_papers_and_a_cap(monkeypatch):
     items, _ = ingest.fetch_feed({"name": "arXiv AI", "url": "https://x",
                                   "new_only": True, "max_items": 2})
     assert [i["title"] for i in items] == ["Paper 2", "Paper 4"]
+
+
+def test_a_trailing_backslash_is_not_part_of_a_url():
+    """2026-10-07: a Hacker News row arrived as mistral.ai/news/mistral-
+    large-4/\\ and 404'd, so Mistral's own announcement could not be read."""
+    import verify_feeds
+    assert verify_feeds.url_key("https://mistral.ai/news/mistral-large-4/\\") \
+        == verify_feeds.url_key("https://mistral.ai/news/mistral-large-4")

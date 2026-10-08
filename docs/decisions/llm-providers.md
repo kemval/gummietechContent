@@ -6,7 +6,41 @@ Section names below ("see **X**") refer to `CLAUDE.md`'s headings.
 
 **Batch LLM scoring 15–20 items per request.** Gemini's free tier has a daily
 request cap as well as a per-minute one. One request per item would exhaust
-the daily cap; batching drops it to 20–30 calls a day. Add a keyword
+the daily cap; batching drops it to 20–30 calls a day.
+
+**Measured 2026-10-08, that estimate was half the real load.** Weekdays
+ingest 650–1,200 rows, which is 37–68 scoring calls at `BATCH_SIZE` 18.
+Weekends are about 5. Drafting, translating and retries add a handful, so a
+heavy day is about 80 requests. Google no longer publishes the free tier's
+daily cap: the rate-limits page points to each project's own AI Studio
+dashboard. Read there on 2026-10-08:
+
+| model | RPM | TPM | RPD |
+|---|---|---|---|
+| Gemini 3.5 Flash (`gemini.DEFAULT_MODEL`), and every other "Flash" | 5 | 250K | **20** |
+| Gemini 3.5 Flash Lite, 3.1 Flash Lite | 15 | 250K | **500** |
+| Gemma 4 31B | 30 | 16K | 14.4K |
+
+So Gemini 3.5 Flash cannot carry production: a weekday needs two to four
+times its daily cap. On 2026-10-08 `LLM_PROVIDER` was set to gemini for a
+few hours, and the project went to 24/20 the same day. It went back to
+groq, and a dispatched ingest scored 36 of 36. Third-party figures for the
+cap (about 1,500, or about 100 after an April cut) were both wrong for this
+account, so read it from the dashboard. **So scoring moved to Gemini 3.5 Flash Lite (2026-10-08).** It is pinned
+in `ingest.yml`'s scoring step (`LLM_PROVIDER: gemini`, `GEMINI_MODEL:
+gemini-3.5-flash-lite`), whatever the repo variable says. That variable now
+only governs drafting and translating, which stay on Groq. Measured first
+on 54 rows Groq had scored that day, with the same prompt: the same queue
+decision on 49, the same beat on 47, a mean difference of +0.01 and a mean
+absolute difference of 0.95, comparable to Groq's own run-to-run noise. It
+was slightly stricter (6 queued to Groq's 9). With the relevance lift it
+lifted that day's three launches (Claude Haiku 5.5, GPT-6 and Intelligent
+UI, Microsoft's hardware event) and none of the marketing. Its relevance
+was also steadier than Groq's, which had given one announcement 8 in one
+batch and 2 in another. Scoring off Groq leaves Groq's daily cap to the
+drafts, which it had run out on twice. Drafting on Flash Lite was not
+measured, so it is not done. A spent daily cap stops
+the run; it does not fail over (see below). Add a keyword
 pre-filter in Python (drop "raises $", "Series A", "announces partnership")
 before anything reaches the LLM.
 

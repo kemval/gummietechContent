@@ -21,7 +21,7 @@
 <!-- 1. HOOK -->
 {{ parts.cover("run it", 6, fields[0], [
      ("domain", domain, false),
-     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("status", parts.status(), true),
      ("code", code_url|replace("https://", ""), false)]) }}
 
 <!-- 2. WHAT HAPPENED -->

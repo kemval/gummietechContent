@@ -10,7 +10,7 @@
 <!-- 1. HOOK -->
 {{ parts.cover("drop", 5, fields[0], [
      ("domain", domain, false),
-     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2. WHAT HAPPENED -->

@@ -506,3 +506,26 @@ def test_a_boxed_figure_does_not_take_a_linking_word_with_it():
     figure only when it says something ("81% faster")."""
     assert render.figure_phrase("if 20% of birthdays appear once") == "20%"
     assert render.figure_phrase("ran 81% faster") == "81% faster"
+
+
+def test_an_announcement_item_carries_no_preprint_flag():
+    """2026-10-07, the GPT-6 Astra cover: unreviewed is not preprint. The
+    Signal counts flags per item by the same rule as a Drop's cover."""
+    assert render.preprint_claims(SIGNAL) == 1      # item 2 is a preprint
+    items = [SIGNAL["items"][0], {**SIGNAL["items"][1], "announcement": True}]
+    assert render.preprint_claims({**SIGNAL, "items": items}) == 0
+
+
+def test_an_empty_catch_renders_held_but_a_missing_one_is_refused():
+    """2026-10-08: three Groq drafts, three invented catches ("only Chrome
+    supports it" — Safari has since 2023). draft.py now asks for "" when the
+    source states none. That has to reach the gate as a hold, so render.py
+    lets the empty one through with a slide that says so; a record with no
+    catch at all is still broken."""
+    post = {"post_type": "drop", "hook": "H", "domain": "d", "attribution": "A",
+            "alt_text": "T", "source_url": "https://x.org", "peer_reviewed": True,
+            **MINIMAL["drop"], "the_catch": ""}
+    assert render.missing_fields(post, render.required(post)) == []
+    assert "No limitation found in the drafted text" in render.render_html(post)
+    del post["the_catch"]
+    assert render.missing_fields(post, render.required(post)) == ["the_catch"]

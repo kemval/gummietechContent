@@ -435,7 +435,7 @@ def feed_sweep(monkeypatch, *results):
     import verify_feeds as vf
     entries = [{"name": name, "url": f"https://{name}.example/feed"}
                for name, _, _, _ in results]
-    replies = {name: (status, detail, age)
+    replies = {name: (status, detail, age, None)
                for name, status, detail, age in results}
     monkeypatch.setattr(vf, "all_feeds",
                         lambda *a, **k: [(Path("feeds/x.yaml"), e)
@@ -554,3 +554,71 @@ def test_an_all_tech_signal_is_not_a_finding(posts):
     report = Report("WATCH")
     watch.check_subject("2026-10-04", report, directory)
     assert not findings(report, "subject")
+
+
+def test_announcement_prefixes_that_stopped_fitting_their_feed_are_a_finding(monkeypatch):
+    """A site redesign that moves a newsroom's pages leaves its feed live and
+    its `announces` prefixes silently wrong: its launches would stop being
+    recognised as announcements. 2026-10-07: healthy feeds sat at 9-10 of 10."""
+    import verify_feeds as vf
+    entry = {"name": "OpenAI", "announces": ["openai.com/index/"]}
+    moved = [f"https://openai.com/blog/post-{i}" for i in range(10)]
+    assert vf.announces_drift(entry, moved)
+    healthy = [f"https://openai.com/index/post-{i}" for i in range(9)] + \
+        ["https://openai.com/podcast/x"]
+    assert vf.announces_drift(entry, healthy) is None
+    assert vf.announces_drift({"name": "Nature"}, moved) is None
+
+
+def test_a_drifted_newsroom_reaches_the_watch_report(monkeypatch):
+    import verify_feeds as vf
+    entry = {"name": "OpenAI", "url": "https://openai.com/news/rss.xml"}
+    monkeypatch.setattr(vf, "all_feeds",
+                        lambda *a, **k: [(Path("feeds/x.yaml"), entry)])
+    monkeypatch.setattr(vf, "check_feed", lambda e, **k: (
+        "ok", "10 entries", 0, "only 0 of its newest 10 links are under …"))
+    report = Report("WATCH")
+    watch.check_feeds(report)
+    assert any("only 0 of its newest 10" in line for line in findings(report, "feeds"))
+    assert report.verdict == "FIX"
+
+
+# ------------------------------------------------------------------- the lift
+# 2026-10-07: relevance became a lift, and the model's relevance is noisy —
+# the same GPT-6 Astra announcement scored 8 in one batch and 2 in another.
+
+def lift_rows(*notes):
+    from datetime import datetime, timezone
+    from ingest import COLUMNS
+    col = {name: i for i, name in enumerate(COLUMNS)}
+    now = datetime.now(timezone.utc)
+    rows = []
+    for n, note in enumerate(notes):
+        row = [""] * len(COLUMNS)
+        row[col["title"]], row[col["status"]] = f"story {n}", "queued"
+        row[col["fetched_at"]], row[col["notes"]] = now.isoformat(), note
+        rows.append(row)
+    return rows, col, now
+
+
+def test_a_row_only_relevance_queued_is_named():
+    assert watch.lifted("n5 v3 e6 s4 r9 · OpenAI launches a model")
+    assert not watch.lifted("n8 v7 e9 s8 r4 · a finding")
+    assert not watch.lifted("n5 v3 e6 s4 · scored before relevance existed")
+
+
+def test_a_day_the_lift_fills_the_queue_is_a_finding():
+    rows, col, now = lift_rows("n5 v3 e6 s4 r9 · x", "n5 v3 e6 s4 r8 · y",
+                               "n8 v7 e9 s8 r4 · z")
+    report = Report("WATCH")
+    watch.check_lift(rows, col, now, report)
+    assert report.verdict == "FIX"
+    assert any("2 of the last day's 3" in l for l in findings(report, "lift"))
+
+
+def test_a_few_lifted_rows_are_a_note():
+    rows, col, now = lift_rows("n5 v3 e6 s4 r9 · x", "n8 v7 e9 s8 r4 · y",
+                               "n8 v8 e8 s8 r5 · z")
+    report = Report("WATCH")
+    watch.check_lift(rows, col, now, report)
+    assert report.verdict != "FIX"

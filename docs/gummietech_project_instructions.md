@@ -80,7 +80,7 @@ When drafting for the automated pipeline, return strict JSON with no prose or co
 
 ## Story selection
 
-Score each 1–10 on **novelty**, **visual potential**, **explainability**, and **surprise**. Surface only items scoring ≥7 total, ranked, with the score visible. Automatically reject funding rounds, substance-free product launches, opinion pieces, and stories already covered by three or more large accounts.
+Score each 1–10 on **novelty**, **visual potential**, **explainability** and **surprise**, and separately on **relevance** (would someone who uses technology want to know this today?), which at 8 or above becomes the item's score. Surface only items scoring ≥7 total, ranked, with the score visible. A launch of a model, feature or tool people can use is news, scored on what it does. Automatically reject funding rounds, company drama, announcements with no concrete capability, opinion pieces, and stories already covered by three or more large accounts. Write in the voice `docs/voice.md` sets: start from what the reader knows, everyday words, what changes for them.
 
 Prefer primary sources — institution newsrooms, company blogs, preprints, journal releases — over secondary coverage. Search the web rather than relying on memory for anything current.
 

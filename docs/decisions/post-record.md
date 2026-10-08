@@ -88,6 +88,14 @@ that is short. Two consequences worth knowing before touching it:
 - **`peer_reviewed` is tested for presence, not truth.** `False` is the
   whole point of the field, and a truthiness test would report a correctly
   labelled preprint as missing one.
+- **Unreviewed is not the same as preprint (2026-10-07).** `announcement:
+  true` marks the third case — a company, project or person announcing
+  their own work, with no study at all — and switches the preprint flag
+  for "Announcement — not a peer-reviewed study" on the cover, the archive
+  and the gate. It rides alongside `peer_reviewed: false` rather than
+  replacing it, so every reader that requires the boolean still gets one
+  and every older post reads exactly as before (the archive built
+  byte-identical). Why: `voice-and-selection.md`.
 - **A Signal has no catch, so it has no dark slide.** The dark slide is
   where a post's caveat goes, and a roundup has five of them or none;
   forcing one item to go dark would say something about that item that is

@@ -51,7 +51,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 | Ingest | `feedparser` + `requests` |
 | Scheduler | GitHub Actions cron |
 | Database | Google Sheets (`gspread`) |
-| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER`; OpenRouter `:free` models as the last fallback |
+| LLM scoring | Gemini 3.5 Flash Lite free tier, fixed in `ingest.yml`; drafting and translation on `LLM_PROVIDER` (Groq); OpenRouter `:free` models as the last fallback |
 | Rendering | Playwright → PNG |
 | Templating | Jinja2 |
 | Config | YAML feed lists, `.env` for secrets |
@@ -98,6 +98,8 @@ src/
   build_kit.py       The Build's stills (cover, cards, lower third) from
                      docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
+  wording.py         the voice rules code can check: dating words, and
+                     "you" or an unattributed figure in a maker's release
   hook.py            swaps a draft's cover line for one of its alternates
   weekly.py          Tuesday's term and Thursday's Breakdown: is it owed,
                      what is it built from, and the check, file name and
@@ -154,11 +156,15 @@ reaches feedparser as a "not well-formed" XML error. → `docs/decisions/feeds.m
 `python src/verify_feeds.py -v` after any change to `feeds/`; `feed-scout`
 proposes fixes, a person verifies and commits. **And a feed can be live and
 finished at the same time** — both the checker and `watch.py` measure the
-newest entry's age against `STALE_AFTER_DAYS` (60). → `docs/decisions/feeds.md`
+newest entry's age against `STALE_AFTER_DAYS` (60). A newsroom's `announces`
+prefixes are checked the same way (`announces_drift`). → `docs/decisions/feeds.md`
 
 **Batch LLM scoring 15–20 items per request**, with a Python keyword
 pre-filter first. Gemini's free tier has a per-minute and a daily cap, per
-project; back off on 429, fail fast on a daily-cap error.
+project; back off on 429, fail fast on a daily-cap error. **Scoring runs on
+Gemini 3.5 Flash Lite (500 requests a day), pinned in `ingest.yml`; never on
+Gemini 3.5 Flash, whose free tier is 20 a day** against 40–80 needed. Read
+the caps in AI Studio, not from memory or third-party pages.
 → `docs/decisions/llm-providers.md`
 
 **Swapping to Groq** is `LLM_PROVIDER=groq` plus `GROQ_API_KEY`;
@@ -187,8 +193,18 @@ green `check.yml` on `ubuntu-26.04` first, then every job.
 **The queue is deduplicated by URL, and a story is not a URL.** `draft.py`
 resolves each candidate's DOI before the LLM call and skips a paper already
 in `posts/` (`MAX_DUPLICATE_SKIPS` caps the walk). **Do not rebuild
-title-based deduplication** — it was measured and removed on 2026-09-21.
+title-based deduplication** — it was measured and removed on 2026-09-21. A
+launch has no DOI, so its key is its maker's page: newsroom feeds declare
+`announces` prefixes, and coverage that links an announcement already posted
+is a duplicate.
 → `docs/decisions/dedup.md`
+
+**Drafting takes only fresh news.** `pick_row()` skips a queued row whose
+story is older than `ingest.MAX_STORY_AGE_DAYS` (10), by `published`, else
+`fetched_at`; undated is too old. The rows stay queued, and `--row` is the
+override. `watch.py` counts the queue the same way. The queue ranks by score
+alone and held a month of backlog, so a launch went out 34 days late.
+→ `docs/decisions/voice-and-selection.md`
 
 **The sheet grows forever, and that is fine — do not build a purge.**
 `rejected` rows are the deduplication memory; deleting them re-ingests and
@@ -199,6 +215,20 @@ rows are never safe. → `docs/decisions/sheet-growth.md`
 `score.py` names each item's `beat`; `draft.pick_row()` prefers
 `PRIORITY_BEATS`. Do not move the preference into the score.
 → `docs/decisions/tech-first.md`
+
+**Launches are news, and the voice is a doc.** `score.py` also asks for
+`relevance` (would someone who uses technology want this today?) — a lift,
+not a fifth axis: at `LIFT_AT` (8) it becomes the score, below it the mean
+of the four axes stands. Averaging it in was measured and gutted the queue.
+Funding, personnel news, drama, customer stories and capability-free
+marketing stay at 3 or below. How every post
+sounds lives in `docs/voice.md`, pasted into `draft.py`'s prompts and named
+in `weekly.py`'s brief. The prompt's fact rules outrank it. The three rules a
+word list can check — no dating words, and in a maker's release no "you"
+and no figure without "says" —
+are `wording.py`'s: `draft.py` drops a cover line that breaks them, and
+`proof.py` reports what remains as a FIX at the gate.
+→ `docs/decisions/voice-and-selection.md`
 
 **`draft.py` drafts from the paper, not the coverage.** DOI from the page
 (meta tag, then journal-reference heading, then anywhere), Crossref for
@@ -323,8 +353,19 @@ does not state. A source that cannot be read is a hold, not a pass.
 - `attribution`, `alt_text` and `domain` are required; `render.py` refuses a
   record missing them. When a DOI resolves, `attribution` comes from Crossref.
 - `colorway` falls back to `signal` with a warning.
+- `the_catch` may be `""` — the model's answer when the text it was given
+  states no limitation, instead of inventing one. It renders a held slide,
+  `proof.py` BLOCKs it, and the fact-check's replacement is what **Apply the
+  fixes** writes in (`formats.UNSTATED`). A missing key is still refused.
 - When `peer_reviewed` is false the template must show the
-  "Preprint — not yet peer-reviewed" flag, enforced in code.
+  "Preprint — not yet peer-reviewed" flag, enforced in code — **unless**
+  `"announcement": true`: a maker's own launch with no study behind it,
+  whose cover says "Announcement — not a peer-reviewed study" instead.
+  `formats.preprint()` is the one rule every label reads. A page under a
+  newsroom's `announces` prefix with no paper is an announcement by code
+  (`draft.maker_announcement()`), so a Signal may carry it; elsewhere the
+  model proposes it and `draft.validate()` drops it whenever a paper
+  resolved or the host is a preprint server. Absent on every older post.
 - Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
   (`draft.py --run`, only when a README was read). `published_at` is added only
@@ -455,7 +496,7 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
 
 `src/watch.py`, via `watch.yml` once a day, reports what should have
 happened and did not (cadence, glossary, breakdown, subject, gate, metrics, colour,
-buffer, feeds, queue, structure, fact-check). It only asks about obligations
+buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot
 prove it ran. → `docs/decisions/watch.md`

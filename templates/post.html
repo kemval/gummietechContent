@@ -48,7 +48,7 @@
       <dt>{{ t("Source", translated and "Fuente") if post.sources|length == 1
               else t("Sources", translated and "Fuentes") }}</dt>
       {% for source in post.sources %}
-      <dd>{{ source.attribution }}{% if not source.peer_reviewed %} — {{ t("preprint, not yet peer-reviewed", translated and "preprint, aún sin revisión por pares") }}{% endif %}</dd>
+      <dd>{{ source.attribution }}{% if source.status == "preprint" %} — {{ t("preprint, not yet peer-reviewed", translated and "preprint, aún sin revisión por pares") }}{% elif source.status == "announcement" %} — {{ t("announcement, not a peer-reviewed study", translated and "anuncio, no un estudio revisado por pares") }}{% endif %}</dd>
       <dd><a href="{{ source.url }}">{{ source.host }} →</a></dd>
       {% endfor %}
 
@@ -64,7 +64,7 @@
 
       {% if post.sources|length == 1 %}
       <dt>{{ t("Status", translated and "Estado") }}</dt>
-      <dd>{% if post.sources[0].peer_reviewed %}{{ t("Peer-reviewed", translated and "Revisado por pares") }}{% else %}{{ t("Preprint — not yet peer-reviewed", translated and "Preprint — aún sin revisión por pares") }}{% endif %}</dd>
+      <dd>{% if post.sources[0].status == "preprint" %}{{ t("Preprint — not yet peer-reviewed", translated and "Preprint — aún sin revisión por pares") }}{% elif post.sources[0].status == "announcement" %}{{ t("Announcement — not a peer-reviewed study", translated and "Anuncio — no es un estudio revisado por pares") }}{% else %}{{ t("Peer-reviewed", translated and "Revisado por pares") }}{% endif %}</dd>
       {% endif %}
     </dl>
   </article>

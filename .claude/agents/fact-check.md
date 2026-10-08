@@ -82,6 +82,15 @@ supporting sentence means the claim fails. Specifically:
 - **`the_catch` must be a limitation the source itself states.** This is the
   credibility slide. An invented or inflated caveat is as bad as a missing one.
   Check that it is not merely a restatement of the finding.
+- **An empty `the_catch` is a BLOCK with a replacement, every time.** The
+  drafting model leaves it `""` when the text it was given (often only an
+  abstract or a launch page) stated no limitation, rather than invent one. Read
+  the full source — the paper's body, its methods and discussion, the maker's
+  own docs or model card — find the limitation it states, and give the
+  replacement line with its quote, as for any other BLOCK. Apply the fixes
+  writes your line in, so it must be ready to print. If the source truly
+  states none, say so and propose the narrowest true scope it does give ("one
+  crystal", "tested on two PCs"); never leave the replacement blank.
 - **Hedges must survive.** If the source says "suggests", "early results", "in
   mice", "in simulation", "in a preprint", the slide may not upgrade that to a
   settled fact. Flag any certainty the source does not have.
@@ -119,6 +128,24 @@ on slide 4. A preprint labelled `true` is a **BLOCK** — that is the single
 failure the whole layer exists to prevent. Note also the case where the
 `source_url` is news coverage but the *underlying work* is a preprint: the
 host check in `draft.py` cannot see that, so only you will catch it.
+
+A source has three possible labels, not two. `"announcement": true` (always
+with `peer_reviewed: false`) means the source is its maker's own
+announcement — a company, project or person describing their own release —
+with no study behind it. The cover then says "Announcement — not a
+peer-reviewed study" and no preprint flag is shown. The model proposes this
+label, so check it both ways:
+
+- **Marked announcement, but a paper, preprint or technical report exists**
+  for the work (linked from the page, or findable by `WebSearch`): **BLOCK**.
+  The label hides a preprint flag that §7.2 requires.
+- **Not marked, but it is an announcement** — `peer_reviewed: false`, no
+  paper anywhere, and the cover would say "Preprint": **FIX**. Tell the
+  person to add `"announcement": true`. Calling a launch a preprint is a
+  false claim about the source.
+- An announcement's claims are the maker's own: "47% faster" is OpenAI's
+  number, not a measurement. If a slide states a maker's claim as
+  independent fact, that is a **FIX**: it must read as their claim.
 
 ### 7. Check the supporting fields
 

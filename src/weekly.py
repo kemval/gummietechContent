@@ -20,7 +20,8 @@ model is decided here, before and after it writes:
     writer picks from a list; a Breakdown's subject is a published Drop this
     file picks, tech first, that has no Breakdown yet
   - a repeated term, a missing field, a mechanism of the wrong length
-  - the credit. source_url, doi, attribution and peer_reviewed are copied
+  - the credit. source_url, doi, attribution, peer_reviewed and
+    announcement are copied
     from the post it is built from, never typed by the model. A retyped
     credit is the one way a correct explanation still goes out wrong.
 
@@ -44,7 +45,9 @@ POSTS_DIR = REPO_ROOT / "posts"
 
 # The credit fields copied from the post a draft is built from. The model's
 # draft never supplies them; finish() overwrites whatever it wrote.
-CREDIT = ("source_url", "doi", "attribution", "peer_reviewed")
+# `announcement` travels with the rest: a Breakdown of a launch is about an
+# announcement too, and without it the slides would call it a preprint.
+CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement")
 
 # draft.PRIORITY_BEATS, restated rather than imported: draft.py pulls in the
 # LLM clients and gspread, and this runs before pip install. Posts drafted
@@ -189,11 +192,14 @@ SHARED_RULES = """\
 Rules:
   - Every claim comes from the source or from the post you build on. Do not
     add a number, a name or a claim that is in neither.
+  - Write in the voice docs/voice.md describes: read it first. Where it and
+    these rules disagree, these rules win.
   - hook within 12 words; every other slide field within 25 words.
   - colorway is signal, orbit, bloom or ember, by docs §1's topics.
   - caption ends in a question.
-  - Do NOT write source_url, doi, attribution, peer_reviewed, es or
-    published_at. Code copies the credit after you; the rest is not yours.
+  - Do NOT write source_url, doi, attribution, peer_reviewed, announcement,
+    es or published_at. Code copies the credit after you; the rest is not
+    yours.
   - Write /tmp/weekly/draft.json and no other file.
 """
 
@@ -266,7 +272,9 @@ the_catch, caption, keywords, hashtags, alt_text. No recap.
   - the_catch is the limits the source itself states. Not a weakness you
     infer: a caveat the source does not state is the error the fact-check
     blocks most.
-  - If the Drop's peer_reviewed is false, the_catch says it is a preprint.
+  - If the Drop's peer_reviewed is false, the_catch says what that means:
+    a preprint not yet peer-reviewed, or — when the Drop carries
+    "announcement": true — the maker's own announcement, not a study.
 
 {rules}
 Finish by printing the hook and one line on what the mechanism is.

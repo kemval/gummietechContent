@@ -29,7 +29,7 @@
 {{ parts.cover("cheat sheet", n, fields[0], [
      ("domain", domain, false),
      ("terms", items|length ~ " terms", false),
-     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2..n-2. THE ENTRIES -->

@@ -88,6 +88,20 @@ WEAK_DOI_CUES = ("cite this", "citation", "doi:")
 # references and no paper at all.
 BIBLIOGRAPHY_DOIS = 4
 
+# How far past a weak cue its DOI may sit, in characters of raw HTML. A
+# citation box puts the DOI right after the word; a page that merely says
+# "citation" somewhere does not. On 2026-10-07 openai.com/index/gpt-6-astra
+# said "citation" in its markup and carried one DOI, footnote 7, 135k
+# characters further down: a 2023 musicology dataset the launch was
+# evaluated on. Below BIBLIOGRAPHY_DOIS, so the weak cue still counted, and
+# the search ran on to that footnote and named it the paper — the draft
+# credited "Gotham et al., Digital Libraries for Musicology (2023)" for
+# OpenAI's model. Lab announcements reach the queue since the relevance
+# lift, and they cite in footnotes, not in citation boxes. Generous for
+# markup between the word and the link; nowhere near a page away.
+WEAK_CUE_REACH = 2000
+
+
 def fetch_article(url: str) -> tuple[str, str, str | None]:
     """
     Return (text, page_html, warning). Falls back to empty strings when the
@@ -197,8 +211,12 @@ def doi_candidates(page: str) -> tuple[list[str], list[str]]:
         if bibliography and cue in WEAK_DOI_CUES:
             continue
         at = lowered.find(cue)
-        if at != -1:
-            add(_trimmed_doi(DOI_RE.search(page, at)))
+        if at == -1:
+            continue
+        found = DOI_RE.search(page, at)
+        if found and cue in WEAK_DOI_CUES and found.start() - at > WEAK_CUE_REACH:
+            continue                          # a footnote, not this cue's DOI
+        add(_trimmed_doi(found))
 
     if bibliography:
         return named, mentioned               # a reference list, not guesses

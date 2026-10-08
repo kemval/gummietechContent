@@ -57,23 +57,30 @@ import json
 import re
 import sys
 from collections.abc import Iterator
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
 from formats import by_hand, format_name
 from formats import entries as format_entries
-from formats import missing_from_entries, required as format_required
-from ingest import COLUMNS, open_sheet
+from formats import (missing_fields, missing_from_entries,
+                     required as format_required)
+from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
                     resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     previous_colorway, vary, warn_on_length)
+from verify_feeds import announcement_prefixes, url_key
+from wording import problems as wording_problems
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
 EVERGREEN_QUEUE = REPO_ROOT / "docs" / "evergreen_queue.md"
+# How every post sounds. A doc rather than prompt text so a person can edit
+# the voice without touching code; weekly.py's brief points Claude at the
+# same file. See docs/decisions/voice-and-selection.md.
+VOICE_GUIDE = REPO_ROOT / "docs" / "voice.md"
 
 # docs §1: five items, one slide each. A Signal is five sources in one
 # prompt, so each gets a fraction of a Drop's budget — one sentence per item
@@ -91,6 +98,14 @@ CLAIM_WORD_LIMIT = HOOK_WORD_LIMIT
 PREPRINT_HOSTS = ("arxiv.org", "biorxiv.org", "medrxiv.org", "chemrxiv.org",
                   "ssrn.com", "researchsquare.com", "preprints.org",
                   "osf.io", "hal.science")
+
+# Where each company publishes its own announcements: the `announces`
+# prefixes in feeds/*.yaml. The twin of PREPRINT_HOSTS — a page on a
+# preprint server is a preprint whatever the model says, and a page under
+# one of these with no paper behind it is its maker's announcement. See
+# maker_announcement().
+MAKER_PREFIXES = announcement_prefixes()
+HREF_RE = re.compile(r"""href=["']([^"']+)["']""", re.I)
 
 # What a *draft* needs on top of what render.py will refuse to render
 # without. formats.py owns the rest, per format, and is asked for it —
@@ -136,24 +151,42 @@ no prose and no code fences, with exactly these keys:
 (biology, medicine, climate, ecology), ember (energy, materials, engineering, \
 chemistry). Use exactly one of those four words. If none clearly fits, use \
 signal>",
-  "hooks": ["<three cover lines for the same finding, each at most \
-{hook_limit} words, each a different angle. 1: the finding, stated plainly. \
-2: the assumption it breaks or the belief it corrects — only if the text \
-names one; otherwise another plain statement. 3: what it changes for the \
-reader, or its number made concrete ('as thin as', 'in the time it takes \
-to'). No questions, no 'scientists say', no hype, and no claim the text does \
-not support — a person picks one of these for the cover>"],
-  "what_happened": "<at most {word_limit} words. Who did what, and how it works>",
-  "why_it_matters": "<at most {word_limit} words. The consequence. Name the \
-bottleneck it removes or the assumption it breaks>",
+  "hooks": ["<three cover lines for the same story, each at most \
+{hook_limit} words, each a different angle, each in everyday words a reader \
+would say out loud. 1: what happened, said the way you would tell a friend. \
+2: a sentence that starts from the product, object or habit the story is \
+actually about, if the text names one — never an analogy or comparison the \
+text does not draw itself. 3: a sentence built on the key number, exactly \
+as the text states it, with its scope and baseline, and in a maker's \
+announcement as the maker's claim ('Google says') — never converted \
+('half', 'as thin as') or read as something it is not. If no number reads \
+plainly without a specialist, a sentence on what the result shows instead. \
+Every hook is a whole sentence, never a bare name or figure. No questions, no 'scientists say', no hype, no jargon, and no \
+claim the text does not support — a person picks one of these for the cover>"],
+  "what_happened": "<at most {word_limit} words. What happened, in plain \
+words, starting from what the reader knows. A technical term only if the \
+same sentence says what it means>",
+  "why_it_matters": "<at most {word_limit} words. What the text says this \
+changes or makes possible, in plain words and no stronger than the text puts \
+it: what people can do or use if the text says so, otherwise what the \
+result shows. Concrete, never 'implications for the field', and never a use \
+the text does not name>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
-source: sample size, conditions, what was not tested. Never invent one, and \
-never overstate it>",
+source: sample size, conditions, what was not tested. For a company's or \
+project's own announcement: what the maker says it cannot do yet, where it \
+falls short, or what it was not tested on — never its price, its rollout or \
+its schedule, which are not limitations of the work. If something the story \
+depends on is only promised for later — weights, a paper, wider access — \
+that is the catch. Never invent one, and never overstate it. If the text you \
+were given states no limitation at all, return an empty string here: an empty \
+catch is held and written from the full source, an invented one is a false \
+claim on the credibility slide>",
 {extra}  "caption": "<two sentences. The first states the finding and carries the \
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
 not only in the hashtags. The second is a question to the reader about the \
-finding, and the caption ends on it>",
+finding, suggesting no use the text does not name, and the caption ends on \
+it>",
   "keywords": ["<3 short topic keywords>"],
   "hashtags": ["#<4 hashtags, lowercase, last one #gummietech>"],
   "alt_text": "<one sentence describing the carousel for screen readers. \
@@ -161,10 +194,16 @@ The slides carry no photographs, charts or diagrams: each one is a flat \
 colour field with the post's own words on it. Say what the carousel says, \
 never what it depicts>",
   "attribution": "<'Surname et al., Journal (Year)' if the text names authors \
-and a journal; otherwise the publishing organisation's name. Use only names \
-that appear in the text below. Never guess>",
+and a journal; 'Surname et al., Outlet (Year)' if it names authors and no \
+journal, as a company blog post signed by its engineers does; otherwise the \
+publishing organisation's name. Use only names that appear in the text \
+below. Never guess>",
   "peer_reviewed": <true if this is published in a peer-reviewed journal, \
-false if it is a preprint>
+false otherwise>,
+  "announcement": <true only if the text reports no study at all: a company, \
+project or person announcing their own product, model, release or work. \
+false if it reports a paper, a preprint or any research study, even one \
+covered by a news site>
 }}
 
 Rules:
@@ -172,14 +211,40 @@ Rules:
 it, do not write it.
 - No numbers that do not appear in the text.
 - Where a PAPER section appears below, it outranks the coverage. Coverage \
-simplifies mechanisms, overstates what a result overturns, and quotes \
-researchers who did not write the paper. Never credit the work to a name \
+simplifies mechanisms, overstates what a result overturns, calls a shared \
+result the first, and quotes researchers who did not write the paper. \
+"First", "only" and "record" come from the paper or not at all. Never credit the work to a name \
 that is not in the paper's author list, and never describe the method in \
 terms the paper contradicts.
 - Every hook is held to the rules below, not only the first: any one of \
 them may end up on the cover.
 - the_catch is the credibility slide. Prefer a limitation the paper states \
-about itself. A weak but true limitation beats a strong invented one.
+about itself. A weak but true limitation beats a strong invented one, and \
+an empty the_catch beats both when the text states none. Do not supply one \
+from general knowledge — what other products do, what labs usually lack, \
+what is typical of the field.
+- When the source is its maker's own announcement (announcement true), every \
+figure and every comparison on every slide, hook and caption is the maker's \
+own claim and must say so: "OpenAI says", "in Mistral's tests", "Google \
+says". A maker's number stated as plain fact is a false claim of \
+independence.
+- No word that dates the story: never "just", "today", "now", "new", \
+"latest", "lately" or "this week". You do not know today's date.
+- Plain words never cost a qualifier. Keep every hedge the source uses \
+("expects", "may", "aims to"), every scope ("in simulations", "on one \
+benchmark", "per task", "from Chrome 155") and every baseline ("than \
+GPT-5.6 Sol"). A number without its scope and baseline is a different claim.
+- Never explain what a number means ("meaning...", "so...") and never join \
+two facts with "because", "so" or "letting" unless the source itself makes \
+that link.
+- A promise is not a release. What the maker says will come later stays in \
+the future tense, and nothing may read as available that is not available \
+yet. "You" and "your" only for what any reader can actually do.
+- Write every field in the voice below. Where it and these rules ever \
+disagree, these rules win.
+
+VOICE GUIDE:
+{voice}
 
 Source: {source}
 Title: {title}
@@ -232,8 +297,26 @@ a reader saves it to look something up later.
 the outlet instead.
 - Do not write a caveat slide. This format has no catch slide; a roundup has \
 five caveats or none.
+- Write the hook, every claim and the caption in the voice below. Where it \
+and these rules ever disagree, these rules win.
+
+VOICE GUIDE:
+{voice}
 
 {sources}"""
+
+
+def voice() -> str:
+    """docs/voice.md from its first `##` heading on, pasted into every prompt
+    this file sends. What comes before is a note to the person editing it."""
+    try:
+        text = VOICE_GUIDE.read_text()
+    except OSError as exc:
+        sys.exit(f"Could not read {VOICE_GUIDE.relative_to(REPO_ROOT)} "
+                 f"({exc.strerror}). It is the voice every draft is written "
+                 "in; restore it from git (`git checkout -- docs/voice.md`).")
+    start = text.find("\n## ")
+    return (text[start:] if start >= 0 else text).strip()
 
 
 def signal_sources(picks: list[dict]) -> str:
@@ -249,7 +332,14 @@ def signal_sources(picks: list[dict]) -> str:
     for n, pick in enumerate(picks, start=1):
         item = pick["item"]
         text = source_text(pick["paper"], pick["article"], item["summary"])
+        # The Drop prompt's rule on a maker's claims, per item: only code
+        # knows which of five sources is an announcement.
+        kind = ("Kind: the maker's own announcement, not a study. Every "
+                "figure and comparison in its claim is the maker's: say so "
+                "('OpenAI says', 'in Mistral's tests').\n"
+                if maker_announcement(pick["paper"], item["url"]) else "")
         blocks.append(f"--- SOURCE {n} ---\n"
+                      f"{kind}"
                       f"Outlet: {item['source']}\n"
                       f"Headline: {item['title']}\n"
                       f"URL: {item['url']}\n\n"
@@ -336,7 +426,8 @@ def links_code(row: list[str], col: dict) -> bool:
 
 def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
              skip: set[int] = frozenset(),
-             prefer_code: bool = False) -> tuple[int, dict]:
+             prefer_code: bool = False,
+             now: datetime | None = None) -> tuple[int, dict]:
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
 
@@ -346,8 +437,12 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     `skip` holds rows this run has already rejected as duplicates. Their
     status is updated in the sheet too, but `rows` is the snapshot read
     before that, so without this the next pass would pick the same one.
+
+    A queued row older than MAX_STORY_AGE_DAYS is not a candidate.
     """
+    now = now or datetime.now(timezone.utc)
     candidates = []
+    stale = 0
     for n, row in enumerate(rows[1:], start=2):
         if n in skip:
             continue
@@ -355,6 +450,11 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
             continue
         if not wanted and row[col["status"]] != "queued":
             continue
+        if not wanted:
+            age = story_age_days(row, col, now)
+            if age is None or age > MAX_STORY_AGE_DAYS:
+                stale += 1
+                continue
         try:
             score = float(row[col["score"]] or 0)
         except ValueError:
@@ -362,9 +462,12 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
         candidates.append((score, n, row))
 
     if not candidates:
-        sys.exit("Nothing to draft. Run `python src/score.py` first, or pass "
-                 "--row with a specific sheet row." if not wanted
-                 else f"Row {wanted} is not in the sheet.")
+        if wanted:
+            sys.exit(f"Row {wanted} is not in the sheet.")
+        sys.exit(f"Nothing to draft: no queued row is from the last "
+                 f"{MAX_STORY_AGE_DAYS} days ({stale} older ones are still "
+                 "queued). Check that ingest.yml is running and scoring, or "
+                 "pass --row to draft an older story on purpose.")
 
     preferred = [c for c in candidates if is_priority(c[2], col)]
     if not wanted and not preferred:
@@ -561,6 +664,11 @@ def covered_papers() -> dict[str, str]:
                 if key and str(key).strip():
                     seen.setdefault(" ".join(str(key).lower().split()),
                                     path.name)
+            # The URL once more, as identity rather than as written: the
+            # same launch page arrives with and without a trailing slash,
+            # and coverage links it with tracking parameters.
+            if record.get("source_url"):
+                seen.setdefault(url_key(record["source_url"]), path.name)
     return seen
 
 
@@ -602,8 +710,45 @@ def reject(path: Path, reason: str, today: str) -> Path:
     return dest
 
 
+def maker_page(url: str) -> bool:
+    """Whether a URL is under a prefix where a company announces its work."""
+    key = url_key(url)
+    return any(key.startswith(prefix + "/") for prefix in MAKER_PREFIXES)
+
+
+def maker_announcement(paper: dict | None, url: str) -> bool:
+    """Whether code alone can say a source is its maker's announcement.
+
+    A maker's page, no paper resolved, not a preprint server. Decided here
+    rather than by the model, so a Signal may carry one (it labels only
+    what code can) and a Drop's label does not rest on the model's answer.
+    A company blog that describes a paper resolves the paper, and the paper
+    wins: Google Research and NVIDIA's developer blog often do.
+    """
+    return (not paper and maker_page(url)
+            and not any(host in url.lower() for host in PREPRINT_HOSTS))
+
+
+def announced_links(page: str) -> list[str]:
+    """The maker announcement pages a page links to, in document order.
+
+    Read only from coverage: a story about a launch that links the launch's
+    own page is that launch, and if the page is already posted, so is the
+    story. Never used to pick a source or a credit — measured on
+    2026-10-07, coverage links the wrong announcement as readily as the
+    right one (Mistral's docs page linked four older launches and not the
+    one it documents). A wrong match here only skips a row.
+    """
+    links: list[str] = []
+    for match in HREF_RE.finditer(page or ""):
+        if maker_page(match.group(1)) and match.group(1) not in links:
+            links.append(match.group(1))
+    return links
+
+
 def already_covered(paper: dict | None, url: str,
-                    seen: dict[str, str]) -> str | None:
+                    seen: dict[str, str],
+                    announced: list[str] | tuple = ()) -> str | None:
     """The post that already covers this candidate, if there is one.
 
     The paper's own keys first, then the URL the candidate came from — which
@@ -614,6 +759,9 @@ def already_covered(paper: dict | None, url: str,
     """
     keys = [paper.get("doi"), citation(paper)] if paper else []
     keys.append(url)
+    # A launch has no DOI, so its identity is its maker's page: the URL
+    # itself, and any maker page the coverage links to.
+    keys += [url_key(url), *(url_key(link) for link in announced)]
     for key in keys:
         if key:
             hit = seen.get(" ".join(str(key).lower().split()))
@@ -688,14 +836,11 @@ def finish(post: dict, order: list[str]) -> dict:
               f"it — using {varied}")
         post["colorway"] = varied
 
-    # render.py's own rule, from the same table: presence for peer_reviewed,
-    # because False is the whole point of the field, and truthiness for the
-    # rest. A Signal's record carries none of the three source fields, so
-    # this asks about `items` there and about the entries below.
+    # render.py's own rule, from the same table (formats.missing_fields). A
+    # Signal's record carries none of the three source fields, so this asks
+    # about `items` there and about the entries below.
     wanted = (*DRAFTED, *format_required(post))
-    missing = [f for f in wanted
-               if post.get(f) is None or (f != "peer_reviewed"
-                                          and not post.get(f))]
+    missing = missing_fields(post, wanted)
     missing += missing_from_entries(post)
     if missing:
         sys.exit(f"Refusing to write. The model left these empty: "
@@ -712,7 +857,7 @@ def finish(post: dict, order: list[str]) -> dict:
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
              "what_happened", "try_it", "why_it_matters", "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
-             "peer_reviewed", "beat"]
+             "peer_reviewed", "announcement", "beat"]
 
 
 def row_subject(item: dict) -> str:
@@ -765,6 +910,29 @@ def hook_choices(post: dict) -> dict:
     return {"hook": hooks[0], **({"hooks": hooks} if len(hooks) > 1 else {})}
 
 
+def check_hooks(post: dict) -> None:
+    """Drop the cover lines wording.py refuses from `hook` and `hooks`.
+
+    A dropped line is said, and one is always kept: three cover lines that
+    all say "just" still make a post, and proof.py reports the word at the
+    gate where a person can tell "just launched" from "just three atoms".
+    """
+    hooks = post.get("hooks") or ([post["hook"]] if post.get("hook") else [])
+    flagged = bool(post.get("announcement"))
+    kept = [h for h in hooks if not wording_problems(h, flagged)] or hooks[:1]
+    for hook in hooks:
+        if hook not in kept:
+            print(f"  hook dropped: {hook!r} — "
+                  f"{'; '.join(wording_problems(hook, flagged))}")
+    if not kept:
+        return                 # finish() reports the missing hook
+    post["hook"] = kept[0]
+    if len(kept) > 1:
+        post["hooks"] = kept
+    else:
+        post.pop("hooks", None)
+
+
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
     url = item["url"]
@@ -794,6 +962,19 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         # JSON at the gate. The model never supplies it.
         post["doi"] = paper["doi"]
 
+    # An announcement is the third thing a source can be: not peer-reviewed,
+    # and not a preprint either. The model proposes it; code overrules it
+    # wherever code knows better — a resolved paper or a preprint server is
+    # a study whatever the model says, and an announcement is never
+    # peer-reviewed. Kept only when true, so every older post reads as it
+    # always did. See formats.preprint() and the fact-check agent.
+    proposed = (post.pop("announcement", None) is True
+                or maker_announcement(paper, url))
+    on_preprint_host = any(host in url.lower() for host in PREPRINT_HOSTS)
+    if proposed and not paper and not on_preprint_host:
+        post["announcement"] = True
+        post["peer_reviewed"] = False
+
     if subject := row_subject(item):
         post["beat"] = subject
 
@@ -804,13 +985,14 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         post["code_url"] = link
 
     post.update(hook_choices(post))
+    check_hooks(post)
     return finish(post, DROP_KEYS)
 
 
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
 ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
-             "beat"]
+             "announcement", "beat"]
 
 
 def validate_signal(post: dict, picks: list[dict]) -> dict:
@@ -838,6 +1020,9 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
                  "attribution": str(item.get("attribution", "")).strip(),
                  "source_url": url,
                  "peer_reviewed": peer_review_flag(paper, url)}
+        # Code's call, never the model's: a Signal labels only what code can.
+        if maker_announcement(paper, url):
+            built["announcement"], built["peer_reviewed"] = True, False
         if subject := row_subject(pick["item"]):
             built["beat"] = subject
         if paper:
@@ -972,17 +1157,22 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         # difference, and it is why this is a skip rather than a stop — the
         # row stays queued, because an unresolvable paper is still a fine
         # Drop tomorrow.
-        if labelled_only and peer_review_flag(paper, item["url"]) is None:
-            print(f"  skipping {where}: no DOI resolved and "
-                  f"{outlet(item['url'])} is not a preprint host, so nothing "
-                  f"but the model could label it peer-reviewed")
+        if (labelled_only and peer_review_flag(paper, item["url"]) is None
+                and not maker_announcement(paper, item["url"])):
+            print(f"  skipping {where}: no DOI resolved, and "
+                  f"{outlet(item['url'])} is neither a preprint host nor a "
+                  f"maker's announcement page, so nothing but the model could "
+                  f"label it")
             if row_number is not None:
                 skipped.add(row_number)
             rejected += 1
             check_budget(rejected, wanted)
             continue
 
-        covered = already_covered(paper, item["url"], seen)
+        covered = already_covered(
+            paper, item["url"], seen,
+            announced_links(page)
+            if not paper and not maker_page(item["url"]) else ())
 
         if not covered:
             yield settled
@@ -1088,6 +1278,7 @@ def main() -> int:
             SIGNAL_PROMPT.format(count=len(picks), more=len(picks) - 1,
                                  hook_limit=HOOK_WORD_LIMIT,
                                  claim_limit=CLAIM_WORD_LIMIT,
+                                 voice=voice(),
                                  sources=signal_sources(picks)),
             api_key, model, temperature=0.4)
         post = validate_signal(parsed(reply), picks)
@@ -1113,7 +1304,7 @@ def main() -> int:
         reply = llm.generate(
             PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
                           source=item["source"], title=item["title"],
-                          url=item["url"], text=text,
+                          url=item["url"], text=text, voice=voice(),
                           extra=RUN_KEY.format(word_limit=WORD_LIMIT)
                           if readme else ""),
             api_key, model, temperature=0.4)

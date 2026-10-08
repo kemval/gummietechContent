@@ -35,7 +35,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from formats import preprint_claims, spec
+from formats import (announcement, pieces, preprint_claims, sections, spec,
+                     unstated)
+from wording import problems as wording_problems
 from render import (COLORWAYS, DATED_NAME, MIN_SLIDES, REPO_ROOT,
                     colorway_pair, load_post, open_page, previous_colorway,
                     render_html, rhythm, vary, word_budget)
@@ -406,6 +408,45 @@ def check_words(post: dict, report: Report) -> None:
             report.fix("copy", f"{where} is {count} words (limit {limit})")
 
 
+def check_wording(post: dict, report: Report) -> None:
+    """The voice rules code can check (wording.py), on every slide's words
+    and the caption. A FIX: "just" also means "only", and a person at the
+    gate can tell which. draft.py has already dropped the cover lines that
+    break them; this reports what is left."""
+    flagged = announcement(post)
+    # A roundup — a format whose credit is per entry, the Signal — is
+    # framed by its week.
+    roundup = bool(spec(post).entries)
+    texts = [("hook", post.get("hook", ""), flagged),
+             ("caption", post.get("caption", ""), flagged)]
+    for section in sections(post):
+        if section.key:
+            # A Signal entry is its own source: a launch among papers is
+            # an announcement, and the post-level flag is never set on a
+            # Signal, so reading it here left every launch unchecked.
+            texts += [(section.field, entry.get(section.key, ""),
+                       announcement(entry))
+                      for entry in post.get(section.field) or []
+                      if isinstance(entry, dict)]
+        else:
+            texts += [(section.field, piece, flagged)
+                      for piece in pieces(post, section)]
+    for where, text, maker in texts:
+        for problem in wording_problems(str(text or ""), maker, roundup):
+            report.fix("voice", f"{where} {problem}")
+
+
+def check_catch(post: dict, report: Report) -> None:
+    """An empty catch is a draft that would not invent one (formats.UNSTATED).
+    A BLOCK, so the button stays withheld even if the fact-check never ran;
+    the fact-check's replacement is what Apply the fixes writes in."""
+    if unstated(post):
+        report.block("catch", "the_catch is empty — the drafting model found "
+                     "no limitation in the text it was given and left it "
+                     "blank rather than invent one. Apply the fixes writes it "
+                     "from the full source.")
+
+
 def check_colorway(path: Path | None, colorway: str | None,
                    report: Report) -> None:
     """Whether this post repeats the field of the post before it.
@@ -461,6 +502,8 @@ def proof(post: dict, colorway: str | None,
         check_slide(slide, report)
         check_cloud(slide, report)
     check_words(post, report)
+    check_wording(post, report)
+    check_catch(post, report)
     return report
 
 

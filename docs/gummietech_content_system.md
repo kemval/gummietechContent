@@ -202,14 +202,17 @@ No aggregation service required — parsing RSS directly in code costs nothing a
 
 ### Layer 2 — Filter & rank (LLM scoring)
 
-Every item scored 1–10 on four axes. Only items scoring ≥7 total surface in the morning queue.
+Every item scored 1–10 on four axes, plus relevance, which can lift it. Only items scoring ≥7 total surface in the morning queue.
 
 - **Novelty** — genuinely new, or a rehash?
 - **Visual potential** — is there an image, diagram, or video? No visual = hard to post. A diagram of how a system works, a benchmark chart or a before/after of a model's output counts — software is not text-only by default.
 - **Explainability** — can a smart non-expert get it in 5 slides?
 - **Surprise** — does it violate an intuition? This is the share driver.
+- **Relevance** (a lift, not an axis) — would a curious person who uses technology want to know this today? At 8 or above it *is* the item's score; below, the mean of the four axes stands. It can raise a launch, never sink a finding.
 
-Reject automatically: funding rounds, product launches with no technical substance, opinion pieces, listicles, anything already covered by three or more large accounts. A release that publishes how it works — technical report, paper, method — is not a product launch.
+Reject automatically: funding rounds and acquisitions, hiring, firings and company drama, customer stories, opinion pieces, listicles, announcements that state no concrete capability, anything already covered by three or more large accounts. A release that publishes how it works — technical report, paper, method — scores on what it shows.
+
+**Launches are news (2026-10-07).** A new model, product feature or tool that people can use scores on what it does and how many people it reaches; until this date it scored ≤3 by rule. The owner reads The Rundown, TLDR AI and Techpresso for exactly that information — what is happening in tech this week — and the account was filtering it out. Relevance is what lets it in, as a lift rather than a fifth averaged axis, which was measured and moved nothing; the lab's own announcement is the source fact-check verifies against. How it is told lives in `docs/voice.md`. See `docs/decisions/voice-and-selection.md`.
 
 **Tech first (2026-09-27).** The same call names each item's *beat* — ai, software, automation, robotics, computing or science — and drafting takes the best-scoring row on the first five before any science row. The score itself stays topic-blind. Before this, September shipped almost no AI: AI items averaged ~2 points below biology and never reached the top of a 2,400-row queue, though 777 of them sat above the threshold.
 
@@ -250,7 +253,7 @@ Layer 3 is an LLM reading a fetched article, and when that fetch is blocked or t
 
 It reports; it never edits the JSON, renders, or dates a post. That keeps §7.1 intact: this layer makes the gate cheaper to run, it does not stand in for it.
 
-Deterministic checks stay in code, where they already are — `draft.py` and `render.py` hard-fail on missing `attribution` or `alt_text`, on a non-boolean `peer_reviewed`, and on a preprint host claiming peer review. The agent exists for the one question code cannot answer: *does the source actually say this.* One case is worth calling out because the host check structurally cannot see it — coverage on a journal or news domain reporting work that is itself a preprint.
+Deterministic checks stay in code, where they already are — `draft.py` and `render.py` hard-fail on missing `attribution` or `alt_text`, on a non-boolean `peer_reviewed`, and on a preprint host claiming peer review. The agent exists for the one question code cannot answer: *does the source actually say this.* One case is worth calling out because the host check structurally cannot see it — coverage on a journal or news domain reporting work that is itself a preprint. Its mirror image matters since launches became news (2026-10-07): a company's own announcement is not peer-reviewed but is not a preprint either. It carries `"announcement": true` and its cover says "Announcement — not a peer-reviewed study"; the agent checks that no paper hides behind that label, and that a maker's numbers read as the maker's claims.
 
 Run it before Layer 4 rather than after. A render that has to be thrown away costs Playwright time and a Business Suite upload; a caught claim costs nothing.
 

@@ -29,8 +29,10 @@ What it reports:
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
     buffer     the gate is not silently accumulating drafts
-    feeds      every feed still returns entries, and still publishes
-    queue      rows are still arriving and candidates are still scored
+    feeds      every feed still returns entries, and still publishes, and a
+               newsroom's `announces` prefixes still fit its links
+    queue      rows are still arriving, and fresh candidates are scored
+    lift       which of the last day's queued rows only relevance let in
     structure  check.yml, whose result the workflow hands over
     fact-check is configured at all
 
@@ -59,6 +61,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -401,10 +404,13 @@ def check_feeds(report: Report) -> None:
 
     dead: list[str] = []
     stale: list[str] = []
+    drifted: list[str] = []
     empty = 0
     for _, entry in all_feeds():
         name = entry.get("name", "unnamed")
-        status, detail, age = check_feed(entry)
+        status, detail, age, drift = check_feed(entry)
+        if drift:
+            drifted.append(f"{name} — {drift}")
         if status == "fail":
             dead.append(f"{name} — {detail}")
         elif status == "empty":
@@ -432,9 +438,15 @@ def check_feeds(report: Report) -> None:
         report.fix("feeds", "feed-scout finds the successor feed if there is "
                             "one; retire the entry if there is not")
 
+    # A live feed whose `announces` prefixes stopped fitting it: launches
+    # from it fall back to the model's label and lose their duplicate key,
+    # and nothing else would say so. See verify_feeds.announces_drift().
+    for line in drifted[:MAX_NAMED]:
+        report.fix("feeds", line)
+
     if empty:
         report.note("feeds", f"{empty} feed(s) parsed but returned 0 entries")
-    if not dead and not empty and not stale:
+    if not dead and not empty and not stale and not drifted:
         report.note("feeds", "every feed is live and publishing")
 
 
@@ -446,7 +458,8 @@ def check_queue(report: Report) -> None:
     new → queued | rejected → drafted | duplicate.
     """
     try:
-        from ingest import COLUMNS, open_sheet                 # gspread
+        from ingest import (COLUMNS, MAX_STORY_AGE_DAYS,   # gspread
+                            open_sheet, story_age_days)
         rows = open_sheet().get_all_values()
     except SystemExit as exc:
         # open_sheet exits with instructions when the credentials are not
@@ -460,16 +473,31 @@ def check_queue(report: Report) -> None:
 
     status, fetched = COLUMNS.index("status"), COLUMNS.index("fetched_at")
     body = [row for row in rows[1:] if len(row) > status]
-    queued = sum(row[status] == "queued" for row in body)
+    # Counted as draft.pick_row() sees them: a queued row older than
+    # MAX_STORY_AGE_DAYS is never chosen, so it is not a candidate here
+    # either — counting it would report a healthy queue the day drafting
+    # stops for want of fresh news.
+    col = {name: i for i, name in enumerate(COLUMNS)}
+    now = datetime.now(timezone.utc)
+    queued_rows = [row for row in body if row[status] == "queued"]
+    fresh = sum(1 for row in queued_rows
+                if (age := story_age_days(row, col, now)) is not None
+                and age <= MAX_STORY_AGE_DAYS)
     unscored = sum(row[status] == "new" for row in body)
 
-    if queued < QUEUE_FLOOR:
-        report.fix("queue", f"only {queued} candidate(s) above the score "
-                            f"threshold. Run the evergreen-scout agent, or "
-                            f"draft with --evergreen.")
+    if fresh < QUEUE_FLOOR:
+        report.fix("queue", f"only {fresh} candidate(s) from the last "
+                            f"{MAX_STORY_AGE_DAYS} days above the score "
+                            f"threshold ({len(queued_rows)} queued in all). "
+                            f"Check ingest.yml is scoring, run the "
+                            f"evergreen-scout agent, or draft with "
+                            f"--evergreen.")
     else:
-        report.note("queue", f"{queued} queued, {unscored} unscored, "
-                             f"{len(body)} rows")
+        report.note("queue", f"{fresh} fresh of {len(queued_rows)} queued, "
+                             f"{unscored} unscored, {len(body)} rows")
+    # Asked whether or not the queue is short: a thin queue full of lifted
+    # rows is the case most worth hearing about.
+    check_lift(body, col, now, report)
 
     newest = max((row[fetched] for row in body
                   if len(row) > fetched and row[fetched]), default="")
@@ -486,6 +514,65 @@ def check_queue(report: Report) -> None:
         report.fix("queue", f"nothing new in {age.days * 24 + age.seconds // 3600}h "
                             f"— ingest.yml is running and adding no rows. "
                             f"Check the feeds section above.")
+
+
+# score.py writes each row's axes into `notes` as a letter and a number —
+# "n6 v3 e7 s6 r8 · why" — novelty, visual, explain, surprise, relevance.
+NOTE_AXIS_RE = re.compile(r"\b([nvesr])(\d+(?:\.\d+)?)\b")
+LIFT_AXES = "nves"            # score.AXES, by initial; relevance is the lift
+# Rows queued in the last day that only relevance put there. Above this
+# share of the day's queued rows, relevance is choosing the queue rather
+# than adding launches to it. A first guess, not a measurement: on the 60
+# rows measured on 2026-10-07 the lift added 1 of 5. Revisit it at the
+# first week's review (docs/decisions/voice-and-selection.md).
+MAX_LIFTED_SHARE = 0.5
+
+
+def lifted(note: str) -> bool:
+    """Whether a queued row's score came from relevance, not its axes.
+
+    True when the four axes average under 7 — so the row could only have
+    cleared score.THRESHOLD through the relevance lift. A note from before
+    relevance existed has no "r" and is never lifted.
+    """
+    axes = {k: float(v) for k, v in NOTE_AXIS_RE.findall(note.split("·")[0])}
+    if "r" not in axes or not all(a in axes for a in LIFT_AXES):
+        return False
+    return sum(axes[a] for a in LIFT_AXES) / len(LIFT_AXES) < 7
+
+
+def check_lift(body: list[list[str]], col: dict, now: datetime,
+               report: Report) -> None:
+    """Which of the last day's queued rows only relevance let in.
+
+    The lift (score.LIFT_AT) is how launches reach the queue, and the
+    model's relevance is noisy: the same launch scored 8 in one batch and 2
+    in another. A customer story scored 8 would be queued on that alone.
+    So every lifted row is named, for a person to glance at, and a day
+    where they are most of the queue is a FIX.
+    """
+    from ingest import story_age_days                       # gspread
+    if "notes" not in col:
+        return
+    day = [row for row in body
+           if row[col["status"]] in ("queued", "drafted")
+           and (age := story_age_days(row, {"fetched_at": col["fetched_at"]},
+                                      now)) is not None and age <= 1]
+    lift = [row for row in day if len(row) > col["notes"]
+            and lifted(row[col["notes"]])]
+    if not lift:
+        return
+    names = [row[col["title"]][:70] for row in lift[:MAX_NAMED]]
+    line = (f"{len(lift)} of the last day's {len(day)} queued rows got in on "
+            f"relevance alone: " + "; ".join(names)
+            + (f"; and {len(lift) - MAX_NAMED} more" if len(lift) > MAX_NAMED
+               else ""))
+    if len(lift) > MAX_LIFTED_SHARE * len(day):
+        report.fix("lift", line + ". That is most of the queue: check none "
+                                  "is a customer story or marketing, and "
+                                  "consider raising score.LIFT_AT.")
+    else:
+        report.note("lift", line)
 
 
 def check_structure(result: str, report: Report) -> None:
