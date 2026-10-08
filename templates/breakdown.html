@@ -35,7 +35,7 @@
 <!-- 1. COVER -->
 {{ parts.cover("breakdown", n, fields[0], [
      ("domain", domain, false),
-     ("status", parts.PREPRINT if show_preprint_flag else "", true),
+     ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2. THE QUESTION — the post's own voice, large, with the ghost below -->

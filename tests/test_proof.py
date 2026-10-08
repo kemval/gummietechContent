@@ -255,3 +255,39 @@ def test_a_color_mix_value_parses():
     """slides.css derives --mute with color-mix(), which Chromium reports as
     color(srgb …) with 0-1 channels; proof.py crashed on the first render."""
     assert proof.channels("color(srgb 0.231373 0.172549 0.137255)") == pytest.approx((59, 44, 35), abs=0.01)
+
+
+def test_a_dating_word_left_on_a_slide_reaches_the_gate():
+    """2026-10-07: "just launched" on a 34-day-old launch. A FIX, not a
+    BLOCK — "just" also means "only", and the gate can tell which."""
+    import proof
+    report = proof.Report()
+    proof.check_wording({"post_type": "drop", "hook": "A line",
+                         "what_happened": "OpenAI just released it.",
+                         "why_it_matters": "x", "the_catch": "y",
+                         "caption": "z"}, report)
+    text = report.render()
+    assert "dates the story" in text and "BLOCK" not in text.splitlines()[0]
+
+
+def test_the_captions_closing_question_is_not_a_promise():
+    """Every caption ends by asking the reader something. The first three
+    drafts this check saw were each flagged for it."""
+    import wording
+    assert wording.problems("Mistral says it has 1M context. Would you try it?",
+                            announcement=True) == []
+    assert wording.problems("You can run it at home.", announcement=True)
+
+
+def test_describing_words_are_not_dating_words():
+    """Measured on posts/ the day the check was written: "now" and "today"
+    flagged 9 of 35 posts, nearly all wrongly."""
+    import wording
+    assert wording.problems("Ice can now be 3D printed.", False) == []
+    assert wording.problems("Today's quantum computers are noisy.", False) == []
+
+
+def test_a_roundup_may_say_this_week():
+    import wording
+    assert wording.problems("5 results you missed this week", False, roundup=True) == []
+    assert wording.problems("OpenAI shipped it this week.", False)

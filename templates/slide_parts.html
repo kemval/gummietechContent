@@ -8,6 +8,16 @@
    record's own text to box, set large or strike — they never write any. #}
 
 {% set PREPRINT = "Preprint — not yet peer-reviewed" %}
+{# An announcement says what it is, not only what it is not. It is a cover
+   status, never a .flag: proof.py counts .flag elements against
+   formats.preprint_claims(), and an announcement is not a preprint claim. #}
+{% set ANNOUNCEMENT = "Announcement — not a peer-reviewed study" %}
+
+{# The cover's [status]: the preprint label, the announcement label, or
+   nothing for a peer-reviewed paper. formats.preprint() decided which. #}
+{% macro status() -%}
+{%- if show_preprint_flag %}{{ PREPRINT }}{% elif show_announcement %}{{ ANNOUNCEMENT }}{% endif -%}
+{%- endmacro %}
 
 {# Four corner labels: the account and format, the field (or what the slide
    is), the handle, and the position. The cover's position says "swipe". #}

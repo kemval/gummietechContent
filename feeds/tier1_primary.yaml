@@ -37,6 +37,11 @@
 #                   issue — title "Googlebooks, Grok 4.7, Google infiltrates
 #                   hackers", <description> empty, link to the digest page.
 #                   One item is not one story. See feeds/tier5_depth.yaml.
+#   Anthropic       anthropic.com/news advertises no feed and the usual
+#                   /rss.xml paths 404 (2026-10-07). Its launches reach the
+#                   sheet through Hacker News 200+ instead.
+#   Meta AI         ai.meta.com/blog advertises no feed; /rss/ and /feed/
+#                   return HTTP 400 (2026-10-07). Same route as Anthropic.
 
 feeds:
 
@@ -108,6 +113,14 @@ feeds:
 
   - name: OpenAI
     url: https://openai.com/news/rss.xml
+    topic: ai
+
+  # Added 2026-10-07 with score.py's relevance axis: model launches are what
+  # the AI digests lead with, and a lab's own announcement is the source
+  # fact-check can verify against. Mixes launches with partnerships and a
+  # funding round; score.py drops the second two.
+  - name: Mistral AI
+    url: https://mistral.ai/news/rss
     topic: ai
 
   - name: Microsoft Research

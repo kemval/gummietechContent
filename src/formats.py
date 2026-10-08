@@ -289,6 +289,33 @@ def pieces(record: dict, section: Section) -> list[str]:
     return body_text(record, section.field, section.key)
 
 
+def preprint(record: dict) -> bool:
+    """Whether a source — a post, or one Signal item — is a preprint.
+
+    The one definition every label reads: the slides, proof.py, the reel,
+    the archive and the gate. Not peer-reviewed is not the same thing. An
+    announcement — a company, project or person describing their own
+    release, with no study behind it — is not peer-reviewed either, and
+    labelling one "Preprint" is a false claim about the source: on
+    2026-10-07 the first launch drafted under the relevance lift, OpenAI's
+    GPT-6 Astra, rendered with "Preprint — not yet peer-reviewed" on its
+    cover. It says so the other way instead: see `announcement`.
+
+    A missing `peer_reviewed` reads as unreviewed here, as it always did;
+    render.py refuses such a record before this is asked.
+    """
+    return not record.get("peer_reviewed", False) and not record.get("announcement")
+
+
+def announcement(record: dict) -> bool:
+    """Whether a source is its maker's own announcement rather than a study.
+
+    Only ever true alongside peer_reviewed false: draft.py never writes it
+    for a source with a resolved paper or on a preprint server.
+    """
+    return bool(record.get("announcement")) and not record.get("peer_reviewed")
+
+
 def post_preprint_flag(post: dict) -> bool:
     """Whether the post itself carries one "not yet peer-reviewed" label.
 
@@ -300,7 +327,7 @@ def post_preprint_flag(post: dict) -> bool:
     flag ON (peer_reviewed is false)" at the gate about five peer-reviewed
     papers. Only signal.html ignoring the variable kept it off the slides.
     """
-    return not spec(post).entries and not post.get("peer_reviewed", False)
+    return not spec(post).entries and preprint(post)
 
 
 def preprint_claims(post: dict) -> int:
@@ -311,7 +338,8 @@ def preprint_claims(post: dict) -> int:
     per-claim one, and a roundup makes the difference visible.
     """
     if spec(post).entries:
-        return sum(1 for e in entries(post) if e.get("peer_reviewed") is False)
+        return sum(1 for e in entries(post)
+                   if e.get("peer_reviewed") is False and preprint(e))
     return int(post_preprint_flag(post))
 
 

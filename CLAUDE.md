@@ -98,6 +98,8 @@ src/
   build_kit.py       The Build's stills (cover, cards, lower third) from
                      docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
+  wording.py         the voice rules code can check: dating words, and
+                     "you" about a maker's release
   hook.py            swaps a draft's cover line for one of its alternates
   weekly.py          Tuesday's term and Thursday's Breakdown: is it owed,
                      what is it built from, and the check, file name and
@@ -190,6 +192,13 @@ in `posts/` (`MAX_DUPLICATE_SKIPS` caps the walk). **Do not rebuild
 title-based deduplication** — it was measured and removed on 2026-09-21.
 → `docs/decisions/dedup.md`
 
+**Drafting takes only fresh news.** `pick_row()` skips a queued row whose
+story is older than `ingest.MAX_STORY_AGE_DAYS` (10), by `published`, else
+`fetched_at`; undated is too old. The rows stay queued, and `--row` is the
+override. `watch.py` counts the queue the same way. The queue ranks by score
+alone and held a month of backlog, so a launch went out 34 days late.
+→ `docs/decisions/voice-and-selection.md`
+
 **The sheet grows forever, and that is fine — do not build a purge.**
 `rejected` rows are the deduplication memory; deleting them re-ingests and
 re-scores. If a purge is ever needed, age is the only safe rule and undated
@@ -199,6 +208,19 @@ rows are never safe. → `docs/decisions/sheet-growth.md`
 `score.py` names each item's `beat`; `draft.pick_row()` prefers
 `PRIORITY_BEATS`. Do not move the preference into the score.
 → `docs/decisions/tech-first.md`
+
+**Launches are news, and the voice is a doc.** `score.py` also asks for
+`relevance` (would someone who uses technology want this today?) — a lift,
+not a fifth axis: at `LIFT_AT` (8) it becomes the score, below it the mean
+of the four axes stands. Averaging it in was measured and gutted the queue.
+Funding, personnel news, drama, customer stories and capability-free
+marketing stay at 3 or below. How every post
+sounds lives in `docs/voice.md`, pasted into `draft.py`'s prompts and named
+in `weekly.py`'s brief. The prompt's fact rules outrank it. The two rules a
+word list can check — no dating words, no "you" about a maker's release —
+are `wording.py`'s: `draft.py` drops a cover line that breaks them, and
+`proof.py` reports what remains as a FIX at the gate.
+→ `docs/decisions/voice-and-selection.md`
 
 **`draft.py` drafts from the paper, not the coverage.** DOI from the page
 (meta tag, then journal-reference heading, then anywhere), Crossref for
@@ -324,7 +346,12 @@ does not state. A source that cannot be read is a hold, not a pass.
   record missing them. When a DOI resolves, `attribution` comes from Crossref.
 - `colorway` falls back to `signal` with a warning.
 - When `peer_reviewed` is false the template must show the
-  "Preprint — not yet peer-reviewed" flag, enforced in code.
+  "Preprint — not yet peer-reviewed" flag, enforced in code — **unless**
+  `"announcement": true`: a maker's own launch with no study behind it,
+  whose cover says "Announcement — not a peer-reviewed study" instead.
+  `formats.preprint()` is the one rule every label reads; the model
+  proposes `announcement`, and `draft.validate()` drops it whenever a paper
+  resolved or the host is a preprint server. Absent on every older post.
 - Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
   (`draft.py --run`, only when a README was read). `published_at` is added only

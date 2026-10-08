@@ -39,9 +39,9 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from formats import (PAIR, body_text, entries, es_fields,
-                     missing_from_entries, pieces, required, sections, spec,
-                     unpaired)
+from formats import (PAIR, announcement, body_text, entries, es_fields,
+                     missing_from_entries, pieces, post_preprint_flag,
+                     preprint, required, sections, spec, unpaired)
 from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset
 
 POSTS_DIR = REPO_ROOT / "posts"
@@ -164,6 +164,20 @@ def t(en: str, es: str = "") -> Markup:
                   f'<span lang="es" data-lang="es">{escape(es)}</span>')
 
 
+def source_entry(record: dict) -> dict:
+    """One line of a post page's source list: who, where, and what it is.
+
+    `status` is "reviewed", "preprint" or "announcement" — the three things a
+    source can be, decided once by formats.py for the slides and the page.
+    """
+    status = ("preprint" if preprint(record)
+              else "announcement" if announcement(record) else "reviewed")
+    return {"attribution": record["attribution"],
+            "url": record["source_url"],
+            "host": source_host(record["source_url"]),
+            "status": status}
+
+
 def source_host(url: str) -> str:
     """A readable link label. The full URL of a press release is long,
     ugly, and tells a reader less than the publisher's domain does."""
@@ -279,27 +293,19 @@ def load_posts() -> tuple[list[dict], int]:
             # One list for every format: a Drop and a Breakdown have a
             # single source, a Signal has one per item. §7.3 makes credit
             # mandatory per source, so the page prints them all.
-            sources=[{"attribution": e["attribution"],
-                      "url": e["source_url"],
-                      "host": source_host(e["source_url"]),
-                      "peer_reviewed": e["peer_reviewed"]}
-                     for e in entries(post)]
-                    or [{"attribution": post["attribution"],
-                         "url": post["source_url"],
-                         "host": source_host(post["source_url"]),
-                         "peer_reviewed": post["peer_reviewed"]}]
-                    + ([{"attribution": example["attribution"],
-                         "url": example["source_url"],
-                         "host": source_host(example["source_url"]),
-                         "peer_reviewed": bool(example.get("peer_reviewed"))}]
+            # Each source carries its label already decided, by the rule
+            # the slides use (formats.preprint), so the page cannot call an
+            # announcement a preprint the slides did not.
+            sources=[source_entry(e) for e in entries(post)]
+                    or [source_entry(post)]
+                    + ([source_entry(example)]
                        if example and example.get("source_url")
                        != post.get("source_url") else []),
             example=example,
             # The hero flag is a claim about the whole post, so it is only
             # shown where the whole post has one source. A Signal labels its
             # preprints beside the items they belong to.
-            preprint=(not post.get("peer_reviewed", True)
-                      if not entries(post) else False),
+            preprint=post_preprint_flag(post),
             code_href=absolute(post["code_url"]) if post.get("code_url") else "",
             domain=post.get("domain", ""),
         )

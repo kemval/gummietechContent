@@ -84,7 +84,8 @@ def render_kit(episode: dict, colorway: str | None, outdir: Path) -> list[Path]:
             "end": typeset(unquote(episode["end"])),
         },
         # slide_parts.html reads these; a Build has no post record behind it.
-        show_preprint_flag=False, figure=None, diff=None, domain="")
+        show_preprint_flag=False, show_announcement=False, figure=None,
+        diff=None, domain="")
 
     outdir.mkdir(parents=True, exist_ok=True)
     written = []

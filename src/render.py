@@ -42,8 +42,8 @@ from playwright.sync_api import Page, sync_playwright
 # is where the rest of the shared vocabulary already lives.
 from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,
                      body_text, entries, es_fields, format_name,
-                     missing_from_entries, pieces, post_preprint_flag,
-                     preprint_claims, required,
+                     announcement, missing_from_entries, pieces,
+                     post_preprint_flag, preprint, preprint_claims, required,
                      sections, spec, template_for, unpaired)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -513,6 +513,9 @@ def render_html(post: dict, colorway: str | None = None,
         # and formats.py is what knows that a roundup's flags belong to
         # its items. signal.html never reads this.
         show_preprint_flag=post_preprint_flag(post),
+        # The cover says what an unreviewed source is when it is not a
+        # preprint. Post-level only, like the flag; a Signal labels items.
+        show_announcement=not spec(post).entries and announcement(post),
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
@@ -529,6 +532,10 @@ def render_html(post: dict, colorway: str | None = None,
     # that knows how many it has, and this is the only thing that knows what
     # colour they go in.
     env.globals["PAIR"] = PAIR
+    # signal.html labels each item by these, so a roundup cannot hold a
+    # second opinion of what a preprint is.
+    env.tests["preprint"] = preprint
+    env.tests["announcement"] = announcement
     env.globals["rhythm"] = (lambda count, catch=None:
                              rhythm(lead, support, count, catch))
     # Fetched after the filters and globals are registered: Jinja resolves a
@@ -693,6 +700,9 @@ def main() -> int:
     if flags := preprint_claims(post):
         print(f"  preprint flag ON — {flags} slide{'s' * (flags != 1)} "
               f"must carry it")
+    elif announcement(post):
+        print("  announcement — the cover says it is not a peer-reviewed "
+              "study; check that the source really has no paper behind it")
 
     html = render_html(post, args.colorway)
     written = shoot(html, outdir)

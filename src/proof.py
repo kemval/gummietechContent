@@ -35,7 +35,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from formats import preprint_claims, spec
+from formats import announcement, pieces, preprint_claims, sections, spec
+from wording import problems as wording_problems
 from render import (COLORWAYS, DATED_NAME, MIN_SLIDES, REPO_ROOT,
                     colorway_pair, load_post, open_page, previous_colorway,
                     render_html, rhythm, vary, word_budget)
@@ -406,6 +407,23 @@ def check_words(post: dict, report: Report) -> None:
             report.fix("copy", f"{where} is {count} words (limit {limit})")
 
 
+def check_wording(post: dict, report: Report) -> None:
+    """The voice rules code can check (wording.py), on every slide's words
+    and the caption. A FIX: "just" also means "only", and a person at the
+    gate can tell which. draft.py has already dropped the cover lines that
+    break them; this reports what is left."""
+    flagged = announcement(post)
+    # A roundup — a format whose credit is per entry, the Signal — is
+    # framed by its week.
+    roundup = bool(spec(post).entries)
+    texts = [("hook", post.get("hook", "")), ("caption", post.get("caption", ""))]
+    for section in sections(post):
+        texts += [(section.field, piece) for piece in pieces(post, section)]
+    for where, text in texts:
+        for problem in wording_problems(str(text or ""), flagged, roundup):
+            report.fix("voice", f"{where} {problem}")
+
+
 def check_colorway(path: Path | None, colorway: str | None,
                    report: Report) -> None:
     """Whether this post repeats the field of the post before it.
@@ -461,6 +479,7 @@ def proof(post: dict, colorway: str | None,
         check_slide(slide, report)
         check_cloud(slide, report)
     check_words(post, report)
+    check_wording(post, report)
     return report
 
 

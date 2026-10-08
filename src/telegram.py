@@ -83,7 +83,8 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import (body_text, by_hand, es_fields, format_name, pieces,
+from formats import (announcement, body_text, by_hand, es_fields, format_name,
+                     pieces, preprint_claims,
                      sections)
 
 # Defined here rather than imported from render.py on purpose: `confirm` runs
@@ -462,8 +463,15 @@ def review_text(post: dict, stem: str,
     tags = " ".join(post.get("hashtags") or [])
     caption = post.get("caption", "") + (f"\n\n{tags}" if tags else "")
 
-    flag = ("peer-reviewed" if post.get("peer_reviewed")
-            else "PREPRINT — slide 4 carries the flag")
+    # The rule the slides use, so the gate cannot read a source differently:
+    # an announcement is unreviewed but is not a preprint (formats.preprint).
+    # A Signal's items are labelled one by one on their slides.
+    claims = preprint_claims(post)
+    flag = (f"PREPRINT — {claims} slide{'s' * (claims != 1)} carry the flag"
+            if claims
+            else "ANNOUNCEMENT — not a study; check it has no paper behind it"
+            if announcement(post)
+            else "peer-reviewed")
     lines = [
         f"<b>{e(stem)}</b>",
         f"<i>{e(post.get('domain', ''))} · {e(post.get('colorway') or 'signal')}"

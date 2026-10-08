@@ -66,6 +66,35 @@ MAX_AGE_DAYS = 7
 
 SUMMARY_CHARS = 500
 
+# How old a queued story may be and still be drafted. The queue keeps every
+# row it ever scored, and ranking is by score alone, so on 2026-10-07 it
+# held 3,227 queued rows, most of them from September. A launch drafted from
+# one of those — GPT-6 Astra, 34 days old and already replaced — went out
+# saying "just launched". The account's promise is to keep a reader ahead
+# of the news, and month-old news does not. Older rows stay queued in the
+# sheet; they are only no longer chosen. --row is the override.
+MAX_STORY_AGE_DAYS = 10
+
+
+def story_age_days(row: list[str], col: dict, now: datetime) -> float | None:
+    """Days since the story was published, else since it was fetched.
+
+    None when neither date reads, which pick_row treats as too old: a row
+    that cannot show it is fresh is not drafted as news.
+    """
+    for name in ("published", "fetched_at"):
+        if name not in col or col[name] >= len(row):
+            continue
+        try:
+            when = datetime.fromisoformat(row[col[name]])
+        except ValueError:
+            continue
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return (now - when).total_seconds() / 86400
+    return None
+
+
 # Substring match against title + summary, lowercased. Funding rounds and
 # partnership announcements are business news, not science or engineering.
 #

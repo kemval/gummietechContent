@@ -506,3 +506,11 @@ def test_a_boxed_figure_does_not_take_a_linking_word_with_it():
     figure only when it says something ("81% faster")."""
     assert render.figure_phrase("if 20% of birthdays appear once") == "20%"
     assert render.figure_phrase("ran 81% faster") == "81% faster"
+
+
+def test_an_announcement_item_carries_no_preprint_flag():
+    """2026-10-07, the GPT-6 Astra cover: unreviewed is not preprint. The
+    Signal counts flags per item by the same rule as a Drop's cover."""
+    assert render.preprint_claims(SIGNAL) == 1      # item 2 is a preprint
+    items = [SIGNAL["items"][0], {**SIGNAL["items"][1], "announcement": True}]
+    assert render.preprint_claims({**SIGNAL, "items": items}) == 0

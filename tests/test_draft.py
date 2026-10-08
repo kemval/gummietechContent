@@ -11,11 +11,13 @@ each test hands it the records it would have fetched.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 import draft
 import papers
+import render
 
 
 @pytest.fixture
@@ -78,6 +80,25 @@ def test_the_meta_tag_outranks_a_doi_further_down_the_page():
     named, mentioned = papers.doi_candidates(page)
     assert named[0] == "10.1111/first"
     assert "10.2222/second" in mentioned
+
+
+def test_a_weak_cue_does_not_reach_a_footnote_a_page_away():
+    """openai.com/index/gpt-6-astra, 2026-10-07: the word "citation" in the
+    markup, and one DOI 135k characters later — footnote 7, a musicology
+    dataset the model was evaluated on. It was named as the paper, and the
+    draft credited its authors for OpenAI's launch."""
+    footnote = "10.1145/3625135.3625155"
+    page = ('<div data-x="citation"></div>' + "<p>launch copy</p>" * 20000
+            + f'<li>7. Gotham et al. <a href="https://doi.org/{footnote}">x</a></li>')
+    named, mentioned = papers.doi_candidates(page)
+    assert named == []
+    assert footnote in mentioned
+
+
+def test_a_weak_cue_still_names_the_doi_right_after_it():
+    page = '<p>Citation: Smith et al. (2026). <a href="https://doi.org/10.1234/near">x</a></p>'
+    named, _ = papers.doi_candidates(page)
+    assert named == ["10.1234/near"]
 
 
 # ------------------------------------------------------------ what is coverage
@@ -314,8 +335,11 @@ COL = {name: i for i, name in enumerate(HEADER)}
 
 
 def sheet_row(title: str, score: float, topic: str = "general",
-              beat: str = "", status: str = "queued") -> list[str]:
-    return [f"https://x/{title}", title, "", "src", topic, "", "",
+              beat: str = "", status: str = "queued",
+              age_days: float = 1, published: str | None = None) -> list[str]:
+    when = (datetime.now(timezone.utc) - timedelta(days=age_days)).isoformat()
+    return [f"https://x/{title}", title, "", "src", topic,
+            when if published is None else published, "",
             status, str(score), "", beat]
 
 
@@ -380,3 +404,123 @@ def test_each_signal_item_carries_the_subject_its_row_was_on():
     science["item"]["topic"] = "biology"
     post = draft.validate_signal(reply(3), [tech, science, unrowed])
     assert [i.get("beat") for i in post["items"]] == ["ai", "biology", None]
+
+
+# ------------------------------------------------------------- announcements
+# 2026-10-07: the first launch drafted under the relevance lift — OpenAI's
+# GPT-6 Astra page, no paper behind it — rendered "Preprint — not yet
+# peer-reviewed" on its cover. Not peer-reviewed was true; preprint was not.
+
+def drop_reply(**over):
+    return {"post_type": "drop", "domain": "AI models", "colorway": "signal",
+            "hooks": ["OpenAI launched a new model"],
+            "what_happened": "It happened.", "why_it_matters": "It matters.",
+            "the_catch": "Only some users have it.", "caption": "New? Try it?",
+            "keywords": ["ai"], "hashtags": ["#gummietech"],
+            "alt_text": "A carousel about a launch.", "attribution": "OpenAI",
+            "peer_reviewed": False, "announcement": True} | over
+
+
+def drop_item(url="https://openai.com/index/a-launch"):
+    return {"url": url, "source": "OpenAI", "title": "A launch",
+            "summary": "A launch."}
+
+
+def test_a_launch_with_no_paper_is_an_announcement_not_a_preprint():
+    post = draft.validate(drop_reply(), drop_item(), None)
+    assert post["announcement"] is True and post["peer_reviewed"] is False
+    assert render.preprint_claims(post) == 0
+    assert render.post_preprint_flag(post) is False
+
+
+def test_an_announcement_is_never_peer_reviewed():
+    post = draft.validate(drop_reply(peer_reviewed=True), drop_item(), None)
+    assert post["peer_reviewed"] is False
+
+
+def test_a_resolved_paper_overrules_the_models_announcement():
+    """Code knows better than the model here: a paper is a study, and
+    calling it an announcement would hide a preprint flag."""
+    preprint = PAPER | {"is_preprint": True}
+    post = draft.validate(drop_reply(), drop_item(), preprint)
+    assert "announcement" not in post
+    assert render.preprint_claims(post) == 1
+
+
+def test_a_preprint_server_is_never_an_announcement():
+    post = draft.validate(drop_reply(), drop_item("https://arxiv.org/abs/2610.00001"),
+                          None)
+    assert "announcement" not in post
+    assert render.post_preprint_flag(post) is True
+
+
+def test_an_older_post_with_no_announcement_field_reads_as_before():
+    post = draft.validate(drop_reply(announcement=False), drop_item(), None)
+    assert "announcement" not in post
+    assert render.post_preprint_flag(post) is True
+
+
+# ------------------------------------------------------------- freshness
+# 2026-10-07: the queue held 3,227 rows, mostly from September, ranked by
+# score alone. A launch drafted from one — GPT-6 Astra, 34 days old and
+# already replaced — said "just launched" on its cover.
+
+def test_a_stale_row_loses_to_a_fresh_one_however_it_scored():
+    rows = [HEADER, sheet_row("old launch", 9.5, beat="ai", age_days=34),
+            sheet_row("this week", 7.5, beat="ai", age_days=2)]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "this week"
+
+
+def test_a_queue_with_nothing_fresh_stops_rather_than_drafting_old_news():
+    rows = [HEADER, sheet_row("old launch", 9.5, beat="ai", age_days=34)]
+    with pytest.raises(SystemExit, match="last 10 days"):
+        draft.pick_row(rows, COL, None)
+
+
+def test_a_row_named_by_hand_ignores_its_age():
+    rows = [HEADER, sheet_row("old launch", 9.5, beat="ai", age_days=34)]
+    _, item = draft.pick_row(rows, COL, 2)
+    assert item["title"] == "old launch"
+
+
+def test_a_row_that_cannot_show_its_date_is_not_drafted_as_news():
+    rows = [HEADER, sheet_row("undated", 9.5, beat="ai", published="")]
+    with pytest.raises(SystemExit):
+        draft.pick_row(rows, COL, None)
+
+
+# ---------------------------------------------------------------- wording
+# 2026-10-07, fact-checked test drafts in the new voice: "OpenAI just
+# launched GPT-6 Astra" on a 34-day-old launch, and "models you can run"
+# about weights Mistral had only promised for the end of the month.
+
+def test_a_cover_line_that_dates_the_story_is_dropped():
+    post = draft.validate(drop_reply(hooks=[
+        "OpenAI just launched GPT-6 Astra",
+        "OpenAI says its model can fill out online forms"]), drop_item(), None)
+    assert post["hook"] == "OpenAI says its model can fill out online forms"
+    assert "hooks" not in post
+
+
+def test_an_announcement_cover_line_that_promises_the_reader_is_dropped():
+    post = draft.validate(drop_reply(hooks=[
+        "Mistral says its model has 1.05 trillion parameters",
+        "The open models you can run are getting larger"]), drop_item(), None)
+    assert post["hook"] == "Mistral says its model has 1.05 trillion parameters"
+    assert "hooks" not in post
+
+
+def test_you_is_fine_outside_an_announcement():
+    post = draft.validate(drop_reply(announcement=False, hooks=[
+        "A chip as thin as your fingernail", "Another line"]),
+        drop_item("https://example.org/story"), None)
+    assert post["hook"] == "A chip as thin as your fingernail"
+
+
+def test_one_cover_line_is_always_kept():
+    """Three lines that all say "just" still make a post: proof.py reports
+    the word at the gate, where "just three atoms" can be told apart."""
+    post = draft.validate(drop_reply(hooks=["Just three atoms thick",
+                                            "Just one layer"]), drop_item(), None)
+    assert post["hook"] == "Just three atoms thick"

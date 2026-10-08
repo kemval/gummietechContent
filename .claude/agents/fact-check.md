@@ -120,6 +120,24 @@ failure the whole layer exists to prevent. Note also the case where the
 `source_url` is news coverage but the *underlying work* is a preprint: the
 host check in `draft.py` cannot see that, so only you will catch it.
 
+A source has three possible labels, not two. `"announcement": true` (always
+with `peer_reviewed: false`) means the source is its maker's own
+announcement — a company, project or person describing their own release —
+with no study behind it. The cover then says "Announcement — not a
+peer-reviewed study" and no preprint flag is shown. The model proposes this
+label, so check it both ways:
+
+- **Marked announcement, but a paper, preprint or technical report exists**
+  for the work (linked from the page, or findable by `WebSearch`): **BLOCK**.
+  The label hides a preprint flag that §7.2 requires.
+- **Not marked, but it is an announcement** — `peer_reviewed: false`, no
+  paper anywhere, and the cover would say "Preprint": **FIX**. Tell the
+  person to add `"announcement": true`. Calling a launch a preprint is a
+  false claim about the source.
+- An announcement's claims are the maker's own: "47% faster" is OpenAI's
+  number, not a measurement. If a slide states a maker's claim as
+  independent fact, that is a **FIX**: it must read as their claim.
+
 ### 7. Check the supporting fields
 
 - `alt_text` must describe what is actually on the slides, for a screen reader.

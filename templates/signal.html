@@ -29,7 +29,7 @@
 {% import 'slide_parts.html' as parts with context %}
 {% set n = 2 + items|length %}
 {% set fields = rhythm(n, 0) %}
-{% set preprints = items|rejectattr('peer_reviewed')|list|length %}
+{% set preprints = items|select('preprint')|list|length %}
 
 <!-- 1. COVER -->
 {{ parts.cover("signal", n, fields[0], [
@@ -44,9 +44,9 @@
   {{ parts.corners("signal", at, n, "this week") }}
   <div class="giant rank" data-anchor="top" data-top="140" data-max="200">{{ "%02d"|format(loop.index) }}</div>
   <div class="body">
-    {% if not item.peer_reviewed %}<div style="margin-bottom: 30px"><span class="flag">{{ parts.PREPRINT }}</span></div>{% endif %}
+    {% if item is preprint %}<div style="margin-bottom: 30px"><span class="flag">{{ parts.PREPRINT }}</span></div>{% endif %}
     <p class="text display claim">{{ parts.boxed(item.claim, figures_only=True) }}</p>
-    <dl class="credit"><dt>[source]</dt><dd>{{ item.attribution }}</dd></dl>
+    <dl class="credit"><dt>[source]</dt><dd>{{ item.attribution }}{% if item is announcement %} — announcement{% endif %}</dd></dl>
   </div>
 </div></div>
 {% endfor %}

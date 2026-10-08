@@ -446,7 +446,8 @@ def check_queue(report: Report) -> None:
     new → queued | rejected → drafted | duplicate.
     """
     try:
-        from ingest import COLUMNS, open_sheet                 # gspread
+        from ingest import (COLUMNS, MAX_STORY_AGE_DAYS,   # gspread
+                            open_sheet, story_age_days)
         rows = open_sheet().get_all_values()
     except SystemExit as exc:
         # open_sheet exits with instructions when the credentials are not
@@ -460,16 +461,28 @@ def check_queue(report: Report) -> None:
 
     status, fetched = COLUMNS.index("status"), COLUMNS.index("fetched_at")
     body = [row for row in rows[1:] if len(row) > status]
-    queued = sum(row[status] == "queued" for row in body)
+    # Counted as draft.pick_row() sees them: a queued row older than
+    # MAX_STORY_AGE_DAYS is never chosen, so it is not a candidate here
+    # either — counting it would report a healthy queue the day drafting
+    # stops for want of fresh news.
+    col = {name: i for i, name in enumerate(COLUMNS)}
+    now = datetime.now(timezone.utc)
+    queued_rows = [row for row in body if row[status] == "queued"]
+    fresh = sum(1 for row in queued_rows
+                if (age := story_age_days(row, col, now)) is not None
+                and age <= MAX_STORY_AGE_DAYS)
     unscored = sum(row[status] == "new" for row in body)
 
-    if queued < QUEUE_FLOOR:
-        report.fix("queue", f"only {queued} candidate(s) above the score "
-                            f"threshold. Run the evergreen-scout agent, or "
-                            f"draft with --evergreen.")
+    if fresh < QUEUE_FLOOR:
+        report.fix("queue", f"only {fresh} candidate(s) from the last "
+                            f"{MAX_STORY_AGE_DAYS} days above the score "
+                            f"threshold ({len(queued_rows)} queued in all). "
+                            f"Check ingest.yml is scoring, run the "
+                            f"evergreen-scout agent, or draft with "
+                            f"--evergreen.")
     else:
-        report.note("queue", f"{queued} queued, {unscored} unscored, "
-                             f"{len(body)} rows")
+        report.note("queue", f"{fresh} fresh of {len(queued_rows)} queued, "
+                             f"{unscored} unscored, {len(body)} rows")
 
     newest = max((row[fetched] for row in body
                   if len(row) > fetched and row[fetched]), default="")

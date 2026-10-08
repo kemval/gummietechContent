@@ -57,7 +57,7 @@ import json
 import re
 import sys
 from collections.abc import Iterator
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -65,15 +65,20 @@ import llm                       # forwards per LLM_PROVIDER, failing over (llm.
 from formats import by_hand, format_name
 from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
-from ingest import COLUMNS, open_sheet
+from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
                     resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     previous_colorway, vary, warn_on_length)
+from wording import problems as wording_problems
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
 EVERGREEN_QUEUE = REPO_ROOT / "docs" / "evergreen_queue.md"
+# How every post sounds. A doc rather than prompt text so a person can edit
+# the voice without touching code; weekly.py's brief points Claude at the
+# same file. See docs/decisions/voice-and-selection.md.
+VOICE_GUIDE = REPO_ROOT / "docs" / "voice.md"
 
 # docs §1: five items, one slide each. A Signal is five sources in one
 # prompt, so each gets a fraction of a Drop's budget — one sentence per item
@@ -136,19 +141,29 @@ no prose and no code fences, with exactly these keys:
 (biology, medicine, climate, ecology), ember (energy, materials, engineering, \
 chemistry). Use exactly one of those four words. If none clearly fits, use \
 signal>",
-  "hooks": ["<three cover lines for the same finding, each at most \
-{hook_limit} words, each a different angle. 1: the finding, stated plainly. \
-2: the assumption it breaks or the belief it corrects — only if the text \
-names one; otherwise another plain statement. 3: what it changes for the \
-reader, or its number made concrete ('as thin as', 'in the time it takes \
-to'). No questions, no 'scientists say', no hype, and no claim the text does \
-not support — a person picks one of these for the cover>"],
-  "what_happened": "<at most {word_limit} words. Who did what, and how it works>",
-  "why_it_matters": "<at most {word_limit} words. The consequence. Name the \
-bottleneck it removes or the assumption it breaks>",
+  "hooks": ["<three cover lines for the same story, each at most \
+{hook_limit} words, each a different angle, each in everyday words a reader \
+would say out loud. 1: what happened, said the way you would tell a friend. \
+2: start from something the reader already knows or uses — a product, an \
+object, a habit — and connect the story to it. 3: the number made concrete \
+('as thin as', 'in the time it takes to'), or what the reader can now do — \
+only if the text itself says who can use it and how. No questions, no \
+'scientists say', no hype, no jargon, and no claim the text does not \
+support — a person picks one of these for the cover>"],
+  "what_happened": "<at most {word_limit} words. What happened, in plain \
+words, starting from what the reader knows. A technical term only if the \
+same sentence says what it means>",
+  "why_it_matters": "<at most {word_limit} words. What changes for a person \
+who uses technology: what they can now do, use or expect, as the text states \
+it. Concrete, never 'implications for the field'. If the text does not say \
+what changes for people, say plainly what it makes possible>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
-source: sample size, conditions, what was not tested. Never invent one, and \
-never overstate it>",
+source: sample size, conditions, what was not tested. For a company's or \
+project's own announcement: what the maker says it cannot do yet, where it \
+falls short, or what it was not tested on — never its price, its rollout or \
+its schedule, which are not limitations of the work. If something the story \
+depends on is only promised for later — weights, a paper, wider access — \
+that is the catch. Never invent one, and never overstate it>",
 {extra}  "caption": "<two sentences. The first states the finding and carries the \
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
@@ -161,10 +176,16 @@ The slides carry no photographs, charts or diagrams: each one is a flat \
 colour field with the post's own words on it. Say what the carousel says, \
 never what it depicts>",
   "attribution": "<'Surname et al., Journal (Year)' if the text names authors \
-and a journal; otherwise the publishing organisation's name. Use only names \
-that appear in the text below. Never guess>",
+and a journal; 'Surname et al., Outlet (Year)' if it names authors and no \
+journal, as a company blog post signed by its engineers does; otherwise the \
+publishing organisation's name. Use only names that appear in the text \
+below. Never guess>",
   "peer_reviewed": <true if this is published in a peer-reviewed journal, \
-false if it is a preprint>
+false otherwise>,
+  "announcement": <true only if the text reports no study at all: a company, \
+project or person announcing their own product, model, release or work. \
+false if it reports a paper, a preprint or any research study, even one \
+covered by a news site>
 }}
 
 Rules:
@@ -180,6 +201,28 @@ terms the paper contradicts.
 them may end up on the cover.
 - the_catch is the credibility slide. Prefer a limitation the paper states \
 about itself. A weak but true limitation beats a strong invented one.
+- When the source is its maker's own announcement (announcement true), every \
+figure and every comparison on every slide, hook and caption is the maker's \
+own claim and must say so: "OpenAI says", "in Mistral's tests", "Google \
+says". A maker's number stated as plain fact is a false claim of \
+independence.
+- No word that dates the story: never "just", "today", "now", "new", \
+"latest", "lately" or "this week". You do not know today's date.
+- Plain words never cost a qualifier. Keep every hedge the source uses \
+("expects", "may", "aims to"), every scope ("in simulations", "on one \
+benchmark", "per task", "from Chrome 155") and every baseline ("than \
+GPT-5.6 Sol"). A number without its scope and baseline is a different claim.
+- Never explain what a number means ("meaning...", "so...") and never join \
+two facts with "because", "so" or "letting" unless the source itself makes \
+that link.
+- A promise is not a release. What the maker says will come later stays in \
+the future tense, and nothing may read as available that is not available \
+yet. "You" and "your" only for what any reader can actually do.
+- Write every field in the voice below. Where it and these rules ever \
+disagree, these rules win.
+
+VOICE GUIDE:
+{voice}
 
 Source: {source}
 Title: {title}
@@ -232,8 +275,26 @@ a reader saves it to look something up later.
 the outlet instead.
 - Do not write a caveat slide. This format has no catch slide; a roundup has \
 five caveats or none.
+- Write the hook, every claim and the caption in the voice below. Where it \
+and these rules ever disagree, these rules win.
+
+VOICE GUIDE:
+{voice}
 
 {sources}"""
+
+
+def voice() -> str:
+    """docs/voice.md from its first `##` heading on, pasted into every prompt
+    this file sends. What comes before is a note to the person editing it."""
+    try:
+        text = VOICE_GUIDE.read_text()
+    except OSError as exc:
+        sys.exit(f"Could not read {VOICE_GUIDE.relative_to(REPO_ROOT)} "
+                 f"({exc.strerror}). It is the voice every draft is written "
+                 "in; restore it from git (`git checkout -- docs/voice.md`).")
+    start = text.find("\n## ")
+    return (text[start:] if start >= 0 else text).strip()
 
 
 def signal_sources(picks: list[dict]) -> str:
@@ -336,7 +397,8 @@ def links_code(row: list[str], col: dict) -> bool:
 
 def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
              skip: set[int] = frozenset(),
-             prefer_code: bool = False) -> tuple[int, dict]:
+             prefer_code: bool = False,
+             now: datetime | None = None) -> tuple[int, dict]:
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
 
@@ -346,8 +408,12 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     `skip` holds rows this run has already rejected as duplicates. Their
     status is updated in the sheet too, but `rows` is the snapshot read
     before that, so without this the next pass would pick the same one.
+
+    A queued row older than MAX_STORY_AGE_DAYS is not a candidate.
     """
+    now = now or datetime.now(timezone.utc)
     candidates = []
+    stale = 0
     for n, row in enumerate(rows[1:], start=2):
         if n in skip:
             continue
@@ -355,6 +421,11 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
             continue
         if not wanted and row[col["status"]] != "queued":
             continue
+        if not wanted:
+            age = story_age_days(row, col, now)
+            if age is None or age > MAX_STORY_AGE_DAYS:
+                stale += 1
+                continue
         try:
             score = float(row[col["score"]] or 0)
         except ValueError:
@@ -362,9 +433,12 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
         candidates.append((score, n, row))
 
     if not candidates:
-        sys.exit("Nothing to draft. Run `python src/score.py` first, or pass "
-                 "--row with a specific sheet row." if not wanted
-                 else f"Row {wanted} is not in the sheet.")
+        if wanted:
+            sys.exit(f"Row {wanted} is not in the sheet.")
+        sys.exit(f"Nothing to draft: no queued row is from the last "
+                 f"{MAX_STORY_AGE_DAYS} days ({stale} older ones are still "
+                 "queued). Check that ingest.yml is running and scoring, or "
+                 "pass --row to draft an older story on purpose.")
 
     preferred = [c for c in candidates if is_priority(c[2], col)]
     if not wanted and not preferred:
@@ -712,7 +786,7 @@ def finish(post: dict, order: list[str]) -> dict:
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
              "what_happened", "try_it", "why_it_matters", "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
-             "peer_reviewed", "beat"]
+             "peer_reviewed", "announcement", "beat"]
 
 
 def row_subject(item: dict) -> str:
@@ -765,6 +839,29 @@ def hook_choices(post: dict) -> dict:
     return {"hook": hooks[0], **({"hooks": hooks} if len(hooks) > 1 else {})}
 
 
+def check_hooks(post: dict) -> None:
+    """Drop the cover lines wording.py refuses from `hook` and `hooks`.
+
+    A dropped line is said, and one is always kept: three cover lines that
+    all say "just" still make a post, and proof.py reports the word at the
+    gate where a person can tell "just launched" from "just three atoms".
+    """
+    hooks = post.get("hooks") or ([post["hook"]] if post.get("hook") else [])
+    flagged = bool(post.get("announcement"))
+    kept = [h for h in hooks if not wording_problems(h, flagged)] or hooks[:1]
+    for hook in hooks:
+        if hook not in kept:
+            print(f"  hook dropped: {hook!r} — "
+                  f"{'; '.join(wording_problems(hook, flagged))}")
+    if not kept:
+        return                 # finish() reports the missing hook
+    post["hook"] = kept[0]
+    if len(kept) > 1:
+        post["hooks"] = kept
+    else:
+        post.pop("hooks", None)
+
+
 def validate(post: dict, item: dict, paper: dict | None) -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
     url = item["url"]
@@ -794,6 +891,18 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         # JSON at the gate. The model never supplies it.
         post["doi"] = paper["doi"]
 
+    # An announcement is the third thing a source can be: not peer-reviewed,
+    # and not a preprint either. The model proposes it; code overrules it
+    # wherever code knows better — a resolved paper or a preprint server is
+    # a study whatever the model says, and an announcement is never
+    # peer-reviewed. Kept only when true, so every older post reads as it
+    # always did. See formats.preprint() and the fact-check agent.
+    proposed = post.pop("announcement", None) is True
+    on_preprint_host = any(host in url.lower() for host in PREPRINT_HOSTS)
+    if proposed and not paper and not on_preprint_host:
+        post["announcement"] = True
+        post["peer_reviewed"] = False
+
     if subject := row_subject(item):
         post["beat"] = subject
 
@@ -804,6 +913,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
         post["code_url"] = link
 
     post.update(hook_choices(post))
+    check_hooks(post)
     return finish(post, DROP_KEYS)
 
 
@@ -1088,6 +1198,7 @@ def main() -> int:
             SIGNAL_PROMPT.format(count=len(picks), more=len(picks) - 1,
                                  hook_limit=HOOK_WORD_LIMIT,
                                  claim_limit=CLAIM_WORD_LIMIT,
+                                 voice=voice(),
                                  sources=signal_sources(picks)),
             api_key, model, temperature=0.4)
         post = validate_signal(parsed(reply), picks)
@@ -1113,7 +1224,7 @@ def main() -> int:
         reply = llm.generate(
             PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
                           source=item["source"], title=item["title"],
-                          url=item["url"], text=text,
+                          url=item["url"], text=text, voice=voice(),
                           extra=RUN_KEY.format(word_limit=WORD_LIMIT)
                           if readme else ""),
             api_key, model, temperature=0.4)
