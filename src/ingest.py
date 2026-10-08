@@ -36,7 +36,6 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import feedparser
 import gspread
@@ -96,37 +95,6 @@ def story_age_days(row: list[str], col: dict, now: datetime) -> float | None:
     return None
 
 
-
-def url_key(url: str) -> str:
-    """A URL as identity, for telling whether two links are one page.
-
-    Scheme, "www.", the fragment, tracking parameters (utm_*), a trailing
-    slash or backslash and case are dropped; the rest of the query stays,
-    because ?id= can be the page. The same story reached
-    openai.com/index/gpt-6-astra/ from Hacker News and
-    openai.com/index/gpt-6-astra from OpenAI's own feed.
-    """
-    parts = urlsplit(url.strip().rstrip("\\"))
-    query = "&".join(q for q in parts.query.split("&")
-                     if q and not q.lower().startswith("utm_"))
-    host = parts.netloc.lower().removeprefix("www.")
-    path = parts.path.rstrip("/")
-    return (host + path + (f"?{query}" if query else "")).lower()
-
-
-def announcement_prefixes(feed_files: list[Path] | None = None) -> tuple[str, ...]:
-    """Where the companies in feeds/*.yaml publish their own announcements.
-
-    Each newsroom feed declares them as `announces`, measured from the
-    sheet. Read from the YAML so a new newsroom is one entry there, not a
-    second list in code.
-    """
-    found: list[str] = []
-    for feed_file in feed_files or sorted(FEEDS_DIR.glob("*.yaml")):
-        data = yaml.safe_load(feed_file.read_text()) or {}
-        for feed in data.get("feeds", []):
-            found += [url_key(p) for p in feed.get("announces") or []]
-    return tuple(found)
 
 # Substring match against title + summary, lowercased. Funding rounds and
 # partnership announcements are business news, not science or engineering.

@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit
 
 import feedparser
 import requests
@@ -45,6 +45,16 @@ TIMEOUT = 20
 # this were 215d, 371d and 609d. Anything in between is a publication that
 # has stopped or moved, not one having a quiet month.
 STALE_AFTER_DAYS = 60
+
+# A newsroom's `announces` prefixes say where its company publishes its own
+# announcements, and draft.py labels and deduplicates launches by them. A
+# site redesign that moves those pages leaves the feed live and the
+# prefixes silently wrong: launches stop being recognised and fall back to
+# the model. Measured across the eleven newsroom feeds on 2026-10-07, 9 or
+# 10 of the newest 10 links sat under their prefix (Microsoft's one miss
+# was a podcast). Below half, the prefixes no longer describe the feed.
+ANNOUNCES_SAMPLE = 10
+ANNOUNCES_MIN_SHARE = 0.5
 
 # A real browser UA. Feed endpoints are public, but many sit behind bot
 # filters that block anything that doesn't look like a browser.
@@ -142,13 +152,71 @@ def newest_entry_age(parsed) -> int | None:
     return (datetime.now(timezone.utc) - newest).days
 
 
+def url_key(url: str) -> str:
+    """A URL as identity, for telling whether two links are one page.
+
+    Scheme, "www.", the fragment, tracking parameters (utm_*), a trailing
+    slash or backslash and case are dropped; the rest of the query stays,
+    because ?id= can be the page. The same story reached
+    openai.com/index/gpt-6-astra/ from Hacker News and
+    openai.com/index/gpt-6-astra from OpenAI's own feed.
+
+    Here rather than in ingest.py because this is the module every feed
+    reader already imports, and the prefix check below needs it.
+    """
+    parts = urlsplit(url.strip().rstrip("\\"))
+    query = "&".join(q for q in parts.query.split("&")
+                     if q and not q.lower().startswith("utm_"))
+    host = parts.netloc.lower().removeprefix("www.")
+    path = parts.path.rstrip("/")
+    return (host + path + (f"?{query}" if query else "")).lower()
+
+
+def entry_prefixes(entry: dict) -> tuple[str, ...]:
+    """One feed entry's `announces` prefixes, as url_key() forms."""
+    return tuple(url_key(p) for p in entry.get("announces") or [])
+
+
+def announcement_prefixes(single_file=None) -> tuple[str, ...]:
+    """Where the companies in feeds/*.yaml publish their own announcements.
+
+    Each newsroom feed declares them as `announces`, measured from the
+    sheet. Read from the YAML so a new newsroom is one entry there, not a
+    second list in code.
+    """
+    return tuple(p for _, entry in all_feeds(single_file)
+                 for p in entry_prefixes(entry))
+
+
+def announces_drift(entry: dict, links: list[str]) -> str | None:
+    """Why a newsroom's `announces` prefixes no longer fit its feed, or None.
+
+    `links` are the feed's newest entry links, newest first. A feed with no
+    `announces` has nothing to drift from.
+    """
+    prefixes = entry_prefixes(entry)
+    sample = [link for link in links if link][:ANNOUNCES_SAMPLE]
+    if not prefixes or not sample:
+        return None
+    outside = [link for link in sample
+               if not any(url_key(link).startswith(p + "/") for p in prefixes)]
+    under = len(sample) - len(outside)
+    if under >= ANNOUNCES_MIN_SHARE * len(sample):
+        return None
+    return (f"only {under} of its newest {len(sample)} links are under "
+            f"`announces` ({', '.join(prefixes)}), e.g. {outside[0]}. "
+            f"Re-measure the prefixes from the sheet, or its launches stop "
+            f"being recognised as announcements")
+
+
 def check_feed(entry, verbose=False):
     """
     Fetch one feed and classify the result.
 
-    Returns (status, detail, age) where status is 'ok', 'empty' or 'fail'
-    and age is the newest entry's age in days — None when the feed is
-    undated, or when it never got far enough to have entries at all.
+    Returns (status, detail, age, drift) where status is 'ok', 'empty' or
+    'fail', age is the newest entry's age in days — None when the feed is
+    undated, or when it never got far enough to have entries at all — and
+    drift is announces_drift()'s reason, or None.
 
     The age is returned rather than judged here because two callers want
     different things from it: this file prints it for a person choosing a
@@ -157,7 +225,7 @@ def check_feed(entry, verbose=False):
     """
     url = entry.get("url", "")
     if not url:
-        return "fail", "no url in entry", None
+        return "fail", "no url in entry", None, None
 
     pace_host(url)
     try:
@@ -165,20 +233,20 @@ def check_feed(entry, verbose=False):
             url, headers=HEADERS, timeout=TIMEOUT, allow_redirects=True
         )
     except requests.exceptions.SSLError:
-        return "fail", "SSL error — check the certificate or try http://", None
+        return "fail", "SSL error — check the certificate or try http://", None, None
     except requests.exceptions.ConnectionError:
-        return "fail", "connection failed — domain may be gone", None
+        return "fail", "connection failed — domain may be gone", None, None
     except requests.exceptions.Timeout:
-        return "fail", f"timed out after {TIMEOUT}s", None
+        return "fail", f"timed out after {TIMEOUT}s", None, None
     except Exception as exc:
-        return "fail", f"{type(exc).__name__}: {exc}", None
+        return "fail", f"{type(exc).__name__}: {exc}", None, None
 
     if resp.status_code == 403:
-        return "fail", "HTTP 403 — blocked. Try a different UA or use RSSHub.", None
+        return "fail", "HTTP 403 — blocked. Try a different UA or use RSSHub.", None, None
     if resp.status_code == 404:
-        return "fail", "HTTP 404 — feed moved. Check the site's /rss page.", None
+        return "fail", "HTTP 404 — feed moved. Check the site's /rss page.", None, None
     if resp.status_code >= 400:
-        return "fail", f"HTTP {resp.status_code}", None
+        return "fail", f"HTTP {resp.status_code}", None, None
 
     # A block page or redirect to a landing page returns 200 with HTML.
     ctype = resp.headers.get("Content-Type", "").lower()
@@ -189,11 +257,11 @@ def check_feed(entry, verbose=False):
 
     if not parsed.entries:
         if looks_html:
-            return "fail", f"returned HTML, not a feed (Content-Type: {ctype})", None
+            return "fail", f"returned HTML, not a feed (Content-Type: {ctype})", None, None
         if getattr(parsed, "bozo", False):
             reason = str(getattr(parsed, "bozo_exception", "malformed"))[:70]
-            return "fail", f"unparseable: {reason}", None
-        return "empty", "valid feed but 0 entries", None
+            return "fail", f"unparseable: {reason}", None, None
+        return "empty", "valid feed but 0 entries", None, None
 
     age = newest_entry_age(parsed)
     latest = parsed.entries[0].get("title", "(untitled)")
@@ -208,7 +276,10 @@ def check_feed(entry, verbose=False):
         detail += f" · latest: {latest[:55]}"
     if resp.url != url:
         detail += f" · redirected to {resp.url}"
-    return "ok", detail, age
+    drift = announces_drift(entry, [e.get("link", "") for e in parsed.entries])
+    if drift:
+        detail += " · ANNOUNCES DRIFTED"
+    return "ok", detail, age, drift
 
 
 def main():
@@ -225,6 +296,7 @@ def main():
     totals = {"ok": 0, "empty": 0, "fail": 0}
     failures = []
     stale = []
+    drifted = []
 
     for feed_file, group in groupby(all_feeds(args.file), key=itemgetter(0)):
         entries = [entry for _, entry in group]
@@ -233,7 +305,9 @@ def main():
 
         for entry in entries:
             name = entry.get("name", "unnamed")
-            status, detail, age = check_feed(entry, verbose=args.verbose)
+            status, detail, age, drift = check_feed(entry, verbose=args.verbose)
+            if drift:
+                drifted.append((name, drift))
             totals[status] += 1
             feed_stale = age is not None and age >= STALE_AFTER_DAYS
 
@@ -265,6 +339,11 @@ def main():
               f"contribute no rows:{END}")
         for name, url, age in stale:
             print(f"  · {name} — newest entry {age}d old\n    {url}")
+
+    if drifted:
+        print(f"\n{WARN}Announcement prefixes that no longer fit their feed:{END}")
+        for name, drift in drifted:
+            print(f"  · {name} — {drift}")
 
     if failures:
         print(f"\n{BAD}Fix or remove these before wiring into ingest:{END}")

@@ -69,7 +69,7 @@ cases, papers that used the model, a later model), but the launch itself
 came as OpenAI's own page twice, InfoQ's report and a newsletter. Each
 newsroom feed now declares where its company announces (`announces` in
 `feeds/tier1_primary.yaml`, measured). A post's `source_url` is also kept
-as a normalised key (`ingest.url_key`: no scheme, `www.`, fragment, `utm_`
+as a normalised key (`verify_feeds.url_key`: no scheme, `www.`, fragment, `utm_`
 parameters or trailing slash). A coverage row with no paper whose page
 links a maker announcement already in `posts/` is a duplicate. Run against
 the 39 Astra rows with Astra posted, it caught all four copies of the

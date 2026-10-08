@@ -6,7 +6,19 @@ Section names below ("see **X**") refer to `CLAUDE.md`'s headings.
 
 **Batch LLM scoring 15–20 items per request.** Gemini's free tier has a daily
 request cap as well as a per-minute one. One request per item would exhaust
-the daily cap; batching drops it to 20–30 calls a day. Add a keyword
+the daily cap; batching drops it to 20–30 calls a day.
+
+**Measured 2026-10-08, that estimate was half the real load.** Weekdays
+ingest 650–1,200 rows, which is 37–68 scoring calls at `BATCH_SIZE` 18.
+Weekends are about 5. Drafting, translating and retries add a handful, so a
+heavy day is about 80 requests. Google no longer publishes the free tier's
+daily cap: the rate-limits page points to each project's own AI Studio
+dashboard (aistudio.google.com/rate-limit), so the cap is per account and
+has to be read there. Third-party write-ups disagree: some say about 1,500
+requests a day, others say about 100 after an April 2026 cut. At 100, a
+heavy day is 80% of the cap with no room for retries. Read the real figure
+from the dashboard before relying on Gemini alone. A spent daily cap stops
+the run; it does not fail over (see below). Add a keyword
 pre-filter in Python (drop "raises $", "Series A", "announces partnership")
 before anything reaches the LLM.
 

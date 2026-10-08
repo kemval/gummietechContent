@@ -65,12 +65,12 @@ import llm                       # forwards per LLM_PROVIDER, failing over (llm.
 from formats import by_hand, format_name
 from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
-from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, announcement_prefixes,
-                    open_sheet, story_age_days, url_key)
+from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
                     resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     previous_colorway, vary, warn_on_length)
+from verify_feeds import announcement_prefixes, url_key
 from wording import problems as wording_problems
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

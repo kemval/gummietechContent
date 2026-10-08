@@ -156,7 +156,8 @@ reaches feedparser as a "not well-formed" XML error. → `docs/decisions/feeds.m
 `python src/verify_feeds.py -v` after any change to `feeds/`; `feed-scout`
 proposes fixes, a person verifies and commits. **And a feed can be live and
 finished at the same time** — both the checker and `watch.py` measure the
-newest entry's age against `STALE_AFTER_DAYS` (60). → `docs/decisions/feeds.md`
+newest entry's age against `STALE_AFTER_DAYS` (60). A newsroom's `announces`
+prefixes are checked the same way (`announces_drift`). → `docs/decisions/feeds.md`
 
 **Batch LLM scoring 15–20 items per request**, with a Python keyword
 pre-filter first. Gemini's free tier has a per-minute and a daily cap, per
@@ -487,7 +488,7 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
 
 `src/watch.py`, via `watch.yml` once a day, reports what should have
 happened and did not (cadence, glossary, breakdown, subject, gate, metrics, colour,
-buffer, feeds, queue, structure, fact-check). It only asks about obligations
+buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot
 prove it ran. → `docs/decisions/watch.md`

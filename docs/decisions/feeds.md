@@ -37,7 +37,7 @@ and 609d. An undated feed has no age and is never reported, which is
 `announces` on an entry in `feeds/tier1_primary.yaml` lists the URL prefixes
 of that company's own announcements. They are measured from the URLs its
 rows actually carry in the sheet, never typed from memory, and re-measured
-when a feed moves. `ingest.announcement_prefixes()` is the one reader, and
+when a feed moves. `verify_feeds.announcement_prefixes()` is the one reader, and
 `draft.py` uses it twice: to label a paperless page under a prefix as its
 maker's announcement, and to key a launch's duplicates (see
 `voice-and-selection.md` and `dedup.md`). A prefix that is too broad labels
@@ -45,3 +45,11 @@ a third party's page as the maker's; one that is too narrow just leaves a
 page to the model, so err narrow. Anthropic, Meta AI, `blog.google` and
 `developer.chrome.com` have no feed here and so no prefix: their launches
 fall back to the model's proposal and the fact-check.
+
+**Prefixes are checked, not trusted.** A site redesign that moves a
+newsroom's pages leaves its feed live and its `announces` prefixes silently
+wrong. `verify_feeds.announces_drift()` compares each newsroom's newest 10
+links with its prefixes and reports the feed when fewer than half fit.
+`verify_feeds.py` prints it and `watch.py` makes it a FIX. On 2026-10-07
+healthy feeds sat at 9 or 10 of 10; Microsoft Research's one miss was a
+podcast.
