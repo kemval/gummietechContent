@@ -1,0 +1,47 @@
+{
+  "post_type": "breakdown",
+  "domain": "AI inference",
+  "colorway": "signal",
+  "hook": "A 125B model fits a gaming PC by loading only what it needs.",
+  "the_question": "Strata runs a 125B model on a PC with one 12 GB RTX 5070 at 94 tokens a second. The model alone is far larger than that card.",
+  "the_intuition": "The first guess is that the whole model must sit in GPU memory, so a gaming card could never run it.",
+  "mechanism": [
+    "The model has 24,576 small experts, but each token uses only 10. So the GPU keeps the most-used ones, and system RAM holds all of them.",
+    "The CPU computes the experts the GPU does not hold, at the same time as the GPU works on its cached ones.",
+    "Speculative decoding: a draft layer guesses up to 3 tokens, then one pass of the big model checks them. Output is 1.6–1.8x faster."
+  ],
+  "why_it_matters": "More GPU memory matters more than a faster GPU here: the page says every extra GB holds about 700 more experts.",
+  "the_catch": "Not peer-reviewed. The model is compressed, and larger sizes are \"a bit smarter\". Loading can freeze the PC for 1–3 minutes. Benchmarks cover two PCs.",
+  "caption": "A 125-billion-parameter model sounds like server territory. Strata's trick is that each token uses only 10 of 24,576 experts, so the GPU caches the busiest ones, RAM holds the rest, and a small draft layer guesses ahead while the big model checks. It is compressed, and loading can freeze the PC for minutes. Would you run a model like this at home?",
+  "keywords": [
+    "AI inference",
+    "mixture of experts",
+    "speculative decoding",
+    "gaming PC"
+  ],
+  "hashtags": [
+    "#AI",
+    "#LLM",
+    "#inference",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how Strata runs a 125-billion-parameter model on a gaming PC: only 10 of 24,576 experts are used per token, the GPU caches the most-used ones while RAM and CPU hold and compute the rest, and speculative decoding speeds up output 1.6 to 1.8 times.",
+  "source_url": "https://github.com/Niko1221/Strata",
+  "attribution": "Niko1221, Strata (GitHub)",
+  "peer_reviewed": false,
+  "es": {
+    "domain": "inferencia de IA",
+    "hook": "Un modelo de 125B cabe en una PC gamer cargando solo lo que necesita.",
+    "the_question": "Strata ejecuta un modelo de 125B en una PC con una RTX 5070 de 12 GB a 94 tokens por segundo. El modelo por sí solo es mucho más grande que esa tarjeta.",
+    "the_intuition": "La primera suposición es que todo el modelo debe estar en la memoria de la GPU, por lo que una tarjeta gamer nunca podría ejecutarlo.",
+    "mechanism": [
+      "El modelo tiene 24 576 expertos pequeños, pero cada token utiliza solo 10. Así, la GPU mantiene los más usados y la RAM del sistema almacena todos los demás.",
+      "La CPU calcula los expertos que la GPU no tiene, simultáneamente mientras la GPU trabaja con los que tiene en caché.",
+      "Decodificación especulativa: una capa preliminar propone hasta 3 tokens y luego una pasada del modelo grande los verifica. La salida es de 1,6–1,8 veces más rápida."
+    ],
+    "why_it_matters": "Aquí la cantidad de memoria de la GPU importa más que la velocidad de la propia GPU: la página indica que cada GB extra permite almacenar alrededor de 700 expertos más.",
+    "the_catch": "No ha sido revisado por pares. El modelo está comprimido y los tamaños mayores son «un poco más inteligentes». La carga puede congelar la PC de 1 a 3 minutos. Las pruebas cubren solo dos PC.",
+    "_en": "98e07d1c663d9eb7"
+  }
+}
