@@ -103,17 +103,31 @@ feeds:
     topic: general
 
   # --- company newsrooms ---
+  #
+  # `announces` lists the URL prefixes where each company publishes its own
+  # announcements, measured from the sheet's rows on 2026-10-07 — never
+  # from memory. A page under one of them with no paper behind it is the
+  # maker's own announcement, decided by code (draft.maker_announcement):
+  # the cover says "Announcement — not a peer-reviewed study", a Signal may
+  # carry it, and a later story that links to one already posted is a
+  # duplicate. A company blog that describes a paper still resolves the
+  # paper, and the paper wins. Hugging Face's blog also hosts other
+  # organisations' posts (huggingface.co/blog/ibm-research/…): each is still
+  # its author's own announcement. See docs/decisions/voice-and-selection.md.
   - name: Google DeepMind
     url: https://deepmind.google/blog/rss.xml
     topic: ai
+    announces: [deepmind.google/blog/]
 
   - name: Google Research
     url: https://research.google/blog/rss/
     topic: ai
+    announces: [research.google/blog/]
 
   - name: OpenAI
     url: https://openai.com/news/rss.xml
     topic: ai
+    announces: [openai.com/index/]
 
   # Added 2026-10-07 with score.py's relevance axis: model launches are what
   # the AI digests lead with, and a lab's own announcement is the source
@@ -122,34 +136,42 @@ feeds:
   - name: Mistral AI
     url: https://mistral.ai/news/rss
     topic: ai
+    announces: [mistral.ai/news/]
 
   - name: Microsoft Research
     url: https://www.microsoft.com/en-us/research/feed/
     topic: ai
+    announces: [microsoft.com/en-us/research/blog/]
 
   - name: Hugging Face Blog
     url: https://huggingface.co/blog/feed.xml
     topic: ai
+    announces: [huggingface.co/blog/]
 
   - name: NVIDIA Developer Blog
     url: https://developer.nvidia.com/blog/feed/
     topic: ai
+    announces: [developer.nvidia.com/blog/]
 
   - name: NVIDIA Newsroom
     url: https://nvidianews.nvidia.com/releases.xml
     topic: tech
+    announces: [nvidianews.nvidia.com/news/, blogs.nvidia.com/blog/]
 
   - name: Waymo
     url: https://waymo.com/blog/rss.xml
     topic: robotics
+    announces: [waymo.com/blog/]
 
   - name: Cloudflare Blog
     url: https://blog.cloudflare.com/rss/
     topic: tech
+    announces: [blog.cloudflare.com/]
 
   - name: Apple Newsroom
     url: https://www.apple.com/newsroom/rss-feed.rss
     topic: tech
+    announces: [apple.com/newsroom/]
 
   # --- journals / science press ---
   - name: Nature News

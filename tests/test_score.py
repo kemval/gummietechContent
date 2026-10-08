@@ -119,3 +119,11 @@ def test_an_arxiv_mega_category_is_held_to_new_papers_and_a_cap(monkeypatch):
     items, _ = ingest.fetch_feed({"name": "arXiv AI", "url": "https://x",
                                   "new_only": True, "max_items": 2})
     assert [i["title"] for i in items] == ["Paper 2", "Paper 4"]
+
+
+def test_a_trailing_backslash_is_not_part_of_a_url():
+    """2026-10-07: a Hacker News row arrived as mistral.ai/news/mistral-
+    large-4/\\ and 404'd, so Mistral's own announcement could not be read."""
+    import ingest
+    assert ingest.url_key("https://mistral.ai/news/mistral-large-4/\\") \
+        == ingest.url_key("https://mistral.ai/news/mistral-large-4")

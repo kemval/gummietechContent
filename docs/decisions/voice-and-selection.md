@@ -136,6 +136,18 @@ is right, and "just 100 Myr after the Big Bang", where "just" means "only".
 That is why it is a FIX. Everything else is judgement and stays with fact-check, which
 caught every error in all three rounds before anything reached a slide.
 
+**Code labels a launch when it can.** The announcement state started as
+the model's proposal. That left the Signal unable to carry a launch,
+because it labels only what code can, and it left a launch's label resting
+on the model. Each newsroom feed now declares the URL prefixes where its
+company announces (`announces`, measured from the sheet). A page under one
+of them with no paper is an announcement by code, the twin of
+`PREPRINT_HOSTS`. On the live sheet, every recent maker-page row without a
+paper was labelled so, and the two that describe a paper (PNAS, Science
+Robotics) stayed papers. The Signal prompt marks those sources, so each
+item attributes its maker's numbers. The same prefixes give a launch its
+duplicate key: see `dedup.md`.
+
 **The voice lives in `docs/voice.md`.** It is a doc rather than prompt text
 so a person can change how the account sounds without touching code.
 `draft.voice()` pastes it into the Drop, run and Signal prompts, from its

@@ -65,7 +65,8 @@ import llm                       # forwards per LLM_PROVIDER, failing over (llm.
 from formats import by_hand, format_name
 from formats import entries as format_entries
 from formats import missing_from_entries, required as format_required
-from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
+from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, announcement_prefixes,
+                    open_sheet, story_age_days, url_key)
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
                     resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
@@ -96,6 +97,14 @@ CLAIM_WORD_LIMIT = HOOK_WORD_LIMIT
 PREPRINT_HOSTS = ("arxiv.org", "biorxiv.org", "medrxiv.org", "chemrxiv.org",
                   "ssrn.com", "researchsquare.com", "preprints.org",
                   "osf.io", "hal.science")
+
+# Where each company publishes its own announcements: the `announces`
+# prefixes in feeds/*.yaml. The twin of PREPRINT_HOSTS — a page on a
+# preprint server is a preprint whatever the model says, and a page under
+# one of these with no paper behind it is its maker's announcement. See
+# maker_announcement().
+MAKER_PREFIXES = announcement_prefixes()
+HREF_RE = re.compile(r"""href=["']([^"']+)["']""", re.I)
 
 # What a *draft* needs on top of what render.py will refuse to render
 # without. formats.py owns the rest, per format, and is asked for it —
@@ -310,7 +319,14 @@ def signal_sources(picks: list[dict]) -> str:
     for n, pick in enumerate(picks, start=1):
         item = pick["item"]
         text = source_text(pick["paper"], pick["article"], item["summary"])
+        # The Drop prompt's rule on a maker's claims, per item: only code
+        # knows which of five sources is an announcement.
+        kind = ("Kind: the maker's own announcement, not a study. Every "
+                "figure and comparison in its claim is the maker's: say so "
+                "('OpenAI says', 'in Mistral's tests').\n"
+                if maker_announcement(pick["paper"], item["url"]) else "")
         blocks.append(f"--- SOURCE {n} ---\n"
+                      f"{kind}"
                       f"Outlet: {item['source']}\n"
                       f"Headline: {item['title']}\n"
                       f"URL: {item['url']}\n\n"
@@ -635,6 +651,11 @@ def covered_papers() -> dict[str, str]:
                 if key and str(key).strip():
                     seen.setdefault(" ".join(str(key).lower().split()),
                                     path.name)
+            # The URL once more, as identity rather than as written: the
+            # same launch page arrives with and without a trailing slash,
+            # and coverage links it with tracking parameters.
+            if record.get("source_url"):
+                seen.setdefault(url_key(record["source_url"]), path.name)
     return seen
 
 
@@ -676,8 +697,45 @@ def reject(path: Path, reason: str, today: str) -> Path:
     return dest
 
 
+def maker_page(url: str) -> bool:
+    """Whether a URL is under a prefix where a company announces its work."""
+    key = url_key(url)
+    return any(key.startswith(prefix + "/") for prefix in MAKER_PREFIXES)
+
+
+def maker_announcement(paper: dict | None, url: str) -> bool:
+    """Whether code alone can say a source is its maker's announcement.
+
+    A maker's page, no paper resolved, not a preprint server. Decided here
+    rather than by the model, so a Signal may carry one (it labels only
+    what code can) and a Drop's label does not rest on the model's answer.
+    A company blog that describes a paper resolves the paper, and the paper
+    wins: Google Research and NVIDIA's developer blog often do.
+    """
+    return (not paper and maker_page(url)
+            and not any(host in url.lower() for host in PREPRINT_HOSTS))
+
+
+def announced_links(page: str) -> list[str]:
+    """The maker announcement pages a page links to, in document order.
+
+    Read only from coverage: a story about a launch that links the launch's
+    own page is that launch, and if the page is already posted, so is the
+    story. Never used to pick a source or a credit — measured on
+    2026-10-07, coverage links the wrong announcement as readily as the
+    right one (Mistral's docs page linked four older launches and not the
+    one it documents). A wrong match here only skips a row.
+    """
+    links: list[str] = []
+    for match in HREF_RE.finditer(page or ""):
+        if maker_page(match.group(1)) and match.group(1) not in links:
+            links.append(match.group(1))
+    return links
+
+
 def already_covered(paper: dict | None, url: str,
-                    seen: dict[str, str]) -> str | None:
+                    seen: dict[str, str],
+                    announced: list[str] | tuple = ()) -> str | None:
     """The post that already covers this candidate, if there is one.
 
     The paper's own keys first, then the URL the candidate came from — which
@@ -688,6 +746,9 @@ def already_covered(paper: dict | None, url: str,
     """
     keys = [paper.get("doi"), citation(paper)] if paper else []
     keys.append(url)
+    # A launch has no DOI, so its identity is its maker's page: the URL
+    # itself, and any maker page the coverage links to.
+    keys += [url_key(url), *(url_key(link) for link in announced)]
     for key in keys:
         if key:
             hit = seen.get(" ".join(str(key).lower().split()))
@@ -897,7 +958,8 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     # a study whatever the model says, and an announcement is never
     # peer-reviewed. Kept only when true, so every older post reads as it
     # always did. See formats.preprint() and the fact-check agent.
-    proposed = post.pop("announcement", None) is True
+    proposed = (post.pop("announcement", None) is True
+                or maker_announcement(paper, url))
     on_preprint_host = any(host in url.lower() for host in PREPRINT_HOSTS)
     if proposed and not paper and not on_preprint_host:
         post["announcement"] = True
@@ -920,7 +982,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
 ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
-             "beat"]
+             "announcement", "beat"]
 
 
 def validate_signal(post: dict, picks: list[dict]) -> dict:
@@ -948,6 +1010,9 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
                  "attribution": str(item.get("attribution", "")).strip(),
                  "source_url": url,
                  "peer_reviewed": peer_review_flag(paper, url)}
+        # Code's call, never the model's: a Signal labels only what code can.
+        if maker_announcement(paper, url):
+            built["announcement"], built["peer_reviewed"] = True, False
         if subject := row_subject(pick["item"]):
             built["beat"] = subject
         if paper:
@@ -1082,17 +1147,22 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         # difference, and it is why this is a skip rather than a stop — the
         # row stays queued, because an unresolvable paper is still a fine
         # Drop tomorrow.
-        if labelled_only and peer_review_flag(paper, item["url"]) is None:
-            print(f"  skipping {where}: no DOI resolved and "
-                  f"{outlet(item['url'])} is not a preprint host, so nothing "
-                  f"but the model could label it peer-reviewed")
+        if (labelled_only and peer_review_flag(paper, item["url"]) is None
+                and not maker_announcement(paper, item["url"])):
+            print(f"  skipping {where}: no DOI resolved, and "
+                  f"{outlet(item['url'])} is neither a preprint host nor a "
+                  f"maker's announcement page, so nothing but the model could "
+                  f"label it")
             if row_number is not None:
                 skipped.add(row_number)
             rejected += 1
             check_budget(rejected, wanted)
             continue
 
-        covered = already_covered(paper, item["url"], seen)
+        covered = already_covered(
+            paper, item["url"], seen,
+            announced_links(page)
+            if not paper and not maker_page(item["url"]) else ())
 
         if not covered:
             yield settled

@@ -189,7 +189,10 @@ green `check.yml` on `ubuntu-26.04` first, then every job.
 **The queue is deduplicated by URL, and a story is not a URL.** `draft.py`
 resolves each candidate's DOI before the LLM call and skips a paper already
 in `posts/` (`MAX_DUPLICATE_SKIPS` caps the walk). **Do not rebuild
-title-based deduplication** — it was measured and removed on 2026-09-21.
+title-based deduplication** — it was measured and removed on 2026-09-21. A
+launch has no DOI, so its key is its maker's page: newsroom feeds declare
+`announces` prefixes, and coverage that links an announcement already posted
+is a duplicate.
 → `docs/decisions/dedup.md`
 
 **Drafting takes only fresh news.** `pick_row()` skips a queued row whose
@@ -349,8 +352,10 @@ does not state. A source that cannot be read is a hold, not a pass.
   "Preprint — not yet peer-reviewed" flag, enforced in code — **unless**
   `"announcement": true`: a maker's own launch with no study behind it,
   whose cover says "Announcement — not a peer-reviewed study" instead.
-  `formats.preprint()` is the one rule every label reads; the model
-  proposes `announcement`, and `draft.validate()` drops it whenever a paper
+  `formats.preprint()` is the one rule every label reads. A page under a
+  newsroom's `announces` prefix with no paper is an announcement by code
+  (`draft.maker_announcement()`), so a Signal may carry it; elsewhere the
+  model proposes it and `draft.validate()` drops it whenever a paper
   resolved or the host is a preprint server. Absent on every older post.
 - Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`

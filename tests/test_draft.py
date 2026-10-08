@@ -455,7 +455,8 @@ def test_a_preprint_server_is_never_an_announcement():
 
 
 def test_an_older_post_with_no_announcement_field_reads_as_before():
-    post = draft.validate(drop_reply(announcement=False), drop_item(), None)
+    post = draft.validate(drop_reply(announcement=False),
+                          drop_item("https://example.org/a-story"), None)
     assert "announcement" not in post
     assert render.post_preprint_flag(post) is True
 
@@ -524,3 +525,68 @@ def test_one_cover_line_is_always_kept():
     post = draft.validate(drop_reply(hooks=["Just three atoms thick",
                                             "Just one layer"]), drop_item(), None)
     assert post["hook"] == "Just three atoms thick"
+
+
+# ------------------------------------------------- maker announcements
+# 2026-10-07. The Signal could not carry a launch: it labels only what code
+# can, and only papers and preprint hosts were code's to label. And a launch
+# has no DOI, so the twenty rows about GPT-6 Astra — OpenAI's page, InfoQ,
+# Hacker News, NVIDIA's blog — were twenty different stories to the guard.
+
+ASTRA = "https://openai.com/index/gpt-6-astra"
+
+
+def test_the_feeds_declare_where_openai_announces():
+    """The prefixes are measured, in the YAML; this keeps them there."""
+    assert draft.maker_page(ASTRA)
+    assert draft.maker_page("https://www.apple.com/newsroom/2026/10/x/")
+    assert not draft.maker_page("https://www.infoq.com/news/2026/09/astra/")
+    assert not draft.maker_page("https://openai.com/index")       # the index itself
+
+
+def test_a_maker_page_with_no_paper_is_an_announcement_whatever_the_model_says():
+    post = draft.validate(drop_reply(announcement=False), drop_item(ASTRA), None)
+    assert post["announcement"] is True and post["peer_reviewed"] is False
+
+
+def test_a_maker_blog_describing_a_paper_is_the_paper():
+    post = draft.validate(drop_reply(announcement=False),
+                          drop_item("https://research.google/blog/a-method/"), PAPER)
+    assert "announcement" not in post
+
+
+def test_a_signal_may_carry_a_launch_and_labels_it():
+    post = draft.validate_signal(reply(2), [pick(ASTRA), pick("https://example.org/a", PAPER)])
+    first, second = post["items"]
+    assert first["announcement"] is True and first["peer_reviewed"] is False
+    assert "announcement" not in second
+    assert render.preprint_claims(post) == 0
+
+
+def test_a_signal_still_refuses_a_source_nothing_can_label():
+    with pytest.raises(SystemExit):
+        draft.validate_signal(reply(1), [pick("https://example.org/no-paper")])
+
+
+def test_coverage_of_a_posted_launch_is_a_duplicate(tmp_path, monkeypatch):
+    """InfoQ's Astra story links OpenAI's page with tracking parameters;
+    the post has it without a trailing slash."""
+    monkeypatch.setattr(draft, "POSTS_DIR", tmp_path)
+    (tmp_path / "2026-10-08-astra.json").write_text(json.dumps(
+        {"post_type": "drop", "source_url": ASTRA, "attribution": "OpenAI"}))
+    seen = draft.covered_papers()
+    page = '<a href="https://openai.com/index/gpt-6-astra/?utm_source=infoq">x</a>'
+    links = draft.announced_links(page)
+    assert draft.already_covered(None, "https://www.infoq.com/news/x/", seen, links)
+    assert draft.already_covered(None, ASTRA + "/", seen)
+    assert not draft.already_covered(None, "https://www.infoq.com/news/y/", seen)
+
+
+def test_sharing_a_maker_is_not_sharing_a_story(tmp_path, monkeypatch):
+    """Attribution "OpenAI" is on every OpenAI post; it must not make the
+    next OpenAI launch a duplicate of the last."""
+    monkeypatch.setattr(draft, "POSTS_DIR", tmp_path)
+    (tmp_path / "2026-10-08-astra.json").write_text(json.dumps(
+        {"post_type": "drop", "source_url": ASTRA, "attribution": "OpenAI"}))
+    seen = draft.covered_papers()
+    assert not draft.already_covered(None, "https://openai.com/index/gpt-6-1-sol", seen)
