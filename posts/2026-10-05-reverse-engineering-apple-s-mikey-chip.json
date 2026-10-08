@@ -36,5 +36,8 @@
     "the_catch": "Aún no se admite la pulsación larga; el botón central solo funciona como clic",
     "_en": "a00c3d4fc0a72cab"
   },
-  "published_at": "2026-10-05"
+  "published_at": "2026-10-05",
+  "metrics": {
+    "asked_at": "2026-10-08"
+  }
 }
