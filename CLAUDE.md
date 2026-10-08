@@ -233,7 +233,10 @@ are `wording.py`'s: `draft.py` drops a cover line that breaks them, and
 **`draft.py` drafts from the paper, not the coverage.** DOI from the page
 (meta tag, then journal-reference heading, then anywhere), Crossref for
 authors and abstract, coverage demoted to context. Every step degrades to
-coverage-only drafting with a warning. → `docs/decisions/paper-first.md`
+coverage-only drafting with a warning. For the one paper a Drop is drafted
+from, `papers.fetch_limits()` reads the body and quotes only the sentences
+that state a limit (`LIMITS_CHARS`, for Groq's 8000-token minute) — abstracts
+leave the catch out. → `docs/decisions/paper-first.md`
 
 **Secrets** go in `.env` locally and GitHub Actions repo secrets in CI.
 Never commit `.env`, `credentials.json`, or any key.

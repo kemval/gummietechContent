@@ -67,8 +67,8 @@ from formats import entries as format_entries
 from formats import (missing_fields, missing_from_entries,
                      required as format_required)
 from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
-from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_readme,
-                    resolve_paper, source_text)
+from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
+                    fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     previous_colorway, vary, warn_on_length)
 from verify_feeds import announcement_prefixes, url_key
@@ -1286,6 +1286,16 @@ def main() -> int:
     else:
         pick = picks[0]
         item, paper = pick["item"], pick["paper"]
+        # Only for the one paper being drafted, never for the candidates
+        # walked past or a Signal's five: it is one more fetch, and the
+        # limits are for the catch slide a Signal does not have.
+        if paper and paper.get("abstract"):
+            paper["limits"], limits_warning = fetch_limits(paper)
+            if limits_warning:
+                print(f"  warning: {limits_warning}")
+            else:
+                print(f"  limits: {len(paper['limits'])} characters quoted "
+                      "from the paper's body")
         text = source_text(paper, pick["article"], item["summary"])
         # A "run it" post needs the repo the paper links and that repo's own
         # README; without either it is a plain Drop, said out loud.

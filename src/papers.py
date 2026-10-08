@@ -102,6 +102,17 @@ BIBLIOGRAPHY_DOIS = 4
 WEAK_CUE_REACH = 2000
 
 
+def paragraphs(page: str) -> list[str]:
+    """The <p> text of a page, minus scripts and the short ones — nav,
+    captions and bylines."""
+    found = []
+    for chunk in PARA_RE.findall(SCRIPT_RE.sub(" ", page)):
+        text = " ".join(html.unescape(TAG_RE.sub(" ", chunk)).split())
+        if len(text) > 80:
+            found.append(text)
+    return found
+
+
 def fetch_article(url: str) -> tuple[str, str, str | None]:
     """
     Return (text, page_html, warning). Falls back to empty strings when the
@@ -117,15 +128,7 @@ def fetch_article(url: str) -> tuple[str, str, str | None]:
     if resp.status_code >= 400:
         return "", "", f"publisher returned HTTP {resp.status_code}"
 
-    body = SCRIPT_RE.sub(" ", resp.text)
-    paragraphs = []
-    for chunk in PARA_RE.findall(body):
-        text = html.unescape(TAG_RE.sub(" ", chunk))
-        text = " ".join(text.split())
-        if len(text) > 80:                    # skip nav, captions and bylines
-            paragraphs.append(text)
-
-    article = "\n\n".join(paragraphs)[:ARTICLE_CHARS]
+    article = "\n\n".join(paragraphs(resp.text))[:ARTICLE_CHARS]
     if len(article) < 400:
         return article, resp.text, "article body was too short to use much of"
     return article, resp.text, None
@@ -480,6 +483,105 @@ def citation(facts: dict) -> str:
     return who
 
 
+# ---------------------------------------------------------------- the limits
+#
+# The catch is the slide a paper's abstract almost never supplies: abstracts
+# sell the result, and the limits live in the discussion. On 2026-10-08 the
+# nuclear-clock draft had only the abstract, and the model invented "not
+# mini-scaled"; the paper's own limit — runs on different days agreed only to
+# 5×10⁻¹³ — was in the body. So for the paper a Drop is drafted from, code
+# reads the body and hands over only the sentences that state a limit.
+#
+# Only sentences, and few: Groq's free tier caps a request at 8000 tokens a
+# minute (AUTHORS_IN_PROMPT above), the prompt without a source is ~2500, and
+# a whole paper is 25–100k characters. LIMITS_CHARS keeps the worst case
+# under the cap with room for the reply.
+#
+# Free and keyless, and it degrades like everything here: a publisher that
+# refuses a bot (Wiley, Science and Elsevier did, measured 2026-10-08) or a
+# paywall that serves only the abstract gives no sentences, and the draft is
+# made from the abstract as before — where the prompt's empty catch takes over.
+LIMITS_CHARS = 1500
+
+# doi.org negotiates on Accept: HEADERS asks for RSS first, and a DOI asked
+# that way is redirected to Crossref's metadata API (HTTP 406), not the paper.
+PAGE_HEADERS = {**HEADERS, "Accept": "text/html,application/xhtml+xml"}
+
+# arXiv's /abs/ page, where its DOIs land, is the abstract; /html/ is the
+# paper, for every submission arXiv could convert.
+ARXIV_DOI_RE = re.compile(r"^10\.48550/arxiv\.(.+)$", re.I)
+
+# A sentence needs a LIMIT_RE cue to be picked; HEDGE_RE only ranks it.
+# "uncertainty", "however" or "cannot" alone is not a limit — on 2026-10-08
+# an arXiv paper *about* uncertainty, and full of proofs, filled the whole
+# budget with its own topic.
+LIMIT_RE = re.compile(
+    r"\blimit(?:s|ed|ation|ations|ing)?\b|reproducib|caveat|drawback|"
+    r"shortcoming|\bnot yet\b|remains? (?:unclear|unknown|to be|an open)|"
+    r"future (?:work|studies|research|implementations)|"
+    r"small sample|in mice\b|in vitro\b|in simulations?\b|"
+    r"restricted to|only (?:one|two|three|a single|a small)\b",
+    re.I)
+HEDGE_RE = re.compile(
+    r"uncertaint|\bhowever\b|\balthough\b|\bwas not\b|\bwere not\b|"
+    r"\bdid not\b|\bonly\b|\bmay\b|\bcannot\b|\bcould not\b", re.I)
+# Page furniture that says "limited" too: Nature's first paragraph is
+# "a browser version with limited support for CSS".
+FURNITURE_RE = re.compile(
+    r"browser|cookie|javascript|subscri|sign in|log in|your institution|"
+    r"permissions|reprints|copyright|creative commons|download pdf", re.I)
+SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+
+
+def full_text_url(doi: str) -> str:
+    if arxiv := ARXIV_DOI_RE.match(doi):
+        return f"https://arxiv.org/html/{arxiv.group(1)}"
+    return "https://doi.org/" + quote(doi, safe="/")
+
+
+def limit_sentences(page: str, abstract: str = "") -> str:
+    """The sentences of a paper's body that state a limit, in reading order,
+    up to LIMITS_CHARS. The ones with the most cues win the budget; the
+    abstract's own sentences are left out, since the prompt already has it."""
+    picked: list[tuple[int, int, str]] = []
+    order = 0
+    for para in paragraphs(page):
+        if FURNITURE_RE.search(para):
+            continue
+        for sentence in SENTENCE_RE.split(para):
+            order += 1
+            limits = len(LIMIT_RE.findall(sentence))
+            if limits and 40 < len(sentence) < 600 and sentence not in abstract:
+                cues = 2 * limits + len(HEDGE_RE.findall(sentence))
+                picked.append((cues, order, sentence))
+    kept, used = [], 0
+    for cues, order, sentence in sorted(picked, key=lambda p: (-p[0], p[1])):
+        if used + len(sentence) > LIMITS_CHARS:
+            continue
+        kept.append((order, sentence))
+        used += len(sentence) + 1
+    return " ".join(sentence for _, sentence in sorted(kept))
+
+
+def fetch_limits(facts: dict) -> tuple[str, str | None]:
+    """Return (sentences, warning) from the body of the paper in `facts`."""
+    url = full_text_url(facts["doi"])
+    try:
+        resp = requests.get(url, headers=PAGE_HEADERS, timeout=TIMEOUT,
+                            allow_redirects=True)
+    except requests.exceptions.RequestException as exc:
+        return "", (f"could not read the paper's body ({type(exc).__name__}) "
+                    "— the catch has only the abstract to go on")
+    if resp.status_code >= 400:
+        return "", (f"the paper's page returned HTTP {resp.status_code} — the "
+                    "catch has only the abstract to go on")
+    found = limit_sentences(resp.text, facts.get("abstract", ""))
+    if not found:
+        return "", ("no limit stated in the paper's readable text (paywalled, "
+                    "or none) — the catch has only the abstract to go on")
+    return found, None
+
+
 def source_text(facts: dict | None, article: str, summary: str) -> str:
     """The text block the model drafts from, paper first when we have one."""
     coverage = article or summary
@@ -500,6 +602,10 @@ def source_text(facts: dict | None, article: str, summary: str) -> str:
     if facts["journal"]:
         paper.append(f"Journal: {facts['journal']}")
     paper.append(f"Abstract: {facts['abstract']}")
+    if facts.get("limits"):
+        paper.append("Limits, quoted from the paper's body (chosen by code, "
+                     "out of context — use one only as the paper states it): "
+                     + facts["limits"])
 
     return ("\n".join(paper)
             + "\n\nCOVERAGE — context and plain-language framing only. Anyone "
