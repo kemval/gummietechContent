@@ -121,7 +121,7 @@ from the guide into the prompt's own rules between rounds. Attribution
 prompt. Lost qualifiers, invented causes and "you can" kept coming back in
 new places each round: one BLOCK and two FIXes in the second round, and
 visible errors in the third. A free-tier model does not follow fifteen
-rules reliably, and more rules gave less each time. So the two rules a word
+rules reliably, and more rules gave less each time. So the rules a word
 list can check live in `src/wording.py`. `draft.py` drops a cover line with
 a dating word, or with "you" in an announcement; `proof.py` reports any
 left on a slide or in the caption as a FIX, which reaches the gate. A
@@ -133,7 +133,14 @@ now be 3D printed", "today's quantum computers", and the Signal's own "this
 week". Without "now", "today" and "new", and with "this week" allowed in a
 roundup, it flags 2: "AI code generation just beat human experts", which
 is right, and "just 100 Myr after the Big Bang", where "just" means "only".
-That is why it is a FIX. Everything else is judgement and stays with fact-check, which
+That is why it is a FIX. A third rule joined them on 2026-10-08: in an announcement, a
+sentence with a percentage, a multiple or a points gain and no "says" or
+"reports". Every announcement in two Groq rounds broke it, though the
+prompt says it twice; run over those drafts it flagged exactly the lines
+the fact-check did and nothing else, and plain counts ("740 million
+parameters", "Chrome 155") are left alone because the fact-check passes
+them. Writing it also fixed the sentence split, which broke at the full
+stop in "9.92" and ".jxl". Everything else is judgement and stays with fact-check, which
 caught every error in all three rounds before anything reached a slide.
 
 **Code labels a launch when it can.** The announcement state started as

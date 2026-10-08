@@ -99,7 +99,7 @@ src/
                      docs/build_episodes.md — the reel itself stays manual
   proof.py           measures the rendered layout — frame, contrast, flag
   wording.py         the voice rules code can check: dating words, and
-                     "you" about a maker's release
+                     "you" or an unattributed figure in a maker's release
   hook.py            swaps a draft's cover line for one of its alternates
   weekly.py          Tuesday's term and Thursday's Breakdown: is it owed,
                      what is it built from, and the check, file name and
@@ -223,8 +223,9 @@ of the four axes stands. Averaging it in was measured and gutted the queue.
 Funding, personnel news, drama, customer stories and capability-free
 marketing stay at 3 or below. How every post
 sounds lives in `docs/voice.md`, pasted into `draft.py`'s prompts and named
-in `weekly.py`'s brief. The prompt's fact rules outrank it. The two rules a
-word list can check — no dating words, no "you" about a maker's release —
+in `weekly.py`'s brief. The prompt's fact rules outrank it. The three rules a
+word list can check — no dating words, and in a maker's release no "you"
+and no figure without "says" —
 are `wording.py`'s: `draft.py` drops a cover line that breaks them, and
 `proof.py` reports what remains as a FIX at the gate.
 → `docs/decisions/voice-and-selection.md`

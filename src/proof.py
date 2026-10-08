@@ -417,11 +417,22 @@ def check_wording(post: dict, report: Report) -> None:
     # A roundup — a format whose credit is per entry, the Signal — is
     # framed by its week.
     roundup = bool(spec(post).entries)
-    texts = [("hook", post.get("hook", "")), ("caption", post.get("caption", ""))]
+    texts = [("hook", post.get("hook", ""), flagged),
+             ("caption", post.get("caption", ""), flagged)]
     for section in sections(post):
-        texts += [(section.field, piece) for piece in pieces(post, section)]
-    for where, text in texts:
-        for problem in wording_problems(str(text or ""), flagged, roundup):
+        if section.key:
+            # A Signal entry is its own source: a launch among papers is
+            # an announcement, and the post-level flag is never set on a
+            # Signal, so reading it here left every launch unchecked.
+            texts += [(section.field, entry.get(section.key, ""),
+                       announcement(entry))
+                      for entry in post.get(section.field) or []
+                      if isinstance(entry, dict)]
+        else:
+            texts += [(section.field, piece, flagged)
+                      for piece in pieces(post, section)]
+    for where, text, maker in texts:
+        for problem in wording_problems(str(text or ""), maker, roundup):
             report.fix("voice", f"{where} {problem}")
 
 

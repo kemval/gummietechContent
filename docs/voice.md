@@ -44,6 +44,8 @@ their friends do, and to understand it well enough to explain it.
 - **A maker's claims stay theirs.** In a company's own announcement every
   number and every "faster, safer, better" is the company's own test. Say so:
   "OpenAI says", "in its own tests". Never state it as independent fact.
+  A percentage, multiple or points gain without "says" or "reports" in
+  its sentence is flagged by `src/wording.py`.
 - **Numbers keep their exact meaning.** "47% less time" is not "47% faster"
   and is not "half". "About" never becomes "up to". If a plainer phrasing
   changes the number, keep the source's phrasing. A number keeps its scope
