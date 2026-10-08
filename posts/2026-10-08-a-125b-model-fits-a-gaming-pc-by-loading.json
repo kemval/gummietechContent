@@ -43,5 +43,6 @@
     "why_it_matters": "Aquí la cantidad de memoria de la GPU importa más que la velocidad de la propia GPU: la página indica que cada GB extra permite almacenar alrededor de 700 expertos más.",
     "the_catch": "No ha sido revisado por pares. El modelo está comprimido y los tamaños mayores son «un poco más inteligentes». La carga puede congelar la PC de 1 a 3 minutos. Las pruebas cubren solo dos PC.",
     "_en": "98e07d1c663d9eb7"
-  }
+  },
+  "published_at": "2026-10-08"
 }

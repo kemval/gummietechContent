@@ -38,6 +38,10 @@
   },
   "published_at": "2026-10-05",
   "metrics": {
-    "asked_at": "2026-10-08"
+    "asked_at": "2026-10-08",
+    "saves": 0,
+    "shares": 0,
+    "profile_visits": 0,
+    "recorded_at": "2026-10-08"
   }
 }
