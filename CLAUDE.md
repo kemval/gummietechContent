@@ -51,7 +51,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 | Ingest | `feedparser` + `requests` |
 | Scheduler | GitHub Actions cron |
 | Database | Google Sheets (`gspread`) |
-| LLM scoring | Gemini free tier (Flash), or Groq free tier — `LLM_PROVIDER`; OpenRouter `:free` models as the last fallback |
+| LLM scoring | Gemini 3.5 Flash Lite free tier, fixed in `ingest.yml`; drafting and translation on `LLM_PROVIDER` (Groq); OpenRouter `:free` models as the last fallback |
 | Rendering | Playwright → PNG |
 | Templating | Jinja2 |
 | Config | YAML feed lists, `.env` for secrets |
@@ -161,7 +161,10 @@ prefixes are checked the same way (`announces_drift`). → `docs/decisions/feeds
 
 **Batch LLM scoring 15–20 items per request**, with a Python keyword
 pre-filter first. Gemini's free tier has a per-minute and a daily cap, per
-project; back off on 429, fail fast on a daily-cap error.
+project; back off on 429, fail fast on a daily-cap error. **Scoring runs on
+Gemini 3.5 Flash Lite (500 requests a day), pinned in `ingest.yml`; never on
+Gemini 3.5 Flash, whose free tier is 20 a day** against 40–80 needed. Read
+the caps in AI Studio, not from memory or third-party pages.
 → `docs/decisions/llm-providers.md`
 
 **Swapping to Groq** is `LLM_PROVIDER=groq` plus `GROQ_API_KEY`;

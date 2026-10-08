@@ -26,9 +26,20 @@ times its daily cap. On 2026-10-08 `LLM_PROVIDER` was set to gemini for a
 few hours, and the project went to 24/20 the same day. It went back to
 groq, and a dispatched ingest scored 36 of 36. Third-party figures for the
 cap (about 1,500, or about 100 after an April cut) were both wrong for this
-account, so read it from the dashboard. Gemini 3.5 Flash Lite at 500 a day
-is the candidate for scoring, to be measured against the current scores
-first; the workflows do not pass `GEMINI_MODEL` today. A spent daily cap stops
+account, so read it from the dashboard. **So scoring moved to Gemini 3.5 Flash Lite (2026-10-08).** It is pinned
+in `ingest.yml`'s scoring step (`LLM_PROVIDER: gemini`, `GEMINI_MODEL:
+gemini-3.5-flash-lite`), whatever the repo variable says. That variable now
+only governs drafting and translating, which stay on Groq. Measured first
+on 54 rows Groq had scored that day, with the same prompt: the same queue
+decision on 49, the same beat on 47, a mean difference of +0.01 and a mean
+absolute difference of 0.95, comparable to Groq's own run-to-run noise. It
+was slightly stricter (6 queued to Groq's 9). With the relevance lift it
+lifted that day's three launches (Claude Haiku 5.5, GPT-6 and Intelligent
+UI, Microsoft's hardware event) and none of the marketing. Its relevance
+was also steadier than Groq's, which had given one announcement 8 in one
+batch and 2 in another. Scoring off Groq leaves Groq's daily cap to the
+drafts, which it had run out on twice. Drafting on Flash Lite was not
+measured, so it is not done. A spent daily cap stops
 the run; it does not fail over (see below). Add a keyword
 pre-filter in Python (drop "raises $", "Series A", "announces partnership")
 before anything reaches the LLM.
