@@ -154,7 +154,7 @@ so a person can change how the account sounds without touching code.
 first `##` heading on. Pasting it was not enough on its own: the Drop
 prompt's field instructions ("name the bottleneck it removes", "the
 assumption it breaks") outranked it, and the first test drafts came back in
-the old register. Those instructions were rewritten in the same voice. `weekly.py`'s brief tells Claude to read it before
+the old register. Those instructions were rewritten in the same voice. The rewrite then contradicted the prompt's own fact rules, and the 2026-10-08 Groq round showed where: hook 2 ("start from something the reader knows") came back as analogies ("ticks like a tiny atom"), hook 3 ("the number made concrete, 'as thin as'") as converted or misread figures, and `why_it_matters` ("what changes for a person") as uses a physics paper never names, three BLOCKs on one draft. The field instructions now ask for the thing the story is about, the number as stated, and what the text says it changes; nothing was added to the rules. The next round drew no BLOCK outside an empty catch. `weekly.py`'s brief tells Claude to read it before
 writing a term or a Breakdown. A missing file stops the draft with the
 command that restores it, rather than drafting in no voice at all.
 
