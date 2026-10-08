@@ -590,3 +590,56 @@ def test_sharing_a_maker_is_not_sharing_a_story(tmp_path, monkeypatch):
         {"post_type": "drop", "source_url": ASTRA, "attribution": "OpenAI"}))
     seen = draft.covered_papers()
     assert not draft.already_covered(None, "https://openai.com/index/gpt-6-1-sol", seen)
+
+
+# ---------------------------------------------------------------- the limits
+
+NATURE_PAGE = """<html><body>
+<p>Thank you for visiting nature.com. You are using a browser version with
+limited support for CSS. To obtain the best experience, use a newer browser.</p>
+<p>The clock shows a fractional frequency instability approaching 10^-15
+over one day of operation, and we use it to constrain dark matter models.</p>
+<p>Although the clock reaches instabilities in the low 10^-14 range within a
+continuous run, we observed that the reproducibility between runs on different
+days was limited to approximately 5 x 10^-13. However, the uncertainty of the
+line centre is well understood from statistical fluctuations alone.</p>
+</body></html>"""
+
+
+def test_the_catch_gets_the_limit_the_abstract_left_out():
+    """2026-10-08: drafted from the abstract alone, the nuclear-clock post
+    invented "not mini-scaled". The paper's own limit — day-to-day
+    reproducibility — was in the body. Page furniture that says "limited"
+    and a sentence that only hedges ("uncertainty", "however") stay out."""
+    found = papers.limit_sentences(NATURE_PAGE)
+    assert "reproducibility between runs on different days" in found
+    assert "browser" not in found
+    assert "statistical fluctuations" not in found
+
+
+def test_the_limits_skip_the_abstract_and_keep_to_the_budget():
+    sentence = ("Our results are limited to a single crystal grown under one "
+                "set of conditions in this laboratory.")
+    page = "<p>" + " ".join([sentence] * 40) + "</p>"
+    assert papers.limit_sentences(page, abstract=sentence) == ""
+    assert len(papers.limit_sentences(page)) <= papers.LIMITS_CHARS
+
+
+def test_a_doi_is_fetched_as_a_page_and_arxiv_as_its_full_text():
+    """doi.org asked with the feeds' RSS Accept header redirects to
+    Crossref's API (HTTP 406), not the paper; arXiv's DOI lands on /abs/,
+    which is the abstract again."""
+    assert papers.PAGE_HEADERS["Accept"].startswith("text/html")
+    assert papers.full_text_url("10.48550/arXiv.2509.04664") == \
+        "https://arxiv.org/html/2509.04664"
+    assert papers.full_text_url("10.1038/s41586-026-11084-4") == \
+        "https://doi.org/10.1038/s41586-026-11084-4"
+
+
+def test_the_limits_reach_the_prompt_only_when_found():
+    facts = {"doi": "10.1/x", "title": "T", "authors": ["A"], "journal": "J",
+             "year": 2026, "abstract": "The abstract.", "is_preprint": False}
+    assert "Limits, quoted" not in papers.source_text(facts, "coverage", "")
+    facts["limits"] = "It was limited to one crystal."
+    assert "It was limited to one crystal." in \
+        papers.source_text(facts, "coverage", "")
