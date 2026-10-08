@@ -46,3 +46,19 @@ holds a post dated today. The worst case is the old behaviour; the best case
 is a message waiting before the day starts. Any workflow that must land near
 a particular hour needs the same shape. Do not tighten the interval instead:
 that is the `*/15` mistake, and it buys shedding on top of lateness.
+
+## Late crons collide on master
+
+Lateness bunches runs together, and seven workflows commit to master
+(daily, weekly, series, publish, fix, hook, redraft). 2026-10-08:
+`series.yml` sent status report #16 at 13:25:18 UTC and lost its push to
+`weekly.yml`'s Breakdown commit a second earlier — `cannot lock ref
+'refs/heads/master'`. A `git pull --rebase && git push` had run, and was
+not enough: the other commit landed between the two. The report was in the
+chat but its `sent_at` was not on master, so the next run would have sent
+#16 again and `confirm` ignored its tap as stale. `sent_at` was added by hand.
+
+Every commit now goes out through `.github/actions/push`: pull with rebase,
+push, and on a loss abort any rebase, wait 5–25s with jitter, and try again,
+five times. A commit that still cannot land fails the run, and
+`notify-failure` says so. Never put a bare `git push` back in a workflow.

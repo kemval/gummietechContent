@@ -63,7 +63,9 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      (all read-only pre-gate reviewers — see the sections below)
 .github/actions/     notify-failure (one definition of "this run broke",
                      called by every scheduled workflow) · resolve-post
-                     (one definition of "the post that is waiting")
+                     (one definition of "the post that is waiting") ·
+                     push (rebase and push to master, retried — every
+                     workflow that commits)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
@@ -176,7 +178,9 @@ card; GitHub Models was retired 2026-07-30.
 to about eight runs a day; a daily cron always runs but 3–6 hours late.
 Nothing here may depend on punctual execution. A workflow that must land
 near an hour asks several times and gates the extra firings to no-ops
-(`daily.yml`'s shape); never tighten the interval instead.
+(`daily.yml`'s shape); never tighten the interval instead. **Late crons
+collide on master**, so every commit goes out through
+`.github/actions/push`, which retries a lost push; never a bare `git push`.
 → `docs/decisions/scheduler.md`
 
 **The runner is pinned to `ubuntu-24.04`, and `ubuntu-latest` is the bug.**

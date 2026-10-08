@@ -255,8 +255,9 @@ jobs:
           git config user.email "noreply@github.com"
           git add "${{ steps.draft.outputs.post }}"
           git commit -m "Draft $(basename "${{ steps.draft.outputs.post }}" .json)"
-          git pull --rebase
-          git push
+
+      - name: Push it
+        uses: ./.github/actions/push
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.
