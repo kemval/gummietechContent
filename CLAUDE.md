@@ -60,7 +60,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 
 ```
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
-                     (all read-only pre-gate reviewers — see the sections below)
+                     · voice-review · metrics-analyst (all read-only: they
+                     report or propose, a person decides — see below)
 .github/actions/     notify-failure (one definition of "this run broke",
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
