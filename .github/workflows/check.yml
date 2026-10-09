@@ -42,7 +42,9 @@ jobs:
     name: render, proof and archive the fixture
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # 6.5–12.7 minutes measured on 2026-10-08, the reel most of it, plus ten
+    # for a mirror that needs install-render-tools' second attempt.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v5
@@ -55,8 +57,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chromium
-        run: python -m playwright install --with-deps chromium
+      # ffmpeg for the reel smoke below; it is not on the runner image (see
+      # reel.yml). Bounded and retried: see the action.
+      - uses: ./.github/actions/install-render-tools
+        with:
+          ffmpeg: 'true'
 
       # Loaded by path, not by name: `import site` would find the standard
       # library's and silently never touch src/site.py. Executing each module
@@ -107,11 +112,9 @@ jobs:
       # The Drop reel is the same slides through templates/drop_slides.html,
       # so a change to either can break it without touching reel.py. --draft
       # because era.json is undated on purpose; reel.py refuses that outside
-      # a preview. ffmpeg is not on the runner image — see reel.yml.
+      # a preview. ffmpeg came with the render tools above.
       - name: Render the Drop reel
-        run: |
-          sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
-          python src/reel.py posts/era.json --draft --outdir /tmp/smoke-reel
+        run: python src/reel.py posts/era.json --draft --outdir /tmp/smoke-reel
 
       # Builds every published post, so a template change that breaks one page
       # shows up here rather than on the live archive.

@@ -1,0 +1,65 @@
+name: Install the render tools
+description: >
+  Chromium for Playwright, with the system libraries it needs, and ffmpeg
+  when asked. Bounded and retried, because both come from the Ubuntu mirror.
+
+# One definition, four callers — check.yml, review.yml, reel.yml and site.yml.
+# The same reasoning that put the alert in notify-failure: a copy per
+# workflow is four places to forget the next time the mirror misbehaves.
+#
+# 2026-10-08: watch.yml's run of check.yml was cancelled at its 15-minute
+# limit with "Install Chromium" still running. `--with-deps` installs
+# Chromium's libraries through apt, and the Azure Ubuntu mirror went from
+# milliseconds a package to seconds, then sat eight minutes on one 10.8 MB
+# package. Nothing timed out but the job, so the alert said master was
+# broken when the mirror was slow. The install normally takes 0.4 minutes.
+#
+# So each attempt gets ATTEMPT_MINUTES and there is one retry: a stalled
+# connection is the failure, and a fresh one is usually the cure. apt also
+# retries a download itself and gives up on a silent connection after 30s
+# — that config file outlives this step, so a later apt-get in the same job
+# gets it too. A retry after a kill first lets dpkg finish what it was
+# doing, or the second attempt would wait on its lock.
+#
+# Worst case is two full attempts, about ten minutes: every caller's
+# timeout-minutes leaves room for that on top of its normal run.
+
+inputs:
+  ffmpeg:
+    description: Also install ffmpeg (reel.py, and render.py's motion clips).
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Install Chromium${{ inputs.ffmpeg == 'true' && ' and ffmpeg' || '' }}
+      shell: bash
+      env:
+        ATTEMPT_MINUTES: '5'
+        FFMPEG: ${{ inputs.ffmpeg }}
+      run: |
+        printf '%s\n' 'Acquire::Retries "3";' \
+          'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' |
+          sudo tee /etc/apt/apt.conf.d/80-retries >/dev/null
+
+        install() {
+          python -m playwright install --with-deps chromium || return 1
+          if [ "$FFMPEG" = "true" ]; then
+            sudo apt-get install -y --no-install-recommends ffmpeg || return 1
+          fi
+        }
+
+        for attempt in 1 2; do
+          if [ "$attempt" -gt 1 ]; then
+            sudo dpkg --configure -a || true
+          fi
+          # timeout signals the whole process group, sudo and apt included,
+          # and kills it outright if a TERM is ignored.
+          if timeout --kill-after=30s "${ATTEMPT_MINUTES}m" bash -c "$(declare -f install); install"; then
+            exit 0
+          fi
+          echo "::warning::Install attempt $attempt failed or ran past ${ATTEMPT_MINUTES} minutes — the Ubuntu mirror is the usual cause."
+        done
+        what=Chromium; [ "$FFMPEG" = "true" ] && what="Chromium and ffmpeg"
+        echo "::error::$what did not install in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."
+        exit 1

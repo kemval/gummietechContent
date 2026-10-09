@@ -98,3 +98,18 @@ It lives in one file for the reason `review.yml` does. Two details:
   sighting, so the throttle is gone rather than rebuilt.
 - **Missing credentials are a no-op, not a second failure.** The point is to
   make a break visible, never to add one on top of it.
+
+**A slow mirror is not a broken master.** On 2026-10-08 watch.yml reported
+check.yml `cancelled`, which its structure check reads as master broken.
+Master was fine: `playwright install --with-deps` installs Chromium's
+libraries through apt, the Azure Ubuntu mirror slowed from milliseconds a
+package to seconds and then sat eight minutes on one 10.8 MB package, and
+the job ran out of its 15 minutes with nothing else wrong. The install
+normally takes 0.4 minutes. The same job's reel step already took about 10
+of those 15, measured across the day at 6.5–12.7 minutes in all, so a
+merely slow runner would have done the same. Chromium and ffmpeg are now
+installed in one place, `.github/actions/install-render-tools`, used by
+check, review, reel and site: five minutes an attempt, one retry after
+letting dpkg finish, and apt's own retry and 30-second stall timeout. Each
+caller's `timeout-minutes` was set from its measured run plus ten minutes
+for that retry: check 30, reel 30, site 15; review's 25 already had room.

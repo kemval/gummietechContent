@@ -32,7 +32,9 @@ jobs:
   reel:
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # 12–13 minutes measured on 2026-10-08, plus ten for install-render-tools'
+    # second attempt.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v5
@@ -45,14 +47,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chromium
-        run: python -m playwright install --with-deps chromium
-
-      # Free, and not on GitHub's ubuntu-24.04 image — checked 2026-09-27
-      # against actions/runner-images' Ubuntu2404-Readme. reel.py pipes its
-      # frames into it.
-      - name: Install ffmpeg
-        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
+      # ffmpeg is free, and not on GitHub's ubuntu-24.04 image — checked
+      # 2026-09-27 against actions/runner-images' Ubuntu2404-Readme. reel.py
+      # pipes its frames into it. Bounded and retried: see the action.
+      - uses: ./.github/actions/install-render-tools
+        with:
+          ffmpeg: 'true'
 
       - name: Pick the post
         id: post
