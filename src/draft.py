@@ -360,6 +360,30 @@ def parsed(reply: str) -> dict:
     return post
 
 
+# A reply can be valid JSON and still hollow: on 2026-10-09 Groq's
+# gpt-oss-120b returned every drafted field empty for row 15374, and the same
+# prompt on the same row came back whole minutes later. It is the model, not
+# the story, so one more call is the fix; a second hollow reply stops the run
+# with what the model said, because "left these empty" alone told nobody why.
+HOLLOW_FIELDS = ("domain", "caption")    # written by the model in every format
+HOLLOW_RETRIES = 1
+
+
+def drafted_reply(prompt: str, api_key: str, model: str) -> dict:
+    """The model's post, asked for again once if it came back hollow."""
+    for attempt in range(HOLLOW_RETRIES + 1):
+        reply = llm.generate(prompt, api_key, model, temperature=0.4)
+        post = parsed(reply)
+        hollow = missing_fields(post, HOLLOW_FIELDS)
+        if not hollow:
+            return post
+        print(f"  warning: the model left {', '.join(hollow)} empty "
+              f"(attempt {attempt + 1} of {HOLLOW_RETRIES + 1}). It said:\n"
+              f"  {reply[:400]}")
+    sys.exit("The model returned a hollow draft twice in a row. Re-run later; "
+             "if it keeps happening, try another GROQ_MODEL.")
+
+
 def slugify(title: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     return slug[:40].rstrip("-") or "post"
@@ -1274,14 +1298,14 @@ def main() -> int:
                                     labelled_only=bool(args.signal)))
 
     if args.signal:
-        reply = llm.generate(
+        drafted = drafted_reply(
             SIGNAL_PROMPT.format(count=len(picks), more=len(picks) - 1,
                                  hook_limit=HOOK_WORD_LIMIT,
                                  claim_limit=CLAIM_WORD_LIMIT,
                                  voice=voice(),
                                  sources=signal_sources(picks)),
-            api_key, model, temperature=0.4)
-        post = validate_signal(parsed(reply), picks)
+            api_key, model)
+        post = validate_signal(drafted, picks)
         title = f"signal-week-{date.today().isocalendar().week:02d}"
     else:
         pick = picks[0]
@@ -1311,14 +1335,13 @@ def main() -> int:
             else:
                 print(f"  code: {repo} — README read, drafting a run post")
                 text = run_text(text, repo, readme)
-        reply = llm.generate(
+        drafted = drafted_reply(
             PROMPT.format(hook_limit=HOOK_WORD_LIMIT, word_limit=WORD_LIMIT,
                           source=item["source"], title=item["title"],
                           url=item["url"], text=text, voice=voice(),
                           extra=RUN_KEY.format(word_limit=WORD_LIMIT)
                           if readme else ""),
-            api_key, model, temperature=0.4)
-        drafted = parsed(reply)
+            api_key, model)
         # Written by code, never the model: which format this is follows
         # from whether a README was read, and the run format requires the
         # try_it and code_url that only a README day produces.

@@ -655,3 +655,18 @@ def test_the_limits_reach_the_prompt_only_when_found():
     facts["limits"] = "It was limited to one crystal."
     assert "It was limited to one crystal." in \
         papers.source_text(facts, "coverage", "")
+
+
+def test_a_hollow_reply_is_asked_for_again(monkeypatch):
+    """2026-10-09: Groq returned valid JSON with every drafted field empty
+    for row 15374, the Friday Drop failed, and the same prompt came back
+    whole on the next call. One hollow reply is retried; two stop the run."""
+    whole = json.dumps({"domain": "computing", "caption": "A caption."})
+    replies = iter(['{"post_type": "drop", "domain": "", "caption": ""}', whole])
+    monkeypatch.setattr(draft.llm, "generate", lambda *a, **k: next(replies))
+    assert draft.drafted_reply("prompt json", "key", "model")["domain"] == \
+        "computing"
+
+    monkeypatch.setattr(draft.llm, "generate", lambda *a, **k: "{}")
+    with pytest.raises(SystemExit, match="hollow draft twice"):
+        draft.drafted_reply("prompt json", "key", "model")
