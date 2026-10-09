@@ -277,11 +277,14 @@ overflow the frame, fail contrast, or push the "Preprint — not yet
 peer-reviewed" flag off slide 4 — with no error, because nothing in code
 looks at the pixels.
 
-`.claude/agents/slide-proof.md` is a read-only agent that renders the post to
-a scratch directory, reads the five PNGs, and reports BLOCK / FIX / PASS on
-frame containment, hook sizing, the `lead · cream · support · dark · lead`
-rhythm, preprint-flag visibility, contrast, and the attribution line — the
-failures only the rendered image reveals. It never edits the JSON, never
+`src/proof.py` now measures the geometry half of that — frame, overflow,
+contrast, rhythm, the flag count — on every post in `review.yml`.
+`.claude/agents/slide-proof.md` is the read-only agent for the half a
+measurement cannot see: it runs proof.py, renders stills to a scratch
+directory, reads every slide against the record, and reports BLOCK / FIX /
+PASS on a word dropped or changed, a selection box or cover figure that says
+the wrong thing, a hook that dies at thumbnail size, bad breaks, fallback
+glyphs, and decoration that vanished. It never edits the JSON, never
 renders into `output/`, and never dates a post. It is the visual counterpart
 to Layer 3b: 3b checks whether the words are true, 4b checks whether they are
 legible on the slide. Run both before Layer 5 so the ten-minute review goes to
