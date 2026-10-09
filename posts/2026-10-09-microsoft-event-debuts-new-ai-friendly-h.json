@@ -9,8 +9,8 @@
     "Microsoft says the RTX Spark Dev Box delivers one petaflop of AI compute"
   ],
   "what_happened": "Microsoft announced the Surface Laptop Ultra with Nvidia RTX Spark SoC and a RTX Spark Dev Box that claims one petaflop AI performance.",
-  "why_it_matters": "Developers can run local AI models on a laptop or small box without needing cloud resources.",
-  "the_catch": "The devices are announced for preorder and shipping later, so they are not yet available for use.",
+  "why_it_matters": "Microsoft says developers will be able to run local AI models on a laptop or small box instead of the cloud.",
+  "the_catch": "Microsoft's one-petaflop figure is its own claim, and Ars says questions about security and user acceptance of local AI still remain.",
   "caption": "Microsoft introduced the Surface Laptop Ultra and RTX Spark Dev Box, hardware aimed at local AI development. How will you use local AI on your own machine?",
   "keywords": [
     "AI hardware",
@@ -32,9 +32,9 @@
   "es": {
     "domain": "hardware",
     "hook": "Microsoft presentó un nuevo portátil Surface diseñado para desarrolladores de IA",
-    "what_happened": "Microsoft anunció el Surface Laptop Ultra, que incluye un SoC Nvidia RTX Spark y una RTX Spark Dev Box que, según afirman, brinda un rendimiento de IA de un petaflop",
-    "why_it_matters": "Los desarrolladores pueden ejecutar modelos de IA localmente en un portátil o en una caja pequeña sin necesidad de recursos en la nube",
-    "the_catch": "Los dispositivos se anunciaron para prepedido y el envío será posterior, por lo que aún no están disponibles para su uso",
-    "_en": "8495e5959844521a"
+    "what_happened": "Microsoft anunció el Surface Laptop Ultra con un SoC Nvidia RTX Spark y una RTX Spark Dev Box que afirma ofrecer un petaflop de rendimiento de IA",
+    "why_it_matters": "Microsoft dice que los desarrolladores podrán ejecutar modelos de IA localmente en un portátil o en una caja pequeña, en lugar de usar la nube",
+    "the_catch": "La cifra de un petaflop es una afirmación de Microsoft, y Ars señala que continúan existiendo preguntas sobre la seguridad y la aceptación de la IA local por parte de los usuarios",
+    "_en": "21e3cfc47797a21c"
   }
 }
