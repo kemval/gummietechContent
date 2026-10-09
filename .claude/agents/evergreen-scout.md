@@ -29,6 +29,20 @@ The queue in `docs/evergreen_queue.md` was compiled before that decision and
 is almost all science; read it so you do not repeat a subject, not as a
 model of the mix.
 
+**Before proposing anything, read what is already taken**, so a person never
+pastes a subject this account has covered or turned down:
+
+- every candidate already in `docs/evergreen_queue.md`, including its
+  "Considered and held" section;
+- every post in `posts/*.json` — subject, `source_url`, `attribution`;
+- every draft in `posts/rejected/*.json`. A subject turned down at the gate
+  is dedup memory, the same way `draft.covered_papers()` reads it; propose
+  it again only with a reason the rejection does not cover, and say so.
+
+```bash
+grep -h -o '"\(source_url\|attribution\|hook\)": "[^"]*"' posts/*.json posts/rejected/*.json
+```
+
 ## Sources — tech first
 
 These come first because they are what the account is for, and because the
@@ -116,12 +130,42 @@ not from completeness.
 
 ## Report
 
-The ranked list, best first. Per candidate: the score line (`n7 v8 e9 s9 →
-8.25`), the six fields above, and a one-line note on what to feed `draft.py`
-(the source URL to put in the sheet row, or "draft by hand — no clean single
-source").
+The ranked list, best first, **written in the queue's own shape**, because a
+person pastes it into `docs/evergreen_queue.md` and `draft.py --evergreen`
+parses that file with a regex (`CANDIDATE_RE`, `FIELD_RE`). A row in any
+other shape is a row `draft.py` cannot read:
 
-Close with: `<n> candidates, top <k> at or above 7.0`.
+```
+### 34 · 8.25 · `signal` — Short title
+
+**Hook** — the surprising claim, one sentence.
+**Source** — [label](https://primary-or-best-explainer) · **attribute to** Surname et al., "Title", Venue Year.
+**Settled?** — Settled / live debate / retracted, and why.
+**Why it matters** — the consequence or the intuition it breaks, with the figures the source gives.
+**The catch** — the limitation the source states.
+```
+
+- **Numbering continues** from the highest rank in the queue, never reuses
+  one: the number is the candidate's id (`draft.py --evergreen N`).
+- **The Source line's first link becomes `source_url`**, unless it names
+  an `arXiv:` id, which wins. Put the primary first when it is readable.
+- **`attribute to` is required** whenever the first link is not the work
+  being credited — a Stack Exchange answer, a list, a Wikipedia page.
+  `draft.py` hoists it above the model's own rules.
+- **A row that is not settled science says `peer_reviewed: false`** in its
+  Settled? line; without it the model reads a missing journal as a
+  preprint, or the reverse.
+- Tech rows go above the `## Ranked — science` divider: with no number,
+  `draft.py --evergreen` takes the first uncovered row in file order.
+
+Under each row, one line that is not pasted: the score
+(`n7 v8 e9 s9 → 8.25`), and anything a person must know at the gate — a
+source `draft.py` cannot fetch, a number not to add.
+
+Close with: `<n> candidates, top <k> at or above 7.0`, and the queue's state
+after pasting them — how many rows are not yet covered by a post in `posts/`
+or `posts/rejected/`. (The docs' floor of 15 counts approved, drafted
+evergreen posts, not ideas; do not report this number as that one.)
 
 ## Do not
 

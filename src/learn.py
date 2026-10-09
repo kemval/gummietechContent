@@ -39,7 +39,8 @@ from pathlib import Path
 # From telegram.py because that is where these are written, and because it is
 # the one module that reads posts/ without importing render.py — which would
 # drag Playwright in for a script that only reads JSON.
-from telegram import (METRICS_FIELDS, METRICS_KEY, POSTS_DIR, read_post)
+from telegram import (METRICS_CORE, METRICS_FIELDS, METRICS_KEY, POSTS_DIR,
+                      read_post)
 
 import series
 
@@ -75,10 +76,25 @@ def numbers(post: dict) -> dict[str, int] | None:
     An asked-but-unanswered post carries a metrics block holding only
     `asked_at`. That is not a zero — it is a question nobody has got to yet —
     so it is counted apart rather than dragging every median down.
+
+    The core three make a post measured; reach and follows ride along when
+    the answer had them. A post without them has them missing, not zero —
+    every post before 2026-10-09 was asked for three numbers only.
     """
     block = post.get(METRICS_KEY) or {}
     got = {f: block[f] for f in METRICS_FIELDS if isinstance(block.get(f), int)}
-    return got if len(got) == len(METRICS_FIELDS) else None
+    return got if all(f in got for f in METRICS_CORE) else None
+
+
+def median(entries: list[dict], field: str) -> str:
+    """The group's median for one field, over the posts that have it.
+
+    A field no post in the group answered prints as a dash rather than a 0,
+    and one fewer posts answered than the group holds is still the median of
+    those that did — the n beside it is the core three's.
+    """
+    have = [e[field] for e in entries if field in e]
+    return f"{statistics.median(have):.0f}" if have else "—"
 
 
 def load(directory: Path | None = None) -> tuple[
@@ -115,31 +131,33 @@ def table(scored: list[tuple[Path, dict, dict]], by: str) -> None:
 
     rows = []
     for name, entries in groups.items():
-        medians = {f: statistics.median(e[f] for e in entries)
-                   for f in METRICS_FIELDS}
-        rows.append((name, len(entries), medians))
-    rows.sort(key=lambda r: (r[1] >= MIN_GROUP, r[2]["saves"]), reverse=True)
+        medians = {f: median(entries, f) for f in METRICS_FIELDS}
+        saves = statistics.median(e["saves"] for e in entries)
+        rows.append((name, len(entries), medians, saves))
+    rows.sort(key=lambda r: (r[1] >= MIN_GROUP, r[3]), reverse=True)
 
     head = f"  {'':<22}{'n':>4}" + "".join(
-        f"{f.replace('_', ' '):>16}" for f in METRICS_FIELDS)
+        f"{f.replace('_', ' '):>15}" for f in METRICS_FIELDS)
     print(f"\nBy {by}, median per post")
     print(head)
-    for name, n, medians in rows:
+    for name, n, medians, _ in rows:
         thin = "" if n >= MIN_GROUP else "   (too few to rank)"
         print(f"  {name[:22]:<22}{n:>4}"
-              + "".join(f"{medians[f]:>16.0f}" for f in METRICS_FIELDS)
+              + "".join(f"{medians[f]:>15}" for f in METRICS_FIELDS)
               + thin)
 
 
 def ranking(scored: list[tuple[Path, dict, dict]]) -> None:
     print("\nEvery measured post, most saved first")
-    print(f"  {'saves':>7}{'shares':>8}{'visits':>8}  {'published':<12}post")
+    print(f"  {'saves':>7}{'shares':>8}{'visits':>8}{'reach':>8}"
+          f"{'follows':>8}  {'published':<12}post")
     for path, post, got in sorted(scored, key=lambda s: s[2]["saves"],
                                   reverse=True):
         hook = str(post.get("hook") or post.get("title") or "").strip()
         print(f"  {got['saves']:>7}{got['shares']:>8}"
-              f"{got['profile_visits']:>8}  {post['published_at']:<12}"
-              f"{hook[:52]}")
+              f"{got['profile_visits']:>8}{got.get('reach', '—'):>8}"
+              f"{got.get('follows', '—'):>8}  {post['published_at']:<12}"
+              f"{hook[:44]}")
 
 
 # draft.REJECTED_DIR, not imported: draft.py pulls in gspread and the LLM

@@ -38,10 +38,15 @@
 #                   hackers", <description> empty, link to the digest page.
 #                   One item is not one story. See feeds/tier5_depth.yaml.
 #   Anthropic       anthropic.com/news advertises no feed and the usual
-#                   /rss.xml paths 404 (2026-10-07). Its launches reach the
-#                   sheet through Hacker News 200+ instead.
+#                   /rss.xml paths 404 (2026-10-07, again 2026-10-09). Wired
+#                   in below through a third-party mirror instead, as are
+#                   xAI and Cohere, which have no feed either. Perplexity
+#                   (/hub, same mirror) was left out: SEO listicles.
 #   Meta AI         ai.meta.com/blog advertises no feed; /rss/ and /feed/
-#                   return HTTP 400 (2026-10-07). Same route as Anthropic.
+#                   return HTTP 400 (2026-10-07). The Olshansk mirror's
+#                   feed_meta_ai.xml was 75 days stale on 2026-10-09, and
+#                   about.fb.com/news is corporate PR, not model launches.
+#                   Its launches reach the sheet through Hacker News 200+.
 
 feeds:
 
@@ -173,6 +178,52 @@ feeds:
     topic: tech
     announces: [apple.com/newsroom/]
 
+  # Added 2026-10-09 to cover the launches the AI digests lead with. The
+  # `announces` prefixes below come from each feed's own item links, not
+  # the sheet — re-measure them from the sheet after the first ingest.
+  - name: AWS Machine Learning Blog
+    url: https://aws.amazon.com/blogs/machine-learning/feed/
+    topic: ai
+    announces: [aws.amazon.com/blogs/machine-learning/]
+
+  - name: GitHub Blog AI & ML
+    url: https://github.blog/ai-and-ml/feed/
+    topic: ai
+    announces: [github.blog/ai-and-ml/]
+
+  # The Copilot label only; the full changelog is mostly minor UI changes.
+  # github.blog/news-insights/product-news/feed/ was 129 days stale.
+  - name: GitHub Changelog Copilot
+    url: https://github.blog/changelog/label/copilot/feed/
+    topic: ai
+    announces: [github.blog/changelog/]
+
+  # THIRD-PARTY. These three labs publish no feed (see the block at the top
+  # of this file). github.com/Olshansk/rss-feeds (MIT) scrapes their news
+  # pages hourly with GitHub Actions. Item links point at the maker's own
+  # page, so `announces` still works; the summary is only the title, so
+  # score.py judges from very little. The first fetch carries hundreds of
+  # backlog entries, hence `max_items`. If the scraper breaks the feed goes
+  # stale silently — verify_feeds.py and watch.py's 60-day check are the
+  # only alarm.
+  - name: Anthropic
+    url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml
+    topic: ai
+    announces: [anthropic.com/news/]
+    max_items: 10
+
+  - name: xAI
+    url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml
+    topic: ai
+    announces: [x.ai/news/]
+    max_items: 10
+
+  - name: Cohere
+    url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cohere.xml
+    topic: ai
+    announces: [cohere.com/blog/]
+    max_items: 10
+
   # --- journals / science press ---
   - name: Nature News
     url: https://www.nature.com/nature.rss
@@ -250,6 +301,13 @@ feeds:
   - name: Ars Technica
     url: https://feeds.arstechnica.com/arstechnica/index
     topic: tech
+
+  # Added 2026-10-09: an AI news desk, one story per item, ~10 items and
+  # ~900-char summaries. Unlike TechCrunch and The Verge (rejected above),
+  # it is AI-only, so little of it is spent on scoring off-topic items.
+  - name: The Decoder
+    url: https://the-decoder.com/feed/
+    topic: ai
 
   # Above the general Phys.org feed on purpose. ingest.py dedupes first-wins
   # in file order, and 4 of these 30 items also appear there — this ordering

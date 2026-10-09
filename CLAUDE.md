@@ -60,7 +60,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 
 ```
 .claude/agents/      fact-check · slide-proof · feed-scout · evergreen-scout
-                     (all read-only pre-gate reviewers — see the sections below)
+                     · voice-review · metrics-analyst (all read-only: they
+                     report or propose, a person decides — see below)
 .github/actions/     notify-failure (one definition of "this run broke",
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
@@ -162,7 +163,10 @@ reaches feedparser as a "not well-formed" XML error. → `docs/decisions/feeds.m
 proposes fixes, a person verifies and commits. **And a feed can be live and
 finished at the same time** — both the checker and `watch.py` measure the
 newest entry's age against `STALE_AFTER_DAYS` (60). A newsroom's `announces`
-prefixes are checked the same way (`announces_drift`). → `docs/decisions/feeds.md`
+prefixes are checked the same way (`announces_drift`). A feed with a
+`kind` is not RSS (`hf_daily_papers`, Hugging Face's JSON API): every reader
+goes through `verify_feeds.parse_feed()`, never feedparser directly.
+→ `docs/decisions/feeds.md`
 
 **Batch LLM scoring 15–20 items per request**, with a Python keyword
 pre-filter first. Gemini's free tier has a per-minute and a daily cap, per
@@ -481,8 +485,10 @@ gate change; a configured check that fails writes `UNVERIFIED`.
 
 ## Measuring
 
-Three days after a post goes live `confirm` asks for saves, shares and
-profile visits (with `ForceReply`) and writes the reply into `metrics`. The
+Three days after a post goes live `confirm` asks for saves, shares,
+profile visits, accounts reached and follows (with `ForceReply`) and writes
+the reply into `metrics`; the first three alone still count, and a field not
+given is missing, not zero. The
 ask writes `asked_at`; an answer must be a reply to the ask or it is
 dropped; a numbers-only poll reports `published=false` so the archive is not
 rebuilt. `python src/learn.py` is the report — no rates, groups under three

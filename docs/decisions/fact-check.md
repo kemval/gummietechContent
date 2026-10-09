@@ -66,3 +66,37 @@ press Apply the fixes. `formats.missing_fields()` lets an empty catch through
 and this agent answers every empty catch with a BLOCK and a ready-to-print
 replacement from the full source. The same three rows drafted again came back
 with three empty catches and no invented ones.
+
+## Replaying past holds before changing the agent (2026-10-09)
+
+`fact-check.md` is the gate's most consequential prompt and nothing tests
+it: `tests/` covers pure functions, and an agent run costs Pro quota, so it
+cannot go in `check.yml`. But the repo already holds its regression set.
+Every `Apply the fact-check to <post>` commit is a fix this agent asked for,
+and that commit's parent holds the draft as it was before — a post the agent
+once correctly refused to pass. Fourteen of them by this date, covering an
+invented catch, a wrong first author, a preprint labelled reviewed
+(`3124e59`), a Signal's per-item credit (`eb9214b`), a Breakdown
+(`9fa1f8b`) and a run post's `try_it` (`b2b91cf`).
+
+Before merging a change to `.claude/agents/fact-check.md`, replay a few —
+those four cover the formats — against the new prompt:
+
+```bash
+git log --format=%h --grep='^Apply the fact-check to' |
+while read -r c; do
+  f=$(git show --name-only --format= "$c" | grep -m1 '^posts/.*\.json$')
+  mkdir -p "/tmp/fc-cases/$c"
+  git show "$c^:$f" > "/tmp/fc-cases/$c/$(basename "$f")"
+  git diff --stat "$c^" "$c" -- "$f" > "/tmp/fc-cases/$c/expected.txt"
+  git diff "$c^" "$c" -- "$f" >> "/tmp/fc-cases/$c/expected.txt"
+done
+```
+
+Then run the agent on `/tmp/fc-cases/<commit>/<post>.json` and compare.
+The case passes when the verdict is not PASS and the report names at least
+one field the fix changed (`expected.txt`). Two ways it can say nothing:
+a source that has since died makes every case an unreadable-source BLOCK,
+which proves only that the hold rule works — pick another case; and the
+cases are the drafts of their day, so `the_catch` failures from before
+2026-10-08 are invented catches, not the empty ones the prompt asks for now.
