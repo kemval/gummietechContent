@@ -195,21 +195,22 @@ jobs:
         run: python src/translate.py "${{ steps.file.outputs.post }}"
 
       # Before review.yml, which reads the post from its own checkout — the
-      # same reason daily.yml commits first. Over an explicitly authenticated
-      # remote, because claude-code-action replaces the credential checkout
-      # installs; fix.yml's first run died on exactly that.
+      # same reason daily.yml commits first. Pushed by
+      # .github/actions/push-to-master.
       - name: Commit the post
         env:
           POST: ${{ steps.file.outputs.post }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "gummietech"
           git config user.email "noreply@github.com"
           git add "$POST"
           git commit -m "Draft $(basename "$POST" .json)" \
                      -m "Written by .github/workflows/weekly.yml ($KIND). Reviewed by review.yml before the gate; undated, so unpublished."
-          git pull --rebase "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" master
-          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Push to master
+        uses: ./.github/actions/push-to-master
+        with:
+          token: ${{ github.token }}
 
       - name: Say so in Telegram if this run broke
         if: failure()

@@ -1,0 +1,57 @@
+name: Push to master
+description: >
+  Rebase the commit this job just made onto master and push it, retrying when
+  another workflow pushed first. Called right after the step that commits.
+
+# One definition, seven callers. Every workflow that writes to the repo pushes
+# straight to master, and several of them run on their own clocks: publish.yml
+# polls about eight times a day, series.yml sends daily, daily.yml and
+# weekly.yml fire four times each. Any two can land inside the same minute,
+# and the second push is then refused as non-fast-forward.
+#
+# Before this action each workflow carried its own copy, and the copies had
+# drifted: hook.yml and fix.yml pushed without rebasing at all, so a publish
+# tap recorded while a hook was being swapped failed the swap; the others
+# rebased once and gave up if the race happened again inside that window.
+#
+# Always over an explicitly authenticated remote, never the credential
+# actions/checkout installs: claude-code-action replaces that credential, and
+# fix.yml's first run applied the report, passed its guard, committed and then
+# died on "Password authentication is not supported for Git operations".
+#
+# A rebase conflict is not retried. It means another run changed the same
+# lines — the same post edited twice — and replaying it would only pick a
+# winner silently. That is a person's call, so the run fails and says so.
+#
+# Nothing committed is a clean no-op: HEAD is already on master after the
+# rebase and the push reports "Everything up-to-date". Callers whose commit
+# step can exit early need no guard of their own.
+
+inputs:
+  token:
+    description: "github.token — the job needs `contents: write`."
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        remote="https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+        for attempt in 1 2 3 4; do
+          git fetch --quiet "$remote" master
+          if ! git rebase FETCH_HEAD; then
+            git rebase --abort
+            echo "::error::This commit conflicts with what another run pushed to master in the meantime — the same file changed twice. Nothing was pushed. Read both changes, then re-run this workflow once master holds the one you want." >&2
+            exit 1
+          fi
+          if git push --quiet "$remote" HEAD:master; then
+            exit 0
+          fi
+          echo "Push $attempt of 4 refused — another workflow pushed first. Rebasing again."
+          sleep $((attempt * 5))
+        done
+        echo "::error::Four pushes in a row were refused. Something is pushing to master continuously, or the token lost contents: write. Check the Actions tab for a run in a loop, then re-run this one." >&2
+        exit 1

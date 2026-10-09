@@ -147,14 +147,16 @@ jobs:
           OLD: ${{ steps.pick.outputs.post }}
           NEW: ${{ steps.draft.outputs.post }}
           REASON: ${{ inputs.reason }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Reject $(basename "$OLD" .json), draft $(basename "$NEW" .json)" \
                      -m "Rejected at the gate through .github/workflows/redraft.yml${REASON:+: $REASON}. The new draft is undated and goes through review.yml before it reaches the chat."
-          git pull --rebase
-          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Push to master
+        uses: ./.github/actions/push-to-master
+        with:
+          token: ${{ github.token }}
 
       - name: Say so in Telegram if this run broke
         if: failure()

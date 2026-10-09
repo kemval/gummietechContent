@@ -184,8 +184,11 @@ jobs:
           fi
           git commit -m "$msg" \
                      -m "$(git diff --cached --name-only)"
-          git pull --rebase
-          git push
+
+      - name: Push to master
+        uses: ./.github/actions/push-to-master
+        with:
+          token: ${{ github.token }}
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.
