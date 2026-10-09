@@ -38,9 +38,9 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -49,9 +49,10 @@ jobs:
       # and telegram.py
       # deliberately does not import render.py, which would drag in Playwright.
       # These two are telegram.py's entire non-stdlib surface — keep them in
-      # step with its imports, or `confirm` dies at module load.
+      # step with its imports, or `confirm` dies at module load. `-c` holds
+      # them to the versions requirements.txt pins without installing the rest.
       - name: Install dependencies
-        run: pip install requests python-dotenv
+        run: pip install -c requirements.txt requests python-dotenv
 
       # Also Layer 7: the same poll asks a settled post for its Instagram
       # numbers and writes back the reply. The chat id is needed for that
