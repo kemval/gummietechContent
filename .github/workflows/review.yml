@@ -178,6 +178,53 @@ jobs:
           TXT
           fi
 
+      # The deny list above is the fact-check's contract; this is the part
+      # that does not depend on the agent honouring it — fix.yml's guard,
+      # pointed the other way. The agent has Bash, and Bash is not Write or
+      # Edit: a `sed -i` on the post gets past every deny rule. It also reads
+      # pages nobody here controls, so the instruction to change the post can
+      # come from the source itself. Everything below renders and sends the
+      # working tree, while publish.yml dates what is on master, so a changed
+      # post would put slides in the chat that are not the post you approve.
+      #
+      # Only the paths that reach the slides or the gate are checked; the
+      # action is free to leave its own files elsewhere in the checkout. On a
+      # change they are put back to what was committed, and the report is
+      # replaced, not annotated: its own verdict line would outrank a note
+      # (telegram.blocked_by), and a session that edited what it was checking
+      # has not checked it. The original is kept beside it in the artifact.
+      - name: Check the fact-check left the post as committed
+        run: |
+          paths="posts src templates fonts assets"
+          # shellcheck disable=SC2086 # $paths is a list of pathspecs
+          changed=$(git status --porcelain --untracked-files=all -- $paths)
+          if [ -z "$changed" ]; then
+            echo "The fact-check changed nothing that is rendered or sent."
+            exit 0
+          fi
+          echo "::error::The fact-check session changed files it may only read. Restoring them; the post is held as UNVERIFIED." >&2
+          echo "$changed"
+          # shellcheck disable=SC2086
+          git --no-pager diff -- $paths
+          # The whole tree, not just $paths: nothing has run since checkout
+          # that may leave a tracked file changed, and a pathspec that names
+          # a missing directory would make a scoped checkout fail outright.
+          git reset --quiet --hard HEAD
+          # shellcheck disable=SC2086
+          git clean -fdq -- $paths
+          if [ -f /tmp/factcheck.md ]; then
+            mv /tmp/factcheck.md /tmp/factcheck.original.md
+          fi
+          {
+            echo "UNVERIFIED — the fact-check session changed files it may only read:"
+            echo
+            echo "$changed"
+            echo
+            echo "They were restored to master before rendering, and its report is"
+            echo "not trusted: it is kept as factcheck.original.md in the run's"
+            echo "artifact. Read the diff in the run log, then Re-run the checks."
+          } > /tmp/factcheck.md
+
       - name: Render the slides
         run: python src/render.py "${{ inputs.post }}"
 
@@ -204,6 +251,7 @@ jobs:
           name: reports-${{ steps.post.outputs.stem }}
           path: |
             /tmp/factcheck.md
+            /tmp/factcheck.original.md
             /tmp/proof.md
           retention-days: 14
           if-no-files-found: warn
