@@ -67,7 +67,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      install-render-tools (Chromium + ffmpeg, bounded and
                      retried against a crawling Ubuntu mirror) ·
                      push-to-master (the one way a job pushes: rebase,
-                     retry a race, fail on a conflict)
+                     retry a race, fail on a conflict) · heartbeat (the
+                     ping an outside watcher expects — see below)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
@@ -513,7 +514,10 @@ happened and did not (cadence, glossary, breakdown, subject, gate, metrics, colo
 buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot
-prove it ran. → `docs/decisions/watch.md`
+prove it ran — so `watch.yml` and `ingest.yml` end on `heartbeat`, a ping to
+healthchecks.io (free Hobbyist plan) that alerts when it stops. A no-op until
+the `HEALTHCHECKS_PING_KEY` secret is set; set each check's period and grace
+by hand after its first ping. → `docs/decisions/watch.md`
 
 ## Publishing
 

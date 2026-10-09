@@ -89,6 +89,14 @@ jobs:
           HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
         run: python src/watch.py --send --structure '${{ needs.checks.result }}'
 
+      # Last, so it is sent only when every step above succeeded. See
+      # .github/actions/heartbeat for the watcher it reports to.
+      - name: Tell the outside watcher this ran
+        uses: ./.github/actions/heartbeat
+        with:
+          ping_key: ${{ secrets.HEALTHCHECKS_PING_KEY }}
+          slug: watch
+
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.
       - name: Say so in Telegram if this run broke
