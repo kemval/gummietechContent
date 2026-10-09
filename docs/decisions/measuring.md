@@ -58,3 +58,30 @@ a group under three posts rather than ranking noise, and says outright that
 impression would be the honest measure and Instagram does not give
 impressions away, so a ratio built from these three numbers would look
 rigorous and mean nothing.
+
+## Reach and follows (2026-10-09)
+
+At thirty posts the §8 decision came due and the numbers could not carry
+it: saves were 0 on all 27 measured posts, shares exactly 1 on 23 and 0 on
+the rest — most likely one person, the owner, sharing each post — and
+profile visits tracked how late a post was read rather than the post.
+No number of further posts ranks measures at their floor. (The
+`metrics-analyst` agent's report of that date; 15 of the 27 had also been
+read in one sitting on 2026-09-21, days late.)
+
+So the ask now takes five numbers: saves, shares, profile visits, then
+**accounts reached** and **follows**, both on the same Insights screen and
+both free to read by eye. They are counts beside the others and never a
+denominator — the no-rate rule stands, and "saves per reach" would be the
+same invented ratio. `METRICS_CORE` is the first three: an answer of three
+(every ask sent before this, or a person without reach to hand) or four
+still records and still counts as answered in `learn.py` and `watch.py`,
+and a field not given is missing, not zero — `learn.py` prints it as a dash
+and takes each median over the posts that have it.
+
+Insights prints reach as "1,340", and a comma is one of the separators a
+reply may use, so read raw that is two numbers and every field after it
+lands one place late, silently. `metrics_reply()` drops a comma with exactly
+three digits after it and no space before matching; the price is that
+"150,200,400" typed without spaces no longer reads, and is ignored rather
+than misfiled.

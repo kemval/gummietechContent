@@ -188,7 +188,8 @@ Instagram, and it is the only thing that lets a post onto the public archive.
 
 `metrics` is not part of the contract either. `telegram.py` writes it after
 the post is live — `asked_at` when it asks for the numbers, then `saves`,
-`shares`, `profile_visits` and `recorded_at` when you reply. `render.py` and
+`shares`, `profile_visits`, optionally `reach` and `follows`, and
+`recorded_at` when you reply. `render.py` and
 `site.py` both ignore it, so nothing it holds reaches a slide or a page. See
 **Measuring** below.
 

@@ -68,9 +68,9 @@ from pathlib import Path
 from formats import by_hand
 from proof import Report
 from render import COLORWAYS, post_order, vary
-from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
-                      METRICS_REPLY_RE, POSTS_DIR, UPDATES_LIMIT,
-                      TelegramError, config, locate, ours,
+from telegram import (METRICS_ASK_RE, METRICS_CORE, METRICS_KEY,
+                      POSTS_DIR, UPDATES_LIMIT,
+                      TelegramError, config, locate, metrics_reply, ours,
                       parse_callback, poll, publish_date, read_post, recorded,
                       send_report)
 from weekly import KINDS as WEEKLY
@@ -275,10 +275,11 @@ def check_metrics(updates: list, today: str, report: Report,
         message = update.get("message") or {}
         asked = (message.get("reply_to_message") or {}).get("text", "")
         match = METRICS_ASK_RE.search(asked or "")
-        # Only a message that is actually three numbers counts. record_metrics
+        # Only a message that is actually an answer (three or five numbers)
+        # counts. record_metrics
         # ignores anything else in silence, and reporting a chat message as a
         # dropped answer would be reporting on a conversation.
-        if not METRICS_REPLY_RE.match(message.get("text", "")):
+        if not metrics_reply(str(message.get("text", ""))):
             continue
         # Three numbers replying to nothing — or to the wrong message — are
         # the one failure record_metrics cannot report on itself. It drops
@@ -295,7 +296,9 @@ def check_metrics(updates: list, today: str, report: Report,
         if post is None:
             continue
         have = post.get(METRICS_KEY) or {}
-        if all(field in have for field in METRICS_FIELDS):
+        # The core three, not every field: reach and follows are optional,
+        # and an answer without them is an answer.
+        if all(field in have for field in METRICS_CORE):
             continue
         report.fix("metrics", f"{match.group(1)} was answered and the "
                               f"numbers are not in the JSON — dispatch "
@@ -303,7 +306,7 @@ def check_metrics(updates: list, today: str, report: Report,
 
     # One finding for the lot: the same mistake nine times is one habit.
     if orphans:
-        report.fix("metrics", f"{orphans} message(s) of three numbers arrived "
+        report.fix("metrics", f"{orphans} message(s) of numbers arrived "
                               f"without replying to a question, so nothing "
                               f"knows which post they answer and they were "
                               f"dropped. Long-press the 📊 message itself and "
@@ -314,7 +317,7 @@ def check_metrics(updates: list, today: str, report: Report,
         post = read_post(path) or {}
         block = post.get(METRICS_KEY) or {}
         asked_at = str(block.get("asked_at", "")).strip()
-        if not asked_at or all(f in block for f in METRICS_FIELDS):
+        if not asked_at or all(f in block for f in METRICS_CORE):
             continue
         try:
             age = (date.fromisoformat(today) - date.fromisoformat(asked_at)).days

@@ -44,7 +44,7 @@ Five things that are deliberate:
     seconds-long window Telegram allows a bot to answer in. The edit to the
     message is the feedback that matters, and it has no such deadline.
 
-  - **The metrics answer is an ordinary reply, not a button.** Three numbers
+  - **The metrics answer is an ordinary reply, not a button.** Five numbers
     do not fit in callback_data and no keyboard can carry an arbitrary
     integer, so the question goes out as a message and the reply comes back
     as one. That is also why `confirm` now asks Telegram for `message`
@@ -1077,7 +1077,16 @@ def send_reel(post_path: Path, review_paths: list[Path]) -> int:
 # returns them oldest first and the later one lands last, which is the one
 # they meant.
 METRICS_KEY = "metrics"
-METRICS_FIELDS = ("saves", "shares", "profile_visits")
+# The first three are every answer's; reach and follows were added on
+# 2026-10-09, when thirty posts had 0 saves each and a share of exactly 1 on
+# nearly all of them — measures at their floor, which no number of posts
+# would ever rank. "Accounts reached" and "Follows" sit on the same Insights
+# screen and vary. They are counts beside the others, never a denominator:
+# learn.py computes no rate. A three-number answer still records, so asks
+# sent before the change, and a person without reach to hand, still count —
+# and a post without them has them missing, not zero.
+METRICS_FIELDS = ("saves", "shares", "profile_visits", "reach", "follows")
+METRICS_CORE = METRICS_FIELDS[:3]
 # Long enough that the numbers have stopped moving, short enough that the post
 # is still recognisable in the chat when the question arrives.
 METRICS_AFTER_DAYS = 3
@@ -1098,10 +1107,28 @@ METRICS_MARK = "metrics ·"
 # Not anchored at the start of the line: the question opens with an emoji,
 # so the mark itself is the anchor and $ closes it at the line end.
 METRICS_ASK_RE = re.compile(rf"{re.escape(METRICS_MARK)} (\S+)$", re.M)
-# "120 14 33", "120/14/33", "120, 14, 33" — three numbers, any separator.
-# A reply that is not three numbers is ignored in silence, deliberately:
-# answering it would replay that answer on every poll for a day.
-METRICS_REPLY_RE = re.compile(r"^\D*(\d+)\D+(\d+)\D+(\d+)\D*$")
+# "0 1 2 340 1", "0/1/2/340/1", "0, 1, 2, 340, 1" — five numbers, or the
+# first three or four (reach without follows), any separator. A reply that is neither is ignored in silence,
+# deliberately: answering it would replay that answer on every poll for a
+# day.
+METRICS_REPLY_RE = re.compile(
+    r"^\D*(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?(?:\D+(\d+))?\D*$")
+# Reach runs into the thousands, and Insights prints it "1,340". Any
+# separator includes a comma, so read raw that is two numbers, and every
+# field after it lands one place late — saves 1, shares 340 — with nothing to
+# say so. A comma with exactly three digits after it and no space is a
+# thousands separator; it goes before the match. The cost: "150,200,400"
+# typed without spaces no longer reads, and is ignored rather than misfiled.
+THOUSANDS_RE = re.compile(r"(?<=\d),(?=\d{3}(?!\d))")
+
+
+def metrics_reply(text: str) -> dict[str, int] | None:
+    """The numbers a reply carries, by field, or None if it is not an answer."""
+    numbers = METRICS_REPLY_RE.match(THOUSANDS_RE.sub("", text.strip()))
+    if not numbers:
+        return None
+    return {field: int(n) for field, n in zip(METRICS_FIELDS, numbers.groups())
+            if n is not None}
 # The ask asks in words for a Telegram *reply*, and words were not enough:
 # on 2026-09-21 nine answers arrived in one day as ordinary messages, and
 # record_metrics dropped every one. reply_to_message is the only thing that
@@ -1112,7 +1139,8 @@ METRICS_REPLY_RE = re.compile(r"^\D*(\d+)\D+(\d+)\D+(\d+)\D*$")
 # keyboard rather than by remembering to make it. A person who dismisses it
 # is back where they were, which is why the sentence in the message stays.
 METRICS_FORCE_REPLY = {"force_reply": True,
-                       "input_field_placeholder": "saves shares visits"}
+                       "input_field_placeholder":
+                           "saves shares visits reach follows"}
 
 
 def read_post(path: Path) -> dict | None:
@@ -1235,9 +1263,10 @@ def ask_metrics(token: str, chat_id: str, today: str) -> int:
             f"📊 {METRICS_MARK} <code>{html.escape(path.stem)}</code>\n\n"
             f"<i>{html.escape(hook)}</i>\n"
             f"Published {html.escape(str(post['published_at']))}.\n\n"
-            f"Reply to <b>this</b> message with three numbers from Instagram "
-            f"Insights — <b>saves shares profile-visits</b>, like "
-            f"<code>120 14 33</code>.",
+            f"Reply to <b>this</b> message with five numbers from the post's "
+            f"Instagram Insights — <b>saves shares profile-visits "
+            f"accounts-reached follows</b>, like <code>0 1 2 340 1</code>. "
+            f"The first three alone still count.",
             METRICS_FORCE_REPLY)
         post[METRICS_KEY] = {"asked_at": today}
         write_record(path, post)
@@ -1255,8 +1284,8 @@ def record_metrics(token: str, updates: list, today: str) -> int:
         named = METRICS_ASK_RE.search(str(replied_to.get("text", "")))
         if not named:
             continue
-        numbers = METRICS_REPLY_RE.match(str(message.get("text", "")).strip())
-        if not numbers:
+        values = metrics_reply(str(message.get("text", "")))
+        if not values:
             continue
 
         path = locate(named.group(1))
@@ -1266,7 +1295,6 @@ def record_metrics(token: str, updates: list, today: str) -> int:
         if post is None:
             continue
 
-        values = dict(zip(METRICS_FIELDS, (int(n) for n in numbers.groups())))
         current = post.get(METRICS_KEY) or {}
         if all(current.get(field) == value for field, value in values.items()):
             continue          # the same reply, replayed — the expected case

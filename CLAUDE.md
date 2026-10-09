@@ -485,8 +485,10 @@ gate change; a configured check that fails writes `UNVERIFIED`.
 
 ## Measuring
 
-Three days after a post goes live `confirm` asks for saves, shares and
-profile visits (with `ForceReply`) and writes the reply into `metrics`. The
+Three days after a post goes live `confirm` asks for saves, shares,
+profile visits, accounts reached and follows (with `ForceReply`) and writes
+the reply into `metrics`; the first three alone still count, and a field not
+given is missing, not zero. The
 ask writes `asked_at`; an answer must be a reply to the ask or it is
 dropped; a numbers-only poll reports `published=false` so the archive is not
 rebuilt. `python src/learn.py` is the report — no rates, groups under three

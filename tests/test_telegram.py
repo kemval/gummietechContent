@@ -208,6 +208,39 @@ def test_a_reply_is_recorded(posts, quiet):
         "profile_visits": 33, "recorded_at": "2026-09-20"}
 
 
+def test_five_numbers_add_reach_and_follows(posts, quiet):
+    """Saves were 0 and shares exactly 1 on thirty posts by 2026-10-09: no
+    number of posts would rank measures at their floor, so the ask added the
+    two Insights numbers that vary."""
+    path = posts("2026-09-15-x.json", hook="h", published_at="2026-09-15",
+                 metrics={"asked_at": "2026-09-20"})
+    assert tg.record_metrics("tok", [reply_update("2026-09-15-x",
+                                                  "0, 1, 2, 340, 1")],
+                             "2026-09-20") == 1
+    got = json.loads(path.read_text())["metrics"]
+    assert (got["reach"], got["follows"]) == (340, 1)
+
+
+@pytest.mark.parametrize("text", ["0 1 2 1,340 1", "0, 1, 2, 1,340, 1"])
+def test_a_thousands_comma_is_part_of_the_number(posts, quiet, text):
+    """Read as a separator, "1,340" is two numbers and every field after it
+    lands one place late, silently."""
+    path = posts("2026-09-15-x.json", hook="h", published_at="2026-09-15",
+                 metrics={"asked_at": "2026-09-20"})
+    tg.record_metrics("tok", [reply_update("2026-09-15-x", text)], "2026-09-20")
+    got = json.loads(path.read_text())["metrics"]
+    assert (got["saves"], got["reach"], got["follows"]) == (0, 1340, 1)
+
+
+def test_three_numbers_still_record_and_leave_reach_missing(posts, quiet):
+    """Asks sent before the change asked for three. Missing is not zero."""
+    path = posts("2026-09-15-x.json", hook="h", published_at="2026-09-15",
+                 metrics={"asked_at": "2026-09-20"})
+    assert tg.record_metrics("tok", [reply_update("2026-09-15-x", "0 1 2")],
+                             "2026-09-20") == 1
+    assert "reach" not in json.loads(path.read_text())["metrics"]
+
+
 def test_the_same_reply_replayed_writes_nothing(posts, quiet):
     """getUpdates has no offset, so this is the expected case on every poll
     for 24 hours. Recording a number is a set, not an increment."""
