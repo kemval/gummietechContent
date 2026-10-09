@@ -42,9 +42,13 @@ when a feed moves. `verify_feeds.announcement_prefixes()` is the one reader, and
 maker's announcement, and to key a launch's duplicates (see
 `voice-and-selection.md` and `dedup.md`). A prefix that is too broad labels
 a third party's page as the maker's; one that is too narrow just leaves a
-page to the model, so err narrow. Anthropic, Meta AI, `blog.google` and
+page to the model, so err narrow. Meta AI, `blog.google` and
 `developer.chrome.com` have no feed here and so no prefix: their launches
-fall back to the model's proposal and the fact-check.
+fall back to the model's proposal and the fact-check. Anthropic, xAI and
+Cohere publish no feed either, and since 2026-10-09 come in through a
+third-party mirror (github.com/Olshansk/rss-feeds) whose links point at the
+maker's own pages, so their prefixes work; the mirror can stop silently, and
+the 60-day staleness check is the only alarm.
 
 **Prefixes are checked, not trusted.** A site redesign that moves a
 newsroom's pages leaves its feed live and its `announces` prefixes silently
@@ -53,3 +57,16 @@ links with its prefixes and reports the feed when fewer than half fit.
 `verify_feeds.py` prints it and `watch.py` makes it a FIX. On 2026-10-07
 healthy feeds sat at 9 or 10 of 10; Microsoft Research's one miss was a
 podcast.
+
+**A feed can be JSON (2026-10-09).** `kind: hf_daily_papers` marks Hugging
+Face's daily papers, which has no RSS — only a free JSON API.
+`verify_feeds.parse_feed()` is the one place a feed's bytes become entries,
+for both `ingest.py` and the checker, so a new format is one function there
+and one `kind`, never a second fetch loop. The papers become
+`arxiv.org/abs/<id>` rows, the arXiv feeds' exact URLs, so URL dedupe holds
+and `PREPRINT_HOSTS` flags them; a third-party RSS of the same list
+(papers.takara.ai) linked its own pages and would have skipped the flag.
+`min_upvotes` (10) leaves a paper out until it has the votes — ingest polls
+every two hours and stores nothing below the bar, so a paper that climbs is
+picked up later. A paper already ingested from arXiv keeps its arXiv row:
+the sheet does not learn it was popular.

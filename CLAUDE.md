@@ -163,7 +163,10 @@ reaches feedparser as a "not well-formed" XML error. → `docs/decisions/feeds.m
 proposes fixes, a person verifies and commits. **And a feed can be live and
 finished at the same time** — both the checker and `watch.py` measure the
 newest entry's age against `STALE_AFTER_DAYS` (60). A newsroom's `announces`
-prefixes are checked the same way (`announces_drift`). → `docs/decisions/feeds.md`
+prefixes are checked the same way (`announces_drift`). A feed with a
+`kind` is not RSS (`hf_daily_papers`, Hugging Face's JSON API): every reader
+goes through `verify_feeds.parse_feed()`, never feedparser directly.
+→ `docs/decisions/feeds.md`
 
 **Batch LLM scoring 15–20 items per request**, with a Python keyword
 pre-filter first. Gemini's free tier has a per-minute and a daily cap, per

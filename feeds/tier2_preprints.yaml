@@ -116,6 +116,21 @@ feeds:
     new_only: true
     max_items: 25
 
+  # Added 2026-10-09. The capped arXiv feeds above are a sample in arXiv's
+  # order, not a ranking; this is the list the AI community votes on each
+  # day, so it brings the papers people care about that the sample misses.
+  # Not RSS: `kind` tells verify_feeds.parse_feed() to read Hugging Face's
+  # free JSON API, which it turns into arxiv.org/abs/<id> rows — the same
+  # URLs as the feeds above, so a paper already in the sheet from arXiv is
+  # not added twice. ~50 papers a day; on 2026-10-09 about a third had 10+
+  # votes, so ~15–20 rows a day, one or two score.py calls. Two in three
+  # name a GitHub repo, which feeds Wednesday's run post.
+  - name: Hugging Face Daily Papers
+    url: https://huggingface.co/api/daily_papers?limit=100
+    kind: hf_daily_papers
+    topic: ai
+    min_upvotes: 10
+
   - name: arXiv Materials
     url: https://rss.arxiv.org/rss/cond-mat.mtrl-sci
     topic: materials
