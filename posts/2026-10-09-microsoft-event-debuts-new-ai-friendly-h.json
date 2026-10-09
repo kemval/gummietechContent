@@ -9,7 +9,7 @@
     "Microsoft says the RTX Spark Dev Box delivers one petaflop of AI compute"
   ],
   "what_happened": "Microsoft announced the Surface Laptop Ultra with Nvidia RTX Spark SoC and a RTX Spark Dev Box that claims one petaflop AI performance.",
-  "why_it_matters": "Microsoft says developers will be able to run local AI models on a laptop or small box instead of the cloud.",
+  "why_it_matters": "Microsoft says developers can run AI models locally on a laptop or a dedicated box, a move away from cloud-backed AI.",
   "the_catch": "Microsoft's one-petaflop figure is its own claim, and Ars says questions about security and user acceptance of local AI still remain.",
   "caption": "Microsoft introduced the Surface Laptop Ultra and RTX Spark Dev Box, hardware aimed at local AI development. How will you use local AI on your own machine?",
   "keywords": [
@@ -23,7 +23,7 @@
     "#developer",
     "#gummietech"
   ],
-  "alt_text": "A five‑slide carousel explains Microsoft’s new AI‑focused Surface Laptop Ultra and RTX Spark Dev Box, their specs and current availability.",
+  "alt_text": "A five-slide carousel on Microsoft's new Surface Laptop Ultra and RTX Spark Dev Box, built around Nvidia's RTX Spark chip and aimed at running AI models locally, with Microsoft's one-petaflop claim and the open questions about local AI.",
   "source_url": "https://arstechnica.com/gadgets/2026/10/microsoft-event-debuts-new-ai-friendly-hardware-and-windows-changes/",
   "attribution": "Microsoft",
   "peer_reviewed": false,
@@ -31,10 +31,10 @@
   "beat": "computing",
   "es": {
     "domain": "hardware",
-    "hook": "Microsoft presentó un nuevo portátil Surface diseñado para desarrolladores de IA",
-    "what_happened": "Microsoft anunció el Surface Laptop Ultra con un SoC Nvidia RTX Spark y una RTX Spark Dev Box que afirma ofrecer un petaflop de rendimiento de IA",
-    "why_it_matters": "Microsoft dice que los desarrolladores podrán ejecutar modelos de IA localmente en un portátil o en una caja pequeña, en lugar de usar la nube",
-    "the_catch": "La cifra de un petaflop es una afirmación de Microsoft, y Ars señala que continúan existiendo preguntas sobre la seguridad y la aceptación de la IA local por parte de los usuarios",
-    "_en": "21e3cfc47797a21c"
+    "hook": "Microsoft presentó una nueva laptop Surface diseñada para desarrolladores de IA",
+    "what_happened": "Microsoft anunció la Surface Laptop Ultra, que incorpora un SoC Nvidia RTX Spark y una RTX Spark Dev Box que promete un rendimiento de IA de un petaflop",
+    "why_it_matters": "Microsoft afirma que los desarrolladores podrán ejecutar modelos de IA localmente en una laptop o en una caja dedicada, lo que representa un alejamiento de la IA basada en la nube",
+    "the_catch": "La cifra de un petaflop proviene de la propia Microsoft, y Ars señala que aún quedan sin resolver preguntas sobre la seguridad y la aceptación de la IA local por parte de los usuarios",
+    "_en": "25e6711410e37e1c"
   }
 }
