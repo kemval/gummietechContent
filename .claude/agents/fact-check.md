@@ -61,9 +61,10 @@ permalink.
 
 If you genuinely cannot read the source (hard paywall, login wall), say so and
 stop: report `UNVERIFIED` for every claim rather than guessing, and make the
-verdict line `FACT-CHECK · BLOCK`. An unverifiable post is a hold, not a pass,
-and BLOCK is the verdict `telegram.py` reads as one — a verdict line it does
-not recognise falls back to scanning the prose, which is weaker.
+verdict line `FACT-CHECK · UNVERIFIED`. An unverifiable post is a hold, not a
+pass — `telegram.py` withholds the button on it exactly as on BLOCK — but it
+tells the person nothing was found wrong, only that nothing could be checked.
+If you could read the source and found a BLOCK as well, the verdict is BLOCK.
 
 ### 3. Find the primary source, not just the press about it
 
@@ -225,6 +226,7 @@ Name the file that already covers it.
 
 ```
 FACT-CHECK · BLOCK
+FACT-CHECK · UNVERIFIED
 FACT-CHECK · FIX
 FACT-CHECK · PASS
 ```

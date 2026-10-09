@@ -115,8 +115,8 @@ jobs:
             Do the work in this session. Do not start a subagent for it.
 
             Its first line must be the verdict line fact-check.md specifies
-            — FACT-CHECK · BLOCK, · FIX or · PASS — because that line is what
-            the gate in telegram.py reads.
+            — FACT-CHECK · BLOCK, · UNVERIFIED, · FIX or · PASS — because
+            that line is what the gate in telegram.py reads.
 
             Write the complete report to /tmp/factcheck.md before you finish.
             Do not modify any file in posts/, do not render, and do not add

@@ -195,7 +195,14 @@ MEDIA_GROUP_LIMIT = 10
 # required FIX" and was held by its own summary of having found nothing. A
 # clean post held every day is worse than no gate: it teaches a person to tap
 # the override without reading.
-VERDICT_RE = re.compile(r"^(?:PROOF|FACT-CHECK) · (BLOCK|FIX|PASS)\s*$", re.M)
+#
+# UNVERIFIED is fact-check's fourth verdict: the source could not be read, so
+# nothing was checked. It holds like BLOCK, but says why — a person deciding
+# between Apply the fixes and Re-run the checks needs to know nothing was
+# found wrong, only that nothing could be confirmed.
+VERDICT_RE = re.compile(
+    r"^(?:PROOF|FACT-CHECK) · (BLOCK|UNVERIFIED|FIX|PASS)\s*$", re.M)
+HOLDING = ("BLOCK", "UNVERIFIED")
 
 # A report with no verdict line has not said anything a machine can act on, so
 # the words themselves still decide — which is what holds the stand-in report
@@ -402,7 +409,7 @@ def blocked_by(reviews: list[tuple[str, str]]) -> list[str]:
     for name, body in reviews:
         verdicts = VERDICT_RE.findall(body)
         if verdicts:
-            withheld = verdicts[-1] == "BLOCK"
+            withheld = verdicts[-1] in HOLDING
         else:
             withheld = bool(GATE_RE.search(body))
         if withheld:

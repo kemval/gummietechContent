@@ -72,6 +72,16 @@ def test_the_not_configured_stand_in_leaves_the_button_alone():
     assert tg.blocked_by([("factcheck", "No token, so nothing checked this.")]) == []
 
 
+def test_an_unverified_verdict_holds_even_after_a_quoted_pass():
+    """An unreadable source had no verdict line of its own, so the hold
+    rested on GATE_RE scanning the prose — and the last verdict line wins,
+    so a report that quoted "FACT-CHECK · PASS" while explaining itself
+    would have passed a post nobody could check."""
+    body = ("A clean post would say:\nFACT-CHECK · PASS\n\n"
+            "FACT-CHECK · UNVERIFIED\nThe source is behind a login wall.")
+    assert tg.blocked_by([("factcheck", body)]) == ["factcheck"]
+
+
 def test_the_last_verdict_wins_if_a_report_quotes_the_format():
     body = "A report says BLOCK, FIX or PASS on line one.\nPROOF · PASS\n"
     assert tg.blocked_by([("proof", body)]) == []
