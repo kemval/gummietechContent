@@ -258,6 +258,34 @@ def open_sheet():
                  "with the client_email in the credentials JSON, as Editor.")
 
 
+def check_unmoved(worksheet, expected: dict[int, str], col: dict) -> None:
+    """Exit unless every row number in `expected` still holds that URL.
+
+    score.py and draft.py read the whole sheet once, spend minutes on LLM
+    calls, then write back by row number. That is safe only because rows are
+    appended and never moved (docs/decisions/sheet-growth.md). A person who
+    sorts the sheet, or deletes rows under a filter, while a run is between
+    its read and its write would have that run's statuses and scores land on
+    other stories — and a story wrongly marked `rejected` or `drafted` is
+    never drafted, with no error anywhere. One read of the URL cells before
+    each write turns that into a stop with a reason.
+    """
+    if not expected:
+        return
+    numbers = sorted(expected)
+    cells = worksheet.batch_get(
+        [gspread.utils.rowcol_to_a1(n, col["url"] + 1) for n in numbers])
+    found = [cell[0][0] if cell and cell[0] else "" for cell in cells]
+    moved = [n for n, url in zip(numbers, found, strict=True)
+             if url != expected[n]]
+    if moved:
+        sys.exit(f"Row(s) {', '.join(map(str, moved))} no longer hold the "
+                 "story this run read — the sheet was sorted, or rows were "
+                 "deleted, since. Nothing was written to them. Restore the "
+                 "sheet from File → Version history and re-run. The pipeline "
+                 "writes by row number: only ever append to the sheet.")
+
+
 def existing_urls(worksheet) -> set[str]:
     """URLs already in the sheet. One read, not one per row."""
     column = worksheet.col_values(COLUMNS.index("url") + 1)

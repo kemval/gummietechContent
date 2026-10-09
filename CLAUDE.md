@@ -214,7 +214,9 @@ alone and held a month of backlog, so a launch went out 34 days late.
 **The sheet grows forever, and that is fine — do not build a purge.**
 `rejected` rows are the deduplication memory; deleting them re-ingests and
 re-scores. If a purge is ever needed, age is the only safe rule and undated
-rows are never safe. → `docs/decisions/sheet-growth.md`
+rows are never safe. **Never sort it either:** `score.py` and `draft.py`
+write back by row number, and `ingest.check_unmoved()` stops a run whose rows
+moved under it. → `docs/decisions/sheet-growth.md`
 
 **The account is tech-first, and the score is not where that lives.**
 `score.py` names each item's `beat`; `draft.pick_row()` prefers

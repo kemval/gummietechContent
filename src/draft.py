@@ -66,7 +66,8 @@ from formats import by_hand, format_name
 from formats import entries as format_entries
 from formats import (missing_fields, missing_from_entries,
                      required as format_required)
-from ingest import COLUMNS, MAX_STORY_AGE_DAYS, open_sheet, story_age_days
+from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, check_unmoved, open_sheet,
+                    story_age_days)
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
                     fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
@@ -1232,6 +1233,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         print(f"  skipping row {row_number}: {covered} already covers "
               f"{citation(paper) if paper else item['url']}")
         if not args.dry_run:
+            check_unmoved(worksheet, {row_number: item["url"]}, col)
             worksheet.update_cell(row_number, col["status"] + 1, "duplicate")
         skipped.add(row_number)
         rejected += 1
@@ -1359,6 +1361,10 @@ def main() -> int:
               + (f", {len(marks)} row(s) left queued" if marks else ""))
         return 0
 
+    # Before the post file exists, so a moved row stops the run with nothing
+    # half-written: no draft on disk for a row that will not be marked.
+    check_unmoved(worksheet, {p["row"]: p["item"]["url"] for p in picks
+                              if p["row"] is not None}, col)
     POSTS_DIR.mkdir(exist_ok=True)
     out = POSTS_DIR / f"{date.today():%Y-%m-%d}-{title}.json"
     out.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
