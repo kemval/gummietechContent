@@ -56,11 +56,14 @@ curl -sSL -o /tmp/src.html -w '%{http_code} %{url_effective}\n' \
 
 Record the status code and the effective URL. A 404, a redirect to a section
 front page, or a redirect to a different story is a **BLOCK** on its own — the
-link is printed on slide 5 and lives on the web archive permalink.
+source is credited on the follow slide and linked from the web archive
+permalink.
 
 If you genuinely cannot read the source (hard paywall, login wall), say so and
-stop: report `UNVERIFIED` for every claim rather than guessing. An unverifiable
-post is a hold, not a pass.
+stop: report `UNVERIFIED` for every claim rather than guessing, and make the
+verdict line `FACT-CHECK · BLOCK`. An unverifiable post is a hold, not a pass,
+and BLOCK is the verdict `telegram.py` reads as one — a verdict line it does
+not recognise falls back to scanning the prose, which is weaker.
 
 ### 3. Find the primary source, not just the press about it
 
@@ -104,7 +107,7 @@ supporting sentence means the claim fails. Specifically:
 
 ### 5. Check the attribution
 
-`attribution` is printed on slide 5 and on the archive page, and it is a legal
+`attribution` is printed on the follow slide and on the archive page, and it is a legal
 and reputational requirement, not a nicety.
 
 - If the source names authors and a journal, the format is
@@ -124,7 +127,7 @@ and reputational requirement, not a nicety.
 Confirm `peer_reviewed` against reality: is this a paper in a peer-reviewed
 journal, or a preprint (arXiv, bioRxiv, medRxiv, chemRxiv, SSRN, Research
 Square, OSF, HAL)? `false` renders the "Preprint — not yet peer-reviewed" flag
-on slide 4. A preprint labelled `true` is a **BLOCK** — that is the single
+on the slide that carries the claim. A preprint labelled `true` is a **BLOCK** — that is the single
 failure the whole layer exists to prevent. Note also the case where the
 `source_url` is news coverage but the *underlying work* is a preprint: the
 host check in `draft.py` cannot see that, so only you will catch it.
@@ -179,6 +182,29 @@ even when it is a textbook one.
 
 A cheat sheet (`post_type: "sheet"`) is a list of `"Term: line"` items from
 one source: check every line against `source_url` the same way.
+
+### 7d. The Spanish: check `es` against the English
+
+`translate.py` writes an `es` block for the web archive before this check
+runs. It is machine-written and proofread only by the same model, and it
+lands on a public permalink. Read each `es` field against the English field
+of the same name — the English, not the source; the English is what you
+just verified.
+
+- **Every number, unit, name and date** must survive unchanged. A changed
+  figure is a false claim in another language.
+- **Hedges must survive**: "may", "in mice", "in simulation", "claims". A
+  Spanish line more certain than its English is the same failure as §4's.
+- **Nothing added, nothing dropped** — a clause missing from the catch is a
+  missing caveat.
+
+Report only a mismatch, as a **FIX** naming the field, the English, the
+Spanish and the corrected Spanish. Never a BLOCK: the slides are English,
+and `site.py` shows Spanish only after a person dates the post. Spanish that
+agrees is not listed — the report is read on a phone. Apply the fixes does
+not touch `es` (fix.yml re-translates it after any English edit), so the
+remedy for a Spanish-only finding is a hand edit or
+`python src/translate.py --force <post>`; say which.
 
 ### 8. Check the account has not already posted this
 
