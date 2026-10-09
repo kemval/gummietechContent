@@ -70,3 +70,17 @@ and `PREPRINT_HOSTS` flags them; a third-party RSS of the same list
 every two hours and stores nothing below the bar, so a paper that climbs is
 picked up later. A paper already ingested from arXiv keeps its arXiv row:
 the sheet does not learn it was popular.
+
+**The vote does not go to the scorer, on purpose (measured 2026-10-09).**
+Of 33 papers with 10+ votes that day, 7 were already in the sheet, all
+`rejected` at 5.5–6.25. They were re-scored on Gemini 3.5 Flash Lite twice
+without the vote and twice with a "Hugging Face votes: N" line and a rule
+to weigh it in relevance only. Relevance stayed at 4–6 either way; 2 of 14
+crossed THRESHOLD without the vote (noise: the same paper scored 7.00 and
+6.75 on identical runs) and 0 of 14 with it. The scorer and the voters do
+not disagree for lack of information — they disagree on the audience: a
+paper researchers upvote is still one field's news to someone who uses
+technology. Do not build a column and a reopen path for it. Telling the
+model that 10+ votes means relevance 8 would make it a fixed rule in
+disguise; if that is ever wanted, it is an editorial decision and belongs
+in code, not the prompt.
