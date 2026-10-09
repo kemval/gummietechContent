@@ -49,7 +49,7 @@ jobs:
       changed: ${{ steps.swap.outputs.changed }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: master
 
@@ -59,7 +59,7 @@ jobs:
           post: ${{ inputs.post }}
           token: ${{ github.token }}
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -115,14 +115,18 @@ jobs:
         if: steps.swap.outputs.changed == 'true'
         env:
           POST: ${{ steps.pick.outputs.post }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$POST"
           git commit -m "Put hook ${{ inputs.choice }} on the cover of $(basename "$POST" .json)" \
                      -m "Chosen at the gate through .github/workflows/hook.yml. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
-          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
+
+      - name: Push to master
+        if: steps.swap.outputs.changed == 'true'
+        uses: ./.github/actions/push-to-master
+        with:
+          token: ${{ github.token }}
 
       - name: Say so in Telegram if this run broke
         if: failure()

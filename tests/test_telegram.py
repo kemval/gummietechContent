@@ -357,7 +357,7 @@ def test_send_uploads_the_whole_carousel(monkeypatch, tmp_path, posts_dir, quiet
 
     uploaded: list[tuple[str, list[str]]] = []
     monkeypatch.setattr(tg, "OUTPUT_DIR", tmp_path / "output")
-    monkeypatch.setattr(tg, "config", lambda need_chat=False: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat=False: ("tok", "1"))
     monkeypatch.setattr(tg, "call", lambda token, method, payload, files=None:
                         uploaded.append((method, list(files or {}))))
 
@@ -404,7 +404,7 @@ def test_a_status_report_tap_does_not_rebuild_the_archive(
                         lambda t, m, p=None, f=None, strict=True:
                         [tap_update("ser:07-learning-queue")]
                         if m == "getUpdates" else None)
-    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "1"))
     out = tmp_path / "out"
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
 
@@ -420,7 +420,7 @@ def test_a_carousel_tap_still_does(posts, reports, quiet, monkeypatch,
                         lambda t, m, p=None, f=None, strict=True:
                         [tap_update("pub:2026-09-15-x")]
                         if m == "getUpdates" else None)
-    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "1"))
     out = tmp_path / "out"
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
 
@@ -473,7 +473,7 @@ def queue(monkeypatch, tmp_path):
     monkeypatch.setattr(series, "REPORTS_DIR", reports)
     monkeypatch.setattr(series, "IMAGES_DIR", images)
     monkeypatch.setattr(series, "REPO_ROOT", tmp_path)
-    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "1"))
     monkeypatch.setenv("PUBLISH_TZ", "UTC")
 
     def write(name: str, **record) -> Path:
@@ -551,7 +551,7 @@ def test_confirm_does_not_date_a_report_from_its_swapped_out_send(
 @pytest.fixture
 def gate(monkeypatch, posts, tmp_path):
     """send() as review.yml runs it, keeping the keyboard it would send."""
-    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat: ("tok", "1"))
     monkeypatch.setattr(tg, "OUTPUT_DIR", tmp_path / "output")
     monkeypatch.setenv("GITHUB_SERVER_URL", "https://github.com")
     monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
@@ -590,7 +590,7 @@ def test_an_empty_series_queue_is_said_in_the_chat(monkeypatch, quiet):
     """On 2026-10-06 the queue ran out and series.yml printed that to the
     Actions log only, exit 0 — the day's report just did not arrive. An empty
     queue is waiting on a person, so it has to reach the person."""
-    monkeypatch.setattr(tg, "config", lambda need_chat=False: ("tok", "chat"))
+    monkeypatch.setattr(tg, "config", lambda need_chat=False: ("tok", "1"))
     assert tg.series_ran_out() == 0
     assert len(quiet) == 1 and "No status report today" in quiet[0]
 

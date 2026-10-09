@@ -65,7 +65,10 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
                      install-render-tools (Chromium + ffmpeg, bounded and
-                     retried against a crawling Ubuntu mirror)
+                     retried against a crawling Ubuntu mirror) ·
+                     push-to-master (the one way a job pushes: rebase,
+                     retry a race, fail on a conflict) · heartbeat (the
+                     ping an outside watcher expects — see below)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
@@ -211,7 +214,9 @@ alone and held a month of backlog, so a launch went out 34 days late.
 **The sheet grows forever, and that is fine — do not build a purge.**
 `rejected` rows are the deduplication memory; deleting them re-ingests and
 re-scores. If a purge is ever needed, age is the only safe rule and undated
-rows are never safe. → `docs/decisions/sheet-growth.md`
+rows are never safe. **Never sort it either:** `score.py` and `draft.py`
+write back by row number, and `ingest.check_unmoved()` stops a run whose rows
+moved under it. → `docs/decisions/sheet-growth.md`
 
 **The account is tech-first, and the score is not where that lives.**
 `score.py` names each item's `beat`; `draft.pick_row()` prefers
@@ -454,7 +459,11 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `telegram.py` sends slides as documents (never photos), discovers how many
   slides there are, carries the post stem in `callback_data`, and calls
   `getUpdates` **without an offset** — `confirm` is idempotent; do not add
-  offset tracking.
+  offset tracking. Both readers go through `telegram.poll()`, honour only
+  `TELEGRAM_CHAT_ID`'s updates (`ours()`), and warn when a poll hits
+  `UPDATES_LIMIT` — unacknowledged, 100 is the cap on the whole 24 hours.
+- `review.yml` checks the fact-check left `posts/`, `src/`, `templates/`
+  as committed; a change is restored and the post held `UNVERIFIED`.
 - `publish.yml` dispatches `site.yml` by name and installs only `requests`
   and `python-dotenv`.
 
@@ -507,7 +516,10 @@ happened and did not (cadence, glossary, breakdown, subject, gate, metrics, colo
 buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot
-prove it ran. → `docs/decisions/watch.md`
+prove it ran — so `watch.yml` and `ingest.yml` end on `heartbeat`, a ping to
+healthchecks.io (free Hobbyist plan) that alerts when it stops. A no-op until
+the `HEALTHCHECKS_PING_KEY` secret is set; set each check's period and grace
+by hand after its first ping. → `docs/decisions/watch.md`
 
 ## Publishing
 

@@ -76,9 +76,9 @@ jobs:
     outputs:
       send: ${{ steps.check.outputs.send }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -87,7 +87,7 @@ jobs:
       # requests at module level. Without this the gate died on its first
       # scheduled run (2026-09-23) and nothing was sent.
       - name: Install dependencies
-        run: pip install requests python-dotenv
+        run: pip install -c requirements.txt requests python-dotenv
 
       - id: check
         env:
@@ -143,9 +143,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -154,7 +154,7 @@ jobs:
       # series.py are both stdlib plus these two, and neither imports
       # render.py. Keep this list in step with telegram.py's imports.
       - name: Install dependencies
-        run: pip install requests python-dotenv
+        run: pip install -c requirements.txt requests python-dotenv
 
       - name: Send the next report
         env:
@@ -184,8 +184,11 @@ jobs:
           fi
           git commit -m "$msg" \
                      -m "$(git diff --cached --name-only)"
-          git pull --rebase
-          git push
+
+      - name: Push to master
+        uses: ./.github/actions/push-to-master
+        with:
+          token: ${{ github.token }}
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.

@@ -47,9 +47,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -144,14 +144,14 @@ jobs:
     # summary of having found nothing, Spanish reported as up to date that
     # nothing could check. None of them touch the network or an LLM.
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
 
-      # requirements-dev.txt pulls in requirements.txt and adds pytest.
+      # requirements-dev.txt pulls in requirements.txt and adds pytest and ruff.
       # Playwright's browser is not installed: nothing here opens a page,
       # and proof.py's measurements are arithmetic on numbers a page would
       # have produced.
@@ -160,6 +160,12 @@ jobs:
 
       - name: Run the tests
         run: python -m pytest
+
+      # F and E9 only: an unused import, an undefined name, a file that does
+      # not parse. Not style — the code's style is the surrounding code's,
+      # and a formatter's opinion is not a finding.
+      - name: Lint for names that are wrong
+        run: ruff check --select F,E9 src tests
 
   publish-deps:
     name: telegram.py under publish.yml's two packages
@@ -175,15 +181,15 @@ jobs:
     # every poll until somebody opened the Actions tab. This is that exact
     # environment: do not add an install step here, the emptiness is the test.
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
 
       - name: Install what publish.yml installs
-        run: pip install requests python-dotenv
+        run: pip install -c requirements.txt requests python-dotenv
 
       - name: telegram.py loads and parses its arguments
         run: |
@@ -209,7 +215,7 @@ jobs:
     # Pinned, version and download script both: a linter that moves under us
     # would turn this red on a day nothing here changed.
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Install actionlint 1.7.12
         run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12

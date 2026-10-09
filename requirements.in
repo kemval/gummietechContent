@@ -1,0 +1,19 @@
+# The runtime dependencies, by hand. requirements.txt is generated from this
+# file and pins every package, transitive ones included:
+#
+#   pip-compile --strip-extras requirements.in
+#
+# Pinned because nothing here was. Every run installed whatever was newest
+# that morning, so a Playwright release — which brings its own Chromium —
+# could move the layout proof.py measures with no commit in this repo to
+# explain it. Dependabot (.github/dependabot.yml) proposes the bumps as PRs,
+# and check.yml renders and proofs the fixture on each before it is merged.
+feedparser>=6.0.11
+requests>=2.32.0
+PyYAML>=6.0.2
+python-dotenv>=1.0.1
+gspread>=6.1.2
+google-auth>=2.35.0
+playwright>=1.47.0
+jinja2>=3.1.4
+markupsafe>=2.1.5      # site.py imports it directly for t()

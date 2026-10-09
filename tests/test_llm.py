@@ -1,5 +1,5 @@
 """
-llm.py's failover chain.
+llm.py's failover chain, and how gemini.py reads a 429.
 
 The chain is a list so a third free provider is one entry. These run it with
 three fakes: on 2026-10-02 Gemini returned 503s all afternoon while Groq's
@@ -7,10 +7,12 @@ daily cap was spent, and a third link is what that day wanted.
 """
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import pytest
 
+import gemini
 import llm
 from llm_errors import Overloaded
 
@@ -120,3 +122,53 @@ def test_openrouter_503_is_the_privacy_setting_not_overload(monkeypatch):
 
 def test_openrouter_is_always_the_last_resort():
     assert llm.FALLBACK_ORDER[-1] == "openrouter"
+
+
+# ------------------------------------------------------ Gemini's 429 reading
+# 46b60ae: a scheduled run stopped on "daily quota is spent" at 16:28 Pacific
+# and the next run scored the backlog at 19:14, before any reset. The 429
+# matched "per day" in the prose while the violation was per-minute — a
+# window backoff clears — and ended the run instead of waiting.
+
+
+class FakeResponse:
+    def __init__(self, status: int, body: dict):
+        self.status_code, self._body = status, body
+        self.text = json.dumps(body)
+
+    def json(self) -> dict:
+        return self._body
+
+
+def quota_429(quota_id: str) -> FakeResponse:
+    return FakeResponse(429, {"error": {
+        "message": "You exceeded your current quota, which includes the "
+                   "per day limit. See the rate-limit docs.",
+        "details": [{"@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                     "violations": [{"quotaId": quota_id}]}]}})
+
+
+OK = FakeResponse(200, {"candidates": [
+    {"content": {"parts": [{"text": "scored"}]}}]})
+
+
+@pytest.fixture
+def replies(monkeypatch):
+    def install(*queue):
+        pending = list(queue)
+        monkeypatch.setattr(gemini.requests, "post",
+                            lambda *a, **k: pending.pop(0))
+        monkeypatch.setattr(gemini.time, "sleep", lambda s: None)
+    return install
+
+
+def test_a_per_minute_429_whose_prose_says_per_day_is_waited_out(replies):
+    replies(quota_429("GenerateRequestsPerMinutePerProjectPerModel-FreeTier"),
+            OK)
+    assert gemini.generate("p", "k", "m") == "scored"
+
+
+def test_a_per_day_429_still_ends_the_run(replies):
+    replies(quota_429("GenerateRequestsPerDayPerProjectPerModel-FreeTier"))
+    with pytest.raises(SystemExit, match="daily quota"):
+        gemini.generate("p", "k", "m")

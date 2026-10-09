@@ -10,7 +10,6 @@ and the self-held fact-check were both post-mortems of.
 """
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 import pytest
@@ -385,11 +384,11 @@ def test_a_sheet_that_cannot_be_opened_is_a_note_not_a_crash(monkeypatch):
 
 
 def test_telegram_being_unreachable_is_a_note_not_a_crash(monkeypatch):
-    monkeypatch.setattr(watch, "call",
+    monkeypatch.setattr(watch, "poll",
                         lambda *a, **k: (_ for _ in ()).throw(
                             watch.TelegramError("getUpdates timed out")))
     report = Report("WATCH")
-    assert watch.updates_from_telegram("token", report) == []
+    assert watch.updates_from_telegram("token", "1", report) == []
     assert report.verdict == "PASS"
 
 

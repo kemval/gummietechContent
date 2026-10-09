@@ -83,7 +83,7 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import (announcement, body_text, by_hand, es_fields, format_name,
+from formats import (announcement, body_text, by_hand, format_name,
                      pieces, preprint_claims,
                      sections)
 
@@ -263,6 +263,44 @@ def call(token: str, method: str, payload: dict | None = None,
             f"re-check TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID; if it names "
             f"a file, re-render the post.")
     return body.get("result")
+
+
+# getUpdates' own ceiling, asked for by name so it is visible here. Without an
+# offset nothing is ever acknowledged, so this is a ceiling on the whole
+# 24-hour window, not on one poll: past it, Telegram keeps returning the
+# oldest hundred and every newer tap stays invisible until those age out.
+# Nobody sees an error. A day here is a few sends, taps and metric replies,
+# far below it — but the only symptom of reaching it is a lost tap, so both
+# readers say so when a poll comes back full.
+UPDATES_LIMIT = 100
+
+
+def poll(token: str) -> list:
+    """Every tap and message in the 24-hour window, oldest first.
+
+    No offset — see the module docstring. confirm() and watch.py both read
+    through here, and neither consumes anything by doing so.
+    """
+    return call(token, "getUpdates",
+                {"timeout": 0, "limit": UPDATES_LIMIT,
+                 "allowed_updates": json.dumps(["callback_query",
+                                                "message"])}) or []
+
+
+def ours(updates: list, chat_id: str) -> list:
+    """The updates that came from the chat the bot sends the gate to.
+
+    The tap is what writes published_at — the human gate — so it is honoured
+    only from the chat the gate was sent to. A bot can be found by name and
+    added to a group by anyone; a tap or a reply from anywhere else is
+    dropped. A callback from an inline message has no `message` at all, and
+    the bot never sends one, so it is dropped too.
+    """
+    def chat(update: dict) -> str:
+        message = ((update.get("callback_query") or {}).get("message")
+                   or update.get("message") or {})
+        return str((message.get("chat") or {}).get("id", ""))
+    return [u for u in updates if chat_id and chat(u) == chat_id]
 
 
 def safe_cut(text: str, limit: int) -> int:
@@ -1281,14 +1319,20 @@ def confirm() -> int:
     allowed_updates because the Layer 7 answer is a reply typed by hand —
     see the metrics section above for why it cannot be a button.
     """
-    token, chat_id = config(need_chat=False)
+    # need_chat: the chat id is what decides whose taps count (ours()).
+    token, chat_id = config(need_chat=True)
     try:
-        updates = call(token, "getUpdates",
-                       {"timeout": 0,
-                        "allowed_updates": json.dumps(["callback_query",
-                                                       "message"])})
+        polled = poll(token)
     except TelegramError as exc:
         sys.exit(str(exc))
+    if len(polled) >= UPDATES_LIMIT:
+        print(f"::warning::getUpdates returned its cap of {UPDATES_LIMIT}. "
+              f"Taps newer than these are invisible until the oldest age out "
+              f"of Telegram's 24 hours; dispatch publish.yml again tomorrow.")
+    updates = ours(polled, chat_id)
+    if len(updates) < len(polled):
+        print(f"  ignored {len(polled) - len(updates)} update(s) from a chat "
+              f"other than TELEGRAM_CHAT_ID")
 
     today = publish_date()
     stamped = 0                  # carousels — these rebuild the archive

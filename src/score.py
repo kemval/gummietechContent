@@ -55,7 +55,7 @@ import sys
 import time
 
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
-from ingest import COLUMNS, open_sheet
+from ingest import COLUMNS, check_unmoved, open_sheet
 
 # 15-20 items per request. One request per item would exhaust the daily cap
 # in an afternoon; this keeps a full day's ingest inside 20-30 calls.
@@ -260,6 +260,8 @@ def backfill_beats(worksheet, rows: list[list[str]], col: dict,
         # Per batch, for score.py's reason: a daily cap hit halfway keeps
         # what was already paid for, and a re-run starts where this stopped.
         if updates and not dry_run:
+            check_unmoved(worksheet,
+                          {n: row[col["url"]] for n, row in batch}, col)
             worksheet.batch_update(updates, value_input_option="RAW")
         if start + BEATS_BATCH < len(pending):
             time.sleep(SLEEP_BETWEEN_CALLS)
@@ -296,6 +298,7 @@ def main() -> int:
                               args.dry_run, again=args.again)
     pending = [
         {"row": n, "i": len(rows),                # placeholder, renumbered below
+         "url": row[col["url"]],
          "title": row[col["title"]],
          "summary": row[col["summary"]],
          "source": row[col["source"]]}
@@ -352,6 +355,8 @@ def main() -> int:
         # Write after every batch, not once at the end: if the daily cap is
         # hit mid-run, the work already paid for is safe in the sheet.
         if updates and not args.dry_run:
+            check_unmoved(worksheet,
+                          {item["row"]: item["url"] for item in batch}, col)
             worksheet.batch_update(updates, value_input_option="RAW")
 
         if start + BATCH_SIZE < len(pending):

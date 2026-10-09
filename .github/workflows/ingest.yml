@@ -25,9 +25,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -71,6 +71,14 @@ jobs:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SHEETS_CREDENTIALS: credentials.json
         run: python src/score.py
+
+      # Last, so it is sent only when every step above succeeded. See
+      # .github/actions/heartbeat for the watcher it reports to.
+      - name: Tell the outside watcher this ran
+        uses: ./.github/actions/heartbeat
+        with:
+          ping_key: ${{ secrets.HEALTHCHECKS_PING_KEY }}
+          slug: ingest
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.

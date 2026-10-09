@@ -1,0 +1,51 @@
+name: Heartbeat
+description: >
+  Tell an outside watcher this workflow just finished. Called as the last
+  step of a job, so it only runs when everything before it succeeded.
+
+# The one alarm the pipeline cannot raise on itself. notify-failure speaks
+# when a run breaks and watch.py when a run left something undone, but both
+# need a run to happen. When none does — GitHub disables a repo's schedules
+# after 60 days without activity, Actions is down, a secret or the repo is
+# changed so nothing starts — every part of this repo goes quiet together,
+# and quiet looks exactly like a good day. watch.py says it plainly: it
+# cannot prove it ran.
+#
+# So something outside has to expect the ping and complain when it stops.
+# healthchecks.io, Hobbyist plan: $0/month, 20 checks (pricing page,
+# 2026-10-09). One project ping key, kept in the HEALTHCHECKS_PING_KEY repo
+# secret, and one check per caller, named by `slug`. `?create=1` makes the
+# check on its first ping, so adding a caller needs no setup there — but a
+# new check starts with a one-day period and a one-hour grace, which a
+# GitHub cron cannot meet (docs/decisions/scheduler.md: 3–6 hours late).
+# After the first ping set each check's schedule in its dashboard:
+#   watch   — period 1 day,   grace 12 hours
+#   ingest  — period 2 hours, grace 6 hours
+#
+# With the secret unset this is a no-op, as notify-failure is without its
+# token. A ping that fails is a warning, never a failed run: the job did its
+# work, and the watcher noticing a missed ping is the whole design.
+
+inputs:
+  ping_key:
+    description: HEALTHCHECKS_PING_KEY. Absent, nothing is sent.
+    required: true
+  slug:
+    description: The check's name in the healthchecks.io project.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        PING_KEY: ${{ inputs.ping_key }}
+        SLUG: ${{ inputs.slug }}
+      run: |
+        if [ -z "$PING_KEY" ]; then
+          echo "No HEALTHCHECKS_PING_KEY — no heartbeat sent."
+          exit 0
+        fi
+        curl -fsS --max-time 10 --retry 3 -o /dev/null \
+          "https://hc-ping.com/$PING_KEY/$SLUG?create=1" \
+          || echo "::warning::Could not reach hc-ping.com. If this repeats, healthchecks.io will report $SLUG as down although it ran."
