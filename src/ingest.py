@@ -37,14 +37,13 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import feedparser
 import gspread
 import requests
 import yaml
 from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
 
-from verify_feeds import HEADERS, TIMEOUT, pace_host
+from verify_feeds import HEADERS, TIMEOUT, pace_host, parse_feed
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FEEDS_DIR = REPO_ROOT / "feeds"
@@ -171,7 +170,10 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
         return [], (f"HTTP {resp.status_code} — re-run "
                     f"`python src/verify_feeds.py -v` and fix feeds/")
 
-    parsed = feedparser.parse(resp.content)
+    # parse_feed, not feedparser directly: a feed's `kind` can name a JSON
+    # source (Hugging Face's daily papers) that verify_feeds turns into
+    # entries, so the checker and the ingest read it the same way.
+    parsed = parse_feed(feed, resp.content)
     if not parsed.entries:
         return [], "0 entries — feed may have moved; verify_feeds.py will say"
 

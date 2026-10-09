@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import json
 import sys
 import time
 from collections.abc import Iterator
@@ -21,6 +22,7 @@ from datetime import datetime, timezone
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.parse import urlparse, urlsplit
 
 import feedparser
@@ -209,6 +211,65 @@ def announces_drift(entry: dict, links: list[str]) -> str | None:
             f"being recognised as announcements")
 
 
+def hf_daily_papers(content: bytes, min_upvotes: int = 0) -> SimpleNamespace:
+    """Hugging Face's daily papers API, shaped like feedparser's result.
+
+    The list the AI community votes on each day. It has no RSS
+    (huggingface.co/papers/rss is a 401), only this free JSON API, so it is
+    turned into feed entries here and every feed reader stays unchanged.
+
+    The link is built as arxiv.org/abs/<id>, the exact form the arXiv feeds
+    carry: the sheet's URL dedupe then matches the same paper from both, and
+    draft.PREPRINT_HOSTS sees arxiv.org so the preprint flag fires. A
+    third-party RSS of this list (papers.takara.ai) was rejected on
+    2026-10-09 for linking its own pages instead, which would have skipped
+    the flag.
+
+    A paper below `min_upvotes` is left out rather than kept: ingest runs
+    every two hours and never stores it, so one that gains votes later in
+    the day is picked up when it crosses. Its repository goes first in the
+    summary, where draft.links_code() finds it before ingest cuts the
+    summary to 500 characters.
+    """
+    try:
+        papers = json.loads(content)
+    except ValueError as exc:
+        return SimpleNamespace(entries=[], bozo=True, bozo_exception=exc)
+    entries = []
+    for item in papers if isinstance(papers, list) else []:
+        paper = item.get("paper") or {}
+        if not paper.get("id") or (paper.get("upvotes") or 0) < min_upvotes:
+            continue
+        stamp = None
+        try:
+            stamp = datetime.fromisoformat(
+                paper.get("publishedAt", "").replace("Z", "+00:00")
+            ).utctimetuple()
+        except ValueError:
+            pass
+        repo = paper.get("githubRepo")
+        summary = paper.get("summary") or ""
+        entries.append({
+            "link": f"https://arxiv.org/abs/{paper['id']}",
+            "title": paper.get("title") or "",
+            "summary": f"Code: {repo}. {summary}" if repo else summary,
+            "published_parsed": stamp,
+        })
+    return SimpleNamespace(entries=entries, bozo=False)
+
+
+def parse_feed(entry: dict, content: bytes):
+    """A fetched feed's entries, whatever format its `kind` says it is.
+
+    One place for both readers — ingest.py and check_feed() below — so a
+    JSON source is checked the same way it is ingested. Anything without a
+    `kind` is RSS or Atom.
+    """
+    if entry.get("kind") == "hf_daily_papers":
+        return hf_daily_papers(content, int(entry.get("min_upvotes") or 0))
+    return feedparser.parse(content)
+
+
 def check_feed(entry, verbose=False):
     """
     Fetch one feed and classify the result.
@@ -253,7 +314,7 @@ def check_feed(entry, verbose=False):
     body_head = resp.content[:400].lstrip().lower()
     looks_html = body_head.startswith(b"<!doctype html") or body_head.startswith(b"<html")
 
-    parsed = feedparser.parse(resp.content)
+    parsed = parse_feed(entry, resp.content)
 
     if not parsed.entries:
         if looks_html:
