@@ -1,4 +1,7 @@
 # Test-only. The pipeline never installs this: requirements.txt is the
 # runtime surface, and publish.yml installs a hand-kept subset of that.
 -r requirements.txt
-pytest>=8.3.0
+pytest==9.1.1
+# Lint for what is a bug rather than a style: F (pyflakes — an unused or
+# undefined name) and E9 (a file that does not parse). check.yml runs it.
+ruff==0.17.0

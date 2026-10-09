@@ -39,8 +39,7 @@ from pathlib import Path
 # From telegram.py because that is where these are written, and because it is
 # the one module that reads posts/ without importing render.py — which would
 # drag Playwright in for a script that only reads JSON.
-from telegram import (METRICS_FIELDS, METRICS_KEY, POSTS_DIR, REPO_ROOT,
-                      read_post)
+from telegram import (METRICS_FIELDS, METRICS_KEY, POSTS_DIR, read_post)
 
 import series
 
@@ -209,8 +208,8 @@ def main() -> int:
 
     if not scored:
         print("\nNothing measured yet. telegram.py asks for a post's numbers "
-              f"three days after it goes live; reply to that message in the "
-              f"chat and they land here.")
+              "three days after it goes live; reply to that message in the "
+              "chat and they land here.")
         return 0
 
     for by in (args.by or groups):

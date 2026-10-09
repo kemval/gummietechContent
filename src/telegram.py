@@ -83,7 +83,7 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import (announcement, body_text, by_hand, es_fields, format_name,
+from formats import (announcement, body_text, by_hand, format_name,
                      pieces, preprint_claims,
                      sections)
 

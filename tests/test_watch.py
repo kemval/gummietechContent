@@ -10,7 +10,6 @@ and the self-held fact-check were both post-mortems of.
 """
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 import pytest

@@ -39,7 +39,7 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from formats import (PAIR, announcement, body_text, entries, es_fields,
+from formats import (PAIR, announcement, entries, es_fields,
                      missing_from_entries, pieces, post_preprint_flag,
                      preprint, required, sections, spec, unpaired)
 from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset

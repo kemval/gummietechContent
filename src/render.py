@@ -40,8 +40,8 @@ from playwright.sync_api import Page, sync_playwright
 # The format table is its own module so telegram.py can read it without
 # importing this one — see formats.py. Re-exported here because render.py
 # is where the rest of the shared vocabulary already lives.
-from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,
-                     body_text, entries, es_fields, format_name,
+from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,  # noqa: F401
+                     body_text, entries, es_fields, format_name,  # noqa: F401
                      announcement, missing_fields, missing_from_entries, pieces,
                      post_preprint_flag, preprint, preprint_claims, required,
                      sections, spec, template_for, unpaired)

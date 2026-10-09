@@ -151,7 +151,7 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      # requirements-dev.txt pulls in requirements.txt and adds pytest.
+      # requirements-dev.txt pulls in requirements.txt and adds pytest and ruff.
       # Playwright's browser is not installed: nothing here opens a page,
       # and proof.py's measurements are arithmetic on numbers a page would
       # have produced.
@@ -160,6 +160,12 @@ jobs:
 
       - name: Run the tests
         run: python -m pytest
+
+      # F and E9 only: an unused import, an undefined name, a file that does
+      # not parse. Not style — the code's style is the surrounding code's,
+      # and a formatter's opinion is not a finding.
+      - name: Lint for names that are wrong
+        run: ruff check --select F,E9 src tests
 
   publish-deps:
     name: telegram.py under publish.yml's two packages
