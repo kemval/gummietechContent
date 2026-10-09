@@ -121,6 +121,39 @@ def test_an_arxiv_mega_category_is_held_to_new_papers_and_a_cap(monkeypatch):
     assert [i["title"] for i in items] == ["Paper 2", "Paper 4"]
 
 
+def test_hugging_face_daily_papers_arrive_as_arxiv_rows(monkeypatch):
+    """2026-10-09: the only RSS of this list (papers.takara.ai) linked its
+    own pages, which PREPRINT_HOSTS does not know, so a preprint would have
+    reached a slide without its flag. The row must carry the arXiv link."""
+    import json
+    from datetime import datetime, timezone
+
+    import ingest
+
+    today = datetime.now(timezone.utc).isoformat()
+    papers = [
+        {"paper": {"id": "2610.11169", "title": "Voted", "upvotes": 40,
+                   "summary": "An abstract.", "publishedAt": today,
+                   "githubRepo": "https://github.com/a/b"}},
+        {"paper": {"id": "2610.10001", "title": "Not yet", "upvotes": 3,
+                   "summary": "Another.", "publishedAt": today}},
+    ]
+
+    class Resp:
+        status_code = 200
+        content = json.dumps(papers).encode()
+
+    monkeypatch.setattr(ingest.requests, "get", lambda *a, **k: Resp())
+    monkeypatch.setattr(ingest, "pace_host", lambda url: None)
+    items, error = ingest.fetch_feed({"name": "HF", "url": "https://x",
+                                      "kind": "hf_daily_papers",
+                                      "min_upvotes": 10})
+    assert error is None
+    assert [i["url"] for i in items] == ["https://arxiv.org/abs/2610.11169"]
+    # First in the summary, so draft.links_code() finds it within 500 chars.
+    assert items[0]["summary"].startswith("Code: https://github.com/a/b")
+
+
 def test_a_trailing_backslash_is_not_part_of_a_url():
     """2026-10-07: a Hacker News row arrived as mistral.ai/news/mistral-
     large-4/\\ and 404'd, so Mistral's own announcement could not be read."""
