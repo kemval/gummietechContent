@@ -44,5 +44,9 @@
     "why_it_matters": "Nada falló, por lo que nada alertó. Una ejecución que nunca comienza no puede informarse a sí misma; solo un segundo trabajo, mirando atrás, puede notar que falta.",
     "the_catch": "Un repositorio, unos días de septiembre de 2026. La documentación de GitHub no da cifras de retraso, y los tuyos variarán con la carga y la hora del día.",
     "_en": "ea5f45407572ee83"
+  },
+  "rejected": {
+    "at": "2026-10-08",
+    "reason": "Turned down by the owner after ten days at the gate."
   }
 }
