@@ -29,6 +29,8 @@ jobs:
   review:
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
+    # 2–10 minutes measured on 2026-10-08; the rest is room for
+    # install-render-tools' second attempt and a slow fact-check.
     timeout-minutes: 25
 
     env:
@@ -56,10 +58,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # render.py and proof.py drive a real browser, so unlike site.yml this
-      # one needs the Chromium download and its system libraries.
-      - name: Install Chromium
-        run: python -m playwright install --with-deps chromium
+      # render.py and proof.py drive a real browser, so this one needs the
+      # Chromium download and its system libraries; render.py films a
+      # looping clip of each slide's moving backdrop, and ffmpeg is not on
+      # the runner image (see reel.yml). Bounded and retried: see the action.
+      - uses: ./.github/actions/install-render-tools
+        with:
+          ffmpeg: 'true'
 
       # daily.yml always passes a path it has just committed, but recheck.yml
       # can be dispatched with one typed on a phone. Fail here with a sentence
@@ -172,11 +177,6 @@ jobs:
           See the workflow run log. An unverifiable post is a hold, not a pass.
           TXT
           fi
-
-      # render.py films a looping clip of each slide's moving backdrop, and
-      # ffmpeg is not on the runner image (see reel.yml).
-      - name: Install ffmpeg
-        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
 
       - name: Render the slides
         run: python src/render.py "${{ inputs.post }}"
