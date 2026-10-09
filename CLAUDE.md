@@ -65,7 +65,9 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
                      install-render-tools (Chromium + ffmpeg, bounded and
-                     retried against a crawling Ubuntu mirror)
+                     retried against a crawling Ubuntu mirror) ·
+                     push-to-master (the one way a job pushes: rebase,
+                     retry a race, fail on a conflict)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
@@ -454,7 +456,11 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `telegram.py` sends slides as documents (never photos), discovers how many
   slides there are, carries the post stem in `callback_data`, and calls
   `getUpdates` **without an offset** — `confirm` is idempotent; do not add
-  offset tracking.
+  offset tracking. Both readers go through `telegram.poll()`, honour only
+  `TELEGRAM_CHAT_ID`'s updates (`ours()`), and warn when a poll hits
+  `UPDATES_LIMIT` — unacknowledged, 100 is the cap on the whole 24 hours.
+- `review.yml` checks the fact-check left `posts/`, `src/`, `templates/`
+  as committed; a change is restored and the post held `UNVERIFIED`.
 - `publish.yml` dispatches `site.yml` by name and installs only `requests`
   and `python-dotenv`.
 

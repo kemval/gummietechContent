@@ -59,7 +59,6 @@ which `notify-failure` already speaks for. One problem, one message.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
 import sys
@@ -70,9 +69,9 @@ from formats import by_hand
 from proof import Report
 from render import COLORWAYS, post_order, vary
 from telegram import (METRICS_ASK_RE, METRICS_FIELDS, METRICS_KEY,
-                      METRICS_REPLY_RE, POSTS_DIR, TelegramError, call, config,
-                      locate, parse_callback, publish_date, read_post,
-                      recorded,
+                      METRICS_REPLY_RE, POSTS_DIR, UPDATES_LIMIT,
+                      TelegramError, config, locate, ours,
+                      parse_callback, poll, publish_date, read_post, recorded,
                       send_report)
 from weekly import KINDS as WEEKLY
 
@@ -611,22 +610,28 @@ def check_factcheck(report: Report) -> None:
                                  "Re-run `claude setup-token`.")
 
 
-def updates_from_telegram(token: str, report: Report) -> list:
+def updates_from_telegram(token: str, chat_id: str, report: Report) -> list:
     """The same offset-less read confirm() does, so it consumes nothing.
 
     getUpdates without an offset leaves the cursor alone, which is what lets
     a tap replay for 24 hours and what makes confirm() idempotent. Reading
     the same window from a second process is therefore free: this cannot
-    take a tap away from the poll that is meant to act on it.
+    take a tap away from the poll that is meant to act on it. Filtered by
+    chat the way confirm() filters, so a tap it ignores is not reported here
+    as lost.
     """
     try:
-        return call(token, "getUpdates",
-                    {"timeout": 0,
-                     "allowed_updates": json.dumps(["callback_query",
-                                                    "message"])}) or []
+        polled = poll(token)
     except TelegramError as exc:
         report.note("gate", f"taps not checked — {exc}")
         return []
+    if len(polled) >= UPDATES_LIMIT:
+        report.fix("gate", f"Telegram returned its cap of {UPDATES_LIMIT} "
+                           f"updates. Any tap newer than those is invisible "
+                           f"to publish.yml until the oldest age out of the "
+                           f"24 hours. Check tomorrow that today's posts got "
+                           f"published_at; dispatch publish.yml if not.")
+    return ours(polled, chat_id)
 
 
 def main() -> int:
@@ -659,8 +664,10 @@ def main() -> int:
     check_cadence(today, report)
     check_weekly(today, report)
     check_subject(today, report)
-    if token:
-        updates = updates_from_telegram(token, report)
+    if token and not chat_id:
+        report.note("gate", "no TELEGRAM_CHAT_ID — taps not checked")
+    elif token:
+        updates = updates_from_telegram(token, chat_id, report)
         check_gate(updates, report)
         check_metrics(updates, today, report)
     check_colour(report)
