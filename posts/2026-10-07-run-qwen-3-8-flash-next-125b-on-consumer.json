@@ -40,6 +40,12 @@
   },
   "published_at": "2026-10-07",
   "metrics": {
-    "asked_at": "2026-10-10"
+    "asked_at": "2026-10-10",
+    "saves": 0,
+    "shares": 1,
+    "profile_visits": 1,
+    "reach": 83,
+    "follows": 0,
+    "recorded_at": "2026-10-10"
   }
 }
