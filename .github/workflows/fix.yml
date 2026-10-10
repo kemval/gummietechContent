@@ -147,10 +147,17 @@ jobs:
             add `published_at` under any circumstance; nothing here publishes.
             Do not edit any other file.
 
+            There is no shell here: Bash is not in your tools, so do not try
+            it. Read the post, make the edits, read it back.
+
             Finish by printing the old and new text of every field you changed.
           show_full_output: true
+          # 40, not 20: a Signal is five entries, each edited separately, and
+          # the 2026-10-10 Signal's fix made every edit in 32 turns and was
+          # still failed by the cap — the action fails a run that passes it
+          # even on success, so nothing was committed.
           claude_args: |
-            --max-turns 20
+            --max-turns 40
             --allowedTools "Read,Edit,Write,Grep,Glob"
           settings: |
             {
