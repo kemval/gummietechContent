@@ -2,19 +2,19 @@
   "post_type": "signal",
   "domain": "This Week",
   "colorway": "signal",
-  "hook": "GPT‑6 now serves over 1.2 billion users — plus 4 more",
+  "hook": "GPT‑6 comes to free ChatGPT — plus 4 more launches",
   "items": [
     {
-      "claim": "GPT‑6 model launched for over 1.2 billion weekly ChatGPT users",
-      "attribution": "OpenAI, (2026)",
+      "claim": "OpenAI says GPT‑6 is built for the 1.2 billion people who use ChatGPT weekly",
+      "attribution": "OpenAI (2026)",
       "source_url": "https://openai.com/index/gpt-6-for-everyone/",
       "peer_reviewed": false,
       "announcement": true,
       "beat": "ai"
     },
     {
-      "claim": "Intelligent UI lets ChatGPT generate interactive interfaces instantly",
-      "attribution": "OpenAI, (2026)",
+      "claim": "Intelligent UI lets ChatGPT answer with charts, buttons and interactive tools",
+      "attribution": "OpenAI (2026)",
       "source_url": "https://openai.com/index/gpt-6-for-everyone",
       "peer_reviewed": false,
       "announcement": true,
@@ -22,7 +22,7 @@
     },
     {
       "claim": "Claude Haiku 5.5 is now available on AWS",
-      "attribution": "AWS Machine Learning Blog, (2026)",
+      "attribution": "AWS Machine Learning Blog (2026)",
       "source_url": "https://aws.amazon.com/blogs/machine-learning/introducing-claude-haiku-5-5-on-aws/",
       "peer_reviewed": false,
       "announcement": true,
@@ -30,22 +30,22 @@
     },
     {
       "claim": "Clef‑omni adds full multimodality; Clef‑flash runs cheaper",
-      "attribution": "Cloudflare Blog, (2026)",
+      "attribution": "Cloudflare Blog (2026)",
       "source_url": "https://blog.cloudflare.com/clef-faster-cheaper-multimodal/",
       "peer_reviewed": false,
       "announcement": true,
       "beat": "ai"
     },
     {
-      "claim": "Asana’s browser agent runs 76 × cheaper and 5 × faster with GPT‑6.1",
-      "attribution": "OpenAI, (2026)",
+      "claim": "Asana says its reworked browser agent ran 76× cheaper and 5× faster in tests on GPT‑6.1 Sol",
+      "attribution": "OpenAI (2026)",
       "source_url": "https://openai.com/index/asana-browser-agent",
       "peer_reviewed": false,
       "announcement": true,
       "beat": "ai"
     }
   ],
-  "caption": "OpenAI rolls out GPT‑6 to billions, adding an Intelligent UI that builds visual tools on the fly. Meanwhile, Claude Haiku 5.5, Cloudflare’s multimodal Clef‑omni, and Asana’s cheaper, faster browser agent show how AI is becoming more accessible and affordable. Which of these upgrades will you notice first?",
+  "caption": "OpenAI brings GPT‑6 to every ChatGPT tier, including free, with an Intelligent UI that answers with charts, buttons and small tools. Also this week: Claude Haiku 5.5 on AWS, Cloudflare’s multimodal Clef‑omni, and Asana’s test results for a reworked browser agent on GPT‑6.1 Sol. Which of these will you notice first?",
   "keywords": [
     "GPT-6",
     "Intelligent UI",
@@ -62,17 +62,17 @@
     "#TechNews",
     "#Innovation"
   ],
-  "alt_text": "Five slides on flat colour backgrounds: slide 1 says GPT‑6 model launched for over 1.2 billion weekly ChatGPT users; slide 2 says Intelligent UI lets ChatGPT generate interactive interfaces instantly; slide 3 says Claude Haiku 5.5 is now available on AWS; slide 4 says Clef‑omni adds full multimodality and Clef‑flash runs cheaper; slide 5 says Asana’s browser agent runs 76 × cheaper and 5 × faster with GPT‑6.1.",
+  "alt_text": "Five slides on flat colour backgrounds: slide 1 says OpenAI says GPT‑6 is built for the 1.2 billion people who use ChatGPT weekly; slide 2 says Intelligent UI lets ChatGPT answer with charts, buttons and interactive tools; slide 3 says Claude Haiku 5.5 is now available on AWS; slide 4 says Clef‑omni adds full multimodality and Clef‑flash runs cheaper; slide 5 says Asana says its reworked browser agent ran 76× cheaper and 5× faster in tests on GPT‑6.1 Sol.",
   "es": {
     "domain": "esta semana",
-    "hook": "GPT‑6 ahora atiende a más de 1,2 mil millones de usuarios — y 4 más",
+    "hook": "GPT‑6 llega al ChatGPT gratuito — y 4 lanzamientos más",
     "items": [
-      "Modelo GPT‑6: lanzado para más de 1,2 mil millones de usuarios semanales de ChatGPT",
-      "Interfaz inteligente: permite que ChatGPT genere interfaces interactivas al instante",
-      "Claude Haiku 5.5: ya está disponible en AWS",
-      "Clef‑omni: añade multimodalidad completa; Clef‑flash funciona a menor costo",
-      "Agente de navegador de Asana: funciona 76 veces más barato y 5 veces más rápido con GPT‑6.1"
+      "OpenAI dice que GPT‑6 está diseñado para los 1,2 mil millones de personas que usan ChatGPT semanalmente",
+      "La interfaz inteligente permite que ChatGPT responda con gráficos, botones y herramientas interactivas",
+      "Claude Haiku 5.5 ya está disponible en AWS",
+      "Clef‑omni añade multimodalidad completa; Clef‑flash funciona a menor costo",
+      "Asana afirma que su agente de navegador renovado resultó 76 veces más barato y 5 veces más rápido en pruebas con GPT‑6.1 Sol"
     ],
-    "_en": "44a4c440ffabac0d"
+    "_en": "d20a88b6e101208f"
   }
 }
