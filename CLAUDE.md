@@ -429,6 +429,11 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 - Each post page uses its own rendered slide 1 as the link-preview image;
   a browser that will not launch degrades to text-only previews.
 - A malformed post is skipped with a warning, never fails the build.
+- **Beyond the pages:** `feed.xml` (RSS 2.0), one page per month with its
+  PDF (`<yyyy-mm>/`, printed through the slides' browser; no browser, no
+  download link), and `site.py --newsletter`, the last week as markdown to
+  paste — every word the posts' own. Cloudflare Web Analytics' beacon is
+  added only when `site.yml` passes the `CF_BEACON_TOKEN` repo variable.
 - **Spanish** is the post's `es` block from `src/translate.py`, stamped with
   a hash of its English (`_en`); partial Spanish is dropped whole; the
   toggle renders only when the page has Spanish. Read what `translate.py`

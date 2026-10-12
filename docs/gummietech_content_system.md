@@ -666,6 +666,7 @@ Hashtags matter far less than they used to — Instagram removed hashtag followi
 - **First line = SEO.** Put the actual searchable terms in it: "quantum computing," "fusion reactor," "humanoid robot." Instagram indexes caption text.
 - **3–5 hashtags maximum**, mixed: one broad (#technology), two niche (#quantumcomputing #materialsscience), one branded (#gummietech).
 - **One link, and it is the archive.** `https://kemval.github.io/gummietechContent/` — newest post first, so the bio link always lands on what was posted today. A custom domain would cost ~$12/year and is the only thing in this plan that would break the $0 constraint; the default URL is fine until it isn't.
+- **The newsletter is the audience nobody else owns** (2026-10-12). Substack, free: no subscriber cap, its own discovery network, and no cut until a subscription is paid — which needs Stripe, unavailable from Costa Rica, so free is not a sacrifice. No free tier anywhere sends RSS-to-email (Kit and beehiiv keep it paid), so the week is pasted by hand: `python src/site.py --newsletter`. The archive also carries `feed.xml` and a downloadable PDF per month — the "keep this" a reader can take away.
 - **Always write alt text.** Accessibility win and a ranking signal. Already in the JSON schema.
 - **End every caption with a question.** Comments are the strongest early-stage signal.
 - **Reply to every comment in the first hour.** Non-negotiable, non-automatable.

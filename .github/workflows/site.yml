@@ -5,7 +5,7 @@ name: site
 # through to the source a carousel was built from, because Instagram does
 # not make caption URLs clickable.
 #
-# No secrets — site.py reads the repo and nothing else. Only posts that
+# No secrets — site.py reads the repo and one public repo variable. Only posts that
 # carry a published_at date are built, so an unapproved draft sitting in
 # posts/ cannot reach the web. Layer 5 stays a human gate.
 
@@ -60,7 +60,12 @@ jobs:
       # build still succeeds — site.py warns and ships text-only previews.
       - uses: ./.github/actions/install-render-tools
 
+      # The month PDFs (site.month_pdfs) print through the same browser.
+      # CF_BEACON_TOKEN is a repo variable, not a secret: Cloudflare Web
+      # Analytics ships it in every page. Unset, no beacon is added.
       - name: Build the site
+        env:
+          CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
         run: python src/site.py
 
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

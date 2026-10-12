@@ -14,6 +14,11 @@ drafting step already produces.
 Usage:
     python src/site.py
     python src/site.py --outdir /tmp/preview
+    python src/site.py --newsletter        # the last week, as markdown to paste
+
+Besides the pages it writes feed.xml (RSS 2.0, newest first) and, per month
+with a published post, <yyyy-mm>/ — that month on one printable page — and
+its PDF, the download a reader can keep.
 
 Pages ship both languages and show one, toggled by the button in the
 masthead. The Spanish comes from the post's `es` block, written by
@@ -29,10 +34,14 @@ Layer 5 exists to prevent. Add the date by hand when the post goes live.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import os
 import shutil
 import sys
-from datetime import date
+import xml.etree.ElementTree as ET
+from datetime import date, datetime, timedelta, timezone
+from email.utils import format_datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -54,6 +63,14 @@ DEFAULT_OUT = REPO_ROOT / "site"
 # navigate by. Written down rather than derived: the build runs locally too,
 # where nothing knows the public address.
 SITE_URL = "https://kemval.github.io/gummietechContent/"
+
+# Cloudflare Web Analytics' beacon token, from a repo variable in site.yml.
+# Public by design — it ships in every page — but configuration, not code:
+# without it no script is added, so a local build and a fork measure nothing.
+BEACON_ENV = "CF_BEACON_TOKEN"
+
+FEED = "feed.xml"
+NEWSLETTER_DAYS = 7
 
 
 # Hard-coded rather than taken from the C locale: es_ES is not installed on
@@ -367,6 +384,109 @@ def covers(posts: list[dict], outdir: Path) -> None:
           f"{'s' * (len(posts) != 1)}")
 
 
+def summary(post: dict) -> str:
+    """One paragraph for the feed and the newsletter: why it matters where
+    the format has it, else its first body piece."""
+    for section in post["body"]:
+        if section["en"] == "Why it matters":
+            return " ".join(en for en, _ in section["pieces"])
+    first = post["body"][0]["pieces"] if post["body"] else []
+    return first[0][0] if first else ""
+
+
+def feed(posts: list[dict]) -> str:
+    """RSS 2.0 of the published posts, newest first.
+
+    What a newsletter tool, a reader app or a person's own script can follow;
+    no service in between, so nothing here can start charging for it.
+    """
+    rss = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(rss, "channel")
+    for tag, text in (("title", "gummietech"), ("link", SITE_URL),
+                      ("description", "Science, technology and engineering "
+                       "— every @gummietech carousel, with its sources."),
+                      ("language", "en")):
+        ET.SubElement(channel, tag).text = text
+    for post in posts:
+        item = ET.SubElement(channel, "item")
+        url = f"{SITE_URL}{post['slug']}/"
+        ET.SubElement(item, "title").text = typeset(post["hook"])
+        ET.SubElement(item, "link").text = url
+        ET.SubElement(item, "guid", isPermaLink="true").text = url
+        when = datetime.combine(post["published"], datetime.min.time(),
+                                tzinfo=timezone.utc)
+        ET.SubElement(item, "pubDate").text = format_datetime(when)
+        ET.SubElement(item, "description").text = typeset(summary(post))
+    return ('<?xml version="1.0" encoding="utf-8"?>\n'
+            + ET.tostring(rss, encoding="unicode") + "\n")
+
+
+def newsletter(posts: list[dict], today: date,
+               days: int = NEWSLETTER_DAYS) -> str:
+    """The posts published in the last `days`, as markdown to paste into the
+    newsletter. Every word is the posts' own, so nothing new needs checking;
+    each links to its archive page, which links the sources."""
+    since = today - timedelta(days=days)
+    recent = [p for p in reversed(posts) if since < p["published"] <= today]
+    if not recent:
+        return f"Nothing published between {since} and {today}."
+    out = [f"# gummietech — the week to {human_date(today)}", ""]
+    for post in recent:
+        out += [f"## {typeset(post['hook'])}", ""]
+        for section in post["body"]:
+            out.append(f"**{section['en']}.** "
+                       + " ".join(typeset(en) for en, _ in section["pieces"]))
+            out.append("")
+        credits = "; ".join(s["attribution"] for s in post["sources"])
+        out += [f"Source: {credits} — [sources and full post]"
+                f"({SITE_URL}{post['slug']}/)", ""]
+    return "\n".join(out)
+
+
+def months(posts: list[dict]) -> list[dict]:
+    """One entry per month with a published post, newest first."""
+    found: dict[str, list[dict]] = {}
+    for post in posts:
+        found.setdefault(f"{post['published']:%Y-%m}", []).append(post)
+    return [{"key": key,
+             "label": f"{date.fromisoformat(key + '-01'):%B %Y}",
+             "label_es": (f"{MONTHS_ES[int(key[5:]) - 1]} de {key[:4]}"),
+             "pdf": f"gummietech-{key}.pdf",
+             "posts": list(reversed(items))}
+            for key, items in sorted(found.items(), reverse=True)]
+
+
+def month_pdfs(found: list[dict], outdir: Path) -> None:
+    """Print each month's page to its PDF, through the slides' browser.
+
+    Same degradation as covers(): no browser is not a failed build. The page
+    loses its link to the PDF instead of linking to one that is not there.
+    """
+    for month in found:
+        page_dir = outdir / month["key"]
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as p:
+                browser = p.chromium.launch()
+                try:
+                    page = browser.new_page()
+                    page.goto((page_dir / "index.html").as_uri(),
+                              wait_until="load")
+                    page.emulate_media(media="print")
+                    page.pdf(path=str(page_dir / month["pdf"]), format="A4",
+                             print_background=True,
+                             margin={"top": "16mm", "bottom": "16mm",
+                                     "left": "14mm", "right": "14mm"})
+                finally:
+                    browser.close()
+            month["has_pdf"] = True
+        except Exception as exc:              # noqa: BLE001 — see docstring
+            print(f"  warning: no monthly PDFs ({str(exc).splitlines()[0]}). "
+                  "The month pages are built without the download.")
+            return
+    print(f"  wrote {len(found)} monthly PDF{'s' * (len(found) != 1)}")
+
+
 def build(posts: list[dict], outdir: Path) -> None:
     env = Environment(
         loader=FileSystemLoader(TEMPLATE_DIR),
@@ -374,6 +494,8 @@ def build(posts: list[dict], outdir: Path) -> None:
     )
     env.globals["t"] = t
     env.globals["site_url"] = SITE_URL
+    env.globals["beacon"] = os.environ.get(BEACON_ENV, "").strip()
+    env.globals["feed"] = FEED
 
     # The toggle is only offered where there is something to toggle to.
     # A button that swaps the furniture around unchanged English prose
@@ -383,9 +505,11 @@ def build(posts: list[dict], outdir: Path) -> None:
     # `base` is the path back to the site root: post pages live one
     # directory down. Relative, not root-absolute, because Pages serves
     # this under /gummietechContent/ while a local preview is opened at file://.
+    by_month = months(posts)
     (outdir / "index.html").write_text(
         env.get_template("index.html").render(
-            posts=posts, base="", translated=bool(translated))
+            posts=posts, months=by_month, base="",
+            translated=bool(translated))
     )
     print(f"  wrote index.html ({len(posts)} post{'s' * (len(posts) != 1)})")
 
@@ -420,6 +544,25 @@ def build(posts: list[dict], outdir: Path) -> None:
     # should not depend on a third party staying up.
     shutil.copytree(FONTS_DIR, outdir / "fonts")
     print("  wrote fonts/")
+
+    (outdir / FEED).write_text(feed(posts))
+    print(f"  wrote {FEED}")
+
+    # Twice: once to have a page to print, then again knowing whether the
+    # PDF exists, so the page never links to a download that failed.
+    month_template = env.get_template("month.html")
+
+    def write_months() -> None:
+        for month in by_month:
+            translated_month = any(p["es"] for p in month["posts"])
+            (outdir / month["key"]).mkdir(exist_ok=True)
+            (outdir / month["key"] / "index.html").write_text(
+                month_template.render(month=month, base="../",
+                                      translated=translated_month))
+    write_months()
+    month_pdfs(by_month, outdir)
+    write_months()
+    print(f"  wrote {len(by_month)} month page{'s' * (len(by_month) != 1)}")
     print(f"  {len(translated)} of {len(posts)} page"
           f"{'s' * (len(posts) != 1)} carry Spanish")
 
@@ -427,7 +570,17 @@ def build(posts: list[dict], outdir: Path) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--outdir", default=None, help="where to build the site")
+    ap.add_argument("--newsletter", action="store_true",
+                    help=f"print the last {NEWSLETTER_DAYS} days as markdown "
+                         "for the newsletter, and build nothing")
     args = ap.parse_args()
+
+    if args.newsletter:
+        # The skip notes go to stderr so stdout is only what gets pasted.
+        with contextlib.redirect_stdout(sys.stderr):
+            posts, _ = load_posts()
+        print(newsletter(posts, date.today()))
+        return 0
 
     outdir = Path(args.outdir) if args.outdir else DEFAULT_OUT
     if not outdir.is_absolute():

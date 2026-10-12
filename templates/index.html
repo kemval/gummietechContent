@@ -27,4 +27,10 @@
           translated and "Todavía no hay nada publicado. Los posts aparecen aquí cuando una persona los aprueba y reciben su fecha published_at.") }}
   </p>
   {% endfor %}
+  {% if months %}
+  <nav class="months">
+    <h2>{{ t("Each month on one page", translated and "Cada mes en una página") }}</h2>
+    <p>{% for month in months %}<a href="{{ month.key }}/">{{ t(month.label, translated and month.label_es) }}</a>{{ " · " if not loop.last }}{% endfor %}</p>
+  </nav>
+  {% endif %}
 {% endblock %}
