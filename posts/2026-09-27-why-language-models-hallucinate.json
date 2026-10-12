@@ -1,6 +1,7 @@
 {
   "post_type": "breakdown",
   "domain": "AI research",
+  "beat": "ai",
   "colorway": "signal",
   "hook": "AI makes things up for the same reason students guess on exams.",
   "the_question": "Asked for a researcher's birthday, and told to answer only if it knew, DeepSeek-V3 gave three different wrong dates in three tries.",

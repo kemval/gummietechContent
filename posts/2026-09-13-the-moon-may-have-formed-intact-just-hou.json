@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "planetary science",
+  "beat": "science",
   "colorway": "orbit",
   "hook": "Material strength may have let the Moon form intact hours after impact",
   "what_happened": "SPH simulations with temperature-dependent geologic strength found a hot but solid Theia is captured as an intact Moon, emerging within about five hours",

@@ -1,6 +1,7 @@
 {
   "post_type": "breakdown",
   "domain": "AI inference",
+  "beat": "ai",
   "colorway": "signal",
   "hook": "A 125B model fits a gaming PC by loading only what it needs.",
   "the_question": "Strata runs a 125B model on a PC with one 12 GB RTX 5070 at 94 tokens a second. The model alone is far larger than that card.",

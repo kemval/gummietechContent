@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "brain-computer interface",
+  "beat": "science",
   "colorway": "signal",
   "hook": "A single implant decodes speech and gestures simultaneously",
   "what_happened": "Three implanted participants; two drove a virtual avatar, with AI decoding attempted speech into text and gestures into motion from one 253-electrode array",

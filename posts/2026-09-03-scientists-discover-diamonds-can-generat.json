@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "materials engineering",
+  "beat": "science",
   "colorway": "ember",
   "hook": "Bend a diamond thin enough and it makes electricity.",
   "what_happened": "University of Hong Kong researchers used edge exfoliation to create flexible polycrystalline diamond membranes that generate electricity when bent.",

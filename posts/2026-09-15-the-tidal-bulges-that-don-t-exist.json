@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "oceanography",
+  "beat": "science",
   "colorway": "orbit",
   "hook": "The two ocean tidal bulges you were taught in school don’t exist.",
   "what_happened": "Laplace’s dynamic theory shows tides are shallow-water waves, not static bulges: the ocean cannot keep up with Earth’s rotation.",

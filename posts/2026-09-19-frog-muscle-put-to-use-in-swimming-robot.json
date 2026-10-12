@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "biohybrid robotics",
+  "beat": "robotics",
   "colorway": "ember",
   "hook": "Bullfrog muscle powers a wireless manta‑ray robot",
   "what_happened": "Researchers isolated a frog gracilis muscle, wired it to a near‑infrared laser‑powered neural stimulator, and drove a manta‑ray‑shaped robot to swim",

@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "quantum mechanics",
+  "beat": "science",
   "colorway": "ember",
   "hook": "Scientists observed sound quantum jumps in a nanomechanical resonator",
   "what_happened": "A superconducting qubit repeatedly measured phonon number in a resonator, revealing jumps between ground and first excited states",

@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "microbiology",
+  "beat": "science",
   "colorway": "bloom",
   "hook": "Bunsen burners do not sterilize lab workspaces and can worsen contamination.",
   "what_happened": "Researchers tested Bunsen burners by contaminating lab air with bacteria and measuring how many microbes settled near active versus inactive burners.",
