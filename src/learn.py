@@ -48,7 +48,10 @@ import series
 # group. Reported, not ranked.
 MIN_GROUP = 3
 
-GROUPS = ("post_type", "colorway", "domain", "weekday")
+# `beat`, not `domain`: domain is the slide's free-text field label, and 29
+# posts carried 22 different ones ("dna pairing", "corrosion science"), so
+# every group was a group of one. beat is score.BEATS, six values.
+GROUPS = ("post_type", "colorway", "beat", "weekday")
 
 # The status-report pillar groups by different things, because different
 # things vary in it. A report has no post_type, colorway or domain; what it
