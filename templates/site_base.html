@@ -349,6 +349,11 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
     <a href="https://www.instagram.com/gummietech/">@gummietech</a> —
     {{ t("science, technology and engineering, explained by someone whose code also crashes.",
          translated and "ciencia, tecnología e ingeniería, explicadas por alguien cuyo código también falla.") }}
+    {# The publication's subdomain, not the substack.com/@ profile: it lands
+       on the subscribe page once the first issue is out, with no change
+       here. The weekly issue is `site.py --newsletter`. #}
+    <a href="https://gummietech.substack.com/">{{ t("Get it by email every week →",
+         translated and "Recíbelo por email cada semana →") }}</a>
   </p>
 </div>
 {% if translated %}
