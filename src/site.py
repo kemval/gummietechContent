@@ -437,6 +437,13 @@ def newsletter(posts: list[dict], today: date,
     title = f"gummietech — the week to {human_date(today)}"
     body: list[str] = []
     for post in recent:
+        # Slide 1 as the archive already serves it (covers()), so the email
+        # shows the post people scrolled past on Instagram. Absolute URL:
+        # Substack copies a pasted image from where it lives.
+        page = f"{SITE_URL}{post['slug']}/"
+        body.append(f'<p><a href="{page}"><img src="{page}cover.png" '
+                    f'alt="{escape(post.get("alt_text") or post["hook"])}" '
+                    'width="540"></a></p>')
         body.append(f"<h2>{escape(typeset(post['hook']))}</h2>")
         for section in post["body"]:
             if not section["pieces"]:
@@ -448,8 +455,8 @@ def newsletter(posts: list[dict], today: date,
                         f"{first}</p>")
             body.extend(f"<p>{text}</p>" for text in rest)
         credits = "; ".join(s["attribution"] for s in post["sources"])
-        body.append(f'<p>Source: {escape(credits)} — <a href="{SITE_URL}'
-                    f'{post["slug"]}/">sources and full post</a></p>')
+        body.append(f'<p>Source: {escape(credits)} — <a href="{page}">'
+                    "sources and full post</a></p>")
     if not body:
         body.append(f"<p>Nothing published between {since} and {today}.</p>")
     return ("<!doctype html><meta charset=utf-8>"
