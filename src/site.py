@@ -439,9 +439,14 @@ def newsletter(posts: list[dict], today: date,
     for post in recent:
         body.append(f"<h2>{escape(typeset(post['hook']))}</h2>")
         for section in post["body"]:
-            text = " ".join(typeset(en) for en, _ in section["pieces"])
+            if not section["pieces"]:
+                continue
+            # One paragraph a piece, as the archive page has it: joined, a
+            # Signal's launches ran together into one sentence (2026-10-12).
+            first, *rest = [escape(typeset(en)) for en, _ in section["pieces"]]
             body.append(f"<p><strong>{escape(section['en'])}.</strong> "
-                        f"{escape(text)}</p>")
+                        f"{first}</p>")
+            body.extend(f"<p>{text}</p>" for text in rest)
         credits = "; ".join(s["attribution"] for s in post["sources"])
         body.append(f'<p>Source: {escape(credits)} — <a href="{SITE_URL}'
                     f'{post["slug"]}/">sources and full post</a></p>')
