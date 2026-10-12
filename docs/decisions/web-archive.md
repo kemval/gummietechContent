@@ -130,3 +130,27 @@ cannot drift apart.
   row beyond it and drew a light line along the top of the page.
   `backdrop.js` samples 1.5px inside every edge.
 
+
+## Feed, month pages, newsletter and analytics (2026-10-12)
+
+The reach numbers (29 posts measured at 0 saves, one reach of 83) say the
+archive is the one channel the account fully controls, so it grew three ways
+out — none of them new writing, all of them pure functions of the posts:
+
+- **`feed.xml`**, RSS 2.0 by the standard library, newest first. What a
+  reader app, a newsletter tool or a script can follow, with no service in
+  between to start charging.
+- **A page per month and its PDF.** The month's posts on one page, in
+  `post.html`'s own markup, printed to A4 through the browser the link
+  previews already use. Printed from the page, not built from the slides:
+  this is a reading copy. No browser means no PDF and, because the pages are
+  written again after printing, no link to one.
+- **`site.py --newsletter`**: the last seven days as an HTML page in
+  `output/`, copied from a browser into Substack — whose editor pastes
+  markdown as literal `##` and `**`, so markdown was dropped the same day.
+  No free plan sends RSS-to-email, so the paste is the route on any
+  provider.
+- **Cloudflare Web Analytics** (free, cookieless): the bio link measured nothing,
+  and it is the funnel's one click. The token is a repo variable, public by
+  design; unset, no script is added, so local builds and forks measure
+  nothing.

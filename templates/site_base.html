@@ -15,6 +15,7 @@
 <meta property="og:type" content="{% block og_type %}website{% endblock %}">
 <meta property="og:url" content="{{ site_url }}{% block og_path %}{% endblock %}">
 {% block og_image %}<meta name="twitter:card" content="summary">{% endblock %}
+<link rel="alternate" type="application/rss+xml" title="gummietech" href="{{ site_url }}{{ feed }}">
 {% if translated %}
 <script>
   /* Read the reader's last choice before anything paints, so someone who
@@ -293,6 +294,19 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
   .hero .hook { font-size: 52px; }
   .entry .hook { font-size: 34px; }
 }
+/* A month page (month.html): posts in a column, each hook a quiet link. */
+.month-post { margin-bottom: 72px; }
+.month-post .hook a { color: inherit; text-decoration: none; }
+.months { margin-top: 48px; }
+
+/* A month page printed to its PDF (site.month_pdfs): the content, not the
+   furniture around it. */
+@media print {
+  .page-bg, .lang, .pitch, .back, .download { display: none !important; }
+  .panel { break-inside: avoid; box-shadow: none; }
+  .month-post { break-inside: avoid-page; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel, .lang { transition: none; }
   .entry:hover .panel, .entry:focus-visible .panel { transform: none; }
@@ -335,6 +349,11 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
     <a href="https://www.instagram.com/gummietech/">@gummietech</a> —
     {{ t("science, technology and engineering, explained by someone whose code also crashes.",
          translated and "ciencia, tecnología e ingeniería, explicadas por alguien cuyo código también falla.") }}
+    {# The publication's subdomain, not the substack.com/@ profile: it lands
+       on the subscribe page once the first issue is out, with no change
+       here. The weekly issue is `site.py --newsletter`. #}
+    <a href="https://gummietech.substack.com/">{{ t("Get it by email every week →",
+         translated and "Recíbelo por email cada semana →") }}</a>
   </p>
 </div>
 {% if translated %}
@@ -420,5 +439,10 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
   requestAnimationFrame(draw);
 }());
 </script>
+{% if beacon %}
+{# Cloudflare Web Analytics: no cookies, no personal data, free. Added only
+   when site.yml passes CF_BEACON_TOKEN, so a local build measures nothing. #}
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "{{ beacon }}"}'></script>
+{% endif %}
 </body>
 </html>

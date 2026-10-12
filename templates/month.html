@@ -1,0 +1,44 @@
+{% extends 'site_base.html' %}
+
+{# A month on one page, and the page its PDF is printed from
+   (site.month_pdfs). Every word is a post's own, as on post.html: the same
+   sections, the same sources, nothing written for the month. #}
+{% block title %}{{ month.label }} — gummietech{% endblock %}
+{% block description %}Every @gummietech carousel from {{ month.label }}, on one page.{% endblock %}
+{% block og_path %}{{ month.key }}/{% endblock %}
+
+{% block masthead %}
+    <a class="back" href="{{ base }}">{{ t("← all posts", translated and "← todos los posts") }}</a>
+    <div class="mark">{{ t(month.label, translated and month.label_es) }}</div>
+    {% if month.has_pdf %}<p class="tagline download"><a href="{{ month.pdf }}">{{ t("Download this month as a PDF", translated and "Descarga este mes en PDF") }} →</a></p>{% endif %}
+{% endblock %}
+
+{% block content %}
+  {% for post in month.posts %}
+  <article class="month-post">
+    <div class="hero panel" style="--accent: var(--{{ post.lead }})">
+      {% if post.preprint %}<div class="flag">{{ t("Preprint — not yet peer-reviewed", post.es and "Preprint — aún sin revisión por pares") }}</div>{% endif %}
+      <div class="meta">
+        {% if post.domain %}{{ t(post.domain, post.es.domain) }} · {% endif %}<time datetime="{{ post.published_at }}">{{ t(post.published_on, post.published_on_es if post.es else "") }}</time>
+      </div>
+      <h2 class="hook"><a href="{{ base }}{{ post.slug }}/">{{ t(post.hook, post.es.hook) }}</a></h2>
+    </div>
+    {% for section in post.body %}
+    <div class="section">
+      <h2><span class="num">({{ "%02d"|format(loop.index) }})</span>{{ t(section.en, section.es) }}</h2>
+      {% if section.terms %}
+      {% for term, line in section.terms %}<p><b>{{ t(*term) }}</b> — {{ t(*line) }}</p>{% endfor %}
+      {% else %}
+      {% for en, es in section.pieces %}<p>{{ t(en, es) }}</p>{% endfor %}
+      {% endif %}
+    </div>
+    {% endfor %}
+    <dl class="source">
+      <dt>{{ t("Source", post.es and "Fuente") if post.sources|length == 1 else t("Sources", post.es and "Fuentes") }}</dt>
+      {% for source in post.sources %}
+      <dd>{{ source.attribution }} — <a href="{{ source.url }}">{{ source.host }}</a></dd>
+      {% endfor %}
+    </dl>
+  </article>
+  {% endfor %}
+{% endblock %}
