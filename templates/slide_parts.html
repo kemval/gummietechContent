@@ -7,11 +7,14 @@
    `emphasis`, `figure` and `diff` (render.py) only choose which span of the
    record's own text to box, set large or strike — they never write any. #}
 
-{% set PREPRINT = "Preprint — not yet peer-reviewed" %}
+{# The cover's and the follow slide's [labels], in Spanish for render.py
+   --lang es. `t` is render.py's: the English unless that flag is set. #}
+{% set SPEC_ES = {"domain": "campo", "status": "estado", "source": "fuente", "code": "código"} %}
+{% set PREPRINT = t("Preprint — not yet peer-reviewed", "Preprint — aún sin revisión por pares") %}
 {# An announcement says what it is, not only what it is not. It is a cover
    status, never a .flag: proof.py counts .flag elements against
    formats.preprint_claims(), and an announcement is not a preprint claim. #}
-{% set ANNOUNCEMENT = "Announcement — not a peer-reviewed study" %}
+{% set ANNOUNCEMENT = t("Announcement — not a peer-reviewed study", "Anuncio — no es un estudio revisado por pares") %}
 
 {# The cover's [status]: the preprint label, the announcement label, or
    nothing for a peer-reviewed paper. formats.preprint() decided which. #}
@@ -23,7 +26,7 @@
    is), the handle, and the position. The cover's position says "swipe". #}
 {% macro corners(fmt, at, n, right) -%}
   <div class="lbl tl"><b>gummietech</b> — {{ fmt }}</div>
-  {% if at == 1 %}<div class="lbl tr">{{ "%02d"|format(at) }} / {{ "%02d"|format(n) }} — swipe →</div>
+  {% if at == 1 %}<div class="lbl tr">{{ "%02d"|format(at) }} / {{ "%02d"|format(n) }} — {{ t("swipe", "desliza") }} →</div>
   {% else %}<div class="lbl tr">{{ right }}</div>
   <div class="lbl bl">@gummietech</div>
   <div class="lbl br">{{ "%02d"|format(at) }} / {{ "%02d"|format(n) }}</div>{% endif %}
@@ -52,7 +55,7 @@
   {{ corners(fmt, 1, n) }}
   <div class="hook">{{ boxed(hook, figures_only=True) }}</div>
   <dl class="spec">
-    {% for label, value, required in spec if value %}<div><dt>[{{ label }}]</dt><dd{{ ' class="req"'|safe if required }}>{{ value }}</dd></div>{% endfor %}
+    {% for label, value, required in spec if value %}<div><dt>[{{ t(label, SPEC_ES.get(label, label)) }}]</dt><dd{{ ' class="req"'|safe if required }}>{{ value }}</dd></div>{% endfor %}
   </dl>
   {% if word %}<div class="figure"><div class="giant">{{ word }}</div><div class="qual">(n.) — the glossary</div></div>
   {% elif figure %}<div class="figure"><div class="giant">{{ figure.value }}</div><div class="qual">{{ figure.qualifier }}</div></div>{% endif %}
@@ -64,14 +67,14 @@
 {% macro follow(fmt, n, field, sources) -%}
 <div class="slide {{ field }}" id="slide-{{ n }}"><div class="frame">
   <div class="lbl tl"><b>gummietech</b> — {{ fmt }}</div>
-  <div class="lbl tr">sources</div>
+  <div class="lbl tr">{{ t("sources", "fuentes") }}</div>
   <div class="giant ghost wordmark" aria-hidden="true" data-anchor="top">(gummie<br>tech)</div>
   <div class="body" style="bottom: 96px">
-    <p class="follow">Follow @gummietech</p>
-    <p class="tagline">Science, technology and engineering — explained by someone whose code also crashes.</p>
+    <p class="follow">{{ t("Follow", "Sigue a") }} @gummietech</p>
+    <p class="tagline">{{ t("Science, technology and engineering — explained by someone whose code also crashes.", "Ciencia, tecnología e ingeniería — explicadas por alguien cuyo código también se cae.") }}</p>
     <div class="sources">
-      {% for label, value in sources if value %}<div><span>[{{ label }}]</span><span>{{ value }}</span></div>{% endfor %}
-      <div><span>[FULL SOURCES]</span><span>link in bio →</span></div>
+      {% for label, value in sources if value %}<div><span>[{{ t(label, SPEC_ES.get(label, label)) }}]</span><span>{{ value }}</span></div>{% endfor %}
+      <div><span>[{{ t("FULL SOURCES", "FUENTES COMPLETAS") }}]</span><span>{{ t("link in bio", "link en la bio") }} →</span></div>
     </div>
   </div>
   <div class="lbl br">{{ "%02d"|format(n) }} / {{ "%02d"|format(n) }}</div>
@@ -91,7 +94,7 @@
   {% if show_preprint_flag %}<div class="flag-row"><span class="flag">{{ PREPRINT }}</span></div>{% endif %}
   {% if diff %}<div class="diff">
     {% for row in diff %}<div class="row {{ 'minus' if row.sign == '−' else 'plus' }}"><span class="sign">{{ row.sign }}</span><span class="num">{{ row.value }}{% if row.sign == '−' %}<i class="strike"></i>{% endif %}</span><span class="why">{{ row.label }}</span></div>{% endfor %}
-  </div>{% else %}<div class="giant ghost" aria-hidden="true" data-anchor="top">(but)</div>{% endif %}
+  </div>{% else %}<div class="giant ghost" aria-hidden="true" data-anchor="top">{{ t("(but)", "(pero)") }}</div>{% endif %}
   <div class="body">
     {{ sec(num, title) }}
     {# An empty catch (formats.UNSTATED) is held at the gate, never posted:

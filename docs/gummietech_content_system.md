@@ -91,6 +91,16 @@ Instagram app at upload, by a person. It stays on request until a handful
 have been measured against their own carousels; what earns it a cadence is
 §8's decision, not this one.
 
+**That handful is now** (2026-10-12): one reel per Drop for four weeks,
+each set against its carousel's reach. With 29 measured posts at 0 saves and
+the one recorded reach at 83, the carousels are not reaching anyone to save
+them; reels are what Instagram shows to non-followers. Two habits ride along,
+neither in code: the same carousel goes to LinkedIn as a document
+(`carousel.pdf`, sent at the gate), where the build services' clients are;
+and when a post covers someone active online, a person sends it to them —
+§7.3 already credits them, and their reshare is reach from an audience that
+already cares.
+
 **Run it, the Glossary and the Cheat Sheet were added 2026-10-06,** for
 one reason: 24 measured posts had a median of **zero saves**, in every
 format, colorway, domain and weekday (`learn.py`, that day). Saves are §0's
@@ -722,5 +732,5 @@ Explicitly **not** a primary metric: likes.
 - [ ] **Proposed series, 2026-09-27** — not adopted. Each is a claim to test, with the number that settles it:
   - **The Catch, weekly.** A carousel of only the catches: the week's five most-hyped AI claims, one slide each, stating what the source does not support. It is slides 3–4's competitive advantage made into a whole post, and the most shareable thing the account could say. Cost: hand-written like a Breakdown, since a roundup of caveats is exactly where a free-tier model invents one. Settled by: shares per post against the Signal's median over four weeks.
   - **Measured, not claimed.** The pipeline's own data as posts: cron lateness, the 503 rate, what 8,000 scored headlines say about which beats score high. It is original data no other page has, and the start of the original-reporting body of work §8 names. The first is drafted: `posts/2026-09-28-the-cron-that-runs-late.json`. Settled by: saves and profile visits against the Breakdown median. Profile visits matter most here, because this is the Build's funnel job done in carousel form.
-  - **Spanish slides, one test.** Render one Breakdown with its `es` block as the slides and post it as its own carousel. The archive already carries the Spanish, so the cost is a template switch and one gate. Settled by: reach from non-followers on that post against its English twin, read by eye from Insights, since `metrics` does not record reach. That is the only number that says whether a Costa Rica / Latin America audience is there.
+  - **Spanish slides, one test.** Render one Breakdown with its `es` block as the slides and post it as its own carousel. The archive already carries the Spanish, so the cost is a template switch and one gate. Settled by: reach from non-followers on that post against its English twin, read by eye from Insights, since `metrics` does not record reach. That is the only number that says whether a Costa Rica / Latin America audience is there. **Built 2026-10-12:** `python src/render.py posts/<breakdown>.json --lang es` (a Drop or a Breakdown) writes `output/<stem>-es/`; the caption stays the English one, so write the Spanish caption at the gate.
 - [~] Spanish-language variant — Costa Rica base is an underserved-market advantage worth considering. **Decided for the archive** (2026-09-11): every archive page is bilingual, translated by `src/translate.py` at no cost and no per-post writing (§6b). **Still open for the feed:** Spanish slides or a second account are a per-post cost against the §8 budget, so the archive runs first and the traffic decides.

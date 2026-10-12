@@ -260,6 +260,11 @@ screenshotted individually, and each also filmed as a seamless 8s MP4 of its
 moving backdrop (Neat-style ribbons, our own shader, in the post's own
 lead/support/cream since 2026-10-06 — never a fixed table; `--no-motion` skips). `render.py` discovers slides with
 `querySelectorAll('.slide')` and refuses fewer than `MIN_SLIDES` (4).
+It also binds the stills into `carousel.pdf` for LinkedIn (a warning, never
+a failure, when it cannot), which `telegram.py` sends at the gate.
+`--lang es` renders a Drop or a Breakdown from its `es` block into
+`output/<stem>-es/`: fixed template copy goes through `t(en, es)`, and every
+environment that loads `slide_parts.html` registers `render.translator()`.
 
 Design tokens are locked — do not change them or propose alternatives. They
 live in `templates/tokens.css`, shared by the slides and the archive; do not

@@ -18,7 +18,7 @@
   {{ parts.corners("drop", 2, 5, domain) }}
   {% if keywords %}<div class="cloud" aria-hidden="true" data-words="{{ keywords|join('|') }}" data-seed="{{ hook }}"></div>{% endif %}
   <div class="body">
-    {{ parts.sec(1, "What happened") }}
+    {{ parts.sec(1, t("What happened", "Qué pasó")) }}
     <p class="text">{{ parts.boxed(what_happened) }}</p>
   </div>
 </div></div>
@@ -28,14 +28,14 @@
 <div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
   {{ parts.corners("drop", 3, 5, domain) }}
   <div class="body top">
-    {{ parts.sec(2, "Why it matters") }}
+    {{ parts.sec(2, t("Why it matters", "Por qué importa")) }}
     <p class="text">{{ parts.boxed(why_it_matters) }}</p>
   </div>
   <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(why)</div>
 </div></div>
 
 <!-- 4. THE CATCH -->
-{{ parts.catch("drop", 4, 5, fields[3], 3, "The catch") }}
+{{ parts.catch("drop", 4, 5, fields[3], 3, t("The catch", "El detalle")) }}
 
 <!-- 5. CTA + SOURCE -->
 {{ parts.follow("drop", 5, fields[4], [("source", attribution), ("code", code_url)]) }}

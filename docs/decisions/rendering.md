@@ -438,3 +438,19 @@ what a measurement cannot answer — whether the slides *look* wrong. Run it
 locally on a post that matters. It is read-only: it never edits the JSON or
 renders into `output/`, and like `proof.py` it does not check claims or
 wording accuracy — that is `fact-check`'s half.
+
+## Spanish slides and the LinkedIn PDF (2026-10-12)
+
+`render.py --lang es` swaps the fields `formats.es_fields()` names for the
+post's `es` block and renders the fixed template copy through `t(en, es)`.
+Only `drop` and `breakdown` (`render.SPANISH_FORMATS`) route every fixed
+word through `t`; any other format is refused rather than rendered half in
+English. The block must pass `translate.stale_reason()`, the same rule the
+archive uses. Keywords are dropped for the Spanish render: they were chosen
+from the English text and would box nothing.
+
+`carousel.pdf` is bound from the PNG stills, never printed from the slide
+page: print layout drops the WebGL backdrop and re-flows the layout pass, so
+a printed page would be a carousel nobody proofed. It is a copy for another
+channel, so a failure warns and the render still succeeds, and `telegram.py`
+sends it only when it exists.
