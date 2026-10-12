@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "materials",
+  "beat": "science",
   "colorway": "signal",
   "hook": "Microscopic DNA sails can pull molecules apart",
   "what_happened": "Researchers built DNA-based micro‑sails that generate forces to separate molecules",

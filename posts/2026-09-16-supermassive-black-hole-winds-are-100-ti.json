@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "astronomy",
+  "beat": "science",
   "colorway": "signal",
   "hook": "Quasar winds are 100× more powerful than thought",
   "what_happened": "XRISM observed H1821+643, finding Fe XXV line broadening from turbulence 20–100 kpc away",

@@ -152,6 +152,10 @@ Slides 3 and 4 are the entire competitive advantage. Anyone can rewrite a headli
 
 **The hook is chosen, not accepted.** Added 2026-09-27, after 22 posts earned 0 saves: `draft.py` asks for three cover lines per Drop — the finding stated plainly, the belief it corrects, and what it changes for the reader — and renders the first. The gate message lists all three, and `hook.yml` swaps in another, re-translates it, and sends the post back through the full review, since a new hook is a new claim. The two hooks that read best in the archive so far both broke the old "state the finding plainly" rule. Whether choosing moves saves is §8's question: compare `learn.py` before and after.
 
+**The concrete thing goes first** (2026-10-12). The three are now: the product, object or habit the story is about, named — then what happened — then the key number; with no such thing in the source, the first is what happened. The hooks the evergreen queue carries ("The panda that became a gibbon", "The regex that took down Cloudflare") each name a thing, and the drafted covers that named a category ("the current limits of quantum hardware") were the ones nobody could picture. The Signal's cover takes the result an everyday reader would most want, from whichever source, not source 1 by rank.
+
+**The caption's question takes one word or one memory to answer** (2026-10-12): a choice between two things, or the reader's own experience — never "how will this change…", which nobody answers. Hashtags are normalised in code (`formats.hashtags()`): lowercase, at most five, `#gummietech` last — every Signal until then shipped without it.
+
 ### The Breakdown — 8–10 slides
 
 Cover → the question → the intuition → the mechanism (2–3 slides) → the surprising implication → the limits → recap → CTA.

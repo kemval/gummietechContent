@@ -26,6 +26,7 @@ What it reports:
     breakdown  from Friday on, this week has a Breakdown
     subject    yesterday's Drop, or Signal items, were tech, not science
     gate       every tap in Telegram's 24h window reached published_at
+    series     every status report the bot sent was recorded as posted
     metrics    every answered ask was written down, and old asks were answered
     colour     no two neighbouring posts share a field
     buffer     the gate is not silently accumulating drafts
@@ -74,6 +75,7 @@ from telegram import (METRICS_ASK_RE, METRICS_CORE, METRICS_KEY,
                       parse_callback, poll, publish_date, read_post, recorded,
                       send_report)
 from weekly import KINDS as WEEKLY
+import series
 
 # What each drafting day owes. docs §1 fixes the Drop at 3×/week and the
 # Signal at one; daily.yml asks on `* * 1,3,5,6` and drafts the Signal on the
@@ -265,6 +267,41 @@ def check_gate(updates: list, report: Report) -> None:
                            f"poll may not have run yet; if this repeats "
                            f"tomorrow the tap was lost — dispatch "
                            f"publish.yml.")
+
+
+# A report is sent in the morning and posted the same day or the next. Past
+# this, a missing published_at is not a poll running behind.
+SERIES_PATIENCE_DAYS = 2
+
+
+def check_series_posted(today: str, report: Report,
+                        found: list[tuple[Path, dict]] | None = None) -> None:
+    """Every status report sent long enough ago carries published_at.
+
+    check_gate() only sees taps in Telegram's 24-hour window, so a report
+    nobody tapped at all is invisible to it. By 2026-10-12 the bot had sent
+    fifteen and one was recorded as posted, and learn.py --series had
+    nothing to say. Either the tap was skipped or the report never went
+    out, and only a person knows which.
+    """
+    cutoff = date.fromisoformat(today) - timedelta(days=SERIES_PATIENCE_DAYS)
+    unrecorded = []
+    for path, rep in series.reports() if found is None else found:
+        try:
+            sent = date.fromisoformat(str(rep.get(series.SENT_KEY, "")).strip())
+        except ValueError:
+            continue
+        if sent <= cutoff and not str(rep.get("published_at", "")).strip():
+            unrecorded.append(path.stem)
+    if unrecorded:
+        named = ", ".join(unrecorded[:MAX_NAMED])
+        more = len(unrecorded) - MAX_NAMED
+        report.fix("series", f"{len(unrecorded)} sent status report(s) never "
+                             f"recorded as posted: {named}"
+                             f"{f' and {more} more' if more > 0 else ''}. If "
+                             f"it went out, tap ✅ under it in the chat. If it "
+                             f"did not, delete its sent_at in series/reports/ "
+                             f"and series.yml sends it again next.")
 
 
 def check_metrics(updates: list, today: str, report: Report,
@@ -673,6 +710,7 @@ def main() -> int:
         updates = updates_from_telegram(token, chat_id, report)
         check_gate(updates, report)
         check_metrics(updates, today, report)
+    check_series_posted(today, report)
     check_colour(report)
     check_buffer(report)
     check_factcheck(report)

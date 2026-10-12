@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "materials",
+  "beat": "science",
   "colorway": "ember",
   "hook": "Foaming photopolymers enable 20,000 dpi inkless printing",
   "what_happened": "Researchers used UV‑A light to trigger foaming in a polymer film, creating controlled pores and a white, high‑resolution pattern",

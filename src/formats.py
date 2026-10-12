@@ -370,6 +370,28 @@ def preprint_claims(post: dict) -> int:
     return int(post_preprint_flag(post))
 
 
+# The account's own tag, always last, and the cap §6 sets: "3–5 hashtags
+# maximum". Both were asked of the model and both went missing: the Signal
+# prompt asked for 5–8 mixed-case tags and every Signal shipped without
+# #gummietech (#ScienceNews, #TechTrends), and a Drop shipped #brown_dwarf.
+BRAND_TAG = "#gummietech"
+MAX_HASHTAGS = 5
+
+
+def hashtags(tags: object) -> list[str]:
+    """The model's tags as Instagram should get them: lowercase, letters and
+    digits only, no repeats, at most MAX_HASHTAGS, BRAND_TAG last.
+
+    A tag left empty by the cleaning is dropped rather than guessed at.
+    """
+    out: list[str] = []
+    for tag in tags if isinstance(tags, list) else []:
+        word = "".join(c for c in str(tag).lower() if c.isascii() and c.isalnum())
+        if word and f"#{word}" != BRAND_TAG and f"#{word}" not in out:
+            out.append(f"#{word}")
+    return [*out[:MAX_HASHTAGS - 1], BRAND_TAG]
+
+
 def es_fields(post: dict) -> tuple[str, ...]:
     """The fields the web archive shows in Spanish, for this post's format."""
     return ("domain", "hook", *(s.field for s in sections(post)))

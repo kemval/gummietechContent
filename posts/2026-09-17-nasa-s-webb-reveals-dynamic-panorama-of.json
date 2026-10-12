@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "astronomy",
+  "beat": "science",
   "colorway": "orbit",
   "hook": "JWST finds 39 brown dwarf candidates in IC 348",
   "what_happened": "Luhman and Alves de Oliveira used JWST NIRCam and NIRSpec to identify 39 candidates, 15 spectra, nine confirmed substellar members",

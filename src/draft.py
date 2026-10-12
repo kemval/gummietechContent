@@ -62,7 +62,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
-from formats import by_hand, format_name
+from formats import by_hand, format_name, hashtags
 from formats import entries as format_entries
 from formats import (missing_fields, missing_from_entries,
                      required as format_required)
@@ -154,10 +154,11 @@ chemistry). Use exactly one of those four words. If none clearly fits, use \
 signal>",
   "hooks": ["<three cover lines for the same story, each at most \
 {hook_limit} words, each a different angle, each in everyday words a reader \
-would say out loud. 1: what happened, said the way you would tell a friend. \
-2: a sentence that starts from the product, object or habit the story is \
-actually about, if the text names one — never an analogy or comparison the \
-text does not draw itself. 3: a sentence built on the key number, exactly \
+would say out loud. 1: a sentence that starts from the product, object or \
+habit the story is actually about, named concretely — never an analogy or \
+comparison the text does not draw itself. If the text names no such thing, \
+hook 1 is what happened instead. 2: what happened, said the way you would \
+tell a friend. 3: a sentence built on the key number, exactly \
 as the text states it, with its scope and baseline, and in a maker's \
 announcement as the maker's claim ('Google says') — never converted \
 ('half', 'as thin as') or read as something it is not. If no number reads \
@@ -186,8 +187,10 @@ claim on the credibility slide>",
 words a reader would actually search for, spelled out in plain prose — \
 Instagram indexes caption text, so the keywords earn their place here and \
 not only in the hashtags. The second is a question to the reader about the \
-finding, suggesting no use the text does not name, and the caption ends on \
-it>",
+finding that takes one word or one memory to answer: a choice between two \
+things ('local or in the cloud?') or their own experience ('has a deploy \
+ever done this to you?'), never 'how will this change...'. It suggests no \
+use the text does not name, and the caption ends on it>",
   "keywords": ["<3 short topic keywords>"],
   "hashtags": ["#<4 hashtags, lowercase, last one #gummietech>"],
   "alt_text": "<one sentence describing the carousel for screen readers. \
@@ -268,17 +271,22 @@ Research roundup>",
 signal (AI, computing, software, robotics), orbit (space, astronomy, \
 physics), bloom (biology, medicine, climate, ecology), ember (energy, \
 materials, engineering, chemistry)>",
-  "hook": "<the cover line, {hook_limit} words maximum: source 1's result \
-as a teaser, then how many more follow. e.g. 'A brain implant decoded speech \
-and gesture — plus {more} more'. It must be supported by source 1 alone. A \
-cover that says the same thing every week is a cover nobody stops for>",
+  "hook": "<the cover line, {hook_limit} words maximum: the one result a \
+reader who uses technology every day would most want to hear about, from \
+whichever source that is, as a teaser, then how many more follow. e.g. 'A \
+brain implant decoded speech and gesture — plus {more} more'. It must be \
+supported by that one source alone, in everyday words: a cover full of \
+jargon is scrolled past. A cover that says the same thing every week is a \
+cover nobody stops for>",
   "items": [
     {{"claim": "<the result in one sentence, {claim_limit} words maximum>",
       "attribution": "<who did the work: 'Surname et al., Journal (year)'>"}}
   ],
-  "caption": "<2-3 sentences for the Instagram caption, ending in a question>",
+  "caption": "<2-3 sentences for the Instagram caption, ending in a question \
+that takes one word or one memory to answer: a choice between two of the \
+results, or the reader's own experience — never 'which will reshape...'>",
   "keywords": ["<3-5 search terms>"],
-  "hashtags": ["#<5-8 tags, mixing broad and niche>"],
+  "hashtags": ["#<4 hashtags, lowercase, mixing broad and niche, last one #gummietech>"],
   "alt_text": "<one sentence describing the carousel for a screen reader. \
 It is text on flat colour fields — there are no photographs, charts or \
 diagrams on these slides. Describe what the slides say, not what a science \
@@ -874,6 +882,10 @@ def finish(post: dict, order: list[str]) -> dict:
         sys.exit("Refusing to write. peer_reviewed came back as "
                  f"{post.get('peer_reviewed')!r}, not true or false. "
                  "An unlabelled preprint is a credibility risk.")
+
+    # Code's, not the model's: see formats.hashtags() for the tags that
+    # shipped when only the prompt asked.
+    post["hashtags"] = hashtags(post.get("hashtags"))
 
     warn_on_length(post)
     return {k: post[k] for k in order if k in post}

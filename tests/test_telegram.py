@@ -16,10 +16,23 @@ import pytest
 import telegram as tg
 
 
+# The real series/reports/, captured before any test patches it.
+REAL_REPORTS = tg.series.REPORTS_DIR
+
+
 @pytest.fixture
-def posts(monkeypatch, posts_dir):
+def posts(monkeypatch, posts_dir, tmp_path):
     directory, write = posts_dir
     monkeypatch.setattr(tg, "POSTS_DIR", directory)
+    # ask_metrics() reads series/reports/ beside posts/. Left pointing at the
+    # repo, a test asked the real published reports and wrote asked_at into
+    # them — 2026-10-12, the day they first carried published_at.
+    # Only while it is still the repo's: a test's own `reports` or `queue`
+    # fixture may already have pointed it somewhere, or will after this.
+    if tg.series.REPORTS_DIR == REAL_REPORTS:
+        empty = tmp_path / "no-reports"
+        empty.mkdir()
+        monkeypatch.setattr(tg.series, "REPORTS_DIR", empty)
     return write
 
 

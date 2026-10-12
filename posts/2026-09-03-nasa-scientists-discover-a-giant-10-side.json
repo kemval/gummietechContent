@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "Planetary science",
+  "beat": "science",
   "colorway": "orbit",
   "hook": "A giant 10-sided atmospheric wave has formed on Saturn's south pole.",
   "what_happened": "Researchers used NASA's Hubble Space Telescope and ground-based data to identify a newly forming, vertically extended 10-sided jet pattern in Saturn's southern atmosphere.",

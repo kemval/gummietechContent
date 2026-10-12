@@ -1,6 +1,7 @@
 {
   "post_type": "drop",
   "domain": "archaeology imaging",
+  "beat": "science",
   "colorway": "signal",
   "hook": "Decorrelation stretch reveals invisible ancient paintings",
   "what_happened": "A Singaporean archaeologist applied NASA’s decorrelation stretch to Angkor Wat photos, uncovering about 200 faded paintings.",

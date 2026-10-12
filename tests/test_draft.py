@@ -670,3 +670,24 @@ def test_a_hollow_reply_is_asked_for_again(monkeypatch):
     monkeypatch.setattr(draft.llm, "generate", lambda *a, **k: "{}")
     with pytest.raises(SystemExit, match="hollow draft twice"):
         draft.drafted_reply("prompt json", "key", "model")
+
+
+# ---------------------------------------------------------------- hashtags
+
+@pytest.mark.parametrize("tags,expected", [
+    # 2026-09-17's Drop shipped #brown_dwarf.
+    (["#jwst", "#brown_dwarf", "#starformation", "#gummietech"],
+     ["#jwst", "#browndwarf", "#starformation", "#gummietech"]),
+    # Every Signal to 2026-10-10 shipped mixed case, up to six tags and no
+    # #gummietech at all.
+    (["#ScienceNews", "#TechTrends", "#SpaceTech", "#SmartFabric", "#Origami",
+      "#Biotech"],
+     ["#sciencenews", "#techtrends", "#spacetech", "#smartfabric",
+      "#gummietech"]),
+    # The brand tag moves to the end; a repeat or an empty tag is dropped.
+    (["#gummietech", "#AI", "#ai", "#"], ["#ai", "#gummietech"]),
+    (None, ["#gummietech"]),
+])
+def test_hashtags_are_lowercase_capped_and_end_on_the_brand(tags, expected):
+    from formats import hashtags
+    assert hashtags(tags) == expected

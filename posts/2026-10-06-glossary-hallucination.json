@@ -1,6 +1,7 @@
 {
   "post_type": "term",
   "domain": "AI research",
+  "beat": "ai",
   "colorway": "signal",
   "hook": "An AI's plausible but wrong answer, given instead of admitting uncertainty.",
   "term": "Hallucination",

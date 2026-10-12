@@ -621,3 +621,31 @@ def test_a_few_lifted_rows_are_a_note():
     report = Report("WATCH")
     watch.check_lift(rows, col, now, report)
     assert report.verdict != "FIX"
+
+
+# ----------------------------------------------------------------- the series
+
+def sent(stem: str, day: str, posted: str = "") -> tuple[Path, dict]:
+    report = {"sent_at": day, **({"published_at": posted} if posted else {})}
+    return Path(f"{stem}.json"), report
+
+
+def test_a_sent_report_never_recorded_as_posted_is_a_finding():
+    # 2026-10-12: fifteen sent, one recorded, and learn.py --series empty.
+    report = Report("WATCH")
+    watch.check_series_posted("2026-10-12", report, [
+        sent("05-personality-traits", "2026-09-24"),
+        sent("16-quick-fix", "2026-10-08", posted="2026-10-08"),
+    ])
+    assert len(findings(report, "series")) == 1
+    assert "05-personality-traits" in findings(report, "series")[0]
+    assert "16-quick-fix" not in findings(report, "series")[0]
+
+
+def test_a_report_sent_yesterday_is_not_late_yet():
+    report = Report("WATCH")
+    watch.check_series_posted("2026-10-12", report, [
+        sent("18-code-review", "2026-10-11"),
+        (Path("19-rent-free.json"), {}),           # queued, never sent
+    ])
+    assert findings(report, "series") == []

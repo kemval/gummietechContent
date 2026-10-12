@@ -38,7 +38,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
-from formats import FORMATS
+from formats import FORMATS, hashtags
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
@@ -196,7 +196,9 @@ Rules:
     these rules disagree, these rules win.
   - hook within 12 words; every other slide field within 25 words.
   - colorway is signal, orbit, bloom or ember, by docs §1's topics.
-  - caption ends in a question.
+  - caption ends in a question that takes one word or one memory to
+    answer: a choice between two things, or the reader's own experience.
+    Never "how will this change...".
   - Do NOT write source_url, doi, attribution, peer_reviewed, announcement,
     es or published_at. Code copies the credit after you; the rest is not
     yours.
@@ -360,6 +362,11 @@ def finish(name: str, draft: Path, today: date,
             post[field] = source[field]
         else:
             post.pop(field, None)
+    # Not credit, but the same rule: a Breakdown or a term is about the
+    # subject of the post it is built from, and learn.py groups by it.
+    if source.get("beat"):
+        post["beat"] = source["beat"]
+    post["hashtags"] = hashtags(post.get("hashtags"))
     words = post["term"] if name == "glossary" else post["hook"]
     prefix = "glossary-" if name == "glossary" else ""
     path = directory / f"{today.isoformat()}-{prefix}{slug(words)}.json"

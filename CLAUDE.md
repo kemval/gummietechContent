@@ -518,7 +518,7 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
 ## Watching the pipeline
 
 `src/watch.py`, via `watch.yml` once a day, reports what should have
-happened and did not (cadence, glossary, breakdown, subject, gate, metrics, colour,
+happened and did not (cadence, glossary, breakdown, subject, gate, series, metrics, colour,
 buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot

@@ -1,6 +1,7 @@
 {
   "post_type": "breakdown",
   "domain": "AI research",
+  "beat": "ai",
   "colorway": "signal",
   "hook": "AI told to love owls wrote numbers. Its student started picking owls.",
   "the_question": "An AI prompted to prefer owls wrote only number sequences, like (285, 574, 384). Could another AI pick up the owls from those numbers?",

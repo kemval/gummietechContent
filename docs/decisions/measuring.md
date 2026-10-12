@@ -52,12 +52,25 @@ and writes the reply into the post JSON. Four things hold it together:
   claims a publish on a poll that published nothing.
 
 `python src/learn.py` is the report — medians by `post_type`, `colorway`,
-`domain` and weekday, then every measured post ranked by saves. It holds back
+`beat` and weekday, then every measured post ranked by saves. It holds back
 a group under three posts rather than ranking noise, and says outright that
 §8 puts the format decision at thirty. It computes no rate: saves per
 impression would be the honest measure and Instagram does not give
 impressions away, so a ratio built from these three numbers would look
 rigorous and mean nothing.
+
+**`beat`, not `domain` (2026-10-12).** `domain` is the slide's free-text
+field label, and 29 measured posts carried 22 of them — "dna pairing",
+"corrosion science" — so every group was a group of one and the table said
+nothing. `beat` is `score.BEATS`, six values. Posts drafted before beats
+existed were given one by hand from `score.BEAT_RULE`; a Signal has none,
+since its items span several, and a term or Breakdown copies the beat of the
+post it is built from (`weekly.finish()`).
+
+**A sent status report is not a posted one (2026-10-12).** By that date the
+bot had sent fifteen reports and one carried `published_at`, so
+`learn.py --series` was empty. `watch.check_series_posted()` names every
+report sent two or more days ago with no `published_at`.
 
 ## Reach and follows (2026-10-09)
 
