@@ -179,6 +179,10 @@ REEL_COVER = "reel-cover.png"
 
 SLIDE_RE = re.compile(r"^slide-(\d+)\.png$")
 SIDECAR = "caption.txt"
+# render.CAROUSEL_PDF, restated: this module may not import render.py. The
+# carousel as one document for LinkedIn. Optional — render.py only warns
+# when it cannot bind one — so a missing PDF never stops the gate.
+CAROUSEL_PDF = "carousel.pdf"
 
 # Telegram's cap on one sendMediaGroup. No format reaches it today — a
 # Breakdown is the longest at eight — but how many slides a post has is the
@@ -719,6 +723,12 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
         with sidecar.open("rb") as fh:
             call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})
         print(f"  sent {SIDECAR}")
+
+        if (pdf := outdir / CAROUSEL_PDF).exists():
+            with pdf.open("rb") as fh:
+                call(token, "sendDocument", {"chat_id": chat_id},
+                     {"document": fh})
+            print(f"  sent {CAROUSEL_PDF}")
 
         # Ahead of the summary, so the button lands on the last message.
         for name, body in reviews:

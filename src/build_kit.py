@@ -28,7 +28,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
 from render import (COLORWAYS, DEFAULT_OUT, REPO_ROOT, TEMPLATE_DIR,
-                    colorway_pair, emphasis, open_page, shown, typeset)
+                    colorway_pair, emphasis, open_page, shown, translator,
+                    typeset)
 
 EPISODES = REPO_ROOT / "docs" / "build_episodes.md"
 SIZE = (1080, 1920)
@@ -72,6 +73,7 @@ def render_kit(episode: dict, colorway: str | None, outdir: Path) -> list[Path]:
     env.filters["typeset"] = typeset
     env.filters["emphasis"] = lambda text, figures_only=False: emphasis(
         text, [], figures_only)
+    env.globals["t"] = translator()
     lead, support = colorway_pair(colorway)
     html = env.get_template("build.html").render(
         font_dir=(REPO_ROOT / "fonts").as_uri(), lead=lead,

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <title>gummietech — Breakdown</title>
@@ -42,7 +42,7 @@
 <div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
   {{ parts.corners("breakdown", 2, n, domain) }}
   <div class="body top">
-    {{ parts.sec(1, "The question") }}
+    {{ parts.sec(1, t("The question", "La pregunta")) }}
     <p class="text display">{{ parts.boxed(the_question) }}</p>
   </div>
   <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(?)</div>
@@ -53,7 +53,7 @@
   {{ parts.corners("breakdown", 3, n, domain) }}
   {% if keywords %}<div class="cloud" aria-hidden="true" data-words="{{ keywords|join('|') }}" data-seed="{{ hook }}"></div>{% endif %}
   <div class="body">
-    {{ parts.sec(2, "The intuition") }}
+    {{ parts.sec(2, t("The intuition", "La intuición")) }}
     <p class="text">{{ parts.boxed(the_intuition) }}</p>
   </div>
 </div></div>
@@ -64,7 +64,7 @@
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
   {{ parts.corners("breakdown", at, n, domain) }}
   <div class="body top">
-    {{ parts.sec(3, "How it works") }}
+    {{ parts.sec(3, t("How it works", "Cómo funciona")) }}
     <div class="steps">{% for _ in steps %}<i class="{{ 'on' if loop.index <= current }}"></i>{% endfor %}</div>
     <p class="text">{{ parts.boxed(step) }}</p>
   </div>
@@ -76,16 +76,16 @@
 {% set at = 4 + steps|length %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
   {{ parts.corners("breakdown", at, n, domain) }}
-  <div class="giant ghost" aria-hidden="true" data-anchor="top">(why)</div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">{{ t("(why)", "(por qué)") }}</div>
   <div class="body">
-    {{ parts.sec(4, "Why it matters") }}
+    {{ parts.sec(4, t("Why it matters", "Por qué importa")) }}
     <p class="text">{{ parts.boxed(why_it_matters) }}</p>
   </div>
 </div></div>
 
 <!-- THE LIMITS — the dark slide, wherever it lands -->
 {% set at = 5 + steps|length %}
-{{ parts.catch("breakdown", at, n, fields[at - 1], 5, "The limits") }}
+{{ parts.catch("breakdown", at, n, fields[at - 1], 5, t("The limits", "Los límites")) }}
 
 {% if has_recap %}
 <!-- RECAP -->
@@ -93,7 +93,7 @@
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
   {{ parts.corners("breakdown", at, n, domain) }}
   <div class="body">
-    {{ parts.sec(6, "In one line") }}
+    {{ parts.sec(6, t("In one line", "En una línea")) }}
     <p class="text display">{{ recap|typeset }}</p>
   </div>
 </div></div>

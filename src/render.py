@@ -488,8 +488,47 @@ def slide_fields(name: str | None, count: int = 5,
     return lead, rhythm(lead, support, count, catch)
 
 
+# The formats whose templates route every fixed word through `t`, and so can
+# render as Spanish slides (--lang es). The rest would come out half English.
+SPANISH_FORMATS = ("drop", "breakdown")
+
+
+def translator(lang: str = "en"):
+    """The templates' `t(en, es)`: fixed template copy in the slide's
+    language. Every environment that loads slide_parts.html registers it."""
+    return (lambda en, es: es) if lang == "es" else (lambda en, es: en)
+
+
+def spanish(post: dict) -> dict:
+    """The record with its `es` block's text in place of the English.
+
+    Only the fields formats.es_fields() names — the ones translate.py writes
+    — so the credit, the source and the flags stay as they are. Refused
+    rather than half-done: a slide with one English paragraph left in is not
+    a test of a Spanish carousel. translate.stale_reason() is the one
+    definition of a usable block; imported here because translate.py
+    imports this module at load.
+    """
+    from translate import stale_reason
+    if (name := format_name(post.get("post_type"))) not in SPANISH_FORMATS:
+        sys.exit(f"--lang es renders {', '.join(SPANISH_FORMATS)} only; this "
+                 f"is a {name}, whose template still has English copy.")
+    if reason := stale_reason(post):
+        sys.exit(f"No usable Spanish: {reason}. Run `python src/translate.py "
+                 f"<post>` first, and read what it prints.")
+    es = post["es"]
+    out = dict(post)
+    for field in es_fields(post):
+        if es.get(field):
+            out[field] = es[field]
+    # Highlight words chosen for the English text would never match the
+    # Spanish; the figure in the hook still gets its box.
+    out["keywords"] = []
+    return out
+
+
 def render_html(post: dict, colorway: str | None = None,
-                template: str | None = None) -> str:
+                template: str | None = None, lang: str = "en") -> str:
     """The post in its format's template, or in `template` when named.
 
     reel.py names reel.html: the same context — flag, hook size, lead, rhythm
@@ -530,6 +569,8 @@ def render_html(post: dict, colorway: str | None = None,
     # that knows how many it has, and this is the only thing that knows what
     # colour they go in.
     env.globals["PAIR"] = PAIR
+    env.globals["t"] = translator(lang)
+    context["lang"] = lang
     # signal.html labels each item by these, so a roundup cannot hold a
     # second opinion of what a preprint is.
     env.tests["preprint"] = preprint
@@ -605,6 +646,53 @@ def shoot(html: str, outdir: Path) -> list[Path]:
     return written
 
 
+# The stills as one PDF, a page per slide: LinkedIn posts a carousel as a
+# document, and that is where the clients of the build services are. Named
+# here and in telegram.CAROUSEL_PDF, which may not import this module.
+CAROUSEL_PDF = "carousel.pdf"
+
+
+def carousel_pdf(slides: list[Path], outdir: Path) -> Path | None:
+    """Bind the rendered PNGs into outdir/carousel.pdf, or say why not.
+
+    Built from the stills rather than by printing the slide page: print
+    layout drops the WebGL backdrop and re-flows the layout pass, so a
+    printed page would be a carousel nobody proofed. The PDF is a copy for
+    another channel, never the gate's, so a failure here warns and the
+    render still succeeds.
+    """
+    out = outdir / CAROUSEL_PDF
+    pages = "".join(f'<img src="{s.resolve().as_uri()}">' for s in slides)
+    html = ("<!doctype html><meta charset=utf-8><style>"
+            f"@page{{size:{SLIDE_W}px {SLIDE_H}px;margin:0}}"
+            "html,body{margin:0}"
+            f"img{{display:block;width:{SLIDE_W}px;height:{SLIDE_H}px;"
+            "break-after:page}</style>" + pages)
+    try:
+        with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
+            # From file://, for open_page()'s reason: about:blank may not
+            # load local images.
+            page_file = Path(tmp) / "carousel.html"
+            page_file.write_text(html)
+            browser = p.chromium.launch()
+            try:
+                page = browser.new_page()
+                page.goto(page_file.as_uri(), wait_until="load")
+                page.pdf(path=str(out), width=f"{SLIDE_W}px",
+                         height=f"{SLIDE_H}px", print_background=True,
+                         margin={"top": "0", "right": "0",
+                                 "bottom": "0", "left": "0"})
+            finally:
+                browser.close()
+    except Exception as exc:          # a side copy must not fail the render
+        print(f"  warning: no {CAROUSEL_PDF} ({exc}). The slides are fine; "
+              f"bind the PNGs by hand if LinkedIn needs this one.")
+        out.unlink(missing_ok=True)
+        return None
+    print(f"  wrote {shown(out)}")
+    return out
+
+
 # The moving backdrop (templates/slides_layout.js) loops every
 # window.__backdropLoop ms. Each slide is filmed over exactly one loop, so
 # the clip repeats seamlessly in the carousel.
@@ -666,6 +754,9 @@ def main() -> int:
                     help="override the colorway in the JSON")
     ap.add_argument("--no-motion", action="store_true",
                     help="stills only: skip the looping MP4 per slide")
+    ap.add_argument("--lang", default="en", choices=("en", "es"),
+                    help="es: the slides in the post's Spanish (a Drop or a "
+                         "Breakdown), into output/<stem>-es")
     args = ap.parse_args()
 
     post_path = Path(args.post)
@@ -675,9 +766,13 @@ def main() -> int:
         sys.exit(f"No such post file: {post_path}")
 
     post = load_post(post_path)
+    if args.lang == "es":
+        post = spanish(post)
     warn_on_length(post)
 
-    outdir = Path(args.outdir) if args.outdir else DEFAULT_OUT / post_path.stem
+    suffix = "-es" if args.lang == "es" else ""
+    outdir = (Path(args.outdir) if args.outdir
+              else DEFAULT_OUT / f"{post_path.stem}{suffix}")
     if not outdir.is_absolute():
         outdir = REPO_ROOT / outdir
 
@@ -702,8 +797,9 @@ def main() -> int:
         print("  announcement — the cover says it is not a peer-reviewed "
               "study; check that the source really has no paper behind it")
 
-    html = render_html(post, args.colorway)
+    html = render_html(post, args.colorway, lang=args.lang)
     written = shoot(html, outdir)
+    carousel_pdf(written, outdir)
     # Stale clips from an earlier render must not ride along with new stills.
     for old in outdir.glob("slide-*.mp4"):
         old.unlink()
