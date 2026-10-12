@@ -303,8 +303,18 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
    furniture around it. */
 @media print {
   .page-bg, .lang, .pitch, .back, .download { display: none !important; }
-  .panel { break-inside: avoid; box-shadow: none; }
-  .month-post { break-inside: avoid-page; }
+  /* Glass and its shadow are for the moving page, which print hides; with
+     .hero.panel's specificity a bare .panel left a smudge under each hook. */
+  .panel, .entry .panel, .hero.panel {
+    break-inside: avoid; box-shadow: none; backdrop-filter: none;
+  }
+  /* Posts flow, kept whole section by section: avoiding a break inside a
+     whole post pushed a long one past the month's title and left page 1
+     blank, and a page per post left pages holding one source line
+     (2026-10-12). A hook never ends a page. */
+  .month-post .section, .month-post .source { break-inside: avoid; }
+  .month-post .hero { break-after: avoid; }
+  .month-post .section h2 { break-after: avoid; }
 }
 
 @media (prefers-reduced-motion: reduce) {
