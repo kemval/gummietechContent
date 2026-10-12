@@ -145,9 +145,11 @@ out — none of them new writing, all of them pure functions of the posts:
   previews already use. Printed from the page, not built from the slides:
   this is a reading copy. No browser means no PDF and, because the pages are
   written again after printing, no link to one.
-- **`site.py --newsletter`**: the last seven days as markdown, to paste into
-  Substack. No free plan sends RSS-to-email, so the paste is the route on any
-  provider; the skip notes go to stderr so stdout is only what is pasted.
+- **`site.py --newsletter`**: the last seven days as an HTML page in
+  `output/`, copied from a browser into Substack — whose editor pastes
+  markdown as literal `##` and `**`, so markdown was dropped the same day.
+  No free plan sends RSS-to-email, so the paste is the route on any
+  provider.
 - **Cloudflare Web Analytics** (free, cookieless): the bio link measured nothing,
   and it is the funnel's one click. The token is a repo variable, public by
   design; unset, no script is added, so local builds and forks measure

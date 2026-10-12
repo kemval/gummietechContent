@@ -14,7 +14,7 @@ drafting step already produces.
 Usage:
     python src/site.py
     python src/site.py --outdir /tmp/preview
-    python src/site.py --newsletter        # the last week, as markdown to paste
+    python src/site.py --newsletter        # the last week, as a page to copy
 
 Besides the pages it writes feed.xml (RSS 2.0, newest first) and, per month
 with a published post, <yyyy-mm>/ — that month on one printable page — and
@@ -423,24 +423,39 @@ def feed(posts: list[dict]) -> str:
 
 def newsletter(posts: list[dict], today: date,
                days: int = NEWSLETTER_DAYS) -> str:
-    """The posts published in the last `days`, as markdown to paste into the
+    """The posts published in the last `days`, as a page to copy into the
     newsletter. Every word is the posts' own, so nothing new needs checking;
-    each links to its archive page, which links the sources."""
+    each links to its archive page, which links the sources.
+
+    HTML, not markdown: Substack's editor pastes markdown as literal `##` and
+    `**` (2026-10-12). Opened in a browser and copied, a page arrives as
+    formatted text — headings, bold and links intact. The title line is
+    the issue's title, and stays out of the body.
+    """
     since = today - timedelta(days=days)
     recent = [p for p in reversed(posts) if since < p["published"] <= today]
-    if not recent:
-        return f"Nothing published between {since} and {today}."
-    out = [f"# gummietech — the week to {human_date(today)}", ""]
+    title = f"gummietech — the week to {human_date(today)}"
+    body: list[str] = []
     for post in recent:
-        out += [f"## {typeset(post['hook'])}", ""]
+        body.append(f"<h2>{escape(typeset(post['hook']))}</h2>")
         for section in post["body"]:
-            out.append(f"**{section['en']}.** "
-                       + " ".join(typeset(en) for en, _ in section["pieces"]))
-            out.append("")
+            text = " ".join(typeset(en) for en, _ in section["pieces"])
+            body.append(f"<p><strong>{escape(section['en'])}.</strong> "
+                        f"{escape(text)}</p>")
         credits = "; ".join(s["attribution"] for s in post["sources"])
-        out += [f"Source: {credits} — [sources and full post]"
-                f"({SITE_URL}{post['slug']}/)", ""]
-    return "\n".join(out)
+        body.append(f'<p>Source: {escape(credits)} — <a href="{SITE_URL}'
+                    f'{post["slug"]}/">sources and full post</a></p>')
+    if not body:
+        body.append(f"<p>Nothing published between {since} and {today}.</p>")
+    return ("<!doctype html><meta charset=utf-8>"
+            f"<title>{escape(title)}</title>"
+            "<style>body{font:17px/1.55 Georgia,serif;max-width:640px;"
+            "margin:40px auto;padding:0 16px}"
+            ".title{font:600 13px/1.4 system-ui;color:#666;"
+            "border-bottom:1px solid #ddd;padding-bottom:16px}</style>"
+            f'<p class="title">Title for the issue — paste it into the '
+            f"title field, then copy from the next line down:<br>"
+            f"<b>{escape(title)}</b></p>\n" + "\n".join(body) + "\n")
 
 
 def months(posts: list[dict]) -> list[dict]:
@@ -571,15 +586,21 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--outdir", default=None, help="where to build the site")
     ap.add_argument("--newsletter", action="store_true",
-                    help=f"print the last {NEWSLETTER_DAYS} days as markdown "
-                         "for the newsletter, and build nothing")
+                    help=f"write the last {NEWSLETTER_DAYS} days as a page to "
+                         "copy into the newsletter, and build nothing")
     args = ap.parse_args()
 
     if args.newsletter:
-        # The skip notes go to stderr so stdout is only what gets pasted.
+        # The skip notes would bury the one line that matters.
         with contextlib.redirect_stdout(sys.stderr):
             posts, _ = load_posts()
-        print(newsletter(posts, date.today()))
+        today = date.today()
+        page = REPO_ROOT / "output" / f"newsletter-{today}.html"
+        page.parent.mkdir(exist_ok=True)
+        page.write_text(newsletter(posts, today))
+        print(f"Wrote {page.relative_to(REPO_ROOT)}. Open it in a browser, "
+              "select from the first headline down, copy, and paste into a "
+              "new Substack post; the title is at the top.")
         return 0
 
     outdir = Path(args.outdir) if args.outdir else DEFAULT_OUT

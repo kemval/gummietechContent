@@ -431,8 +431,8 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 - A malformed post is skipped with a warning, never fails the build.
 - **Beyond the pages:** `feed.xml` (RSS 2.0), one page per month with its
   PDF (`<yyyy-mm>/`, printed through the slides' browser; no browser, no
-  download link), and `site.py --newsletter`, the last week as markdown to
-  paste — every word the posts' own. Cloudflare Web Analytics' beacon is
+  download link), and `site.py --newsletter`, the last week as an HTML page to
+  copy into Substack (its editor pastes markdown literally) — every word the posts' own. Cloudflare Web Analytics' beacon is
   added only when `site.yml` passes the `CF_BEACON_TOKEN` repo variable.
 - **Spanish** is the post's `es` block from `src/translate.py`, stamped with
   a hash of its English (`_en`); partial Spanish is dropped whole; the
