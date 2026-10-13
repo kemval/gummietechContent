@@ -1,0 +1,37 @@
+{
+  "post_type": "term",
+  "domain": "AI inference",
+  "colorway": "signal",
+  "hook": "In some AI models, only a few small specialists work on each word.",
+  "term": "Experts",
+  "definition": "The small specialists a large AI model is made of. For each word, the model uses only a few of them.",
+  "example": "Strata describes a 125B model as a team of 24,576 experts. Each word needs only 10, so a gaming PC can run it.",
+  "the_catch": "A big model does not use all of itself at once. Its size counts every expert, but each word uses only 10 of 24,576.",
+  "example_post": "2026-10-08-a-125b-model-fits-a-gaming-pc-by-loading",
+  "caption": "In some AI models, experts are the small specialists the model is made of, and each word uses only a few of them. Strata's 125B model has 24,576 experts but needs only 10 per word, so the graphics card keeps the busiest ones and RAM holds the rest. Would you rather run an AI on your own PC or in the cloud?",
+  "keywords": [
+    "AI experts",
+    "language models",
+    "model size"
+  ],
+  "hashtags": [
+    "#ai",
+    "#llm",
+    "#machinelearning",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining experts in an AI model: the small specialists a large model is made of, of which only a few are used per word. The example is Strata's 125-billion-parameter model with 24,576 experts, 10 used per word, from an earlier gummietech post, and the common mistake of thinking a big model uses all of itself at once.",
+  "source_url": "https://github.com/Niko1221/Strata",
+  "attribution": "Niko1221, Strata (GitHub)",
+  "peer_reviewed": false,
+  "beat": "ai",
+  "es": {
+    "domain": "inferencia de IA",
+    "hook": "En algunos modelos de IA, solo unos pocos especialistas trabajan en cada palabra",
+    "term": "Expertos",
+    "definition": "Los pequeños especialistas que forman parte de un modelo grande de IA. Para cada palabra, el modelo usa solo unos pocos.",
+    "example": "Strata describe un modelo de 125B como un equipo de 24 576 expertos. Cada palabra necesita solo 10, por lo que una PC para juegos puede ejecutarlo.",
+    "the_catch": "Un modelo grande no utiliza todo su potencial a la vez. Su tamaño incluye a todos los expertos, pero cada palabra usa solo 10 de los 24 576.",
+    "_en": "5e622899e922c7ae"
+  }
+}
