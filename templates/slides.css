@@ -335,4 +335,6 @@ body { background: #2A2A2A; font-family: var(--body); }
 /* try_it comes from the README and can carry a whole install command: an
    unspaced URL in it ran 1500px off the slide (2026-10-14). Prose words
    still break at spaces; only a word wider than the column breaks inside. */
-.repo + .text { overflow-wrap: anywhere; }
+.repo ~ .text { overflow-wrap: anywhere; }
+/* A command from try_it (render.commands()), between lines of its prose. */
+.repo.cmd { margin: 28px 0; }

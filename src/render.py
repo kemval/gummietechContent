@@ -223,6 +223,19 @@ def typeset(text: str) -> str:
     return MULTIPLIER.sub(r"\1×", text or "")
 
 
+def commands(text: str) -> list[tuple[bool, str]]:
+    """A run post's try_it as (is_command, words) pieces: each `backticked`
+    span is the line a reader types, and run.html sets it in a terminal box.
+    Set in the prose's 60px it read as one sentence with a URL broken through
+    it (2026-10-14). Unbalanced backticks mark nothing: the whole text is
+    prose, so a stray one cannot box the rest of the sentence."""
+    parts = (text or "").split("`")
+    if len(parts) % 2 == 0:
+        return [(False, text)]
+    return [(i % 2 == 1, part.strip()) for i, part in enumerate(parts)
+            if part.strip()]
+
+
 def figure_phrase(text: str) -> str | None:
     """The first figure in `text` with the word after it — "81% faster"."""
     t = typeset(text)
@@ -563,6 +576,7 @@ def render_html(post: dict, colorway: str | None = None,
         context["example_from"] = example_post(post)
     context["diff"] = catch_diff(post.get("the_catch", ""), context["figure"])
     env.filters["typeset"] = typeset
+    env.filters["commands"] = commands
     env.filters["emphasis"] = (lambda text, figures_only=False:
                                emphasis(text, post.get("keywords"), figures_only))
     # The template calls this with its own slide count: it is the only thing

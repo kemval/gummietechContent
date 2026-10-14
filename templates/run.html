@@ -40,7 +40,14 @@
   <div class="body top">
     {{ parts.sec(2, "Run it yourself") }}
     <p class="repo"><span>$ git clone</span> {{ code_url }}</p>
-    <p class="text">{{ try_it|typeset }}</p>
+    {%- set pieces = try_it|commands %}
+    {%- for is_command, words in pieces %}
+    {%- if is_command %}
+    <p class="repo cmd"><span>$</span> {{ words }}</p>
+    {%- else %}
+    <p class="text{{ ' sm' if pieces|length > 1 }}">{{ words|typeset }}</p>
+    {%- endif %}
+    {%- endfor %}
   </div>
   <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(run)</div>
 </div></div>
