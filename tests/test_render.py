@@ -489,6 +489,28 @@ def test_typeset_changes_a_glyph_never_a_word(text, out):
     assert render.typeset(text) == out
 
 
+def test_a_backticked_command_is_pulled_out_of_its_prose():
+    """2026-10-14: RemoveMacAI's curl line set in the prose's 60px read as
+    one sentence with a URL broken through it."""
+    try_it = ("On macOS, run `curl -fsSL https://raw.githubusercontent.com/"
+              "omlahore/RemoveMacAI/main/install.sh | bash -s app` or "
+              "download the zip and open the app.")
+    assert render.commands(try_it) == [
+        (False, "On macOS, run"),
+        (True, "curl -fsSL https://raw.githubusercontent.com/omlahore/"
+               "RemoveMacAI/main/install.sh | bash -s app"),
+        (False, "or download the zip and open the app."),
+    ]
+
+
+@pytest.mark.parametrize("text", [
+    "git clone https://github.com/Niko1221/Strata, then ./setup.sh.",
+    "Run `./setup.sh and it's done.",
+])
+def test_try_it_without_balanced_backticks_stays_prose(text):
+    assert render.commands(text) == [(False, text)]
+
+
 def test_a_boxed_keyword_is_widened_to_the_whole_word():
     """"Bunsen burner" boxed inside "Bunsen burners" left the "s" to wrap
     onto the next line on its own."""

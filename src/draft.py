@@ -832,6 +832,7 @@ def peer_review_flag(paper: dict | None, url: str,
 # slide's invented catch: a reader who buys a GPU on our word.
 RUN_KEY = """  "try_it": "<at most {word_limit} words. What a reader needs to run the \
 code: hardware, language or framework, data, and the entry point or command. \
+Put each command a reader types between backticks, like `./setup.sh`. \
 Only what the REPOSITORY README below states. Never invent a requirement, \
 and never promise it runs on less than the README says>",
 """
