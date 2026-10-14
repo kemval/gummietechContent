@@ -43,5 +43,8 @@
   },
   "canvas": "Battery-15.dc.html",
   "sent_at": "2026-10-07",
-  "published_at": "2026-10-07"
+  "published_at": "2026-10-07",
+  "metrics": {
+    "asked_at": "2026-10-14"
+  }
 }
