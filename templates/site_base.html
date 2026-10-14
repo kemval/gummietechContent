@@ -297,14 +297,36 @@ canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1
 /* A month page (month.html): posts in a column, each hook a quiet link. */
 .month-post { margin-bottom: 72px; }
 .month-post .hook a { color: inherit; text-decoration: none; }
-.months { margin-top: 48px; }
+/* The home page's months, under the tagline: a label, then each month a
+   small ink-outlined tab with its PDF one click further. */
+.months {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+  margin-top: 18px;
+}
+.months .label { flex-basis: 100%; }
+.months a {
+  font-family: var(--mono); font-weight: 600; font-size: 14px;
+  padding: 6px 10px; border-radius: 4px; text-decoration: none;
+  color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink);
+}
+.months a:hover, .months a:focus-visible { background: var(--ink); color: var(--cream); }
 
 /* A month page printed to its PDF (site.month_pdfs): the content, not the
    furniture around it. */
 @media print {
   .page-bg, .lang, .pitch, .back, .download { display: none !important; }
-  .panel { break-inside: avoid; box-shadow: none; }
-  .month-post { break-inside: avoid-page; }
+  /* Glass and its shadow are for the moving page, which print hides; with
+     .hero.panel's specificity a bare .panel left a smudge under each hook. */
+  .panel, .entry .panel, .hero.panel {
+    break-inside: avoid; box-shadow: none; backdrop-filter: none;
+  }
+  /* Posts flow, kept whole section by section: avoiding a break inside a
+     whole post pushed a long one past the month's title and left page 1
+     blank, and a page per post left pages holding one source line
+     (2026-10-12). A hook never ends a page. */
+  .month-post .section, .month-post .source { break-inside: avoid; }
+  .month-post .hero { break-after: avoid; }
+  .month-post .section h2 { break-after: avoid; }
 }
 
 @media (prefers-reduced-motion: reduce) {
