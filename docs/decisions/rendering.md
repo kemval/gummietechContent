@@ -160,8 +160,8 @@ the rhythm, the type and every text rule, and adds the system:
     remains in every family (pink or blush in all four `COLORWAYS`); that is
     the palette, not the ribbons.
   - **Seamless and deterministic.** Time enters only as the angle of one
-    8s loop (noise sampled around a circle), seeded by the hook and slide
-    id. Frame 0 and frame 8000ms are byte-identical. The PNG is frame 0.
+    12s loop (noise sampled around a circle), seeded by the hook and slide
+    id. Frame 0 and frame 12000ms are byte-identical. The PNG is frame 0.
     `render.py` films each slide over one loop (JPEG frames, TV-range
     yuv420p, which Instagram expects), and `--no-motion` skips it.
     `reel.py` stretches the backdrop's clock to a whole number of loops
@@ -202,11 +202,15 @@ the rhythm, the type and every text rule, and adds the system:
   - **Cost.** Headless Chrome runs WebGL on the CPU, so the shader draws
     at a third of the size and is scaled up (Neat's `renderScale`). The
     ribbons are smooth enough not to show it. At full size a reel took
-    over fifteen minutes; now a Drop's five clips take ~3 minutes, added
+    over fifteen minutes; now a Drop's five clips take ~4.5 minutes, added
     to `review.yml`, which now installs ffmpeg. In the reel only on-screen
-    cards are repainted. The motion was slowed at the owner's request by
-    shrinking the noise's circle per loop, not by lengthening the loop, so
-    clips stay 8s. `check.yml` renders with
+    cards are repainted. The motion was first slowed at the owner's request
+    by shrinking the noise's circle per loop, which kept clips at 8s. That
+    ran out: the flow curls and the surface wave turn once per loop
+    whatever the circle, so on 2026-10-15 the loop itself went from 8s to
+    12s (chosen by eye over 16s from clips side by side). Every term slows
+    evenly and frame 0 — the PNG — is unchanged; the cost is clips half as
+    long again and ~50% more filming time. `check.yml` renders with
     `--no-motion`; its reel smoke drives the backdrop's clock. Telegram
     sends the clips after the stills, all or none.
 - **The hook sits on ruled baselines** (.84em at line-height 1.0).
