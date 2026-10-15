@@ -37,5 +37,8 @@
     "the_catch": "Anthropic no ha completado una evaluación completa de alineación de estos casos y afirma que su postura podría cambiar tras análisis adicionales.",
     "_en": "7799e9813644ca85"
   },
-  "published_at": "2026-10-12"
+  "published_at": "2026-10-12",
+  "metrics": {
+    "asked_at": "2026-10-15"
+  }
 }
