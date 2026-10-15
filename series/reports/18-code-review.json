@@ -39,5 +39,8 @@
   },
   "canvas": "Review-18.dc.html",
   "sent_at": "2026-10-10",
-  "published_at": "2026-10-10"
+  "published_at": "2026-10-10",
+  "metrics": {
+    "asked_at": "2026-10-15"
+  }
 }
