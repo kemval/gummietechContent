@@ -375,7 +375,7 @@ def check_colour(report: Report, directory: Path | None = None) -> None:
     already published. This walks the whole archive in reading order, which
     is the only place a shipped run is visible at all.
     """
-    previous: str | None = None
+    seen: list[str] = []
     previous_path: Path | None = None
     for path in post_order(directory):
         post = read_post(path) or {}
@@ -384,23 +384,24 @@ def check_colour(report: Report, directory: Path | None = None) -> None:
             report.fix("colour", f"{path.name} has colorway {name!r}, which "
                                  f"is not a family — render falls back to "
                                  f"signal. Valid: {', '.join(COLORWAYS)}")
-        if name and name == previous and previous_path is not None:
+        if name and seen and name == seen[-1] and previous_path is not None:
             # A run that is already on the grid is history: there is nothing
             # to re-render and no tap to withhold. Reporting it as a finding
             # would send the same unfixable message every single day, which
             # is precisely what teaches a person to stop reading the bot. It
             # stays a note so a hand run still shows the whole archive.
             say = report.fix if not post.get("published_at") else report.note
-            fix = (f" Re-render it with --colorway {vary(name, previous)}."
+            fix = (f" Re-render it with --colorway {vary(name, seen)}."
                    if not post.get("published_at")
                    else " Already published — nothing to do.")
             say("colour", f"{path.name} is the second {name} post in a row, "
                           f"after {previous_path.name}.{fix}")
         # Step over a post whose colorway is unrecognised rather than ending
-        # the walk, exactly as previous_colorway() does — one bad record must
+        # the walk, exactly as recent_colorways() does — one bad record must
         # not silently disable the rule for everything after it.
         if name in COLORWAYS:
-            previous, previous_path = name, path
+            seen.append(name)
+            previous_path = path
 
 
 def check_buffer(report: Report, directory: Path | None = None) -> None:

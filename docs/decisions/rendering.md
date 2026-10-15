@@ -314,15 +314,24 @@ no other family uses, and the owner chose amber for its support slide over
 sky and olive. `vary()` compares colour pairs, not names, from those hours
 when two families shared one; the test for that case stays.
 
-`vary(chosen, previous)` returns `chosen` untouched unless the post before it
-already had that family, in which case it takes the next family in
-`COLORWAYS` order — deterministic, so a re-render of an approved post cannot
-come back a different colour, and guaranteed to differ from `previous`
-because it only ever runs when the two are equal. The topic keeps its own
-family in the ordinary case; the rule only fires on a collision.
+`vary(chosen, recent)` returns `chosen` untouched unless the post before it
+already had that family, in which case it takes the family whose colours the
+reader has gone longest without seeing (ties by `COLORWAYS` order from
+`chosen`) — deterministic, so a re-render of an approved post cannot come
+back a different colour, and never the previous post's pair. The topic keeps
+its own family in the ordinary case; the rule only fires on a collision.
 
-`previous_colorway()` answers what "before" means, and it is strictly the
-predecessor rather than the newest other post: a post being re-rendered sits
+**Least recently seen, not next in order, since 2026-10-15.** The account is
+tech-first, so almost every topic maps to `signal`, and "next in order" made
+every substitute `orbit`: from 09-27 to 10-14 the grid went out 8 pink, 6
+sky, 2 blush and not one olive-led post. The owner wants all four families on
+the grid while the topics stay tech; simulated on those sixteen posts the new
+rule gives 7 signal and 3 each of the rest. The cost is that a colour says
+less about the topic than it did — accepted, since the substitute already
+ignored it.
+
+`recent_colorways()` answers what "before" means, and it is strictly the
+predecessors rather than the newest other posts: a post being re-rendered sits
 in `posts/` with successors after it, and answering with one of those would
 compare it against a post nobody has seen yet. `post_order()` is the order a
 reader meets them — `published_at` when there is one, the filename's date
@@ -429,7 +438,7 @@ record-level check in a file that otherwise measures the DOM, for the reason
 `check_words()` is one. FIX and not BLOCK because a repeated hue is cosmetic,
 and withholding the button over one teaches a person to tap "Posted anyway"
 without reading. It skips a path outside `post_order()`: the `era*.json`
-fixtures are not posts, and `previous_colorway()` treats a path it cannot
+fixtures are not posts, and `recent_colorways()` treats a path it cannot
 find as arriving at the end of the archive, which made every fixture report
 as clashing with the newest real draft.
 

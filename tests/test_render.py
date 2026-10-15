@@ -342,12 +342,12 @@ def test_an_es_block_holds_the_same_section_as_plain_strings():
 @pytest.mark.parametrize("name", sorted(render.COLORWAYS))
 def test_a_repeat_is_replaced_by_something_that_is_not_the_repeat(name):
     """The only thing vary() must guarantee: never hand back `previous`."""
-    assert render.vary(name, name) != name
+    assert render.vary(name, [name]) != name
 
 
 @pytest.mark.parametrize("name", sorted(render.COLORWAYS))
 def test_the_substitute_is_a_real_family(name):
-    assert render.vary(name, name) in render.COLORWAYS
+    assert render.vary(name, [name]) in render.COLORWAYS
 
 
 @pytest.mark.parametrize("name", sorted(render.COLORWAYS))
@@ -356,15 +356,16 @@ def test_the_topic_keeps_its_family_when_the_field_is_free(name):
     which is what keeps the colour meaning anything at all."""
     others = [o for o in render.COLORWAYS
               if render.COLORWAYS[o] != render.COLORWAYS[name]]
-    assert render.vary(name, None) == name
+    assert render.vary(name, []) == name
     for previous in others:
-        assert render.vary(name, previous) == name
+        assert render.vary(name, [previous]) == name
 
 
 def test_vary_is_deterministic():
     """Same queue, same render. A random substitute would make a re-render
     of an approved post come back a different colour."""
-    assert render.vary("ember", "ember") == render.vary("ember", "ember")
+    recent = ["signal", "orbit", "ember"]
+    assert render.vary("ember", recent) == render.vary("ember", recent)
 
 
 def test_three_ember_topics_in_a_row_do_not_ship_three_amber_posts():
@@ -372,9 +373,25 @@ def test_three_ember_topics_in_a_row_do_not_ship_three_amber_posts():
     rule and no two neighbours may share a field."""
     shipped = []
     for topic_family in ["ember", "ember", "ember", "ember"]:
-        shipped.append(render.vary(topic_family,
-                                   shipped[-1] if shipped else None))
+        shipped.append(render.vary(topic_family, shipped))
     assert all(a != b for a, b in zip(shipped, shipped[1:])), shipped
+
+
+def test_a_tech_run_uses_every_family_not_just_orbit():
+    """09-27 to 10-14: tech-first, so almost every topic mapped to signal,
+    and vary() always substituted the next family in order — orbit. Sixteen
+    posts went out 8 pink, 6 sky, 2 blush, none olive-led. The substitute is
+    now the family the reader has gone longest without seeing."""
+    shipped: list[str] = []
+    for _ in range(8):
+        shipped.append(render.vary("signal", shipped))
+    assert set(shipped) == set(render.COLORWAYS), shipped
+    assert all(a != b for a, b in zip(shipped, shipped[1:])), shipped
+
+
+def test_the_substitute_is_the_least_recently_seen():
+    assert render.vary("signal", ["bloom", "orbit", "ember", "signal"]) == "bloom"
+    assert render.vary("signal", ["orbit", "signal"]) == "bloom"
 
 
 def test_two_families_in_one_pair_are_still_a_repeat():
@@ -384,7 +401,7 @@ def test_two_families_in_one_pair_are_still_a_repeat():
     families share a pair."""
     for chosen in render.COLORWAYS:
         for previous in render.COLORWAYS:
-            got = render.vary(chosen, previous)
+            got = render.vary(chosen, [previous])
             assert render.COLORWAYS[got] != render.COLORWAYS[previous], (chosen, previous, got)
 
 
@@ -418,7 +435,7 @@ def test_previous_is_the_predecessor_not_the_newest_other_post(posts_dir):
           published_at="2026-09-20")
     middle = write("2026-09-21-this.json", colorway="ember")
     write("2026-09-22-after.json", colorway="signal")
-    assert render.previous_colorway(middle, directory) == "ember"
+    assert render.recent_colorways(middle, directory)[-1] == "ember"
 
 
 def test_a_new_draft_is_compared_against_the_end(posts_dir):
@@ -427,7 +444,7 @@ def test_a_new_draft_is_compared_against_the_end(posts_dir):
     directory, write = posts_dir
     write("2026-09-20-a.json", colorway="ember", published_at="2026-09-20")
     write("2026-09-21-b.json", colorway="bloom")
-    assert render.previous_colorway(None, directory) == "bloom"
+    assert render.recent_colorways(None, directory)[-1] == "bloom"
 
 
 def test_a_malformed_neighbour_does_not_disable_the_rule(posts_dir):
@@ -435,7 +452,7 @@ def test_a_malformed_neighbour_does_not_disable_the_rule(posts_dir):
     directory, write = posts_dir
     write("2026-09-19-good.json", colorway="ember", published_at="2026-09-19")
     (directory / "2026-09-20-bad.json").write_text("{not json")
-    assert render.previous_colorway(None, directory) == "ember"
+    assert render.recent_colorways(None, directory)[-1] == "ember"
 
 
 def test_no_colorway_at_all_is_stepped_over(posts_dir):
@@ -444,7 +461,7 @@ def test_no_colorway_at_all_is_stepped_over(posts_dir):
     directory, write = posts_dir
     write("2026-09-19-good.json", colorway="orbit", published_at="2026-09-19")
     write("2026-09-20-none.json", hook="no colorway field")
-    assert render.previous_colorway(None, directory) == "orbit"
+    assert render.recent_colorways(None, directory)[-1] == "orbit"
 
 
 # ------------------------------------------------ the Drop's emphasis devices

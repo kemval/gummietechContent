@@ -290,7 +290,7 @@ def test_the_finding_names_the_colorway_that_breaks_the_run(posts):
     write("2026-09-19-second.json", colorway="ember")
     report = Report("WATCH")
     watch.check_colour(report, directory)
-    assert f"--colorway {watch.vary('ember', 'ember')}" in report.render()
+    assert f"--colorway {watch.vary('ember', ['ember'])}" in report.render()
 
 
 def test_a_run_that_is_already_published_does_not_move_the_verdict(posts):
@@ -326,7 +326,7 @@ def test_a_colorway_outside_the_table_is_a_finding(posts):
 
 
 def test_one_unrecognised_colorway_does_not_disable_the_rule(posts):
-    """previous_colorway() steps over a post it cannot read rather than
+    """recent_colorways() steps over a post it cannot read rather than
     ending the walk. This walks the same way, or a single bad record hides
     every clash after it."""
     directory, write = posts
