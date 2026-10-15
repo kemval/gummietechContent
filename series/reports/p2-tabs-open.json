@@ -11,5 +11,8 @@
     "#gummietech"
   ],
   "sent_at": "2026-10-03",
-  "published_at": "2026-10-03"
+  "published_at": "2026-10-03",
+  "metrics": {
+    "asked_at": "2026-10-15"
+  }
 }
