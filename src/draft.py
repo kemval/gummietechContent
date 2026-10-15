@@ -71,7 +71,7 @@ from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, check_unmoved, open_sheet,
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
                     fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
-                    previous_colorway, vary, warn_on_length)
+                    recent_colorways, vary, warn_on_length)
 from verify_feeds import announcement_prefixes, url_key
 from wording import problems as wording_problems
 
@@ -864,7 +864,7 @@ def finish(post: dict, order: list[str]) -> dict:
     # render.vary() for why a topic mapping alone is not enough. This asks
     # about the end of posts/ because the file is written after finish()
     # returns, and the end is where it lands.
-    varied = vary(post["colorway"], previous_colorway())
+    varied = vary(post["colorway"], recent_colorways())
     if varied != post["colorway"]:
         print(f"  colorway: {post['colorway']} would repeat the post before "
               f"it — using {varied}")

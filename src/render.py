@@ -30,7 +30,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -427,19 +427,19 @@ def post_order(directory: Path | None = None) -> list[Path]:
     return [path for _, _, path in sorted(dated)]
 
 
-def previous_colorway(before: Path | None = None,
-                      directory: Path | None = None) -> str | None:
-    """The colorway of the post a reader meets just before `before`.
+def recent_colorways(before: Path | None = None,
+                     directory: Path | None = None) -> list[str]:
+    """The colorways a reader meets before `before`, oldest first.
 
-    Strictly the predecessor, never merely "the newest other post": a post
+    Strictly the predecessors, never merely "the newest other posts": a post
     being re-rendered sits inside posts/ with successors after it, and
-    answering with one of those would compare it against a post nobody has
-    seen yet. A `before` that is not on disk — draft.py asking about the
-    post it is about to write — is treated as landing at the end, which is
-    where a new draft goes.
+    counting one of those would compare it against a post nobody has seen
+    yet. A `before` that is not on disk — draft.py asking about the post it
+    is about to write — is treated as landing at the end, which is where a
+    new draft goes.
 
     Posts with no recognised colorway are stepped over rather than ending
-    the search, so one malformed neighbour cannot silently disable the rule.
+    the walk, so one malformed neighbour cannot silently disable the rule.
     """
     order = post_order(directory)
     if before is None:
@@ -449,18 +449,22 @@ def previous_colorway(before: Path | None = None,
         cut = next((i for i, path in enumerate(order)
                     if path.resolve() == before), len(order))
 
-    for path in reversed(order[:cut]):
+    names = []
+    for path in order[:cut]:
         try:
             name = json.loads(path.read_text()).get("colorway")
         except (OSError, json.JSONDecodeError):
             continue
         if name in COLORWAYS:
-            return name
-    return None
+            names.append(name)
+    return names
 
 
-def vary(chosen: str, previous: str | None) -> str:
+def vary(chosen: str, recent: Sequence[str]) -> str:
     """`chosen`, unless the post before it already had that field.
+
+    `recent` is the colorways a reader met before this post, oldest first
+    (recent_colorways()); its last entry is the post just before.
 
     rhythm() refuses to put the same field on two neighbouring slides. This
     is that rule one level up, and it exists for the same reason: two posts
@@ -473,18 +477,34 @@ def vary(chosen: str, previous: str | None) -> str:
     avoid this: a science feed clusters, and four families divided among
     everything published means neighbours collide often.
 
-    The substitute is the next family in COLORWAYS order whose pair differs
-    from `previous`'s — the colours, not the name, since two families can
-    share a pair. Deterministic, so the same queue always renders
-    the same way and a test can say what it must do. The subject keeps its
-    own family whenever the post before it leaves that family free, so the
-    topic mapping still holds in the ordinary case — this only ever fires on
-    a collision.
+    The substitute is the family whose colours the reader has gone longest
+    without seeing, among those whose pair differs from the previous post's.
+    It used to be the next family in COLORWAYS order, and on a tech-first
+    account that meant signal's substitute was always orbit: from 09-27 to
+    10-14 the grid was 8 pink, 6 sky, 2 blush and no olive-led post at all
+    (owner's call, 2026-10-15: all four families, the topics still tech).
+    Ties, and a family never seen, break by COLORWAYS order from `chosen`.
+    Deterministic, so the same queue always renders the same way and a test
+    can say what it must do. The subject keeps its own family whenever the
+    post before it leaves that family free — this only ever fires on a
+    collision.
     """
     # Compared by the colours the reader sees, not the family name: two
     # families can wear the same pair (ember and signal, since 2026-09-30).
+    previous = recent[-1] if recent else None
     if previous is None or COLORWAYS.get(chosen) != COLORWAYS.get(previous):
         return chosen
+    pairs = [COLORWAYS.get(name) for name in recent]
+
+    def last_seen(name: str) -> int:
+        pair = COLORWAYS[name]
+        return max((i for i, p in enumerate(pairs) if p == pair), default=-1)
+
+    order = list(COLORWAYS)
+    at = order.index(chosen) if chosen in COLORWAYS else 0
+    cycle = [order[(at + step) % len(order)] for step in range(1, len(order))]
+    free = [name for name in cycle if COLORWAYS[name] != COLORWAYS[previous]]
+    return min(free, key=last_seen) if free else chosen
     order = list(COLORWAYS)
     at = order.index(chosen) if chosen in COLORWAYS else 0
     for step in range(1, len(order)):
@@ -798,10 +818,11 @@ def main() -> int:
     # warning rather than a rewrite, because render.py renders the record it
     # was given: say it, and let --colorway be the answer.
     used = args.colorway or post.get("colorway")
-    if used and used == (before := previous_colorway(post_path)):
+    recent = recent_colorways(post_path)
+    if used and recent and used == (before := recent[-1]):
         print(f"  warning: {post_path.name} is the second {before} post in a "
               f"row — the post before it has the same field. Re-render with "
-              f"--colorway {vary(used, before)} to break the run.")
+              f"--colorway {vary(used, recent)} to break the run.")
     # How many slides, not whether: a Signal flags per item, so "ON" alone
     # said nothing about which of five claims is unreviewed.
     if flags := preprint_claims(post):

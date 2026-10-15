@@ -215,7 +215,7 @@ def test_a_second_post_in_the_same_field_is_a_fix(posts_dir, monkeypatch):
     report = proof.Report()
     proof.check_colorway(later, "ember", report)
     assert report.verdict == "FIX"
-    assert f"--colorway {render.vary('ember', 'ember')}" in report.render()
+    assert f"--colorway {render.vary('ember', ['ember'])}" in report.render()
 
 
 def test_a_free_field_is_not_a_fix(posts_dir, monkeypatch):
@@ -238,7 +238,7 @@ def test_a_post_with_no_path_is_not_checked_for_its_neighbour():
 
 
 def test_the_era_fixtures_are_not_held_to_the_rule(posts_dir, monkeypatch):
-    """They are not posts and never land. previous_colorway() treats a path
+    """They are not posts and never land. recent_colorways() treats a path
     outside post_order() as arriving at the end of the archive, which made
     proof report every fixture as clashing with the newest real draft."""
     directory, write = posts_dir

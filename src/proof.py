@@ -38,7 +38,7 @@ from formats import (announcement, pieces, preprint_claims, sections, spec,
                      unstated)
 from wording import problems as wording_problems
 from render import (COLORWAYS, DATED_NAME, MIN_SLIDES, REPO_ROOT,
-                    colorway_pair, load_post, open_page, previous_colorway,
+                    colorway_pair, load_post, open_page, recent_colorways,
                     render_html, rhythm, vary, word_budget)
 
 # The project's own invariant, from CLAUDE.md: "A new lead or support hue
@@ -462,15 +462,15 @@ def check_colorway(path: Path | None, colorway: str | None,
     """
     # The same date-prefix filter post_order() and resolve-post use. Without
     # it the era*.json fixtures — which are not posts and never land — are
-    # treated by previous_colorway() as arriving at the end of the archive,
+    # treated by recent_colorways() as arriving at the end of the archive,
     # and proof reports every one of them as clashing with the newest draft.
     if path is None or not colorway or not DATED_NAME.match(path.name):
         return
-    before = previous_colorway(path)
-    if colorway == before:
+    recent = recent_colorways(path)
+    if recent and colorway == (before := recent[-1]):
         report.fix("colour", f"second {before} post in a row — the post "
                              f"before it has the same field. Re-render with "
-                             f"--colorway {vary(colorway, before)}")
+                             f"--colorway {vary(colorway, recent)}")
 
 
 def proof(post: dict, colorway: str | None,
