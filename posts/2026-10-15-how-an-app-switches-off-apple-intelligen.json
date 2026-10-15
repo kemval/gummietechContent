@@ -1,0 +1,49 @@
+{
+  "post_type": "breakdown",
+  "domain": "macOS tools",
+  "colorway": "signal",
+  "hook": "How an app switches off Apple Intelligence and keeps its models gone.",
+  "the_question": "RemoveMacAI, per its README, turns off Apple Intelligence and deletes its models. How does macOS stay off instead of downloading them again?",
+  "the_intuition": "The obvious guess is a single hidden switch that the app flips. The README describes three separate mechanisms instead.",
+  "mechanism": [
+    "Locked settings, including the AI ones, go into a configuration profile. The user approves it in System Settings. Removing the profile reverts them.",
+    "Models are removed through Apple's asset service. The profile also redirects their downloads to a closed local port, so macOS does not re-fetch them.",
+    "Other settings are written the way defaults write does. Old values go into a journal file, so undo restores them exactly."
+  ],
+  "why_it_matters": "The README says every change is reviewed before it is applied and can be undone, and that System Integrity Protection stays on.",
+  "the_catch": "An announcement by the maker, not a study. The README says it cannot delete Apple's built-in apps, and macOS updates may reset some settings.",
+  "caption": "RemoveMacAI does not just flip a switch. Per its README, a profile locks Apple Intelligence off, the models are deleted, and their downloads are sent to a closed port. Other tweaks are journaled so undo works. Would you keep Apple Intelligence on or switch it off?",
+  "keywords": [
+    "Apple Intelligence",
+    "macOS",
+    "configuration profile",
+    "RemoveMacAI"
+  ],
+  "hashtags": [
+    "#macos",
+    "#appleintelligence",
+    "#opensource",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how the open-source RemoveMacAI app turns off Apple Intelligence on macOS 27: a configuration profile locks the settings, the models are removed and their downloads redirected to a closed local port, and other settings are journaled so undo restores them. Based on the maker's README.",
+  "source_url": "https://github.com/omlahore/RemoveMacAI",
+  "attribution": "omlahore, RemoveMacAI",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "software",
+  "es": {
+    "domain": "herramientas macOS",
+    "hook": "Cómo una app desactiva Apple Intelligence y mantiene sus modelos eliminados",
+    "the_question": "RemoveMacAI, según su README, apaga Apple Intelligence y borra sus modelos. ¿Cómo logra macOS permanecer sin ellos en lugar de volver a descargarlos?",
+    "the_intuition": "La suposición obvia es que existe un interruptor oculto que la app activa. Sin embargo, el README describe tres mecanismos distintos.",
+    "mechanism": [
+      "Los ajustes bloqueados, incluidos los de IA, se guardan en un perfil de configuración. El usuario lo aprueba en Configuración del Sistema. Al eliminar el perfil, los ajustes vuelven a su estado original.",
+      "Los modelos se eliminan mediante el servicio de activos de Apple. El perfil también redirige sus descargas a un puerto local cerrado, de modo que macOS no los vuelve a obtener.",
+      "Otros ajustes se escriben como lo hace defaults. Los valores antiguos se guardan en un archivo de registro, por lo que deshacer los cambios los restaura exactamente."
+    ],
+    "why_it_matters": "El README indica que cada cambio se revisa antes de aplicarse y puede revertirse, y que la Protección de Integridad del Sistema permanece activada.",
+    "the_catch": "Es un anuncio del creador, no un estudio. El README aclara que no puede eliminar las aplicaciones integradas de Apple, y que actualizaciones de macOS podrían restablecer algunos ajustes.",
+    "_en": "a15ffe200f449bb9"
+  }
+}
