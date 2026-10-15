@@ -27,7 +27,10 @@
 window.Ribbons = (() => {
   const gl = document.createElement('canvas').getContext('webgl', { preserveDrawingBuffer: true });
   if (!gl) return null;
-  const LOOP = 8000, W = 360;
+  // 12s since 2026-10-15 (owner's call, from 8/12/16s clips compared side
+  // by side): lengthening the loop slows every term evenly and leaves the
+  // picture, and so the PNG at frame 0, exactly as it was.
+  const LOOP = 12000, W = 360;
   gl.canvas.width = W; gl.canvas.height = 640;   // grows for taller shapes
   const src = {
     v: 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }',

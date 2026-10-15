@@ -57,7 +57,7 @@ history in `docs/decisions/rendering.md`.
 - **Decoration is `aria-hidden`**: glass ghost words ("(why)", "(but)",
   "1/2", "(gummie tech)") painted into the moving ribbon backdrop, and up to
   four keyword callout tags wired to the section rule. proof.py skips them.
-- **The PNG is frame 0** of an 8s ribbon loop in the post's own lead,
+- **The PNG is frame 0** of a 12s ribbon loop in the post's own lead,
   support and cream.
 
 ## Scope
