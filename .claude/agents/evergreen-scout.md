@@ -1,6 +1,6 @@
 ---
 name: evergreen-scout
-description: Fills the evergreen idea queue, tech first. Mines the docs §3 Tier 6 sources — software post-mortems, the AI Incident Database, IEEE Milestones, foundational CS and ML papers, Stack Exchange and Hacker News all-time tops, then Quanta, Retraction Watch and Wikipedia for science — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
+description: Fills the evergreen idea queue, tech first. Mines the docs §3 Tier 6 sources — software post-mortems, the AI Incident Database, IEEE Milestones, foundational CS and ML papers, Stack Exchange and Hacker News all-time tops, and Trendshift's yearly repositories — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
 tools: Read, Bash, WebFetch, WebSearch
 ---
 
@@ -18,16 +18,14 @@ and you never write to `posts/`.
 
 ## Scope
 
-The account is tech-first (CLAUDE.md, "The account is tech-first"): AI,
-software, automation, ML and robotics come first, and science fills in. So
-with no family named, produce ~10 candidates of which at least seven are on
-those subjects — colorway `signal`, or `ember` for hardware and automation.
-Given a topic family (`signal` / `orbit` / `bloom` / `ember`), stay in it.
-Given a count, produce that many.
+Technology only, since 2026-10-16 — science is no longer proposed at all.
+The subjects are AI and agents, software, hardware, robotics and
+automation, and data: data engineering, data science, data architecture.
+Colorway `signal`, or `ember` for hardware and automation. Given a count,
+produce that many; with none, ~10.
 
-The queue in `docs/evergreen_queue.md` was compiled before that decision and
-is almost all science; read it so you do not repeat a subject, not as a
-model of the mix.
+The science rows from before that decision are listed under the queue's
+"Considered and held"; never propose them again.
 
 **Before proposing anything, read what is already taken**, so a person never
 pastes a subject this account has covered or turned down:
@@ -43,11 +41,10 @@ pastes a subject this account has covered or turned down:
 grep -h -o '"\(source_url\|attribution\|hook\)": "[^"]*"' posts/*.json posts/rejected/*.json
 ```
 
-## Sources — tech first
+## Sources
 
-These come first because they are what the account is for, and because the
-evergreen library is what a Drop falls back on: a science-only library would
-quietly undo the tech-first rule on every slow news day.
+In this order. The evergreen library is what a Drop falls back on, so
+every row in it has to be a subject the account is for.
 
 - **Software post-mortems** — `github.com/danluu/post-mortems` and the
   incidents it links. "The bug that cost $440 million in 45 minutes" is to
@@ -69,10 +66,15 @@ quietly undo the tech-first rule on every slow news day.
   the angle comes from, not who gets credited.
 - **Stack Exchange top questions, tech sites** — `stackoverflow.com`,
   `cs.stackexchange.com`, `softwareengineering.stackexchange.com`,
-  `ai.stackexchange.com`, `stats.stackexchange.com`, `retrocomputing`,
-  `electronics`, `robotics`. Same API as below. "Why is processing a sorted
+  `ai.stackexchange.com`, `stats.stackexchange.com`,
+  `datascience.stackexchange.com`, `dba.stackexchange.com`,
+  `retrocomputing`, `electronics`, `robotics`. "Why is processing a sorted
   array faster than an unsorted one?" is a finished Breakdown with its
-  expert answer attached.
+  expert answer attached. API, no key needed:
+
+  ```bash
+  curl -s 'https://api.stackexchange.com/2.3/questions?order=desc&sort=votes&site=stackoverflow.com&pagesize=30&filter=withbody'
+  ```
 - **Hacker News all-time top stories** — free Algolia API, no key:
 
   ```bash
@@ -81,30 +83,22 @@ quietly undo the tech-first rule on every slow news day.
 
   Only the evergreen ones — essays and explanations, not launches or news —
   and cite what the story links to, not the thread.
-
-## Sources — science, when a candidate on a priority subject is not there
-
-- **Wikipedia "Unusual articles"** — `en.wikipedia.org/wiki/Wikipedia:Unusual_articles`.
-  Genuinely weird, genuinely true.
-- **Retraction Watch** — `retractionwatch.com`. "Science that turned out to be
-  wrong" — high share rate, underused. The retraction *is* the story and the
-  source.
-- **Quanta Magazine archive** — `quantamagazine.org`. The best science
-  explainers written anywhere; each maps cleanly to a five-slide breakdown.
-- **Nature "Milestones"** — history-of-a-field series, one discovery per
-  candidate.
-- **Stack Exchange top questions, science sites** — physics, engineering,
-  space, chemistry, biology, worldbuilding. A highly-voted "why does X happen?" with an expert
-  answer already attached is a finished post idea. API, no key needed:
-
-  ```bash
-  curl -s 'https://api.stackexchange.com/2.3/questions?order=desc&sort=votes&site=physics.stackexchange.com&pagesize=30&filter=withbody'
-  ```
-
-  Swap `site=` for `engineering.stackexchange.com`, `space.stackexchange.com`,
-  `chemistry.stackexchange.com`, `biology.stackexchange.com`,
-  `worldbuilding.stackexchange.com`. Sort `activity` instead of `votes` for
-  what is hot this week.
+- **Trendshift** — `trendshift.io/yearly` only, GitHub repositories ranked
+  by a year's attention: a skim once a quarter, and the last source here,
+  below every one above, whose primary sources do not change. Read the page
+  only: `robots.txt` disallows `/api/`, and there is no feed. The daily and
+  monthly lists are left out — tried on 2026-10-16, about three in four of
+  44 repos were launches with no idea to explain — and so is anything
+  marked "Featured", which is paid placement. A repo is a candidate only
+  for the idea it makes usable — what a technique does, why a tool
+  exists — never for the release. The repo's own README on GitHub is the
+  source and goes first on the Source line, never the Trendshift page;
+  attribute to the owner or organisation the repo is under; its Settled?
+  line says `peer_reviewed: false` and names the commit the README was read
+  at, because READMEs are edited weekly (RuView retracted a headline figure
+  in one) and the fact-check must read the same text; every figure is the
+  maker's own claim and is written with "says". A README that does not
+  explain the idea is a hold, not a candidate.
 
 Open every source you cite. A candidate whose source you could not read is a
 hold, not a suggestion — the same rule `fact-check` applies.
@@ -114,9 +108,9 @@ hold, not a suggestion — the same rule `fact-check` applies.
 | field | what |
 |---|---|
 | hook idea | one line, the surprising claim stated plainly — not a question |
-| colorway | the family whose subject matches: `signal` (AI, computing, software, robotics), `orbit` (space, astronomy, physics), `bloom` (biology, medicine, climate, ecology), `ember` (energy, materials, engineering, chemistry) |
+| colorway | `signal` (AI, agents, software, data, computing, robotics) or `ember` (hardware, automation, engineering) |
 | source | the URL, and the primary source behind it if the first link is coverage |
-| settled? | is this textbook-settled science, a live debate, or a retraction? Note it — it drives the preprint flag and the hedging later |
+| settled? | settled, a live debate, a retraction, or a maker's own claim? Note it — it drives the preprint flag and the hedging later |
 | why it matters | one line — the consequence or the intuition it breaks |
 | the catch | one line — the honest limitation or the "but", so the drafter has it |
 
@@ -152,11 +146,12 @@ other shape is a row `draft.py` cannot read:
 - **`attribute to` is required** whenever the first link is not the work
   being credited — a Stack Exchange answer, a list, a Wikipedia page.
   `draft.py` hoists it above the model's own rules.
-- **A row that is not settled science says `peer_reviewed: false`** in its
+- **A row that is not settled, peer-reviewed work says `peer_reviewed: false`** in its
   Settled? line; without it the model reads a missing journal as a
   preprint, or the reverse.
-- Tech rows go above the `## Ranked — science` divider: with no number,
-  `draft.py --evergreen` takes the first uncovered row in file order.
+- Rows go at the end of `## Ranked — tech`, above `## Considered and
+  held`: with no number, `draft.py --evergreen` takes the first uncovered
+  `###` row in file order, so a held subject is never written as one.
 
 Under each row, one line that is not pasted: the score
 (`n7 v8 e9 s9 → 8.25`), and anything a person must know at the gate — a
