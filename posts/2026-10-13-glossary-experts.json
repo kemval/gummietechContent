@@ -34,5 +34,8 @@
     "the_catch": "Un modelo grande no utiliza todo su potencial a la vez. Su tamaño incluye a todos los expertos, pero cada palabra usa solo 10 de los 24 576.",
     "_en": "5e622899e922c7ae"
   },
-  "published_at": "2026-10-13"
+  "published_at": "2026-10-13",
+  "metrics": {
+    "asked_at": "2026-10-16"
+  }
 }
