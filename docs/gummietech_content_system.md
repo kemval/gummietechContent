@@ -576,6 +576,7 @@ Tech first since 2026-09-27, like the rest of the account: the library is what a
 | Foundational CS/ML papers (Papers We Love; the papers that named backprop, attention, dropout…) | Ideas that stay true; explainers like Distill and 3Blue1Brown supply the angle, the paper the credit |
 | Stack Overflow / CS / AI / Cross Validated top questions | "Why does X happen?" with an expert answer attached |
 | Hacker News all-time top stories | Essays and explanations people have already chosen to keep |
+| Trendshift yearly / monthly repositories | Open-source tools that kept their attention; the README is the source, the idea it makes usable is the post |
 | Wikipedia "Unusual articles" | Endless genuinely weird, true facts |
 | Kurzgesagt / Veritasium / 3Blue1Brown / Real Engineering back catalogs | Proven-viral concepts, reformattable for IG |
 | Quanta archive | Best science explainers written anywhere |

@@ -1,6 +1,6 @@
 ---
 name: evergreen-scout
-description: Fills the evergreen idea queue, tech first. Mines the docs §3 Tier 6 sources — software post-mortems, the AI Incident Database, IEEE Milestones, foundational CS and ML papers, Stack Exchange and Hacker News all-time tops, then Quanta, Retraction Watch and Wikipedia for science — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
+description: Fills the evergreen idea queue, tech first. Mines the docs §3 Tier 6 sources — software post-mortems, the AI Incident Database, IEEE Milestones, foundational CS and ML papers, Stack Exchange and Hacker News all-time tops, Trendshift's yearly and monthly repositories, then Quanta, Retraction Watch and Wikipedia for science — into a ranked shortlist of post candidates, each with a real source, a colorway, and an angle. Read-only: it proposes subjects, it never drafts slides or writes to posts/.
 tools: Read, Bash, WebFetch, WebSearch
 ---
 
@@ -81,6 +81,17 @@ quietly undo the tech-first rule on every slow news day.
 
   Only the evergreen ones — essays and explanations, not launches or news —
   and cite what the story links to, not the thread.
+- **Trendshift** — `trendshift.io/yearly` and `/monthly`, GitHub
+  repositories ranked by sustained attention. Read the pages only:
+  `robots.txt` disallows `/api/`, and there is no feed. Skip the daily list
+  (`/`), which is this week's launches, and anything marked "Featured",
+  which is paid placement. A repo is a candidate only for the idea it makes
+  usable — what a technique does, why a tool exists — never for the
+  release. The repo's own README on GitHub is the source and goes first on
+  the Source line, never the Trendshift page; attribute to the owner or
+  organisation the repo is under; its Settled? line says `peer_reviewed:
+  false`, and every figure is the maker's own claim. A README that does not
+  explain the idea is a hold, not a candidate.
 
 ## Sources — science, when a candidate on a priority subject is not there
 
