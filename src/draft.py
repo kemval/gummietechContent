@@ -374,6 +374,8 @@ def parsed(reply: str) -> dict:
 # prompt on the same row came back whole minutes later. It is the model, not
 # the story, so one more call is the fix; a second hollow reply stops the run
 # with what the model said, because "left these empty" alone told nobody why.
+# A hollow reply on every call is not this flake: on 2026-10-16 it was
+# groq_llm.py's reasoning_effort, and the note there says which.
 HOLLOW_FIELDS = ("domain", "caption")    # written by the model in every format
 HOLLOW_RETRIES = 1
 
