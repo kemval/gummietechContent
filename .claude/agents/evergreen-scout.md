@@ -24,9 +24,8 @@ automation, and data: data engineering, data science, data architecture.
 Colorway `signal`, or `ember` for hardware and automation. Given a count,
 produce that many; with none, ~10.
 
-The queue in `docs/evergreen_queue.md` still holds science rows from before
-that decision; read them so you do not repeat a subject, never as a model
-of the mix.
+The science rows from before that decision are listed under the queue's
+"Considered and held"; never propose them again.
 
 **Before proposing anything, read what is already taken**, so a person never
 pastes a subject this account has covered or turned down:
@@ -147,11 +146,12 @@ other shape is a row `draft.py` cannot read:
 - **`attribute to` is required** whenever the first link is not the work
   being credited — a Stack Exchange answer, a list, a Wikipedia page.
   `draft.py` hoists it above the model's own rules.
-- **A row that is not settled science says `peer_reviewed: false`** in its
+- **A row that is not settled, peer-reviewed work says `peer_reviewed: false`** in its
   Settled? line; without it the model reads a missing journal as a
   preprint, or the reverse.
-- Tech rows go above the `## Ranked — science` divider: with no number,
-  `draft.py --evergreen` takes the first uncovered row in file order.
+- Rows go at the end of `## Ranked — tech`, above `## Considered and
+  held`: with no number, `draft.py --evergreen` takes the first uncovered
+  `###` row in file order, so a held subject is never written as one.
 
 Under each row, one line that is not pasted: the score
 (`n7 v8 e9 s9 → 8.25`), and anything a person must know at the gate — a
