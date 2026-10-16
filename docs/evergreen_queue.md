@@ -169,6 +169,54 @@ This is an idea queue, not drafted content. Nothing here has been through
 **Why it matters** — The authors call it model collapse: learning from generated data "causes irreversible defects", and the "tails of the original content distribution disappear". The unusual goes first, then variety narrows toward the average. They show it for language models, VAEs and Gaussian mixtures, and argue that data from real human interaction becomes more valuable as the web fills with model output.
 **The catch** — The setups replace the training data with generated data each generation; how fast collapse happens when real and generated data are mixed, as on the actual web, is disputed by later work. Do not claim today's chatbots are collapsing.
 
+### 34 · 8.25 · `ember` — WiFi that hears breathing
+
+**Hook** — RuView's makers say an ordinary WiFi signal, read by a $9 ESP32 board, can pick out a person's breathing through a wall.
+**Source** — [ruvnet/RuView README](https://github.com/ruvnet/RuView) · **attribute to** ruvnet, RuView (GitHub).
+**Settled?** — Maker's own claims in an open-source README, `peer_reviewed: false`. WiFi sensing is a real research field; every figure here is the maker's and unchecked. README read at commit `a1ca023ee872`.
+**Why it matters** — Per the README, people "disturb those waves in measurable ways" even sitting still: the board reads the router's Channel State Information, and a bandpass filter on its phase pulls out breathing at 0.1–0.5 Hz (6–30 BPM) and heart rate at 0.8–2.0 Hz, through walls "up to ~5 m, signal-dependent", with no camera or wearable.
+**The catch** — The README retracts its own earlier "100% presence" figure, measured on a single-class recording, and now gives 82.3% held-out accuracy; its on-device pose model scores PCK@20 = 3.0% against a 35% target. Consumer WiFi laptops get only RSSI-level presence.
+
+### 35 · 7.50 · `signal` — The 335-line date picker that needed 10
+
+**Hook** — Ponytail's maker says a coding agent asked for a date picker wrote 335 lines, and the same agent following a reuse-first rule wrote 10, because every browser already ships a calendar.
+**Source** — [DietrichGebert/ponytail README](https://github.com/DietrichGebert/ponytail) · **attribute to** Dietrich Gebert, Ponytail (GitHub).
+**Settled?** — Maker's own benchmark, `peer_reviewed: false`. Reuse-before-writing is long-standing engineering practice; the numbers are the maker's. README read at commit `ca88b4f377fd`; it changes often.
+**Why it matters** — The README's ladder stops at the first rung that holds: does this need to exist; is it already in the codebase; does the standard library do it; is there a native platform feature; is a dependency already installed; can it be one line; only then write the minimum. The maker reports 53% less code, with 98% of risky logic shipping with a test against 68% without the rule, over 39 tasks run 5 times each in Claude Code.
+**The catch** — "The rule was never 'fewest tokens'": validation, security, error handling and accessibility are never cut. Every number is the author's own benchmark, on one agent and one model.
+
+### 36 · 7.25 · `signal` — The browser that skips painting
+
+**Hook** — Moli's makers say a browser built for AI agents can skip drawing pages altogether, and in their crawl test it used 73 MiB of memory where Chrome used 773.
+**Source** — [lexmount/moli README](https://github.com/lexmount/moli) · **attribute to** Lexmount, Moli (GitHub).
+**Settled?** — Maker's own benchmarks, `peer_reviewed: false`. The subject is the browser's render pipeline; the product is the example, not a launch.
+**Why it matters** — A browser turns a page into structure (DOM and styles), then layout, then pixels. The README argues "most automation requests never need visual rendering", so Moli reads the DOM directly and computes layout or paint only for a screenshot or a coordinate; on 557 shared tasks the maker reports about 15% of Chrome's CPU time and 13% of its peak memory.
+**The catch** — Chrome still wins on correctness: 99.85% task success against Moli's 81.88% on the maker's own benchmark. In the public-web crawl only 103 of 192 pages (53.6%) gave useful content, about the same as Chrome Headless.
+
+### 37 · 6.75 · `signal` — Game code turned back into C, byte for byte
+
+**Hook** — REA's maker says an AI agent turned a routine from the 1990s game DX-Ball back into C that compiles to the same 63 bytes of machine code.
+**Source** — [morluto/rea README](https://github.com/morluto/rea) · **attribute to** morluto, REA (GitHub).
+**Settled?** — Maker's own showcase, `peer_reviewed: false`. Matching decompilation is established practice; the agent-driven result is the maker's claim.
+**Why it matters** — Take a sound-pan helper's compiled instructions, turn rough pseudocode into C, and iterate until it passes 3,205 test cases against the original x86 and reproduces all 63 compiled function bytes: compiling destroys the source, yet it can be rebuilt and checked byte for byte.
+**The catch** — The README gives only the summary; the working is in a case study on rea.tools that was not read. It is one small function, not a whole game, and REA leans on existing disassemblers (Hopper, Ghidra or IDA) for the low-level work.
+
+### 38 · 6.75 · `signal` — Name it once, and the agent stops rambling
+
+**Hook** — Matt Pocock says coding agents use twenty words where one will do, and the fix is a project glossary, an idea software designers named in 2003.
+**Source** — [mattpocock/skills README](https://github.com/mattpocock/skills) · **attribute to** Matt Pocock, Skills (GitHub); the idea is Eric Evans's "ubiquitous language", *Domain-Driven Design* (2003).
+**Settled?** — Practitioner advice, `peer_reviewed: false`. No measurements.
+**Why it matters** — The README's before/after: "There's a problem when a lesson inside a section of a course is made 'real' (i.e. given a spot in the file system)" becomes "There's a problem with the materialization cascade." Once a project's words are written down, the agent names variables and files the same way and, the author says, spends fewer tokens thinking.
+**The catch** — No benchmark, only the author's experience, and a glossary helps only as long as people keep it current.
+
+### 39 · 6.50 · `signal` — Give the agent a test, not a task
+
+**Hook** — Andrej Karpathy argues coding agents do better when given a way to check success than when told what to do.
+**Source** — [multica-ai/andrej-karpathy-skills README](https://github.com/multica-ai/andrej-karpathy-skills) · **attribute to** multica-ai, andrej-karpathy-skills (GitHub), quoting Andrej Karpathy on X.
+**Settled?** — Practitioner opinion, `peer_reviewed: false`. No measurements. README read at commit `fb7a22c8fda2`.
+**Why it matters** — The README quotes him: "LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go." "Fix the bug" becomes "Write a test that reproduces it, then make it pass": a checkable goal lets the model loop on its own, where "make it work" needs a person each round.
+**The catch** — The README says the rules "bias toward caution over speed" and are not worth it for one-line fixes, and a test checks only what it was written to check.
+
 ---
 
 ## Ranked — science
