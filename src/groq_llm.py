@@ -74,11 +74,15 @@ def generate(prompt: str, api_key: str, model: str,
     }
     # gpt-oss models spend part of the completion budget on hidden reasoning
     # before the JSON; under load that sometimes eats the whole budget and
-    # Groq rejects the truncated result with json_validate_failed. "low"
-    # leaves more room for the actual output. Valid values are low/medium/
-    # high only — "none" 400s on these models, unlike qwen3.
+    # Groq rejects the truncated result with json_validate_failed (retried
+    # below). Not "low": on 2026-10-16 gpt-oss-120b at "low" answered the
+    # drafting prompt with the schema's empty skeleton (~110 completion
+    # tokens) on every call, for row 20073 and for its one-line summary
+    # alike, and "medium" drafted the same prompt whole every time (~2000
+    # tokens, still inside the 8000-token minute). Valid values are low/
+    # medium/high only — "none" 400s on these models, unlike qwen3.
     if model.startswith("openai/gpt-oss"):
-        body["reasoning_effort"] = "low"
+        body["reasoning_effort"] = "medium"
     headers = {"Authorization": f"Bearer {api_key}",
                "Content-Type": "application/json"}
 
