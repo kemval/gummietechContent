@@ -109,7 +109,14 @@ astronomy is science. Physics that is not about building a quantum computer \
 is science even when it says "quantum" (particles, entanglement, stars). A \
 material or battery is engineering only when the item says what technology \
 it is for. A trade's tools (metalworking, construction) are engineering, not \
-software. Name ai only when machine learning is the subject."""
+software. Name ai only when machine learning is the subject. quantum is \
+only about building, programming or benchmarking a quantum computer: \
+quantum physics for its own sake (decay, entanglement, many-body models, \
+clocks, sensors in a lab) is science. space is only rockets, satellites, \
+spacecraft and launches: what a telescope or probe observes (galaxies, \
+stars, planets, moons) is science. engineering needs a technology the item \
+names: a material, a measurement or a lab result with no product, device \
+or industry it is for is science."""
 
 PROMPT = """You are the editorial filter for @gummietech, an Instagram account \
 that explains science, technology and engineering to a smart non-expert audience.
@@ -251,6 +258,10 @@ def backfill_beats(worksheet, rows: list[list[str]], col: dict,
     On 2026-09-28 the next priority rows were metalworking under `software`
     and a dead star under `computing`, named before BEAT_RULE said the beat
     is the subject. A model answer off the list leaves the old beat alone.
+
+    A row re-named into OUT_OF_SCOPE is rejected in the same write, as
+    score.py would have done at scoring time (queue_status): a queued
+    science row is one pick_row could still take when nothing else is left.
     """
     pending = [(n, row) for n, row in enumerate(rows[1:], start=2)
                if row[col["status"]] == "queued"
@@ -269,13 +280,18 @@ def backfill_beats(worksheet, rows: list[list[str]], col: dict,
         results = parse_scores(llm.generate(prompt, api_key, model))
         by_index = {int(r["i"]): r for r in results if "i" in r}
         letter = chr(65 + col["beat"])
+        status_letter = chr(65 + col["status"])
         updates = []
         for i, (n, _) in enumerate(batch, start=1):
             beat = beat_of(by_index.get(i, {}))
             if beat:
                 updates.append({"range": f"{letter}{n}", "values": [[beat]]})
-        named += len(updates)
-        print(f"  {start + len(batch):>5}/{len(pending)}  named {len(updates)}")
+            if beat in OUT_OF_SCOPE:
+                updates.append({"range": f"{status_letter}{n}",
+                                "values": [["rejected"]]})
+        count = sum(u["range"].startswith(letter) for u in updates)
+        named += count
+        print(f"  {start + len(batch):>5}/{len(pending)}  named {count}")
         # Per batch, for score.py's reason: a daily cap hit halfway keeps
         # what was already paid for, and a re-run starts where this stopped.
         if updates and not dry_run:

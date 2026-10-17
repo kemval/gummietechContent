@@ -48,10 +48,11 @@
 #                   about.fb.com/news is corporate PR, not model launches.
 #                   Its launches reach the sheet through Hacker News 200+.
 #                   Still no feed on 2026-10-17 (research.meta.ai 404s,
-#                   the mirror 82d stale), so research.meta.ai rows stay
-#                   unlabelable for a Signal.
+#                   the mirror 82d stale); declared under
+#                   `feedless_newsrooms` at the end of this file instead.
 #   Qwen, Z.ai,     2026-10-17: qwenlm.github.io/blog/index.xml is 389d
 #   Xiaomi MiMo     stale; z.ai/blog and mimo.xiaomi.com have no feed.
+#                   All three are under `feedless_newsrooms` too.
 
 # --- retired 2026-10-17: the account went technology only ---
 #
@@ -327,3 +328,19 @@ feeds:
     topic: engineering
     reports: [hackaday.com/]
 
+# Companies that announce launches but publish no feed (2026-10-17; see
+# "considered, not wired in" above). Nothing here is fetched: Hacker News
+# links their pages, and `announces` makes those pages announcements by code
+# (draft.maker_announcement) instead of rows the Signal must skip. Prefixes
+# measured from the sheet's Hacker News rows. qwen.ai and mimo.xiaomi.com
+# are whole hosts: Qwen's posts are /blog?id=…, which no path prefix fits,
+# and MiMo's site has no blog section.
+feedless_newsrooms:
+  - name: Meta AI
+    announces: [research.meta.ai/blog/, ai.meta.com/]
+  - name: Qwen
+    announces: [qwen.ai/]
+  - name: Z.ai
+    announces: [z.ai/blog/]
+  - name: Xiaomi MiMo
+    announces: [mimo.xiaomi.com/]

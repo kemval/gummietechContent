@@ -88,6 +88,11 @@ VOICE_GUIDE = REPO_ROOT / "docs" / "voice.md"
 # needs the result, not the whole article, and five full ones would be 30k
 # characters against a free tier for five lines of output.
 SIGNAL_ITEMS = 5
+# The fewest a Signal goes out with when the queue runs out of rope before
+# SIGNAL_ITEMS. On 2026-10-17 the walk found four labelled items, spent its
+# budget on the fifth and failed the day's run; four items is still a
+# roundup, and a missed Saturday is not. Below this it still stops.
+SIGNAL_MIN_ITEMS = 3
 SIGNAL_SOURCE_CHARS = 1500
 # An item claim is a hook, not a body field: signal.html sets it in 66px
 # display type, where WORD_LIMIT's 25 words overflow the frame. proof.py
@@ -384,23 +389,29 @@ def parsed(reply: str) -> dict:
 # with what the model said, because "left these empty" alone told nobody why.
 # A hollow reply on every call is not this flake: on 2026-10-16 it was
 # groq_llm.py's reasoning_effort, and the note there says which.
+# Twice hollow now moves to the next provider instead of ending the run: the
+# 2026-10-16 Drop died that way twice with two other free providers unused.
 HOLLOW_FIELDS = ("domain", "caption")    # written by the model in every format
 HOLLOW_RETRIES = 1
 
 
 def drafted_reply(prompt: str, api_key: str, model: str) -> dict:
-    """The model's post, asked for again once if it came back hollow."""
-    for attempt in range(HOLLOW_RETRIES + 1):
-        reply = llm.generate(prompt, api_key, model, temperature=0.4)
-        post = parsed(reply)
-        hollow = missing_fields(post, HOLLOW_FIELDS)
-        if not hollow:
-            return post
-        print(f"  warning: the model left {', '.join(hollow)} empty "
-              f"(attempt {attempt + 1} of {HOLLOW_RETRIES + 1}). It said:\n"
-              f"  {reply[:400]}")
-    sys.exit("The model returned a hollow draft twice in a row. Re-run later; "
-             "if it keeps happening, try another GROQ_MODEL.")
+    """The model's post, asked for again once if it came back hollow, then
+    from the next free provider (llm.fail_over) rather than failing the day.
+    llm.fail_over stops the run once no provider is left."""
+    while True:
+        for attempt in range(HOLLOW_RETRIES + 1):
+            reply = llm.generate(prompt, api_key, model, temperature=0.4)
+            post = parsed(reply)
+            hollow = missing_fields(post, HOLLOW_FIELDS)
+            if not hollow:
+                return post
+            print(f"  warning: the model left {', '.join(hollow)} empty "
+                  f"(attempt {attempt + 1} of {HOLLOW_RETRIES + 1}). It "
+                  f"said:\n  {reply[:400]}")
+        llm.fail_over("The model returned a hollow draft twice in a row. "
+                      "Re-run later; if it keeps happening, try another "
+                      "GROQ_MODEL.")
 
 
 def slugify(title: str) -> str:
@@ -1130,15 +1141,22 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
     return finish(post, SIGNAL_KEYS)
 
 
-def check_budget(rejected: int, wanted: int) -> None:
+def check_budget(rejected: int, wanted: int, found: int = 0) -> bool:
     """Give up rather than walking a 1440-row queue inside a 15-minute job.
 
     Each rejected candidate costs a page fetch and a Crossref call. Five is
     enough for a story covered by every feed at once, and a Signal asking
     for five items gets five times the rope for the same reason.
+
+    True means stop walking and use what was found: a Signal that already
+    holds SIGNAL_MIN_ITEMS. Anything short of that is still a stop.
     """
     if rejected < MAX_DUPLICATE_SKIPS * wanted:
-        return
+        return False
+    if wanted > 1 and found >= SIGNAL_MIN_ITEMS:
+        print(f"  note: out of rope after {rejected} rejected rows — the "
+              f"Signal goes out with {found} items instead of {wanted}")
+        return True
     sys.exit(f"Rejected {rejected} rows in a row and gave up — the queue's "
              "top scores are all stories already posted, or sources nothing "
              "can resolve. Run `python src/ingest.py` for fresh items, or "
@@ -1182,8 +1200,17 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
             item = {"url": args.url, "source": outlet(args.url),
                     "title": "", "summary": "", "score": "—"}
         else:
-            row_number, item = pick_row(rows, col, args.row, skipped,
-                                        prefer_code=args.run)
+            try:
+                row_number, item = pick_row(rows, col, args.row, skipped,
+                                            prefer_code=args.run)
+            except SystemExit:
+                # The queue ran dry mid-Signal: the same short roundup as
+                # running out of budget, for the same reason.
+                if wanted > 1 and found >= SIGNAL_MIN_ITEMS:
+                    print(f"  note: the queue ran out — the Signal goes out "
+                          f"with {found} items instead of {wanted}")
+                    return
+                raise
 
         where = f"row {row_number}" if row_number else item["source"]
         print(f"{'Item ' + str(found + 1) if wanted > 1 else 'Drafting'} "
@@ -1252,7 +1279,8 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
             if row_number is not None:
                 skipped.add(row_number)
             rejected += 1
-            check_budget(rejected, wanted)
+            if check_budget(rejected, wanted, found):
+                return
             continue
 
         covered = already_covered(
@@ -1298,7 +1326,8 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
             worksheet.update_cell(row_number, col["status"] + 1, "duplicate")
         skipped.add(row_number)
         rejected += 1
-        check_budget(rejected, wanted)
+        if check_budget(rejected, wanted, found):
+            return
 
 
 def main() -> int:

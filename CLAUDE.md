@@ -179,7 +179,7 @@ the caps in AI Studio, not from memory or third-party pages.
 **Swapping to Groq** is `LLM_PROVIDER=groq` plus `GROQ_API_KEY`;
 `groq_llm.py` mirrors `gemini.py`, and its daily-vs-per-minute 429 parse is
 unverified. **The providers fail over down `llm.FALLBACK_ORDER`** — on 5xx
-exhaustion only, sticky for the process, carried by `llm_errors.Overloaded`;
+exhaustion, or a draft hollow twice (`llm.fail_over()`), sticky for the process, carried by `llm_errors.Overloaded`;
 a fallback with no key is skipped. A bad key, retired model or spent daily
 cap still stops the run. The third link is OpenRouter (`openrouter_llm.py`):
 `:free` model ids only, refused otherwise; 50 requests a day, so always
@@ -204,7 +204,7 @@ resolves each candidate's DOI before the LLM call and skips a paper already
 in `posts/` (`MAX_DUPLICATE_SKIPS` caps the walk). **Do not rebuild
 title-based deduplication** — it was measured and removed on 2026-09-21. A
 launch has no DOI, so its key is its maker's page: newsroom feeds declare
-`announces` prefixes, and coverage that links an announcement already posted
+`announces` prefixes (a maker with no feed, under `feedless_newsrooms`), and coverage that links an announcement already posted
 is a duplicate.
 → `docs/decisions/dedup.md`
 
@@ -404,7 +404,8 @@ does not state. A source that cannot be read is a hold, not a pass.
 - A term (Tuesday) and a Breakdown (Thursday) are written by Claude in
   `weekly.yml`, and a sheet by hand — none by `draft.py`. `formats.by_hand()` is the
   one test of that, for the Drop-day gate, `watch.py` and redrafting;
-  never compare `post_type` to `"breakdown"`. A Signal is drafted by
+  never compare `post_type` to `"breakdown"`. A Signal (five items, or as few as
+  `draft.SIGNAL_MIN_ITEMS` when the queue runs out of rope) is drafted by
   `draft.py --signal` on Saturday, a run post by `--run` on Wednesday.
   Their credit is copied by `weekly.py` from the published post they build
   on (a term's `example_post`, a Breakdown's Drop), never written by the

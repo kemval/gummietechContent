@@ -27,7 +27,11 @@ day is a backstop, not a supply (docs/decisions/llm-providers.md).
 
 Two things that failover deliberately is not:
 
-  - **Only 5xx exhaustion triggers it.** A rejected key or a retired model
+  - **Only 5xx exhaustion triggers it** — and a caller's own fail_over(),
+    for an answer that came back well-formed and useless (draft.py's
+    hollow draft: on 2026-10-09 and 2026-10-16 gpt-oss-120b returned every
+    field empty, twice in a row, and the day's Drop died with Gemini and
+    OpenRouter keys unused). A rejected key or a retired model
     is a configuration error that wants fixing, not routing around. A spent
     daily cap could in principle fail over, but sending a whole day's
     scoring to the other provider would hide the cap and spend the budget
@@ -143,3 +147,14 @@ def generate(prompt: str, api_key: str, model: str,
         except Overloaded as exc:
             failed.append(name)
             _failover = _next_provider(exc, failed)
+
+
+def fail_over(reason: str) -> None:
+    """
+    Switch to the next provider for the rest of this run, as an overload
+    does. For a caller that got valid but useless replies from the current
+    one; a SystemExit naming what was tried when none is left.
+    """
+    global _failover
+    failed = [PROVIDER] + ([_failover[0]] if _failover else [])
+    _failover = _next_provider(Overloaded(reason), failed)

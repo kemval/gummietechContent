@@ -185,9 +185,16 @@ def announcement_prefixes(single_file=None) -> tuple[str, ...]:
 
     Each newsroom feed declares them as `announces`, measured from the
     sheet. Read from the YAML so a new newsroom is one entry there, not a
-    second list in code.
+    second list in code. A company with no feed at all is declared under
+    `feedless_newsrooms` instead: nothing is fetched for it, but Hacker
+    News links its launches, and those pages are still its announcements.
     """
-    return tuple(p for _, entry in all_feeds(single_file)
+    feedless = (entry for feed_file in load_feed_files(single_file)
+                if feed_file.exists()
+                for entry in (yaml.safe_load(feed_file.read_text()) or {})
+                .get("feedless_newsrooms", []))
+    return tuple(p for entry in (*(e for _, e in all_feeds(single_file)),
+                                 *feedless)
                  for p in entry_prefixes(entry))
 
 
