@@ -720,8 +720,43 @@ def test_a_hollow_reply_is_asked_for_again(monkeypatch):
         "computing"
 
     monkeypatch.setattr(draft.llm, "generate", lambda *a, **k: "{}")
+    monkeypatch.setattr(draft.llm, "_failover", None)
+    monkeypatch.setattr(draft.llm, "_untried", [])      # no provider left
     with pytest.raises(SystemExit, match="hollow draft twice"):
         draft.drafted_reply("prompt json", "key", "model")
+
+
+def test_twice_hollow_moves_to_the_next_provider(monkeypatch):
+    """2026-10-16: the Drop died twice on a hollow gpt-oss draft with the
+    Gemini and OpenRouter keys unused. Twice hollow now fails over."""
+    whole = json.dumps({"domain": "computing", "caption": "A caption."})
+    state = {"switched": False}
+    monkeypatch.setattr(draft.llm, "generate",
+                        lambda *a, **k: whole if state["switched"] else "{}")
+    monkeypatch.setattr(draft.llm, "fail_over",
+                        lambda reason: state.update(switched=True))
+    assert draft.drafted_reply("prompt json", "key", "model")["domain"] == \
+        "computing"
+
+
+def test_a_short_signal_goes_out_rather_than_failing_the_day():
+    """2026-10-17: four labelled items, the budget spent on the fifth, and
+    Saturday's run failed. Three or more go out; fewer still stop."""
+    rope = draft.MAX_DUPLICATE_SKIPS * draft.SIGNAL_ITEMS
+    assert draft.check_budget(rope, draft.SIGNAL_ITEMS, found=4) is True
+    assert draft.check_budget(rope - 1, draft.SIGNAL_ITEMS, found=4) is False
+    with pytest.raises(SystemExit):
+        draft.check_budget(rope, draft.SIGNAL_ITEMS, found=2)
+    with pytest.raises(SystemExit):                       # a Drop never shrinks
+        draft.check_budget(draft.MAX_DUPLICATE_SKIPS, 1, found=0)
+
+
+def test_a_maker_with_no_feed_still_announces():
+    """2026-10-17: Meta's Muse Spark Open, linked from Hacker News, was
+    skipped by the Signal: Meta publishes no feed to hang `announces` on."""
+    assert draft.maker_page("https://research.meta.ai/blog/muse-spark-open")
+    assert draft.maker_page("https://qwen.ai/blog?id=qwen3.8-omni-flash")
+    assert not draft.maker_page("https://about.fb.com/news/2026/10/x/")
 
 
 # ---------------------------------------------------------------- hashtags
