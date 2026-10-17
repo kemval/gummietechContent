@@ -372,6 +372,18 @@ def test_science_is_taken_when_nothing_tech_is_queued():
     assert item["title"] == "fossil"
 
 
+def test_quantum_and_space_wait_for_the_priority_beats():
+    """2026-10-17: the owner made them secondary — technology, but second."""
+    rows = [HEADER, sheet_row("rocket", 9.5, beat="space"),
+            sheet_row("battery", 8.0, beat="engineering"),
+            sheet_row("fossil", 9.9, beat="science")]
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "battery"
+    rows[2][COL["status"]] = "drafted"
+    _, item = draft.pick_row(rows, COL, None)
+    assert item["title"] == "rocket"
+
+
 def test_a_tie_goes_to_the_newest_row():
     """2026-10-02: eight tech rows tied at 8.75 and the oldest was drafted."""
     rows = [HEADER, sheet_row("september", 8.75, beat="computing"),

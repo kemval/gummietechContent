@@ -18,3 +18,18 @@ topic rather than being re-scored, which would spend days of quota. A Signal
 inherits the rule, since it walks `pick_row` five times; `--row`, `--url` and
 `--evergreen` are overrides and ignore it. Do not move the preference into
 the score: a topic bonus would make the number stop meaning "worth posting".
+
+**Technology only, from 2026-10-16.** The owner dropped science
+("ciencia ya no"). On 2026-10-17 the beats were settled with them: ai,
+software, automation, robotics, computing and a new `engineering` (energy,
+batteries, materials and manufacturing for technology) come first; new
+`quantum` (quantum computing) and `space` (rockets, satellites, the hardware)
+are `SECONDARY_BEATS`, taken when no priority row is left; `science` —
+biology, medicine, physics, astronomy, climate — is never queued.
+`score.queue_status()` writes it `rejected` with its score intact, so the
+number still means "worth posting" and a later change of mind is a status
+change, not a rescore. The pure-science feeds were removed (listed in
+`feeds/tier1_primary.yaml`); mixed tech outlets stayed, filtered by beat.
+The queue's existing rows were re-named with `score.py --beats --again`
+and every queued `science` row marked `rejected`, never deleted (see
+`sheet-growth.md`).

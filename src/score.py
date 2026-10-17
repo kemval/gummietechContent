@@ -14,14 +14,14 @@ status and a one-line reason.
 and separately on relevance — would someone who uses technology want to
 know it today? — which lifts an item at LIFT_AT or above (see overall()).
 
-It also names the item's `beat` — ai, software, automation, robotics,
-computing or science — in the same call, so it costs no quota. draft.py
-reads it to put the account's priority subjects first (see PRIORITY_BEATS
-there); the score itself stays topic-blind.
+It also names the item's `beat` (see BEATS) in the same call, so it costs
+no quota. draft.py reads it to put the account's priority subjects first
+(see PRIORITY_BEATS there); the score itself stays topic-blind.
 
 The overall score is the mean of the four axes, or the relevance that
-lifted it. Items at or above THRESHOLD become "queued"; the rest become
-"rejected" and stay in the sheet as a record of what was considered.
+lifted it. Items at or above THRESHOLD become "queued", unless their beat is
+OUT_OF_SCOPE; the rest become "rejected" and stay in the sheet as a record
+of what was considered.
 
 Usage:
     python src/score.py
@@ -77,7 +77,14 @@ LIFT_AT = 8
 
 # What an item is about. Anything else the model says is stored as blank
 # rather than trusted into a column draft.py selects on.
-BEATS = ("ai", "software", "automation", "robotics", "computing", "science")
+BEATS = ("ai", "software", "automation", "robotics", "computing",
+         "engineering", "quantum", "space", "science")
+
+# Since 2026-10-16 the account is technology only. A science item keeps the
+# score it earned — the number still means "worth posting" — but it is never
+# queued, so nothing downstream has to know to skip it. See
+# docs/decisions/tech-first.md.
+OUT_OF_SCOPE = frozenset({"science"})
 
 # docs/gummietech_content_system.md: "Only items scoring >= 7 total surface
 # in the morning queue."
@@ -90,14 +97,19 @@ THRESHOLD = 7.0
 # "Show HN" about a science topic is that topic; the medium is not the beat.
 BEAT_RULE = """Exactly one of: ai (machine learning, models, agents), software \
 (programming, languages, tools, infrastructure), automation, robotics, \
-computing (building computers: chips, processors, quantum computers and \
-qubits, security), science (everything else). The beat is what the item is \
-about, not what it is made with or where it was posted: a simulation, app, \
-demo or "Show HN" about physics, biology or space is science. Physics that is \
-not about building a computer is science even when it says "quantum" \
-(particles, entanglement, materials, stars). A trade's tools and materials \
-(metalworking, construction, manufacturing) are not software. Name ai only \
-when machine learning is the subject."""
+computing (building computers: chips, processors, data infrastructure, \
+security), engineering (energy, batteries, materials and manufacturing for \
+technology, vehicles, built infrastructure), quantum (quantum computers, \
+qubits, quantum networks), space (rockets, satellites, spacecraft: the \
+hardware, not what it observes), science (everything else: biology, \
+medicine, physics, astronomy, climate, ecology, chemistry, mathematics). The \
+beat is what the item is about, not what it is made with or where it was \
+posted: a simulation, app, demo or "Show HN" about physics, biology or \
+astronomy is science. Physics that is not about building a quantum computer \
+is science even when it says "quantum" (particles, entanglement, stars). A \
+material or battery is engineering only when the item says what technology \
+it is for. A trade's tools (metalworking, construction) are engineering, not \
+software. Name ai only when machine learning is the subject."""
 
 PROMPT = """You are the editorial filter for @gummietech, an Instagram account \
 that explains science, technology and engineering to a smart non-expert audience.
@@ -217,6 +229,13 @@ def beat_of(result: dict) -> str:
     return beat if beat in BEATS else ""
 
 
+def queue_status(score: float, result: dict) -> str:
+    """Queued at THRESHOLD or above, unless the beat is out of scope."""
+    if score >= THRESHOLD and beat_of(result) not in OUT_OF_SCOPE:
+        return "queued"
+    return "rejected"
+
+
 def backfill_beats(worksheet, rows: list[list[str]], col: dict,
                    api_key: str, model: str, dry_run: bool,
                    again: bool = False) -> int:
@@ -333,7 +352,7 @@ def main() -> int:
             if not result:
                 continue                           # stays "new", picked up next run
             score = overall(result)
-            status = "queued" if score >= THRESHOLD else "rejected"
+            status = queue_status(score, result)
             note = " ".join(f"{axis[0]}{result.get(axis, '?')}"
                             for axis in (*AXES, RELEVANCE))
             note = f"{note} · {str(result.get('why', ''))[:80]}"
