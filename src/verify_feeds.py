@@ -174,9 +174,10 @@ def url_key(url: str) -> str:
     return (host + path + (f"?{query}" if query else "")).lower()
 
 
-def entry_prefixes(entry: dict) -> tuple[str, ...]:
-    """One feed entry's `announces` prefixes, as url_key() forms."""
-    return tuple(url_key(p) for p in entry.get("announces") or [])
+def entry_prefixes(entry: dict, key: str = "announces") -> tuple[str, ...]:
+    """One feed entry's `announces` (or `reports`) prefixes, as url_key()
+    forms."""
+    return tuple(url_key(p) for p in entry.get(key) or [])
 
 
 def announcement_prefixes(single_file=None) -> tuple[str, ...]:
@@ -188,6 +189,19 @@ def announcement_prefixes(single_file=None) -> tuple[str, ...]:
     """
     return tuple(p for _, entry in all_feeds(single_file)
                  for p in entry_prefixes(entry))
+
+
+def report_prefixes(single_file=None) -> tuple[str, ...]:
+    """Where the news outlets in feeds/*.yaml publish their reporting.
+
+    The twin of announcement_prefixes(): each outlet declares them as
+    `reports`, measured from the sheet. A page under one of them with no
+    paper behind it is a news report (draft.news_report), and only those
+    are: an undeclared host could be a maker's own page, and calling that a
+    news report would be a false label.
+    """
+    return tuple(p for _, entry in all_feeds(single_file)
+                 for p in entry_prefixes(entry, "reports"))
 
 
 def announces_drift(entry: dict, links: list[str]) -> str | None:

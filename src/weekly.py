@@ -20,8 +20,8 @@ model is decided here, before and after it writes:
     writer picks from a list; a Breakdown's subject is a published Drop this
     file picks, tech first, that has no Breakdown yet
   - a repeated term, a missing field, a mechanism of the wrong length
-  - the credit. source_url, doi, attribution, peer_reviewed and
-    announcement are copied
+  - the credit. source_url, doi, attribution, peer_reviewed,
+    announcement and news_report are copied
     from the post it is built from, never typed by the model. A retyped
     credit is the one way a correct explanation still goes out wrong.
 
@@ -47,7 +47,8 @@ POSTS_DIR = REPO_ROOT / "posts"
 # draft never supplies them; finish() overwrites whatever it wrote.
 # `announcement` travels with the rest: a Breakdown of a launch is about an
 # announcement too, and without it the slides would call it a preprint.
-CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement")
+CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement",
+          "news_report")
 
 # draft.PRIORITY_BEATS, restated rather than imported: draft.py pulls in the
 # LLM clients and gspread, and this runs before pip install. Posts drafted
@@ -201,7 +202,7 @@ Rules:
     answer: a choice between two things, or the reader's own experience.
     Never "how will this change...".
   - Do NOT write source_url, doi, attribution, peer_reviewed, announcement,
-    es or published_at. Code copies the credit after you; the rest is not
+    news_report, es or published_at. Code copies the credit after you; the rest is not
     yours.
   - Write /tmp/weekly/draft.json and no other file.
 """
@@ -277,7 +278,8 @@ the_catch, caption, keywords, hashtags, alt_text. No recap.
     blocks most.
   - If the Drop's peer_reviewed is false, the_catch says what that means:
     a preprint not yet peer-reviewed, or — when the Drop carries
-    "announcement": true — the maker's own announcement, not a study.
+    "announcement": true — the maker's own announcement, not a study, or —
+    with "news_report": true — a news outlet's report, not a study.
 
 {rules}
 Finish by printing the hook and one line on what the mechanism is.

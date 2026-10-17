@@ -48,7 +48,7 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from formats import (PAIR, announcement, entries, es_fields,
+from formats import (PAIR, announcement, entries, es_fields, news_report,
                      missing_from_entries, pieces, post_preprint_flag,
                      preprint, required, sections, spec, unpaired)
 from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset
@@ -184,11 +184,13 @@ def t(en: str, es: str = "") -> Markup:
 def source_entry(record: dict) -> dict:
     """One line of a post page's source list: who, where, and what it is.
 
-    `status` is "reviewed", "preprint" or "announcement" — the three things a
-    source can be, decided once by formats.py for the slides and the page.
+    `status` is "reviewed", "preprint", "announcement" or "report" — the four
+    things a source can be, decided once by formats.py for the slides and
+    the page.
     """
     status = ("preprint" if preprint(record)
-              else "announcement" if announcement(record) else "reviewed")
+              else "announcement" if announcement(record)
+              else "report" if news_report(record) else "reviewed")
     return {"attribution": record["attribution"],
             "url": record["source_url"],
             "host": source_host(record["source_url"]),

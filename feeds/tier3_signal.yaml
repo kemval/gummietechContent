@@ -17,6 +17,12 @@ feeds:
   - name: Hacker News 200+
     url: https://hnrss.org/frontpage?points=200
     topic: tech
+    # The tech news outlets HN links to most, measured from the sheet on
+    # 2026-10-17. HN has no host of its own: these say which of its links
+    # are a news outlet's reporting (draft.news_report). A maker's page it
+    # links is not here; `announces` on that maker's newsroom covers it.
+    reports: [techcrunch.com/, theverge.com/, tomshardware.com/,
+              404media.co/, phoronix.com/news/]
 
   # Smaller and more technical than HN. The front page is already ranked, so
   # there is no points threshold to set — but equally no quality floor, so all

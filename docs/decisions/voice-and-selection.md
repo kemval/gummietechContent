@@ -166,6 +166,20 @@ and Google's AI blog, Apple ML Research and Anthropic Research were added as
 newsrooms. Coverage of a launch is still not labellable by code. Whether a
 Signal may carry it is the owner's decision, not this note's.
 
+**Coverage is a news report (2026-10-17, the owner's decision).** The
+fourth label, beside peer-reviewed, preprint and announcement, and like
+them decided by code: a page under an outlet's `reports` prefix (measured
+from the sheet, in `feeds/*.yaml`) with no paper behind it. The cover says
+"News report — not a peer-reviewed study"; a Signal item's credit ends
+"— news report". It says what the source is and nothing about the work, so
+it is true whatever the story covers, and a resolved paper still wins.
+Only declared outlets: an undeclared host may be a maker's own page
+(research.meta.ai has no feed to declare it), and "news report" would be
+false there. Following the coverage's link to the maker's page was not
+taken: coverage links the wrong announcement as readily as the right one
+(see above). Both Drops and Signals, at the owner's call; on a Drop it
+replaces the model's guess.
+
 **The voice lives in `docs/voice.md`.** It is a doc rather than prompt text
 so a person can change how the account sounds without touching code.
 `draft.voice()` pastes it into the Drop, run and Signal prompts, from its

@@ -67,6 +67,13 @@
 # a `science` item is never queued. Space stays as technology through
 # NASASpaceflight and NASA Technology, a secondary beat.
 
+# `reports` (2026-10-17) lists where a news outlet publishes its own
+# reporting, measured from the sheet's rows. A page under one of them with
+# no paper behind it is a news report, decided by code
+# (draft.news_report): its label says "News report — not a peer-reviewed
+# study", and a Signal may carry it. ScienceDaily is left out on purpose:
+# it reprints institutions' press releases, which are not reporting.
+
 feeds:
 
   # --- research institutions ---
@@ -245,24 +252,29 @@ feeds:
   - name: IEEE Spectrum
     url: https://spectrum.ieee.org/feeds/feed.rss
     topic: engineering
+    reports: [spectrum.ieee.org/]
 
   # Trade press, so some items are deals and financing. DROP_PATTERNS catches
   # "acquires" but not "to acquire" — expect a few business items at scoring.
   - name: The Robot Report
     url: https://www.therobotreport.com/feed/
     topic: robotics
+    reports: [therobotreport.com/]
 
   - name: InfoQ AI/ML/Data
     url: https://feed.infoq.com/ai-ml-data-eng/
     topic: ai
+    reports: [infoq.com/news/]
 
   - name: MIT Technology Review
     url: https://www.technologyreview.com/feed/
     topic: tech
+    reports: [technologyreview.com/]
 
   - name: Ars Technica
     url: https://feeds.arstechnica.com/arstechnica/index
     topic: tech
+    reports: [arstechnica.com/]
 
   # Added 2026-10-09: an AI news desk, one story per item, ~10 items and
   # ~900-char summaries. Unlike TechCrunch and The Verge (rejected above),
@@ -270,12 +282,14 @@ feeds:
   - name: The Decoder
     url: https://the-decoder.com/feed/
     topic: ai
+    reports: [the-decoder.com/]
 
   # Science X's engineering/computing newsroom — same publisher as Phys.org,
   # measured zero URL overlap with it (different host).
   - name: Tech Xplore
     url: https://techxplore.com/rss-feed/
     topic: tech
+    reports: [techxplore.com/news/]
 
   # Space.com retired 2026-09-23: its RSS is broken on the publisher's side,
   # not moved. /feeds/all now 301s to /feeds.xml, which is a valid 899-byte
@@ -301,12 +315,15 @@ feeds:
   - name: NASASpaceflight
     url: https://www.nasaspaceflight.com/feed/
     topic: space
+    reports: [nasaspaceflight.com/]
 
   - name: New Atlas
     url: https://newatlas.com/index.rss
     topic: engineering
+    reports: [newatlas.com/]
 
   - name: Hackaday
     url: https://hackaday.com/blog/feed/
     topic: engineering
+    reports: [hackaday.com/]
 

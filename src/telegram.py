@@ -83,7 +83,7 @@ from dotenv import load_dotenv
 # one that imports Playwright. series.py is stdlib-only for the same reason:
 # it rides on publish.yml's poll inside this file.
 import series
-from formats import (announcement, body_text, by_hand, format_name,
+from formats import (announcement, body_text, by_hand, format_name, news_report,
                      pieces, preprint_claims,
                      sections)
 
@@ -520,6 +520,8 @@ def review_text(post: dict, stem: str,
             if claims
             else "ANNOUNCEMENT — not a study; check it has no paper behind it"
             if announcement(post)
+            else "NEWS REPORT — not a study; check it against what it covers"
+            if news_report(post)
             else "peer-reviewed")
     lines = [
         f"<b>{e(stem)}</b>",

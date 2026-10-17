@@ -42,7 +42,7 @@ from playwright.sync_api import Page, sync_playwright
 # is where the rest of the shared vocabulary already lives.
 from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,  # noqa: F401
                      body_text, entries, es_fields, format_name,  # noqa: F401
-                     announcement, missing_fields, missing_from_entries, pieces,
+                     announcement, missing_fields, missing_from_entries, news_report, pieces,
                      post_preprint_flag, preprint, preprint_claims, required,
                      sections, spec, template_for, unpaired)
 
@@ -586,6 +586,7 @@ def render_html(post: dict, colorway: str | None = None,
         # The cover says what an unreviewed source is when it is not a
         # preprint. Post-level only, like the flag; a Signal labels items.
         show_announcement=not spec(post).entries and announcement(post),
+        show_news_report=not spec(post).entries and news_report(post),
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
@@ -609,6 +610,7 @@ def render_html(post: dict, colorway: str | None = None,
     # second opinion of what a preprint is.
     env.tests["preprint"] = preprint
     env.tests["announcement"] = announcement
+    env.tests["news_report"] = news_report
     env.globals["rhythm"] = (lambda count, catch=None:
                              rhythm(lead, support, count, catch))
     # Fetched after the filters and globals are registered: Jinja resolves a
@@ -831,6 +833,9 @@ def main() -> int:
     elif announcement(post):
         print("  announcement — the cover says it is not a peer-reviewed "
               "study; check that the source really has no paper behind it")
+    elif news_report(post):
+        print("  news report — the cover says it is not a peer-reviewed "
+              "study; check the report against what it covers")
 
     html = render_html(post, args.colorway, lang=args.lang)
     written = shoot(html, outdir)
