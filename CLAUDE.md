@@ -222,9 +222,10 @@ rows are never safe. **Never sort it either:** `score.py` and `draft.py`
 write back by row number, and `ingest.check_unmoved()` stops a run whose rows
 moved under it. → `docs/decisions/sheet-growth.md`
 
-**The account is tech-first, and the score is not where that lives.**
-`score.py` names each item's `beat`; `draft.pick_row()` prefers
-`PRIORITY_BEATS`. Do not move the preference into the score.
+**The account is technology only (2026-10-16), and the score is not where
+that lives.** `score.py` names each item's `beat`, and a `science` beat is
+never queued (`OUT_OF_SCOPE`); `draft.pick_row()` prefers `PRIORITY_BEATS`,
+then `SECONDARY_BEATS` (quantum, space). Do not move either into the score.
 → `docs/decisions/tech-first.md`
 
 **Launches are news, and the voice is a doc.** `score.py` also asks for

@@ -139,38 +139,12 @@ feeds:
     url: https://rss.arxiv.org/rss/quant-ph
     topic: physics
 
-  - name: arXiv Exoplanets
-    url: https://rss.arxiv.org/rss/astro-ph.EP
-    topic: space
-
-  - name: arXiv Solar and Stellar
-    url: https://rss.arxiv.org/rss/astro-ph.SR
-    topic: space
-
   - name: arXiv Applied Physics
     url: https://rss.arxiv.org/rss/physics.app-ph
     topic: engineering
 
-  - name: arXiv Biological Physics
-    url: https://rss.arxiv.org/rss/physics.bio-ph
-    topic: biology
-
-  # --- bioRxiv ---
-  #
-  # connect.biorxiv.org serves 30 entries per subject as a sliding window,
-  # so the subject slug is the volume control. `subject=all` is two days of
-  # everything, most of it molecular biology with nothing to photograph;
-  # these three are the ones that build slides. No skipDays here — bioRxiv
-  # posts seven days a week.
-
-  - name: bioRxiv Bioengineering
-    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=bioengineering"
-    topic: biology
-
-  - name: bioRxiv Biophysics
-    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=biophysics"
-    topic: biology
-
-  - name: bioRxiv Synthetic Biology
-    url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology"
-    topic: biology
+  # Retired 2026-10-17, when the account went technology only: arXiv
+  # Exoplanets, arXiv Solar and Stellar, arXiv Biological Physics and the
+  # three bioRxiv subjects. Their URLs are in git history. arXiv Quantum
+  # stays for quantum computing, a secondary beat; score.py names the
+  # physics in it `science`, which is never queued.

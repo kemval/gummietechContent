@@ -160,3 +160,11 @@ def test_a_trailing_backslash_is_not_part_of_a_url():
     import verify_feeds
     assert verify_feeds.url_key("https://mistral.ai/news/mistral-large-4/\\") \
         == verify_feeds.url_key("https://mistral.ai/news/mistral-large-4")
+
+
+def test_science_is_never_queued_however_it_scores():
+    """2026-10-16: the account went technology only. The score stays what
+    it was; only the status changes."""
+    assert score.queue_status(9.5, {"beat": "science"}) == "rejected"
+    assert score.queue_status(9.5, {"beat": "space"}) == "queued"
+    assert score.queue_status(6.0, {"beat": "ai"}) == "rejected"

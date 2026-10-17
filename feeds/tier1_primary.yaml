@@ -53,6 +53,20 @@
 #   Qwen, Z.ai,     2026-10-17: qwenlm.github.io/blog/index.xml is 389d
 #   Xiaomi MiMo     stale; z.ai/blog and mimo.xiaomi.com have no feed.
 
+# --- retired 2026-10-17: the account went technology only ---
+#
+# Science, physics, astronomy and biology sources, removed rather than
+# scored and rejected: NASA JPL, NASA News Releases, ESA Space News, ESA
+# Space Science, Berkeley Lab, Berkeley News, Caltech, EPFL, Max Planck
+# Society, Nature News, Nature Astronomy, Nature Physics, Science News
+# (AAAS), PNAS, Cell Press, PLOS Biology, Quanta Magazine, Science News
+# magazine, Scientific American, Physics World, Phys.org Space, Phys.org,
+# Universe Today, AAS Nova, CERN, CERN Courier, Fermilab News. Their URLs
+# are in git history. Mixed tech outlets (Ars Technica, MIT Technology
+# Review, Tech Xplore, New Atlas) stay, and score.py's beat filters them:
+# a `science` item is never queued. Space stays as technology through
+# NASASpaceflight and NASA Technology, a secondary beat.
+
 feeds:
 
   # --- research institutions ---
@@ -64,53 +78,14 @@ feeds:
   # /news-release/feed/, which is the NASA News Releases entry below.
   # Listed first, it claimed the items and mislabelled their source.
 
-  # JPL's own feed is gone; NASA now hosts center feeds on nasa.gov
-  - name: NASA JPL
-    url: https://www.nasa.gov/centers-and-facilities/jpl/feed/
-    topic: space
-
-  - name: NASA News Releases
-    url: https://www.nasa.gov/news-release/feed/
-    topic: space
-
   - name: NASA Technology
     url: https://www.nasa.gov/technology/feed/
     topic: tech
-
-  - name: ESA Space News
-    url: https://www.esa.int/rssfeed/Our_Activities/Space_News
-    topic: space
-
-  - name: ESA Space Science
-    url: https://www.esa.int/rssfeed/Our_Activities/Space_Science
-    topic: space
-
-  - name: Berkeley Lab
-    url: https://newscenter.lbl.gov/feed/
-    topic: general
-
-  - name: Berkeley News
-    url: https://news.berkeley.edu/feed/
-    topic: general
-
-  # /about/news/feed is 403; /news/rss redirects to the live one
-  - name: Caltech
-    url: https://www.caltech.edu/news/rss
-    topic: general
 
   # Oak Ridge retired: /rss.xml is Drupal's promoted-nodes feed — section
   # landing pages with node-edit timestamps, not articles. Every /news feed
   # path 404s and ORNL's own RSS directory page is a 404. No replacement
   # short of a third-party bridge (EurekAlert/Newswise).
-
-  - name: EPFL
-    url: https://actu.epfl.ch/feeds/rss/mediacom/en/
-    topic: engineering
-
-  # was mpg.de/rss/all (404) — English research feed
-  - name: Max Planck Society
-    url: https://www.mpg.de/en/research.rss
-    topic: general
 
   # --- company newsrooms ---
   #
@@ -258,56 +233,10 @@ feeds:
     max_items: 10
 
   # --- journals / science press ---
-  - name: Nature News
-    url: https://www.nature.com/nature.rss
-    topic: general
-
-  - name: Nature Astronomy
-    url: https://www.nature.com/natastron.rss
-    topic: space
 
   - name: Nature Materials
     url: https://www.nature.com/nmat.rss
     topic: materials
-
-  # Feed is truncated to its most recent items — ~8 entries, not a fault.
-  # Research articles are paywalled, so draft.py will often work from the
-  # summary. That is the case fact-check exists to catch.
-  - name: Nature Physics
-    url: https://www.nature.com/nphys.rss
-    topic: physics
-
-  - name: Science News (AAAS)
-    url: https://www.science.org/rss/news_current.xml
-    topic: general
-
-  - name: PNAS
-    url: https://www.pnas.org/rss/current.xml
-    topic: general
-
-  - name: Cell Press
-    url: https://www.cell.com/cell/current.rss
-    topic: biology
-
-  - name: PLOS Biology
-    url: https://journals.plos.org/plosbiology/feed/atom
-    topic: biology
-
-  - name: Quanta Magazine
-    url: https://api.quantamagazine.org/feed/
-    topic: general
-
-  - name: Science News magazine
-    url: https://www.sciencenews.org/feed
-    topic: general
-
-  - name: Scientific American
-    url: http://rss.sciam.com/ScientificAmerican-Global
-    topic: general
-
-  - name: Physics World
-    url: https://physicsworld.com/feed/
-    topic: physics
 
   - name: Science Daily - Top Tech
     url: https://www.sciencedaily.com/rss/top/technology.xml
@@ -342,17 +271,6 @@ feeds:
     url: https://the-decoder.com/feed/
     topic: ai
 
-  # Above the general Phys.org feed on purpose. ingest.py dedupes first-wins
-  # in file order, and 4 of these 30 items also appear there — this ordering
-  # is what tags them `space` instead of `general`.
-  - name: Phys.org Space
-    url: https://phys.org/rss-feed/space-news/
-    topic: space
-
-  - name: Phys.org
-    url: https://phys.org/rss-feed/
-    topic: general
-
   # Science X's engineering/computing newsroom — same publisher as Phys.org,
   # measured zero URL overlap with it (different host).
   - name: Tech Xplore
@@ -380,21 +298,8 @@ feeds:
   # the slug; re-probe https://www.space.com/feeds.xml and look for <item>.
 
 
-  # ~5/day, but 5 of 20 titles duplicate Phys.org Space under different URLs,
-  # so ingest's URL dedupe will not catch them. Net new is closer to 4/day.
-  - name: Universe Today
-    url: https://www.universetoday.com/rss.xml
-    topic: space
-
   - name: NASASpaceflight
     url: https://www.nasaspaceflight.com/feed/
-    topic: space
-
-  # One peer-reviewed AAS paper per post, first author named — the best
-  # depth-per-item here. Serves ~600 entries / 4.2 MB on every fetch, by far
-  # the heaviest feed in this file. Drop it if ingest runtime becomes a problem.
-  - name: AAS Nova
-    url: https://aasnova.org/feed/
     topic: space
 
   - name: New Atlas
@@ -405,16 +310,3 @@ feeds:
     url: https://hackaday.com/blog/feed/
     topic: engineering
 
-  # --- physics ---
-  # home.cern/api/news/news/feed.rss 404s; home.cern/feed is the live one.
-  - name: CERN
-    url: https://home.cern/feed
-    topic: physics
-
-  - name: CERN Courier
-    url: https://cerncourier.com/feed/
-    topic: physics
-
-  - name: Fermilab News
-    url: https://news.fnal.gov/feed/
-    topic: physics

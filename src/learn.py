@@ -50,7 +50,7 @@ MIN_GROUP = 3
 
 # `beat`, not `domain`: domain is the slide's free-text field label, and 29
 # posts carried 22 different ones ("dna pairing", "corrosion science"), so
-# every group was a group of one. beat is score.BEATS, six values.
+# every group was a group of one. beat is score.BEATS, nine values.
 GROUPS = ("post_type", "colorway", "beat", "weekday")
 
 # The status-report pillar groups by different things, because different

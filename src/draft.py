@@ -433,20 +433,27 @@ MAX_DUPLICATE_SKIPS = 5
 # candidates sat above the threshold. The score stays topic-blind; the
 # preference is applied here, where one row is chosen from many.
 PRIORITY_BEATS = frozenset({"ai", "software", "automation", "robotics",
-                            "computing"})
+                            "computing", "engineering"})
+# Technology too, but taken only when no priority row is left (2026-10-17,
+# the owner's call). Science is not here: score.py never queues it.
+SECONDARY_BEATS = frozenset({"quantum", "space"})
 # Rows scored before score.py named a beat have none. Their feed's topic is
 # the fallback — coarser, since a feed is not a subject, but it costs no
 # call, and re-scoring a queue of ~2,400 rows would spend days of quota.
 PRIORITY_TOPICS = frozenset({"ai", "tech", "robotics"})
 
 
+def row_cell(row: list[str], col: dict, name: str) -> str:
+    """A cell, lowercased, or blank when the sheet or the row is narrower."""
+    idx = col.get(name)
+    return row[idx].strip().lower() if idx is not None and idx < len(row) else ""
+
+
 def is_priority(row: list[str], col: dict) -> bool:
     """Is this row about one of the subjects the account puts first?"""
-    def cell(name: str) -> str:
-        idx = col.get(name)
-        return row[idx].strip().lower() if idx is not None and idx < len(row) else ""
-    beat = cell("beat")
-    return beat in PRIORITY_BEATS if beat else cell("topic") in PRIORITY_TOPICS
+    beat = row_cell(row, col, "beat")
+    return (beat in PRIORITY_BEATS if beat
+            else row_cell(row, col, "topic") in PRIORITY_TOPICS)
 
 
 def links_code(row: list[str], col: dict) -> bool:
@@ -466,7 +473,8 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
 
-    Science is taken only when no priority row is left — see PRIORITY_BEATS.
+    A SECONDARY_BEATS row is taken only when no priority row is left, and
+    anything else only when neither is — see PRIORITY_BEATS.
     A row named with --row is the override and ignores the preference.
 
     `skip` holds rows this run has already rejected as duplicates. Their
@@ -505,9 +513,13 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
                  "pass --row to draft an older story on purpose.")
 
     preferred = [c for c in candidates if is_priority(c[2], col)]
-    if not wanted and not preferred:
-        print("  note: no queued row on a priority subject — taking the best "
-              "science row instead")
+    if not preferred:
+        preferred = [c for c in candidates
+                     if row_cell(c[2], col, "beat") in SECONDARY_BEATS]
+        if not wanted:
+            print("  note: no queued row on a priority subject — taking the "
+                  "best " + ("quantum or space row" if preferred
+                             else "row left") + " instead")
     # A "run it" day narrows the pool to rows that link code, inside the
     # subject preference rather than over it: tech first still holds.
     if prefer_code and not wanted:
