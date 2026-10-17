@@ -189,11 +189,22 @@ def fetch_feed(feed: dict) -> tuple[list[dict], str | None]:
     # day of cs.AI is ~127 papers and every one of them costs score.py quota.
     new_only = bool(feed.get("new_only"))
     max_items = int(feed.get("max_items") or 0)
+    # A third, for a newsroom that files customer stories beside its launches
+    # under the same `announces` prefix. OpenAI's tag their startup case
+    # studies `Startup`, and their summaries name the models the customer
+    # used, so score.py read "Amp puts AI agents to work beyond code" as a
+    # launch, scored it 9, and the code labelled it an announcement: it
+    # reached the 2026-10-17 Signal. The tag is the publisher's own word for
+    # what the page is, so the entry is dropped before it costs a score.
+    skip_tags = {t.lower() for t in feed.get("skip_tags") or []}
 
     for entry in parsed.entries:
         if max_items and len(items) >= max_items:
             break
         if new_only and entry.get("arxiv_announce_type", "new") != "new":
+            continue
+        if skip_tags and any((t.get("term") or "").lower() in skip_tags
+                             for t in entry.get("tags") or []):
             continue
         # A trailing backslash is not part of any URL: one Hacker News row
         # arrived as mistral.ai/news/mistral-large-4/\ and 404'd, so the

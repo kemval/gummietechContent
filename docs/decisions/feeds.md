@@ -84,3 +84,22 @@ technology. Do not build a column and a reopen path for it. Telling the
 model that 10+ votes means relevance 8 would make it a fixed rule in
 disguise; if that is ever wanted, it is an editorial decision and belongs
 in code, not the prompt.
+
+### A newsroom's customer stories: `skip_tags` (2026-10-17)
+
+OpenAI publishes its startup case studies under `openai.com/index/`, the
+same prefix as its launches, and their summaries name the models the
+customer used. score.py's rule puts customer stories at 3 or below, and it
+held for every case study whose summary named no model (Itaú, Block,
+SentinelOne: 2–2.75). It did not hold for the ones that did: Amp 9,
+Higgsfield 8, Third Moment 6.75, Stack Overflow 6.5. Amp then took the
+`announces` label and reached the 2026-10-17 Signal; fact-check could not
+read the page (OpenAI 403s every bot), and read by hand it said Ultrafast
+was only being tested.
+
+The feed tags those posts `Startup`; launches carry `Product` or
+`Research`. `skip_tags` on a feed entry drops an entry carrying any listed
+tag (case-insensitive) in `ingest.fetch_feed()`, before it costs a score.
+The tag is the publisher's own word for the page, so this is not a keyword
+filter on titles. OpenAI's enterprise case studies arrive untagged and stay
+with score.py, which has scored every one of them 3 or below so far.
