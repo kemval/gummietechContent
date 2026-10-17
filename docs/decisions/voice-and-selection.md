@@ -155,6 +155,17 @@ Robotics) stayed papers. The Signal prompt marks those sources, so each
 item attributes its maker's numbers. The same prefixes give a launch its
 duplicate key: see `dedup.md`.
 
+**A launch's own page can sit outside its newsroom.** On 2026-10-17, after
+the switch to tech only, the queue was mostly coverage with no DOI, and the
+Signal found four labellable items in 25 rows and gave up. Four of the skipped rows
+were the maker's own product pages linked from Hacker News
+(anthropic.com/claude-haiku-5-5, deepmind.google/models/gemini/,
+apple.com/apple-homeview/), outside the measured /news/ and /blog/
+prefixes. Anthropic, DeepMind and Apple now announce on their whole host,
+and Google's AI blog, Apple ML Research and Anthropic Research were added as
+newsrooms. Coverage of a launch is still not labellable by code. Whether a
+Signal may carry it is the owner's decision, not this note's.
+
 **The voice lives in `docs/voice.md`.** It is a doc rather than prompt text
 so a person can change how the account sounds without touching code.
 `draft.voice()` pastes it into the Drop, run and Signal prompts, from its
