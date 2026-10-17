@@ -5,7 +5,7 @@
   "hook": "RTX Spark: up to 128 GB memory, 1 PFLOP AI — plus 4",
   "items": [
     {
-      "claim": "Amp lets developers build software using GPT‑6 Astra, Ultrafast, GPT‑Live‑1",
+      "claim": "OpenAI says Amp lets developers build software using GPT‑6 Astra, Ultrafast and GPT‑Live‑1",
       "attribution": "OpenAI",
       "source_url": "https://openai.com/index/amp-beyond-coding",
       "peer_reviewed": false,
@@ -45,7 +45,7 @@
       "beat": "computing"
     }
   ],
-  "caption": "Developers can now tap GPT‑6 Astra in Amp to speed code creation. Meanwhile, RTX Spark brings massive on‑device AI power. Which upgrade would you try first, RTX or Amp?",
+  "caption": "OpenAI says Amp lets developers build software using GPT‑6 Astra. Meanwhile, RTX Spark brings massive on‑device AI power. Which upgrade would you try first, RTX or Amp?",
   "keywords": [
     "AI research",
     "local AI",
@@ -62,14 +62,14 @@
   "alt_text": "Slide 1: NVIDIA says RTX Spark laptops have up to 128 GB memory and 1 PFLOP AI compute. Slide 2: Amp lets developers build software using GPT‑6 Astra, Ultrafast, GPT‑Live‑1. Slide 3: GitHub says early testing shows Gemini 4 Argon in GitHub Copilot solving more coding tasks than earlier Gemini models. Slide 4: Apple HomeView offers a 7‑inch smart‑home display with audio and video. Slide 5: DeepMind says Gemini 4 Argon is built to be an active research partner.",
   "es": {
     "domain": "resumen de IA",
-    "hook": "RTX Spark: hasta 128 GB de memoria, 1 PFLOP de IA — y 4 más",
+    "hook": "RTX Spark: hasta 128 GB de memoria, 1 PFLOP de IA — más 4",
     "items": [
-      "Amp: Amp permite a los desarrolladores crear software usando GPT‑6 Astra, Ultrafast y GPT‑Live‑1",
-      "GitHub: GitHub dice que las pruebas tempranas muestran que Gemini 4 Argon resuelve más tareas de programación que los modelos Gemini anteriores en todos los benchmarks de codificación",
-      "Apple HomeView: Apple HomeView combina un panel de control para el hogar inteligente, audio y video en una pantalla de 7 pulgadas",
-      "Gemini 4 Argon: DeepMind afirma que Gemini 4 Argon está diseñado para ser un socio activo de investigación",
-      "NVIDIA: NVIDIA indica que las laptops RTX Spark disponen de hasta 128 GB de memoria unificada y 1 petaflop de cómputo de IA"
+      "OpenAI: dice que Amp permite a los desarrolladores crear software usando GPT‑6 Astra, Ultrafast y GPT‑Live‑1",
+      "GitHub: las pruebas preliminares muestran que Gemini 4 Argon resuelve más tareas de programación que los modelos Gemini anteriores en todos los benchmarks de codificación",
+      "Apple HomeView: combina un panel de control para el hogar inteligente, audio y video en una pantalla de 7 pulgadas",
+      "Gemini 4 Argon: está diseñado para ser un socio activo de investigación, según DeepMind",
+      "NVIDIA: afirma que los portátiles RTX Spark disponen de hasta 128 GB de memoria unificada y 1 petaflop de cómputo de IA"
     ],
-    "_en": "6892b80491100fb1"
+    "_en": "fe1965af028dac90"
   }
 }
