@@ -39,5 +39,8 @@
     "the_catch": "Requiere Apple Silicon y macOS 27 (probado en 27.0; 27.0.1 necesita la versión 0.2.3 o posterior) y no puede eliminar las aplicaciones integradas de Apple.",
     "_en": "5ab58d51515814b2"
   },
-  "published_at": "2026-10-14"
+  "published_at": "2026-10-14",
+  "metrics": {
+    "asked_at": "2026-10-17"
+  }
 }
