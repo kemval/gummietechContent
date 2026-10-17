@@ -197,7 +197,8 @@ Rules:
   - Write in the voice docs/voice.md describes: read it first. Where it and
     these rules disagree, these rules win.
   - hook within 12 words; every other slide field within 25 words.
-  - colorway is signal, orbit, bloom or ember, by docs §1's topics.
+  - colorway is signal, orbit, bloom or ember, by CLAUDE.md's colorway
+    table: AI; software and quantum; data and infrastructure; hardware.
   - caption ends in a question that takes one word or one memory to
     answer: a choice between two things, or the reader's own experience.
     Never "how will this change...".

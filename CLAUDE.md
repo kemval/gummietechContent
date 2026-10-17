@@ -300,14 +300,15 @@ labels, the same fonts at `font-display: swap`. The type stack lives in
 `COLORWAYS` in `src/render.py` is the single source of truth; address
 colour by role (`--field`, `--on-field`, `--frame`, `--flag-bg`/`--flag-fg`),
 never hardcode a hue in a template. A Drop renders
-`lead · cream · support · dark · lead`:
+`lead · cream · support · dark · lead`. Since 2026-10-17 each family is a
+tech subject, so the grid varies by topic; `vary()` handles collisions:
 
 | family | topics | lead | support |
 |---|---|---|---|
-| `signal` | AI, computing, software, robotics | pink | olive |
-| `orbit` | space, astronomy, physics | sky | pink |
-| `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | blush | amber |
+| `signal` | AI, agents, models | pink | olive |
+| `orbit` | software, programming, developer tools, quantum computing | sky | pink |
+| `bloom` | data, cloud, infrastructure, security, the web | olive | blush |
+| `ember` | hardware, chips, robotics, energy, materials, space | blush | amber |
 
 Invariants (`render.rhythm()` is them as code): `--ink` is the type on
 light slides; slide 2 is cream; the catch is the second-to-last

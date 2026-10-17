@@ -150,12 +150,12 @@ no prose and no code fences, with exactly these keys:
 
 {{
   "post_type": "drop",
-  "domain": "<2-3 word field label, e.g. AI research, materials, astronomy>",
+  "domain": "<2-3 word field label, e.g. AI research, chips, databases>",
   "colorway": "<the palette family whose subject matches this story: signal \
-(AI, computing, software, robotics), orbit (space, astronomy, physics), bloom \
-(biology, medicine, climate, ecology), ember (energy, materials, engineering, \
-chemistry). Use exactly one of those four words. If none clearly fits, use \
-signal>",
+(AI, agents, models), orbit (software, programming, developer tools, quantum \
+computing), bloom (data, cloud, infrastructure, security, the web), ember \
+(hardware, chips, robotics, energy, materials, space). Use exactly one of \
+those four words. If none clearly fits, use signal>",
   "hooks": ["<three cover lines for the same story, each at most \
 {hook_limit} words, each a different angle, each in everyday words a reader \
 would say out loud. 1: a sentence that starts from the product, object or \
@@ -272,9 +272,9 @@ these keys:
   "domain": "<2-3 word label for the carousel as a whole, e.g. This week, \
 Research roundup>",
   "colorway": "<the palette family matching the week's dominant subject: \
-signal (AI, computing, software, robotics), orbit (space, astronomy, \
-physics), bloom (biology, medicine, climate, ecology), ember (energy, \
-materials, engineering, chemistry)>",
+signal (AI, agents, models), orbit (software, programming, developer tools, \
+quantum computing), bloom (data, cloud, infrastructure, security, the web), \
+ember (hardware, chips, robotics, energy, materials, space)>",
   "hook": "<the cover line, {hook_limit} words maximum: the one result a \
 reader who uses technology every day would most want to hear about, from \
 whichever source that is, as a teaser, then how many more follow. e.g. 'A \
