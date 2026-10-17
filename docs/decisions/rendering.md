@@ -281,10 +281,17 @@ a `(lead, support)` pair, and a five-slide Drop renders
 
 | family | topics | lead | support |
 |---|---|---|---|
-| `signal` | AI, computing, software, robotics | pink | olive |
-| `orbit` | space, astronomy, physics | sky | pink |
-| `bloom` | biology, medicine, climate, ecology | olive | blush |
-| `ember` | energy, materials, engineering, chemistry | blush | amber |
+| `signal` | AI, agents, models | pink | olive |
+| `orbit` | software, programming, developer tools, quantum computing | sky | pink |
+| `bloom` | data, cloud, infrastructure, security, the web | olive | blush |
+| `ember` | hardware, chips, robotics, energy, materials, space | blush | amber |
+
+Topics remapped 2026-10-17, the owner's call: the account is technology
+only, and "use the different colour families" still. Under the science
+mapping nearly every post was `signal`, and the other three appeared only
+when `vary()` broke a collision — colour by rotation, not by subject. Each
+family now names a tech subject. The hues and the rotation are unchanged,
+and posts already published keep their family.
 
 Invariants that keep the grid recognizable, and that a new family or a new
 format must respect. `render.rhythm()` is these rules as code, which is why a

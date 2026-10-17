@@ -21,7 +21,9 @@ and you never write to `posts/`.
 Technology only, since 2026-10-16 — science is no longer proposed at all.
 The subjects are AI and agents, software, hardware, robotics and
 automation, and data: data engineering, data science, data architecture.
-Colorway `signal`, or `ember` for hardware and automation. Given a count,
+Colorway by subject, all four families (CLAUDE.md's table): `signal` AI
+and agents, `orbit` software, `bloom` data and infrastructure, `ember`
+hardware and robotics. Given a count,
 produce that many; with none, ~10.
 
 The science rows from before that decision are listed under the queue's
@@ -108,7 +110,7 @@ hold, not a suggestion — the same rule `fact-check` applies.
 | field | what |
 |---|---|
 | hook idea | one line, the surprising claim stated plainly — not a question |
-| colorway | `signal` (AI, agents, software, data, computing, robotics) or `ember` (hardware, automation, engineering) |
+| colorway | `signal` (AI, agents, models), `orbit` (software, developer tools, quantum), `bloom` (data, cloud, infrastructure, security, the web) or `ember` (hardware, chips, robotics, energy, materials, space) |
 | source | the URL, and the primary source behind it if the first link is coverage |
 | settled? | settled, a live debate, a retraction, or a maker's own claim? Note it — it drives the preprint flag and the hedging later |
 | why it matters | one line — the consequence or the intuition it breaks |

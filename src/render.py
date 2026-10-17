@@ -80,15 +80,16 @@ MIN_SLIDES = 4
 # and resolves them through here, so an invented name degrades to the
 # default instead of reaching the CSS.
 COLORWAYS: dict[str, tuple[str, str]] = {
-    "signal": ("pink",  "olive"),   # AI, computing, software, robotics
-    "orbit":  ("sky",   "pink"),    # space, astronomy, physics
-    "bloom":  ("olive", "blush"),   # biology, medicine, climate, ecology
+    # Topics since 2026-10-17 (technology only): see CLAUDE.md's table.
+    "signal": ("pink",  "olive"),   # AI, agents, models
+    "orbit":  ("sky",   "pink"),    # software, developer tools, quantum
+    "bloom":  ("olive", "blush"),   # data, cloud, infrastructure, security
     # Owner's call, 2026-09-30: amber read as washed out as a lead under the
     # v3 backdrop. Ember wore signal's pink/olive for a few hours, which left
     # the grid three looks for four families; blush is the one lead no other
     # family uses, and amber survives as the support slide. vary() compares
     # pairs, not names, in case two families ever share one again.
-    "ember":  ("blush", "amber"),   # energy, materials, engineering, chemistry
+    "ember":  ("blush", "amber"),   # hardware, chips, robotics, energy, space
 }
 DEFAULT_COLORWAY = "signal"
 
