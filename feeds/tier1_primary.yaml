@@ -47,6 +47,11 @@
 #                   feed_meta_ai.xml was 75 days stale on 2026-10-09, and
 #                   about.fb.com/news is corporate PR, not model launches.
 #                   Its launches reach the sheet through Hacker News 200+.
+#                   Still no feed on 2026-10-17 (research.meta.ai 404s,
+#                   the mirror 82d stale), so research.meta.ai rows stay
+#                   unlabelable for a Signal.
+#   Qwen, Z.ai,     2026-10-17: qwenlm.github.io/blog/index.xml is 389d
+#   Xiaomi MiMo     stale; z.ai/blog and mimo.xiaomi.com have no feed.
 
 feeds:
 
@@ -119,10 +124,16 @@ feeds:
   # paper, and the paper wins. Hugging Face's blog also hosts other
   # organisations' posts (huggingface.co/blog/ibm-research/…): each is still
   # its author's own announcement. See docs/decisions/voice-and-selection.md.
+  #
+  # Widened to the whole host on 2026-10-17 for Anthropic, DeepMind and
+  # Apple: Hacker News links their launches straight to product pages
+  # (anthropic.com/claude-haiku-5-5, deepmind.google/models/gemini/,
+  # apple.com/apple-homeview/), and under the old /news/ and /blog/
+  # prefixes the Signal skipped all three as unlabelable and gave up.
   - name: Google DeepMind
     url: https://deepmind.google/blog/rss.xml
     topic: ai
-    announces: [deepmind.google/blog/]
+    announces: [deepmind.google/]
 
   - name: Google Research
     url: https://research.google/blog/rss/
@@ -176,7 +187,21 @@ feeds:
   - name: Apple Newsroom
     url: https://www.apple.com/newsroom/rss-feed.rss
     topic: tech
-    announces: [apple.com/newsroom/]
+    announces: [apple.com/]
+
+  # Added 2026-10-17. Google's own launches (Gemini models, products) post
+  # here rather than on DeepMind's blog; Hacker News links them too.
+  - name: Google AI Blog
+    url: https://blog.google/innovation-and-ai/technology/ai/rss/
+    topic: ai
+    announces: [blog.google/]
+
+  # Added 2026-10-17. Apple's research write-ups; one that describes a
+  # paper resolves the paper, and the paper wins.
+  - name: Apple Machine Learning Research
+    url: https://machinelearning.apple.com/rss.xml
+    topic: ai
+    announces: [machinelearning.apple.com/research/]
 
   # Added 2026-10-09 to cover the launches the AI digests lead with. The
   # `announces` prefixes below come from each feed's own item links, not
@@ -209,7 +234,15 @@ feeds:
   - name: Anthropic
     url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml
     topic: ai
-    announces: [anthropic.com/news/]
+    announces: [anthropic.com/]
+    max_items: 10
+
+  # Added 2026-10-17, same mirror. Mixes research with company essays;
+  # score.py drops the second.
+  - name: Anthropic Research
+    url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_research.xml
+    topic: ai
+    announces: [anthropic.com/research/]
     max_items: 10
 
   - name: xAI

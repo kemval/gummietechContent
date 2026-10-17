@@ -556,6 +556,15 @@ def test_the_feeds_declare_where_openai_announces():
     assert not draft.maker_page("https://openai.com/index")       # the index itself
 
 
+def test_a_launch_linked_to_its_product_page_is_still_its_makers():
+    """2026-10-17: the Signal walked 25 rows and gave up, skipping Claude
+    Haiku 5.5, Gemini 4 Argon and Apple HomeView because Hacker News linked
+    each maker's product page, not its /news/ or /blog/ post."""
+    assert draft.maker_page("https://www.anthropic.com/claude-haiku-5-5")
+    assert draft.maker_page("https://deepmind.google/models/gemini/")
+    assert draft.maker_page("https://www.apple.com/apple-homeview/")
+
+
 def test_a_maker_page_with_no_paper_is_an_announcement_whatever_the_model_says():
     post = draft.validate(drop_reply(announcement=False), drop_item(ASTRA), None)
     assert post["announcement"] is True and post["peer_reviewed"] is False
