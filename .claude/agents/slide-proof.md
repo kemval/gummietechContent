@@ -151,7 +151,8 @@ Read `thumb.png` and every `slide-N.png`. Then check, slide by slide:
   the "Preprint — not yet peer-reviewed" text must be readable on the slide
   that carries the claim (each Signal item carries its own). On an
   announcement the cover must say "Announcement — not a peer-reviewed
-  study". proof.py counts flags; you confirm a person can read them.
+  study", and on a news report "News report — not a peer-reviewed study"
+  (a Signal item's credit ends "— news report"). proof.py counts flags; you confirm a person can read them.
 - **Credit.** The follow slide's attribution is whole and readable: authors,
   journal, year, or the `via @author` credit — and on a Signal, each item's
   `[source]` credit.

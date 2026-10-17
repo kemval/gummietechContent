@@ -555,6 +555,15 @@ def test_an_announcement_item_carries_no_preprint_flag():
     assert render.preprint_claims({**SIGNAL, "items": items}) == 0
 
 
+def test_a_news_report_is_not_a_preprint():
+    """2026-10-17: the fourth label. Unreviewed is not preprint here either:
+    the cover says "News report — not a peer-reviewed study" instead."""
+    record = {"peer_reviewed": False, "news_report": True}
+    assert not render.preprint(record) and render.news_report(record)
+    items = [SIGNAL["items"][0], {**SIGNAL["items"][1], "news_report": True}]
+    assert render.preprint_claims({**SIGNAL, "items": items}) == 0
+
+
 def test_an_empty_catch_renders_held_but_a_missing_one_is_refused():
     """2026-10-08: three Groq drafts, three invented catches ("only Chrome
     supports it" — Safari has since 2023). draft.py now asks for "" when the

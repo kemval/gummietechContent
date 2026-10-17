@@ -601,6 +601,37 @@ def test_a_signal_still_refuses_a_source_nothing_can_label():
         draft.validate_signal(reply(1), [pick("https://example.org/no-paper")])
 
 
+# 2026-10-17. Technology only left a queue of launch coverage with no DOI:
+# the Signal walked 25 rows, skipping the-decoder and arstechnica one after
+# another, and found four items. A declared outlet's page is now a news
+# report, labelled by code as the other three are.
+
+DECODER = "https://the-decoder.com/gemini-4-argon-is-now-available-worldwide/"
+
+
+def test_a_declared_outlet_with_no_paper_is_a_news_report():
+    assert draft.news_report(None, DECODER)
+    assert draft.news_report(None, "https://arstechnica.com/ai/2026/10/x/")
+    assert not draft.news_report(PAPER, DECODER)          # the paper wins
+    assert not draft.news_report(None, ASTRA)             # a maker's page
+    assert not draft.news_report(None, "https://research.meta.ai/blog/x")
+
+
+def test_a_signal_labels_coverage_as_a_news_report():
+    post = draft.validate_signal(reply(1), [pick(DECODER)])
+    item = post["items"][0]
+    assert item["news_report"] is True and item["peer_reviewed"] is False
+    assert "announcement" not in item
+    assert render.preprint_claims(post) == 0
+
+
+def test_a_drops_coverage_label_is_codes_not_the_models():
+    """The model calls launch coverage an announcement; the host says report."""
+    post = draft.validate(drop_reply(announcement=True), drop_item(DECODER), None)
+    assert post["news_report"] is True and post["peer_reviewed"] is False
+    assert "announcement" not in post
+
+
 def test_coverage_of_a_posted_launch_is_a_duplicate(tmp_path, monkeypatch):
     """InfoQ's Astra story links OpenAI's page with tracking parameters;
     the post has it without a trailing slash."""

@@ -326,12 +326,14 @@ def preprint(record: dict) -> bool:
     labelling one "Preprint" is a false claim about the source: on
     2026-10-07 the first launch drafted under the relevance lift, OpenAI's
     GPT-6 Astra, rendered with "Preprint — not yet peer-reviewed" on its
-    cover. It says so the other way instead: see `announcement`.
+    cover. It says so the other way instead: see `announcement`, and
+    `news_report` for an outlet's coverage.
 
     A missing `peer_reviewed` reads as unreviewed here, as it always did;
     render.py refuses such a record before this is asked.
     """
-    return not record.get("peer_reviewed", False) and not record.get("announcement")
+    return (not record.get("peer_reviewed", False)
+            and not record.get("announcement") and not record.get("news_report"))
 
 
 def announcement(record: dict) -> bool:
@@ -341,6 +343,16 @@ def announcement(record: dict) -> bool:
     for a source with a resolved paper or on a preprint server.
     """
     return bool(record.get("announcement")) and not record.get("peer_reviewed")
+
+
+def news_report(record: dict) -> bool:
+    """Whether a source is a news outlet's report rather than a study.
+
+    Written only by draft.py, only for a declared outlet's page with no
+    paper behind it (draft.news_report), so it is code's label, never the
+    model's. Absent on every post before 2026-10-17.
+    """
+    return bool(record.get("news_report")) and not record.get("peer_reviewed")
 
 
 def post_preprint_flag(post: dict) -> bool:

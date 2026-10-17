@@ -386,6 +386,11 @@ does not state. A source that cannot be read is a hold, not a pass.
   (`draft.maker_announcement()`), so a Signal may carry it; elsewhere the
   model proposes it and `draft.validate()` drops it whenever a paper
   resolved or the host is a preprint server. Absent on every older post.
+- **Or** `"news_report": true` (2026-10-17): a page under a news outlet's
+  `reports` prefix with no paper, whose cover says "News report — not a
+  peer-reviewed study". Code's alone (`draft.news_report()`), for Drops and
+  Signal items; it outranks the model's `announcement`. Only declared
+  outlets get it — an undeclared host may be a maker's page.
 - Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
   (`draft.py --run`, only when a README was read). `published_at` is added only

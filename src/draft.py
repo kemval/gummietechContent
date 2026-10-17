@@ -72,7 +72,7 @@ from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
                     fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     recent_colorways, vary, warn_on_length)
-from verify_feeds import announcement_prefixes, url_key
+from verify_feeds import announcement_prefixes, report_prefixes, url_key
 from wording import problems as wording_problems
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -106,6 +106,10 @@ PREPRINT_HOSTS = ("arxiv.org", "biorxiv.org", "medrxiv.org", "chemrxiv.org",
 # one of these with no paper behind it is its maker's announcement. See
 # maker_announcement().
 MAKER_PREFIXES = announcement_prefixes()
+# Where news outlets publish their reporting: the `reports` prefixes, the
+# third twin. A page under one of them with no paper is a news report. See
+# news_report().
+REPORT_PREFIXES = report_prefixes()
 HREF_RE = re.compile(r"""href=["']([^"']+)["']""", re.I)
 
 # What a *draft* needs on top of what render.py will refuse to render
@@ -346,7 +350,11 @@ def signal_sources(picks: list[dict]) -> str:
         kind = ("Kind: the maker's own announcement, not a study. Every "
                 "figure and comparison in its claim is the maker's: say so "
                 "('OpenAI says', 'in Mistral's tests').\n"
-                if maker_announcement(pick["paper"], item["url"]) else "")
+                if maker_announcement(pick["paper"], item["url"])
+                else "Kind: a news outlet's report, not a study. Credit the "
+                "outlet. A figure the report attributes to a company is "
+                "that company's claim: say so ('Google says').\n"
+                if news_report(pick["paper"], item["url"]) else "")
         blocks.append(f"--- SOURCE {n} ---\n"
                       f"{kind}"
                       f"Outlet: {item['source']}\n"
@@ -776,6 +784,24 @@ def maker_announcement(paper: dict | None, url: str) -> bool:
             and not any(host in url.lower() for host in PREPRINT_HOSTS))
 
 
+def news_report(paper: dict | None, url: str) -> bool:
+    """Whether code alone can say a source is a news outlet's report.
+
+    An outlet's page (`reports` in feeds/*.yaml), no paper resolved, not a
+    preprint server. Added 2026-10-17: after the account went technology
+    only, most of the queue was coverage of launches with no DOI, which
+    nothing could label, and the Signal walked 25 rows to find four items.
+    The label, "News report — not a peer-reviewed study", says what the
+    source is and nothing about the work behind it, so it is true whatever
+    the story covers. Only declared outlets get it: an undeclared host may
+    be a maker's own page, and calling that a news report would be false.
+    """
+    key = url_key(url)
+    return (not paper
+            and any(key.startswith(prefix + "/") for prefix in REPORT_PREFIXES)
+            and not any(host in url.lower() for host in PREPRINT_HOSTS))
+
+
 def announced_links(page: str) -> list[str]:
     """The maker announcement pages a page links to, in document order.
 
@@ -909,7 +935,7 @@ def finish(post: dict, order: list[str]) -> dict:
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
              "what_happened", "try_it", "why_it_matters", "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
-             "peer_reviewed", "announcement", "beat"]
+             "peer_reviewed", "announcement", "news_report", "beat"]
 
 
 def row_subject(item: dict) -> str:
@@ -1023,7 +1049,12 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     proposed = (post.pop("announcement", None) is True
                 or maker_announcement(paper, url))
     on_preprint_host = any(host in url.lower() for host in PREPRINT_HOSTS)
-    if proposed and not paper and not on_preprint_host:
+    # A news report is the fourth, and code's alone: a declared outlet's page
+    # is a report whatever the model proposed, launch coverage included.
+    if news_report(paper, url) and not maker_announcement(paper, url):
+        post["news_report"] = True
+        post["peer_reviewed"] = False
+    elif proposed and not paper and not on_preprint_host:
         post["announcement"] = True
         post["peer_reviewed"] = False
 
@@ -1044,7 +1075,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
 ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
-             "announcement", "beat"]
+             "announcement", "news_report", "beat"]
 
 
 def validate_signal(post: dict, picks: list[dict]) -> dict:
@@ -1075,6 +1106,8 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
         # Code's call, never the model's: a Signal labels only what code can.
         if maker_announcement(paper, url):
             built["announcement"], built["peer_reviewed"] = True, False
+        elif news_report(paper, url):
+            built["news_report"], built["peer_reviewed"] = True, False
         if subject := row_subject(pick["item"]):
             built["beat"] = subject
         if paper:
@@ -1210,11 +1243,12 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         # row stays queued, because an unresolvable paper is still a fine
         # Drop tomorrow.
         if (labelled_only and peer_review_flag(paper, item["url"]) is None
-                and not maker_announcement(paper, item["url"])):
+                and not maker_announcement(paper, item["url"])
+                and not news_report(paper, item["url"])):
             print(f"  skipping {where}: no DOI resolved, and "
-                  f"{outlet(item['url'])} is neither a preprint host nor a "
-                  f"maker's announcement page, so nothing but the model could "
-                  f"label it")
+                  f"{outlet(item['url'])} is not a preprint host, a maker's "
+                  f"announcement page or a declared news outlet, so nothing "
+                  f"but the model could label it")
             if row_number is not None:
                 skipped.add(row_number)
             rejected += 1

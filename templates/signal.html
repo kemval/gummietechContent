@@ -46,7 +46,7 @@
   <div class="body">
     {% if item is preprint %}<div style="margin-bottom: 30px"><span class="flag">{{ parts.PREPRINT }}</span></div>{% endif %}
     <p class="text display claim">{{ parts.boxed(item.claim, figures_only=True) }}</p>
-    <dl class="credit"><dt>[source]</dt><dd>{{ item.attribution }}{% if item is announcement %} — announcement{% endif %}</dd></dl>
+    <dl class="credit"><dt>[source]</dt><dd>{{ item.attribution }}{% if item is announcement %} — announcement{% elif item is news_report %} — news report{% endif %}</dd></dl>
   </div>
 </div></div>
 {% endfor %}

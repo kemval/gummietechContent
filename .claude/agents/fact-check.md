@@ -151,6 +151,22 @@ label, so check it both ways:
   number, not a measurement. If a slide states a maker's claim as
   independent fact, that is a **FIX**: it must read as their claim.
 
+A fourth label, since 2026-10-17: `"news_report": true` (always with
+`peer_reviewed: false`) means the source is a news outlet's report — code
+writes it for a declared outlet's page (`reports` in `feeds/*.yaml`) with no
+paper resolved, and the cover says "News report — not a peer-reviewed
+study". It is true of the source whatever the story covers, so check what
+lies behind it instead:
+
+- **The report covers a paper or preprint** you can find (linked, or by
+  `WebSearch`): **FIX**. Name it; the post should be drafted from the
+  paper, whose label wins, and a preprint behind it needs its flag (§7.2).
+- **The report's figures are a company's claims**: each must read as that
+  company's on the slide, as for an announcement. **FIX** otherwise.
+- Check the report against the primary source where one exists — the
+  maker's page for a launch. A report that gets the launch wrong is a
+  **BLOCK** on the claim, as any unsupported claim is.
+
 ### 7. Check the supporting fields
 
 - `alt_text` must describe what is actually on the slides, for a screen reader.
