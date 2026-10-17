@@ -1,11 +1,11 @@
 # gummietech — Content System & Automation Plan
 
 **Account:** @gummietech (Instagram)
-**Niche:** Technology first — AI, software, automation, ML, robotics — then science and engineering
+**Niche:** Technology only — AI and agents, software, hardware, data, robotics and engineering (since 2026-10-16; see §0.1)
 **Goal:** Daily publishing, automated pipeline, audience growth through saves and shares
 **Budget:** $0/month. Every tool in this document is free. See §4.
 **Owner location:** Costa Rica (UTC−6) — relevant for posting-time decisions
-**Version:** 1.1 — September 2026 (zero-budget revision)
+**Version:** 1.2 — October 2026 (technology only)
 
 ---
 
@@ -13,7 +13,7 @@
 
 The instinct to "post first, before every other creator" is the wrong north star, and building the system around it wastes effort.
 
-Instagram is not a real-time platform. The feed is not chronological, and a post from six hours ago routinely outperforms one from six minutes ago. Speed matters only *relative to other science/tech Instagram pages*, and even then it is not what drives growth. **Saves and shares are.**
+Instagram is not a real-time platform. The feed is not chronological, and a post from six hours ago routinely outperforms one from six minutes ago. Speed matters only *relative to other tech Instagram pages*, and even then it is not what drives growth. **Saves and shares are.**
 
 The corrected target:
 
@@ -23,8 +23,20 @@ Four constraints that shape every decision below:
 
 1. **Depth beats speed.** The differentiator is the "why it matters" and the "here's the catch," not the headline.
 2. **Evergreen content is not optional.** Most days there is no news worth posting. A library of timeless posts is what makes daily publishing survivable.
-3. **Credibility is the whole asset.** In science content, one confidently-wrong post costs more than ten good posts earn. This is why the human approval gate is non-negotiable.
+3. **Credibility is the whole asset.** In tech content, where every launch arrives wrapped in its maker's claims, one confidently-wrong post costs more than ten good posts earn. This is why the human approval gate is non-negotiable.
 4. **Zero budget.** Free tools only. This is a real constraint, not a preference, and it changes almost nothing about what is achievable — the paid tools on the original plan bought convenience, not capability.
+
+### 0.1 Scope — technology only
+
+Decided by the owner on 2026-10-16 ("ciencia ya no"), with the beats settled on 2026-10-17. Tech had been first since 2026-09-27 and science filled the gaps; science is now out.
+
+| | beats (`score.py`) | what it covers |
+|---|---|---|
+| **Priority** | `ai`, `software`, `automation`, `robotics`, `computing`, `engineering` | AI and agents, programming and tools, data engineering and data science, chips and security, robots, and energy, batteries, materials and manufacturing *for technology* |
+| **Secondary** | `quantum`, `space` | quantum computing, and space as technology (rockets, satellites), drafted only when no priority row is left |
+| **Out** | `science` | biology, medicine, physics, astronomy, climate, ecology, chemistry, mathematics: never queued |
+
+Mixed tech outlets (Ars Technica, MIT Technology Review, Tech Xplore, New Atlas) stay, and the beat filters out the science they carry. Pure-science sources were removed from `feeds/` (listed in `feeds/tier1_primary.yaml`). The mechanics are in `docs/decisions/tech-first.md`.
 
 ---
 
@@ -69,7 +81,7 @@ session a person opens — see the Breakdown below.
 Fixed 2026-09-19, replacing a 4–5×/week Drop with no Build at all. The account
 is an inbound-demand funnel for software and AI-automation build services
 (see `gummietech_project_instructions.md`), and The Build is the only pillar
-whose job is conversion rather than reach — a science feed that never shows
+whose job is conversion rather than reach — a tech feed that never shows
 the work behind it is a magazine, which is the thing this is explicitly not.
 
 **The Build is deliberately outside the pipeline.** It is video: recorded,
@@ -228,7 +240,7 @@ Reject automatically: funding rounds and acquisitions, hiring, firings and compa
 
 **Launches are news (2026-10-07).** A new model, product feature or tool that people can use scores on what it does and how many people it reaches; until this date it scored ≤3 by rule. The owner reads The Rundown, TLDR AI and Techpresso for exactly that information — what is happening in tech this week — and the account was filtering it out. Relevance is what lets it in, as a lift rather than a fifth averaged axis, which was measured and moved nothing; the lab's own announcement is the source fact-check verifies against. How it is told lives in `docs/voice.md`. See `docs/decisions/voice-and-selection.md`.
 
-**Tech first (2026-09-27).** The same call names each item's *beat* — ai, software, automation, robotics, computing or science — and drafting takes the best-scoring row on the first five before any science row. The score itself stays topic-blind. Before this, September shipped almost no AI: AI items averaged ~2 points below biology and never reached the top of a 2,400-row queue, though 777 of them sat above the threshold.
+**Technology only (2026-10-16; tech first since 2026-09-27).** The same call names each item's *beat* (see §0.1), and drafting takes the best-scoring row on a priority beat, then on a secondary one. A `science` item keeps its score but is never queued. The score itself stays topic-blind. Before the beat existed, September shipped almost no AI: AI items averaged ~2 points below biology and never reached the top of a 2,400-row queue, though 777 of them sat above the threshold.
 
 Run this on a free-tier LLM (Gemini Flash or Groq). Scoring is a cheap, high-volume task — it does not need a frontier model. Batch the calls and sleep between them to respect rate limits.
 
@@ -239,7 +251,7 @@ Feed the winning item plus full source text to an LLM with a locked prompt retur
 ```json
 {
   "post_type": "drop | breakdown | signal",
-  "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
+  "domain": "2-3 word field label, e.g. AI research, chips, robotics",
   "colorway": "signal | orbit | bloom | ember",
   "hook": "...",
   "what_happened": "...",
@@ -308,7 +320,7 @@ judgement, not to spotting clipped text.
 
 A 10-minute morning review in the sheet: approve / edit / kill. Approve flips status to `approved`. Read the Layer 3b report alongside the slides — it tells you which claims were verified against the source and which were not, so the ten minutes go to judgement rather than to re-reading the paper.
 
-A fully autonomous science account will eventually post something wrong or embarrassing. In this niche that is unrecoverable. The gate stays.
+A fully autonomous tech account will eventually post something wrong or embarrassing. In this niche that is unrecoverable. The gate stays.
 
 ### Layer 6 — Publish
 
@@ -364,18 +376,20 @@ All sources below are free. Anything paid is flagged.
 
 Journalists write *from* these. Reading them directly puts you level with reporters and ahead of aggregators.
 
-**Research institutions:** MIT News, Stanford Engineering, Caltech, Berkeley News, ETH Zurich, Max Planck, CERN, Fermilab, NASA (JPL + main newsroom), ESA, NOAA, Argonne, Oak Ridge, LBNL, Wellcome Sanger.
+**Company newsrooms** — for AI and tech, news drops here first: OpenAI, Google DeepMind, Google Research, Google's AI blog, Anthropic (news and research), Mistral, xAI, Cohere, Microsoft Research, NVIDIA (newsroom and developer blog), Apple (newsroom and Machine Learning Research), AWS Machine Learning, GitHub (AI blog and Copilot changelog), Hugging Face, Cloudflare, Waymo. Each declares where it `announces`, so its own page is labelled an announcement by code. Meta AI, Qwen, Z.ai and Xiaomi MiMo publish no live feed (2026-10-17); their launches arrive through Hacker News.
 
-**Company newsrooms** — for AI/tech, news drops here first: OpenAI, Google DeepMind, Anthropic, Meta AI, NVIDIA (newsroom + developer blog), Boston Dynamics, SpaceX, Waymo, Figure, Apple Newsroom, Hugging Face.
-
-**Journal press feeds:** Nature news, Science news, Cell Press, PNAS, PLOS.
+**Institutions and journals, tech only:** MIT News, NASA Technology, IEEE Spectrum, Nature Materials. The research-institution, journal and science-press feeds were removed on 2026-10-16 (Caltech, Berkeley, Max Planck, CERN, Fermilab, NASA and ESA science, Nature News, Science, Cell, PNAS, PLOS, Quanta, Scientific American, Phys.org).
 
 Most expose RSS at `/news/feed`, `/rss`, or `/feed`. Verify each URL loads before saving — publishers move these.
 
 ### Tier 2 — Preprints (genuinely ahead of the news cycle)
 
-Built 2026-09-19 as `feeds/tier2_preprints.yaml`: seven arXiv categories and
-three bioRxiv subjects. This is the tier where the plan and the build diverge
+Built 2026-09-19 as `feeds/tier2_preprints.yaml`. Since 2026-10-16 it is
+technology only: arXiv `cs.RO`, `cs.CL`, `cs.LG`, `cs.AI`, `cond-mat.mtrl-sci`,
+`quant-ph` and `physics.app-ph`, plus Hugging Face Daily Papers. The
+astronomy, biophysics and bioRxiv feeds were removed, and `quant-ph`'s physics
+is named `science` by the beat and never queued. The history below is how the
+tier was first built. This is the tier where the plan and the build diverge
 most, so what follows is what was wired in and why — the measurements behind
 each choice are in the feed file's header and are not repeated here.
 
@@ -414,10 +428,10 @@ template is required to show the flag.
 ### Tier 3 — Community signal (where things go viral first)
 
 - **Hacker News Algolia API** — free, no key. `search_by_date` with `points>150`. Best early-warning system for tech.
-- **Reddit** — r/science, r/technology, r/Futurology, r/MachineLearning, r/EngineeringPorn, r/askscience. Append `.rss` to any subreddit URL. Free.
+- **Reddit** — r/technology, r/MachineLearning, r/programming, r/LocalLLaMA, r/EngineeringPorn. Append `.rss` to any subreddit URL. Free.
 - **GitHub Trending** — daily, filtered by language. Free.
 - **Product Hunt API** — free tier; new tools, feeds a weekly "3 tools you should know."
-- **Bluesky** — real, free, open API. Build a list of ~200 researchers and labs and pull the firehose. This is where the science community migrated, and unlike X it costs nothing to read programmatically.
+- **Bluesky** — real, free, open API. Build a list of ~200 researchers and labs and pull the firehose. Many researchers and engineers moved here, and unlike X it costs nothing to read programmatically.
 
 *Not used: the X/Twitter API. Its read tiers are paid and the free tier does not support this use case.*
 
@@ -460,7 +474,6 @@ telling a person what happened this week, which is not the same job as
 supplying a row to `score.py`.
 
 **AI:** Import AI (Jack Clark), The Batch (Andrew Ng), AlphaSignal, TLDR AI, Last Week in AI, Ahead of AI (Sebastian Raschka)
-**Science:** Nature Briefing, Science Adviser, Quanta, STAT Morning Rounds
 **Tech/Engineering:** IEEE Spectrum Tech Alert, Benedict Evans, Stratechery (free tier), The Pragmatic Engineer (free tier), Hacker Newsletter
 **Space:** Payload, Rocket Report (Ars Technica)
 
@@ -540,12 +553,11 @@ The sites that matter for gummietech are Stack Overflow's siblings:
 
 | Site | Goldmine |
 |---|---|
-| physics.stackexchange.com | "Why does X happen?" with expert answers |
+| stackoverflow.com | "Why does X happen?" in code, with expert answers |
+| ai.stackexchange.com / stats.stackexchange.com | Conceptual ML, not code |
+| cs.stackexchange.com | The idea behind an algorithm or a data structure |
 | engineering.stackexchange.com | Real-world design tradeoffs |
-| space.stackexchange.com | Orbital mechanics, mission design |
-| ai.stackexchange.com | Conceptual ML, not code |
-| chemistry / biology / earthscience | Same pattern |
-| worldbuilding.stackexchange.com | Underrated — "what if" physics, highly shareable |
+| space.stackexchange.com | Spacecraft and launch hardware (secondary) |
 
 **The play:** query each site sorted by all-time votes, pull the top 200 questions → a 200-post content calendar of questions people genuinely want answered, with expert answers already attached. Sort by `activity` instead to see what's hot this week.
 
@@ -566,7 +578,7 @@ Educational content, fun facts, and ideas are time-independent and non-competiti
 
 Doubly important on a zero budget: evergreen posts have no API cost, no rate limits, and no deadline.
 
-Tech first since 2026-09-27, like the rest of the account: the library is what a slow news day falls back on, so a science-only library would undo the priority on exactly the days nothing else decides it.
+Technology only since 2026-10-16, like the rest of the account (tech first since 2026-09-27). The library is what a slow news day falls back on, so a science subject here would bring science back on exactly the days nothing else decides it. The science rows still in `docs/evergreen_queue.md` are waiting on the owner's decision.
 
 | Source | What you get |
 |---|---|
@@ -577,12 +589,7 @@ Tech first since 2026-09-27, like the rest of the account: the library is what a
 | Stack Overflow / CS / AI / Cross Validated top questions | "Why does X happen?" with an expert answer attached |
 | Hacker News all-time top stories | Essays and explanations people have already chosen to keep |
 | Trendshift yearly repositories (quarterly skim, last among these) | Open-source tools that kept a year's attention; the README, pinned to a commit, is the source, the idea it makes usable is the post |
-| Wikipedia "Unusual articles" | Endless genuinely weird, true facts |
-| Kurzgesagt / Veritasium / 3Blue1Brown / Real Engineering back catalogs | Proven-viral concepts, reformattable for IG |
-| Quanta archive | Best science explainers written anywhere |
-| Nature "Milestones" series | History of science, ideal for carousels |
-| Wolfram MathWorld, NASA APOD, USGS, NIST | Public-domain visuals and facts |
-| Retraction Watch | "Science that turned out to be wrong" — underused, very shareable |
+| 3Blue1Brown / Real Engineering / Computerphile back catalogs | Proven-viral tech concepts, reformattable for IG |
 | Practical Engineering, Asianometry | Infrastructure and semiconductors, absent from IG |
 
 **Batch-produce 30 of these in one sitting.** Target: never fewer than 15 approved evergreen posts in the queue.
@@ -601,7 +608,7 @@ Feedly Pro+ with Leo AI and Inoreader Pro are the convenient options, but both a
 - **RSSHub** — free and self-hostable; generates RSS for sources that killed theirs. Public instances exist but are rate-limited and unreliable; self-host if you need it.
 - **NewsAPI / GNews / Currents** — free tiers exist but several prohibit production use on the free plan. Read the terms before depending on them. Not needed given Tiers 1–5.
 
-### Not yet available: EurekAlert!
+### Not yet available: EurekAlert! (less relevant since 2026-10-16)
 
 Embargoed access is reserved for people whose primary occupation is journalism at accredited outlets, working on daily/weekly/monthly deadlines. Applicants need **at least three months of published content consisting primarily of original journalistic reporting on science topics**; opinion-based blogs and new media outlets are not eligible. Registrants must digitally sign an embargo agreement.
 
@@ -640,7 +647,7 @@ These are real limits, not obstacles to route around — knowing them up front p
 - **GitHub Actions scheduled runs can be delayed 10–30 minutes** during peak load on the free tier, and GitHub disables scheduled workflows after 60 days of repository inactivity. A monthly commit resets the clock. Neither matters for a 2-hour ingest cycle.
 - **Canva Bulk Create is Pro-only.** Not worth working around; HTML→PNG is better output at zero cost.
 - **Buffer free caps queued posts (~10) and Later free caps monthly posts (~30).** Meta Business Suite has neither cap, which is why it is Route A.
-- **The X/Twitter API has no usable free read tier.** Bluesky replaces it and is genuinely better for science.
+- **The X/Twitter API has no usable free read tier.** Bluesky replaces it for following researchers and engineers.
 
 ---
 
@@ -664,8 +671,8 @@ Design the template in Figma's free tier if it helps to see it, then translate t
 
 Hashtags matter far less than they used to — Instagram removed hashtag following and now leans on search keywords and content understanding.
 
-- **First line = SEO.** Put the actual searchable terms in it: "quantum computing," "fusion reactor," "humanoid robot." Instagram indexes caption text.
-- **3–5 hashtags maximum**, mixed: one broad (#technology), two niche (#quantumcomputing #materialsscience), one branded (#gummietech).
+- **First line = SEO.** Put the actual searchable terms in it: "AI agents," "quantum computing," "humanoid robot." Instagram indexes caption text.
+- **3–5 hashtags maximum**, mixed: one broad (#technology), two niche (#machinelearning #robotics), one branded (#gummietech).
 - **One link, and it is the archive.** `https://kemval.github.io/gummietechContent/` — newest post first, so the bio link always lands on what was posted today. A custom domain would cost ~$12/year and is the only thing in this plan that would break the $0 constraint; the default URL is fine until it isn't.
 - **The newsletter is the audience nobody else owns** (2026-10-12). Substack, free: no subscriber cap, its own discovery network, and no cut until a subscription is paid — which needs Stripe, unavailable from Costa Rica, so free is not a sacrifice. No free tier anywhere sends RSS-to-email (Kit and beehiiv keep it paid), so the week is pasted by hand: `python src/site.py --newsletter`. The archive also carries `feed.xml` and a downloadable PDF per month — the "keep this" a reader can take away.
 - **Always write alt text.** Accessibility win and a ranking signal. Already in the JSON schema.
