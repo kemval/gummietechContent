@@ -140,9 +140,23 @@ with no study behind it. The cover then says "Announcement — not a
 peer-reviewed study" and no preprint flag is shown. The model proposes this
 label, so check it both ways:
 
-- **Marked announcement, but a paper, preprint or technical report exists**
-  for the work (linked from the page, or findable by `WebSearch`): **BLOCK**.
-  The label hides a preprint flag that §7.2 requires.
+- **Marked announcement, but a paper, preprint or technical report is
+  linked from the page** (or findable by `WebSearch`): **open it and
+  decide.** Do not hand the choice to the person. On 2026-10-18 a report was
+  left unopened, and the BLOCK it raised asked the owner to choose the label
+  by hand. Fetch the document (`WebFetch`; for a PDF, `curl -sSL` it and
+  read its text) and compare it with what the post says:
+  - **It covers this release**: the same model name and version, or the
+    slides' figures appear in it. That is a **FIX**, worded as an exact
+    field change: `set "announcement": false`. The cover then carries the
+    preprint flag that §7.2 requires, and **Apply the fixes** can make the
+    change without a person deciding anything.
+  - **It covers a different release**, such as the base model of a later
+    update or an earlier version, and none of the slides' figures are in
+    it: **PASS** for the label. Say which release the report covers and
+    why that is not this one.
+  - **It cannot be opened or read**: **UNVERIFIED** for the label, as for
+    any source you cannot read. Never guess from the title.
 - **Not marked, but it is an announcement** — `peer_reviewed: false`, no
   paper anywhere, and the cover would say "Preprint": **FIX**. Tell the
   person to add `"announcement": true`. Calling a launch a preprint is a

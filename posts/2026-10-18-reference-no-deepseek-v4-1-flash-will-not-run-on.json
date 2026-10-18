@@ -2,18 +2,18 @@
   "post_type": "reference",
   "domain": "AI models",
   "colorway": "signal",
-  "hook": "No, DeepSeek V4.1 Flash will not run on any of these",
+  "hook": "None of these can run the DeepSeek V4.1 Flash quant we read",
   "items": [
-    "Flagship phone: No, smallest quant read is 359 GB",
-    "Laptop, 8 GB, no GPU: No, needs 80 GiB free RAM",
-    "MacBook Air, 16 GB: No, needs 80 GiB free RAM",
-    "RTX 4060, 8 GB: No, needs a 32 GB GPU",
-    "RTX 4090, 24 GB: No, asks for a 32 GB GPU",
-    "Terminal-Bench 4.0 42.3: Command-line tasks; Opus 5 scores 51.8",
-    "DeepSWE 77.0: Software-engineering tasks; Opus 5 scores 74.0",
-    "HLE 42.6: Hard exam questions without tools; Opus 5 scores 56.3"
+    "Flagship phone: No, the quant we read is 359 GB",
+    "Laptop, 8 GB, no GPU: No, it asks for 80 GiB RAM",
+    "MacBook Air, 16 GB: No, it asks for 80 GiB RAM",
+    "RTX 4060, 8 GB: No, it asks for a 32 GB GPU",
+    "RTX 4090, 24 GB: No, it asks for a 32 GB GPU",
+    "Terminal-Bench 4.0 42.3: Command-line tasks; Opus 5 scores 51.8, per DeepSeek",
+    "DeepSWE 77.0: Software-engineering tasks; Opus 5 scores 74.0, per DeepSeek",
+    "HLE 42.6: Hard exam questions without tools; Opus 5 scores 56.3, per DeepSeek"
   ],
-  "the_catch": "These scores come from DeepSeek's own model card. The card lists no limitations and gives no memory needs.",
+  "the_catch": "These scores are DeepSeek's own. The hardware lines come from one community quant, which tops out at 16K context and is text-only.",
   "source_post": "2026-10-17-signal-week-42#5",
   "figure_sources": [
     "Flagship phone: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
@@ -22,7 +22,7 @@
     "RTX 4060, 8 GB: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
     "RTX 4090, 24 GB: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF"
   ],
-  "caption": "DeepSeek's model card gives no memory figures. The one quantized repo we read lists a 359.32 GB file and asks for a 32 GB GPU and 128 GB of RAM. Save this for the next open model. What do you run models on?",
+  "caption": "DeepSeek's model card gives no memory figures. The one community quant we read lists a 359.32 GB file and asks for a 32 GB GPU, 128 GB of RAM and 80 GiB free at launch. Save this for the next open model. What do you run models on?",
   "keywords": [
     "DeepSeek",
     "open weights",
@@ -45,18 +45,18 @@
   "beat": "ai",
   "es": {
     "domain": "modelos de IA",
-    "hook": "No, DeepSeek V4.1 Flash no se ejecutará en ninguno de ellos",
+    "hook": "Ninguno de ellos puede ejecutar la cuantización Flash V4.1 de DeepSeek que leímos",
     "items": [
-      "Teléfono insignia: No, la lectura cuantizada mínima es de 359 GB",
-      "Portátil, 8 GB, sin GPU: No, necesita 80 GiB de RAM libre",
-      "MacBook Air, 16 GB: No, necesita 80 GiB de RAM libre",
-      "RTX 4060, 8 GB: No, necesita una GPU de 32 GB",
-      "RTX 4090, 24 GB: No, solicita una GPU de 32 GB",
-      "Terminal‑Bench 4.0 42,3: Tareas de línea de comandos; Opus 5 puntúa 51,8",
-      "DeepSWE 77,0: Tareas de ingeniería de software; Opus 5 puntúa 74,0",
-      "HLE 42,6: Preguntas de examen difíciles sin herramientas; Opus 5 puntúa 56,3"
+      "Teléfono insignia: No, la cuantización que leímos es de 359 GB",
+      "Portátil, 8 GB, sin GPU: No, requiere 80 GiB de RAM",
+      "MacBook Air, 16 GB: No, requiere 80 GiB de RAM",
+      "RTX 4060, 8 GB: No, requiere una GPU de 32 GB",
+      "RTX 4090, 24 GB: No, requiere una GPU de 32 GB",
+      "Terminal-Bench 4.0 42,3: Tareas de línea de comandos; Opus 5 obtuvo 51,8, según DeepSeek",
+      "DeepSWE 77,0: Tareas de ingeniería de software; Opus 5 obtuvo 74,0, según DeepSeek",
+      "HLE 42,6: Preguntas de examen difíciles sin herramientas; Opus 5 obtuvo 56,3, según DeepSeek"
     ],
-    "the_catch": "Estas puntuaciones provienen de la propia tarjeta del modelo de DeepSeek. La tarjeta no enumera limitaciones ni indica requisitos de memoria.",
-    "_en": "64fea0e5fb288fa2"
+    "the_catch": "Estas puntuaciones son propias de DeepSeek. Las líneas de hardware provienen de una cuantización comunitaria, que alcanza un máximo de 16 K de contexto y es solo de texto.",
+    "_en": "a1ccb85e5195ae88"
   }
 }
