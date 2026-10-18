@@ -51,6 +51,7 @@ document.fonts.ready.then(() => {
       // On cream the glass shades instead: brightening an already pale field
       // made "(bug)" all but vanish.
       const pale = s.el.classList.contains('cream');
+      const LEAD = getComputedStyle(document.body).getPropertyValue('--lead').trim() || '#EE6EC0';
       for (const g of words) {
         // Painted as glass, so the outline fallback goes (slides.css). Marked
         // on the word itself: in the reel the canvas belongs to a separate
@@ -80,11 +81,15 @@ document.fonts.ready.then(() => {
         lctx.fillStyle = '#000'; fill(lctx);
         lctx.globalCompositeOperation = 'source-in';
         lctx.drawImage(soft, 0, 0, Wc, Hc);
-        lctx.fillStyle = s.dark ? 'rgba(255,255,255,.08)' : pale ? 'rgba(59,44,35,.09)' : 'rgba(255,255,255,.22)';
+        // On cream the shade is the post's lead hue, not ink: 9% ink over
+        // cream read as grey glass (the owner, 2026-10-18).
+        lctx.fillStyle = s.dark ? 'rgba(255,255,255,.08)' : pale ? LEAD : 'rgba(255,255,255,.22)';
+        lctx.globalAlpha = pale ? .28 : 1;
         lctx.fillRect(0, 0, Wc, Hc);
+        lctx.globalAlpha = 1;
         lctx.globalCompositeOperation = 'source-over';
         c.save();
-        c.shadowColor = s.dark ? 'rgba(0,0,0,.45)' : pale ? 'rgba(59,44,35,.28)' : 'rgba(59,44,35,.18)';
+        c.shadowColor = s.dark ? 'rgba(0,0,0,.45)' : pale ? 'rgba(59,44,35,.26)' : 'rgba(59,44,35,.18)';
         c.shadowBlur = 40; c.shadowOffsetY = 14;
         c.drawImage(layer, 0, 0);
         c.restore();
@@ -195,12 +200,12 @@ document.fonts.ready.then(() => {
       else {
         // below whatever text sits above it, and never past the corner labels
         const above = slide.querySelector('.body.top');
-        // clear of the footer band (rule at y 1240) and its corner labels:
-        // parentheses and descenders hang ~.22em below the line box.
-        // data-lift raises it further: an incident's timestamp clears the
-        // grid's centre tick (y 1130-1240) too, which cut through its glass.
-        const base = +(g.dataset.lift || 106);
-        const lift = () => { g.style.bottom = (base + parseFloat(g.style.fontSize) * .22).toFixed(0) + 'px'; };
+        // clear of the footer band (rule at y 1240), its corner labels and
+        // the grid's centre tick above it (y 1130-1240): parentheses and
+        // descenders hang ~.22em below the line box. Until 2026-10-18 this
+        // cleared only the band, and the tick cut through every bottom
+        // ghost's glass.
+        const lift = () => { g.style.bottom = (225 + parseFloat(g.style.fontSize) * .22).toFixed(0) + 'px'; };
         lift();
         // too tall for the gap under the text: shrink, re-lift, and repeat,
         // since the lift itself grows with the size

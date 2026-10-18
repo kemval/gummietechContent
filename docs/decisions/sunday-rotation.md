@@ -98,15 +98,19 @@ The owner went through five versions on 2026-10-18. The "1/3" ghost read
 as the Breakdown's. Solid black, outlined, monospaced and light timestamps
 were all off-brand. What stayed is the brand's glass: each entry is
 "<time>: <Sentence>", the slide shows the whole entry as text, and the time
-is set again as the glass ghost. Two layout options carry it, both in
-`slides_layout.js` and both opt-in:
+is set again as the glass ghost. One layout option carries it, in
+`slides_layout.js`, opt-in:
 
 - `data-fill`: the layout pass tries the phrase on 1–4 lines and keeps the
   break that sets it largest in the room under the text. "About 36 seconds
   in" fills the slide as "About 36 / seconds / in". The owner chose that
   over a smaller version with no single short word on its own line.
-- `data-lift`: raises a bottom ghost clear of the grid's centre tick (y
-  1130–1240), which cut through the glass.
+- Every bottom ghost, in every format, now sits clear of the grid's centre
+  tick (y 1130–1240). The tick used to cut through the glass, and it did
+  so in Breakdowns before this format existed.
+- On cream (slide 2) the glass is shaded with the post's lead hue at 28%,
+  not 9% ink. The ink shade read as grey glass. A strong lead (signal's
+  pink) at 45% read as solid paint, and 28% keeps both looking like glass.
 
 `finish` refuses an entry that is not "<time>: <Sentence>", a time over
 `MAX_TIME_WORDS` (4) words, or a sentence that starts in lower case. The
