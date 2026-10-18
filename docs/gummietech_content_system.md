@@ -156,7 +156,7 @@ weights:
   post or Signal item from the last ten days (the Drop's freshness rule),
   then an older Run it post if nothing fresh is left. Its credit is copied
   from that post, as a term's is.
-- **The same five machines every week,** in code (`weekly.LADDER`): a
+- **The same five machines every week,** in code (`formats.LADDER`): a
   flagship phone, an 8 GB laptop with no GPU, a 16 GB MacBook Air, an 8 GB
   RTX 4060 and a 24 GB RTX 4090. Each line says what fits, or "No" and the
   smaller model to use. Then two or three benchmark lines translated into

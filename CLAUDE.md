@@ -404,7 +404,7 @@ does not state. A source that cannot be read is a hold, not a pass.
   do not copy it anywhere, and `telegram.py` must never import `render.py`.
 - A term (Tuesday), a Breakdown (Thursday) and a reference (Sunday: "Can
   I run it?", a sheet about one fresh model on the fixed hardware ladder
-  `weekly.LADDER`, with a catch) are written by Claude in `weekly.yml`, and
+  `formats.LADDER`, with a catch) are written by Claude in `weekly.yml`, and
   a sheet by hand — none by `draft.py`. `formats.by_hand()` is the
   one test of that, for the Drop-day gate, `watch.py` and redrafting;
   never compare `post_type` to `"breakdown"`. A Signal (five items, or as few as

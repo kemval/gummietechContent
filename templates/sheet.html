@@ -22,13 +22,22 @@
    Sunday's "Can I run it?" (post_type "reference") is the same sheet about
    one model, plus the catch, which is the limit of its benchmarks. It goes
    second from last, as in every other format, so whether to have it is
-   decided by whether the record has the field.
+   decided by whether the record has the field. Its hardware ladder
+   (formats.LADDER) gets slides of its own, and the benchmark lines after it
+   get one more, so a machine and a score never share a slide.
 #}
 {% import 'slide_parts.html' as parts with context %}
 {% set fmt = "can I run it" if post_type == "reference" else "cheat sheet" %}
 {% set has_catch = the_catch is defined %}
 {% set per = 3 %}
+{% if has_catch %}
+{% set rungs = LADDER|length %}
+{% set pages = items[:rungs]|batch(per)|list + [items[rungs:]] %}
+{% set rights = ["which machine"] * (pages|length - 1) + ["what the scores mean"] %}
+{% else %}
 {% set pages = items|batch(per)|list %}
+{% set rights = [domain] * pages|length %}
+{% endif %}
 {% set n = 3 + pages|length + (1 if has_catch else 0) %}
 {% set fields = rhythm(n, n - 1 if has_catch else 0) %}
 {% set whole = n - 2 if has_catch else n - 1 %}
@@ -36,16 +45,16 @@
 <!-- 1. COVER -->
 {{ parts.cover(fmt, n, fields[0], [
      ("domain", domain, false),
-     ("terms", items|length ~ " terms", false),
+     ("machines", LADDER|length, false) if has_catch else ("terms", items|length ~ " terms", false),
      ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2..n-2. THE ENTRIES -->
 {% for page in pages %}
 {% set at = loop.index + 1 %}
-{% set first = loop.index0 * per %}
+{% set first = pages[:loop.index0]|map("length")|sum %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  {{ parts.corners(fmt, at, n, domain) }}
+  {{ parts.corners(fmt, at, n, rights[loop.index0]) }}
   <div class="body top sheet">
     {% for item in page %}
     <div class="entry">

@@ -41,7 +41,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
-from formats import FORMATS, PAIR, hashtags, unpaired
+from formats import FORMATS, LADDER, PAIR, hashtags, unpaired
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
@@ -65,18 +65,6 @@ TECH_BEATS = frozenset({"ai", "software", "automation", "robotics", "computing",
 # came out last month" is a question nobody is asking any more.
 FRESH_DAYS = 10
 
-# Sunday's hardware ladder: the same machines, in this order, every week, so
-# the sheet is recognisable at a glance and two weeks can be compared. It is
-# code's, not the writer's, and problems() refuses a sheet that reorders,
-# renames or skips a rung. Each is a machine a reader may own, not a spec
-# they would have to translate: "6 GB of VRAM" makes them do sums.
-LADDER = (
-    "Flagship phone",
-    "Laptop, 8 GB, no GPU",
-    "MacBook Air, 16 GB",
-    "RTX 4060, 8 GB",
-    "RTX 4090, 24 GB",
-)
 # The benchmark lines after the ladder: docs' Benchmark Decoder, sharing the
 # post rather than taking a Sunday of its own.
 BENCHMARK_LINES = (2, 3)
@@ -435,7 +423,8 @@ Then:
     GB". Tokens per second only when a source measured them on that machine.
   - Then {{lo}} or {{hi}} benchmark lines, each a benchmark the model card
     reports, turned into the task it measures, with the number. For example
-    "MMLU 78: answers 78 of 100 university-exam questions right". When the
+    "MMLU 78: Answers 78 of 100 university-exam questions right". Every
+    line after the colon starts with a capital letter. When the
     card compares models, say how big a gap is noise and how big is a real
     difference.
   - hook is the verdict, not the model's name: "Yes, it runs on a MacBook
@@ -527,6 +516,10 @@ def reference_problems(post: dict, directory: Path,
                      f"not {len(items) - len(LADDER)}")
     if bad := unpaired(post):
         found.append(f"no \"Term: line\" split in {', '.join(bad)}")
+    if low := [t for t, line in (i.split(PAIR, 1) for i in items if PAIR in i)
+               if line.strip()[:1].islower()]:
+        found.append(f"each line starts with a capital, as the sheet sets "
+                     f"them: {', '.join(low)}")
     figures = post.get("figure_sources")
     if not (isinstance(figures, list) and figures
             and all(isinstance(f, str) and f.strip() for f in figures)):

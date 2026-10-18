@@ -34,7 +34,7 @@ term and the Breakdown are, and reviewed by `review.yml` like any post.
 - **Claude picks from a menu.** No record says whether a model's weights
   can be downloaded, so code lists the candidates and the writer reads the
   sources. A pick from outside the menu is refused by `finish`.
-- **The ladder is code** (`weekly.LADDER`), checked term by term, so that
+- **The ladder is code** (`formats.LADDER`), checked term by term, so that
   every Sunday reads the same and two weeks can be compared. Machines, not
   VRAM figures: the owner's test was that a reader should not have to do
   sums.

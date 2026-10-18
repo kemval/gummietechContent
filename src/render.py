@@ -40,7 +40,7 @@ from playwright.sync_api import Page, sync_playwright
 # The format table is its own module so telegram.py can read it without
 # importing this one — see formats.py. Re-exported here because render.py
 # is where the rest of the shared vocabulary already lives.
-from formats import (DEFAULT_FORMAT, FORMATS, PAIR, RECORD, Format, Section,  # noqa: F401
+from formats import (DEFAULT_FORMAT, FORMATS, LADDER, PAIR, RECORD, Format, Section,  # noqa: F401
                      body_text, entries, es_fields, format_name,  # noqa: F401
                      announcement, missing_fields, missing_from_entries, news_report, pieces,
                      post_preprint_flag, preprint, preprint_claims, required,
@@ -605,6 +605,7 @@ def render_html(post: dict, colorway: str | None = None,
     # that knows how many it has, and this is the only thing that knows what
     # colour they go in.
     env.globals["PAIR"] = PAIR
+    env.globals["LADDER"] = LADDER
     env.globals["t"] = translator(lang)
     context["lang"] = lang
     # signal.html labels each item by these, so a roundup cannot hold a

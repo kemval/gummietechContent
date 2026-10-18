@@ -91,6 +91,21 @@ class Format(NamedTuple):
     by_hand: bool = False
 
 
+# The hardware ladder of Sunday's "Can I run it?": the same machines, in this
+# order, every week, so the sheet is recognisable at a glance and two weeks
+# can be compared. sheet.html gives it its own slides. It is
+# code's, not the writer's: weekly.problems() refuses a sheet that reorders,
+# renames or skips a rung. Each is a machine a reader may own, not a spec
+# they would have to translate: "6 GB of VRAM" makes them do sums.
+LADDER = (
+    "Flagship phone",
+    "Laptop, 8 GB, no GPU",
+    "MacBook Air, 16 GB",
+    "RTX 4060, 8 GB",
+    "RTX 4090, 24 GB",
+)
+
+
 # What each carousel format is made of, in the order a reader meets it.
 #
 # One table, because six places need the answer and none of them should be
@@ -166,8 +181,8 @@ FORMATS: dict[str, Format] = {
         by_hand=True,
     ),
     # Sunday's "Can I run it?": a cheat sheet about one fresh model, and the
-    # one sheet with a catch. Its items are a fixed hardware ladder
-    # (weekly.LADDER), then two or three lines decoding its benchmarks, and
+    # one sheet with a catch. Its items are the hardware ladder (LADDER,
+    # above), then two or three lines decoding its benchmarks, and
     # the catch is the limit of those benchmarks the source states. It shares
     # sheet.html. `source_post` names the published post, or Signal item
     # ("stem#3"), that it is built on, and weekly.finish() copies the credit
