@@ -200,6 +200,26 @@ even when it is a textbook one.
 A cheat sheet (`post_type: "sheet"`) is a list of `"Term: line"` items from
 one source: check every line against `source_url` the same way.
 
+A "Can I run it?" (`post_type: "reference"`) is a sheet about one model. It
+is built on a published post or Signal item (`source_post`, "stem" or
+"stem#N"), and its credit was copied from there. Check:
+
+- **The model's weights can be downloaded** (a Hugging Face repo or a repo
+  with the weights). A closed model on this sheet is a **BLOCK**.
+- **Every hardware line** (the first five items, the fixed ladder) against
+  the URL that `figure_sources` gives for it. Fetch each one. Apply §7b's
+  rule: a smaller machine, a lower memory figure or a speed the source does
+  not give is a **BLOCK**. A line that says "estimated" needs its arithmetic
+  or calculator named in `figure_sources`. Redo the arithmetic, since
+  weights at Q4 take about half a byte per parameter plus overhead. A
+  figure with no entry in `figure_sources` is a **BLOCK**.
+- **The hook** must be true of the ladder ("runs on a MacBook Air" with a
+  "No" on that rung is a BLOCK).
+- **Every benchmark line** against the model card: the number, and that the
+  benchmark measures what the line says it does.
+- **`the_catch`** must be stated or plainly shown by the source, as for a
+  Drop.
+
 ### 7d. The Spanish: check `es` against the English
 
 `translate.py` writes an `es` block for the web archive before this check

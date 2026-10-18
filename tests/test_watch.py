@@ -134,6 +134,28 @@ def test_a_week_with_no_breakdown_is_said_from_friday(posts):
     assert findings(report, "breakdown")
 
 
+def test_a_sunday_with_nothing_is_said_on_the_monday(posts):
+    """2026-10-18: the Sunday rotation had been planned on 2026-10-12 and
+    never built, and that Sunday sent the status report alone with nothing
+    to say a post was owed. A Sunday is the last day of its week, so the
+    within-the-week rule would never ask about it."""
+    directory, write = posts
+    report = Report("WATCH")
+    watch.check_weekly("2026-10-18", report, directory)    # the Sunday itself
+    assert not findings(report, "reference")
+    report = Report("WATCH")
+    watch.check_weekly("2026-10-19", report, directory)    # Monday
+    assert findings(report, "reference")
+    report = Report("WATCH")
+    watch.check_weekly("2026-10-20", report, directory)    # once, not daily
+    assert not findings(report, "reference")
+
+    write("2026-10-18-reference-it-runs.json", post_type="reference")
+    report = Report("WATCH")
+    watch.check_weekly("2026-10-19", report, directory)
+    assert not findings(report, "reference")
+
+
 def test_last_weeks_breakdown_does_not_count_for_this_one(posts):
     directory, write = posts
     write("2026-09-19-the-tube.json", post_type="breakdown")

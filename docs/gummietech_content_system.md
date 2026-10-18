@@ -60,6 +60,7 @@ disagree again, this one wins and the other is corrected to match.
 | **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
 | **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 | **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
+| **Can I run it?** | 1×/week, Sunday | Saves | Carousel, 7 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -143,6 +144,33 @@ the example post) are code in `src/weekly.py`, and a separate fact-check
 grades it before the gate. Automating the Cheat Sheet is open: the format
 credits one source, and five terms gathered from five posts have five. Settled by: saves per post against the Drop's
 median, over their first four of each.
+
+**Can I run it? was added 2026-10-18,** the first of the four Sunday formats
+the reach plan of 2026-10-12 proposed (Hype Check, Incident Report and True
+or false? are not built). Until then Sunday had no post, and on 2026-10-18
+the status report went out alone because the plan had never been built.
+It is one sheet (`"reference"`) about one fresh AI model with downloadable
+weights:
+
+- **The subject is the week's launch,** not an archive pick: a published AI
+  post or Signal item from the last ten days (the Drop's freshness rule),
+  then an older Run it post if nothing fresh is left. Its credit is copied
+  from that post, as a term's is.
+- **The same five machines every week,** in code (`weekly.LADDER`): a
+  flagship phone, an 8 GB laptop with no GPU, a 16 GB MacBook Air, an 8 GB
+  RTX 4060 and a 24 GB RTX 4090. Each line says what fits, or "No" and the
+  smaller model to use. Then two or three benchmark lines translated into
+  tasks, which is the Benchmark Decoder.
+- **The cover is the verdict** ("Yes, it runs on a MacBook Air"), not the
+  model's name, and the dark slide is the benchmark limit the headline
+  leaves out.
+- **Every hardware figure names its source** (`figure_sources`) or says
+  "estimated". These figures are rarely in the paper, and the fact-check
+  blocks a figure with no source.
+
+While it is the only Sunday format built, every Sunday is a Can I run it?.
+When a second one is built, `weekly.py` picks the format by ISO week. Settled
+by: saves per post against the Drop's median, over its first four.
 
 ### The Status Report — the second pillar
 

@@ -165,6 +165,23 @@ FORMATS: dict[str, Format] = {
         catch=False,
         by_hand=True,
     ),
+    # Sunday's "Can I run it?": a cheat sheet about one fresh model, and the
+    # one sheet with a catch. Its items are a fixed hardware ladder
+    # (weekly.LADDER), then two or three lines decoding its benchmarks, and
+    # the catch is the limit of those benchmarks the source states. It shares
+    # sheet.html. `source_post` names the published post, or Signal item
+    # ("stem#3"), that it is built on, and weekly.finish() copies the credit
+    # from there. `figure_sources` says where each hardware figure comes from
+    # so the fact-check can follow it. It is never rendered: a figure with
+    # no source is the error this format would otherwise publish weekly.
+    "reference": Format(
+        "sheet.html",
+        (Section("items",     "Can I run it?", "¿Lo puedo correr?",
+                 many=True, pair=True),
+         Section("the_catch", "The catch",     "El detalle")),
+        record=(*RECORD, "source_post", "figure_sources"),
+        by_hand=True,
+    ),
     # A Drop whose paper ships its code, with one slide on running it. The
     # repo is required, and it is code_link()'s, never the model's: a run
     # post pointing at an invented repo is the worst wrong credit there is.
