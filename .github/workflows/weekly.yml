@@ -1,7 +1,8 @@
 name: weekly
 
 # The weekly carousels Claude writes: the glossary term on Tuesday, the
-# Breakdown on Thursday. Each is then reviewed like any Drop.
+# Breakdown on Thursday, "Can I run it?" on Sunday. Each is then reviewed
+# like any Drop.
 #
 # Neither is drafted by draft.py's free-tier model: a definition and a
 # mechanism are exactly where a model invents a confident one, and docs §4
@@ -25,14 +26,15 @@ on:
     # cron here lands hours late, so it asks early and often and the `gate`
     # job turns every firing after the first honoured one into a no-op.
     # 06:17 UTC = 00:17 in America/Costa_Rica, which has no DST. Tuesday is
-    # the glossary, Thursday the Breakdown — weekly.KINDS says which.
-    - cron: '17 6,8,10,12 * * 2,4'
+    # the glossary, Thursday the Breakdown, Sunday (cron's 0) the reference
+    # — weekly.KINDS says which.
+    - cron: '17 6,8,10,12 * * 0,2,4'
   workflow_dispatch:
     inputs:
       kind:
         description: Which post to write.
         type: choice
-        options: [glossary, breakdown]
+        options: [glossary, breakdown, reference]
         required: true
       force:
         description: >
@@ -118,8 +120,8 @@ jobs:
           fi
 
       # The whole instruction, with what code already chose filled in: the
-      # terms taken and the posts a term may use, or the Drop a Breakdown
-      # explains. Exits non-zero, with what to do, when nothing is left.
+      # terms taken and the posts a term may use, the Drop a Breakdown
+      # explains, or the fresh posts a reference may be built on. Exits non-zero, with what to do, when nothing is left.
       - name: Write the brief
         run: |
           mkdir -p /tmp/weekly
@@ -162,11 +164,73 @@ jobs:
             exit 1
           fi
 
-      # Refuses a bad draft; then copies the credit and names the file.
+      # Refuses a bad draft; then copies the credit and names the file. A
+      # refusal is not yet a failure: the writer gets one more go below.
       - name: File the post in posts/
-        id: file
+        id: first
         run: |
-          python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json | tee finish.log
+          set +e
+          python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json > /tmp/weekly/finish.log 2>&1
+          code=$?
+          cat /tmp/weekly/finish.log
+          if [ "$code" -eq 0 ]; then
+            echo "refused=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "refused=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # One rewrite, told exactly why. Every refusal finish() gives is
+      # specific — a line too long, a term already defined, a pick from
+      # outside the menu — and before 2026-10-18 each one ended the run, so
+      # a person had to dispatch the whole post again for one long line.
+      # Once only: a draft refused twice is a brief the writer cannot
+      # follow, which is a person's to read.
+      - name: Rewrite the refused draft
+        if: steps.first.outputs.refused == 'true'
+        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read /tmp/weekly/brief.md. Your draft, /tmp/weekly/draft.json,
+            was refused by src/weekly.py for the reasons in
+            /tmp/weekly/finish.log. Fix those and only those, keeping every
+            other word, and write the corrected draft to
+            /tmp/weekly/draft.json.
+          show_full_output: true
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Read,Write,Glob,Grep,WebFetch"
+          settings: |
+            {
+              "permissions": {
+                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)"],
+                "deny": ["Write(posts/**)", "Edit(posts/**)",
+                         "Write(src/**)", "Edit(src/**)",
+                         "Write(.github/**)", "Edit(.github/**)",
+                         "Write(templates/**)", "Edit(templates/**)"]
+              }
+            }
+
+      # The first check's reason, again for the second writer. A refused
+      # draft wrote nothing, so the tree is still clean to check.
+      - name: Check the rewrite changed nothing in the repo
+        if: steps.first.outputs.refused == 'true'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::The writer changed files in the repo: $(git status --porcelain | tr '\n' ' '). Nothing has been committed." >&2
+            exit 1
+          fi
+
+      - name: File the rewrite, or name the first
+        id: file
+        env:
+          REFUSED: ${{ steps.first.outputs.refused }}
+        run: |
+          if [ "$REFUSED" = "true" ]; then
+            python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json | tee finish.log
+          else
+            cp /tmp/weekly/finish.log finish.log
+          fi
           post=$(sed -n 's/^Wrote //p' finish.log | tail -1)
           if [ -z "$post" ] || [ ! -f "$post" ]; then
             echo "::error::weekly.py did not report the file it wrote." >&2

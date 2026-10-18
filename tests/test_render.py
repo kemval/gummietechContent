@@ -109,6 +109,10 @@ MINIMAL = {
     "term": {"term": "Overfitting", "definition": "D 2x.", "example": "E.",
              "the_catch": "C.", "example_post": "2026-09-01-the-example"},
     "sheet": {"items": ["Preprint: Posted 2x before review.", "DOI: An ID."]},
+    "reference": {"items": ["MacBook Air, 16 GB: Yes, 8B at Q4.",
+                            "MMLU 78: 78 of 100 exam questions."],
+                  "the_catch": "C.", "source_post": "2026-09-01-the-example",
+                  "figure_sources": ["MacBook Air, 16 GB: https://x.org"]},
     "run": {"what_happened": "W.", "try_it": "A GPU 2x.", "why_it_matters": "Y.",
             "the_catch": "C.", "code_url": "https://github.com/a/b"},
 }

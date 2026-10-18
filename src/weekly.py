@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-The weekly carousels Claude writes: Tuesday's glossary term and Thursday's
-Breakdown. What weekly.yml decides in code, around the one step a model does.
+The weekly carousels Claude writes: Tuesday's glossary term, Thursday's
+Breakdown and Sunday's "Can I run it?". What weekly.yml decides in code,
+around the one step a model does.
 
     python src/weekly.py due <kind>             # exit 0 if this week still owes one
     python src/weekly.py brief <kind>           # the writer's instructions
     python src/weekly.py finish <kind> <draft>  # refuse a bad draft, or file it
 
-<kind> is a key of KINDS: glossary or breakdown.
+<kind> is a key of KINDS: glossary, breakdown or reference.
 
 Neither is drafted by draft.py's free-tier model. A definition and a
 mechanism are exactly where a model invents a confident one, and docs §4
@@ -18,7 +19,9 @@ model is decided here, before and after it writes:
   - whether this week's slot is already filled (`due`)
   - what the post is built from: a term's example is a published post the
     writer picks from a list; a Breakdown's subject is a published Drop this
-    file picks, tech first, that has no Breakdown yet
+    file picks, tech first, that has no Breakdown yet; a reference's model
+    is a fresh published AI post, or Signal item, the writer picks from a
+    list
   - a repeated term, a missing field, a mechanism of the wrong length
   - the credit. source_url, doi, attribution, peer_reviewed,
     announcement and news_report are copied
@@ -38,7 +41,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
-from formats import FORMATS, hashtags
+from formats import FORMATS, LADDER, PAIR, hashtags, unpaired
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
@@ -57,6 +60,22 @@ CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement",
 TECH_BEATS = frozenset({"ai", "software", "automation", "robotics", "computing",
                         "engineering"})
 
+# ingest.MAX_STORY_AGE_DAYS, restated for TECH_BEATS' reason. The reason
+# draft.pick_row() has it applies on Sunday too: "can I run the model that
+# came out last month" is a question nobody is asking any more.
+FRESH_DAYS = 10
+
+# A rung's line, after its colon, in words. sheet.html sets all five rungs on
+# one slide at the sheet's type size, which holds five one-line entries and
+# not five two-line ones: the 2026-10-18 sample fitted with lines of four to
+# eight words. Refused in finish() rather than left to proof.py, which would
+# only say so at the gate.
+MAX_RUNG_WORDS = 8
+
+# The benchmark lines after the ladder: docs' Benchmark Decoder, sharing the
+# post rather than taking a Sunday of its own.
+BENCHMARK_LINES = (2, 3)
+
 
 class Kind(NamedTuple):
     """One weekly carousel Claude writes.
@@ -72,6 +91,7 @@ class Kind(NamedTuple):
 KINDS: dict[str, Kind] = {
     "glossary":  Kind("term", ("term", "sheet"), 1),      # Tuesday
     "breakdown": Kind("breakdown", ("breakdown",), 3),    # Thursday
+    "reference": Kind("reference", ("reference",), 6),    # Sunday
 }
 
 
@@ -119,7 +139,8 @@ def published(directory: Path) -> list[tuple[str, dict]]:
     """Published posts with one source of their own, newest first."""
     return [(path.stem, post) for path, post in reversed(posts(directory))
             if post.get("published_at")
-            and post.get("post_type") not in ("signal", "term", "sheet")]
+            and post.get("post_type") not in ("signal", "term", "sheet",
+                                              "reference")]
 
 
 def is_tech(post: dict) -> bool:
@@ -171,10 +192,95 @@ def subject(directory: Path = POSTS_DIR) -> tuple[str, dict] | None:
     return (tech or drops or [None])[0]
 
 
+# ----------------------------------------------------- the reference sheet
+
+def item_ref(stem: str, n: int) -> str:
+    """How a reference names one Signal item: its post's stem and its 1-based
+    place, so the credit can be read back from exactly that item."""
+    return f"{stem}#{n}"
+
+
+def sources(today: date, directory: Path = POSTS_DIR) -> list[tuple[str, dict]]:
+    """What this Sunday's "Can I run it?" may be built on, newest first.
+
+    Each entry is a published, fact-checked source, so its credit can be
+    copied the way a term's is. Fresh AI posts come first: Drops and run
+    posts dated within FRESH_DAYS, and the items of Signals dated within it,
+    since a week's model launches mostly reach this account as Signal items.
+    Code cannot tell from a record whether a model's weights can be
+    downloaded, so the writer chooses from this list and reads the source.
+    Only when nothing fresh is left does an older run post stand in. Its
+    repo is already verified, and running it is what the post is about. Any
+    source a reference already covers is skipped, by DOI or by source URL.
+    """
+    covered = set()
+    for post in every_post(directory):
+        if post.get("post_type") == "reference":
+            covered |= {str(post.get(f, "")).strip().lower()
+                        for f in ("doi", "source_url")} - {""}
+
+    def fresh_ai(record: dict, stem: str) -> bool:
+        try:
+            drafted = date.fromisoformat(stem[:10])
+        except ValueError:
+            return False
+        beat = str(record.get("beat", "")).strip().lower()
+        ai = beat == "ai" if beat else record.get("colorway") == "signal"
+        return ai and 0 <= (today - drafted).days <= FRESH_DAYS
+
+    def uncovered(record: dict) -> bool:
+        keys = {str(record.get(f, "")).strip().lower()
+                for f in ("doi", "source_url")} - {""}
+        return bool(str(record.get("source_url", "")).strip()) and not keys & covered
+
+    fresh, runs = [], []
+    for path, post in reversed(posts(directory)):
+        if not post.get("published_at"):
+            continue
+        if post.get("post_type") == "signal":
+            for n, item in enumerate(post.get("items") or [], start=1):
+                if (isinstance(item, dict) and fresh_ai(item, path.stem)
+                        and uncovered(item)):
+                    fresh.append((item_ref(path.stem, n), item))
+        elif post.get("post_type") in ("drop", "run") and uncovered(post):
+            if fresh_ai(post, path.stem):
+                fresh.append((path.stem, post))
+            elif post.get("post_type") == "run":
+                runs.append((path.stem, post))
+    return fresh or runs
+
+
+def resolve(ref: str, directory: Path = POSTS_DIR) -> dict:
+    """The record a reference is built on: a post, or one Signal item."""
+    stem, _, n = ref.partition("#")
+    post = read(directory / f"{stem}.json") or {}
+    if not n:
+        return post
+    items = post.get("items") or []
+    at = int(n) - 1 if n.isdigit() else -1
+    return items[at] if 0 <= at < len(items) and isinstance(items[at], dict) else {}
+
+
 # ---------------------------------------------------------------- the brief
 
-def brief(name: str, directory: Path = POSTS_DIR) -> str:
+def brief(name: str, directory: Path = POSTS_DIR,
+          today: date | None = None) -> str:
     """The writer's whole instruction, with the menu code already chose."""
+    if name == "reference":
+        found = sources(today or date.today(), directory)
+        if not found:
+            raise SystemExit("No published AI post from the last "
+                             f"{FRESH_DAYS} days, and no run post, is left "
+                             "without a reference. Write this Sunday's by "
+                             "hand, or skip it.")
+        menu = [f"  - {ref}  —  {rec.get('hook') or rec.get('claim', '')}  "
+                f"({rec.get('source_url', '')})" for ref, rec in found]
+        ladder = "\n".join(f"  {n}. {rung}" for n, rung in
+                           enumerate(LADDER, start=1))
+        return REFERENCE_BRIEF.format(menu="\n".join(menu), ladder=ladder,
+                                      rungs=len(LADDER), words=MAX_RUNG_WORDS,
+                                      lo=BENCHMARK_LINES[0],
+                                      hi=BENCHMARK_LINES[1])
     if name == "glossary":
         terms = [f"  - {t}" for t in defined_terms(directory)] or ["  (none)"]
         menu = [f"  - {stem}  —  {post.get('hook', '')}"
@@ -287,6 +393,68 @@ Finish by printing the hook and one line on what the mechanism is.
 """.replace("{rules}", SHARED_RULES)
 
 
+REFERENCE_BRIEF = """\
+Write this Sunday's "Can I run it?" for @gummietech, an Instagram account on
+technology. It is a cheat sheet about one AI model that came out recently:
+whether it runs on machines readers own, and what its benchmark numbers mean
+in plain words. The point is a sheet people save.
+
+Read first:
+  - src/formats.py, the "reference" entry
+  - docs/voice.md
+
+Published posts and Signal items you may build on (ref, then cover line or
+claim, then source). Fresh ones come first:
+{{menu}}
+
+Then:
+  1. Pick the first one above that is a model whose weights anyone can
+     download (an open-weights release on Hugging Face, or a repo with the
+     weights). Read its source in full. If none of them has downloadable
+     weights, say so in your final message and write nothing.
+  2. Find what memory it needs. In order of preference: the model card's own
+     requirements table, the quantization table of the repo that ships the
+     quantized files (for example a GGUF repo on Hugging Face), or a named
+     VRAM calculator. Write down the URL of each figure you use.
+  3. Write /tmp/weekly/draft.json with exactly these fields: post_type
+     ("reference"), domain, colorway, hook, items, the_catch, source_post
+     (the ref above, exactly as written), figure_sources, caption, keywords,
+     hashtags, alt_text.
+
+  - items is a list of strings, each "Term: line". The first {{rungs}} are this
+    hardware ladder, in this order, with these exact terms:
+{{ladder}}
+    Each rung's line says the largest size and quantization of this model
+    that fits on that machine, and its memory, or "No" and the smaller model
+    to use instead. For example "MacBook Air, 16 GB: Yes, 8B at Q4, about 6
+    GB". At most {{words}} words after the colon: all five share one slide.
+    Tokens per second only when a source measured them on that machine.
+  - Then {{lo}} or {{hi}} benchmark lines, each a benchmark the model card
+    reports, turned into the task it measures, with the number. For example
+    "MMLU 78: Answers 78 of 100 university-exam questions right". Every
+    line after the colon starts with a capital letter. When the
+    card compares models, say how big a gap is noise and how big is a real
+    difference.
+  - hook is the verdict, not the model's name: "Yes, it runs on a MacBook
+    Air", "You need 24 GB, not 8". It must be true of the ladder below it.
+  - One line of the sheet should surprise: a small size winning something,
+    or the context window costing more memory than the model. If the source
+    gives you no surprise, say so in your final message.
+  - the_catch is the limit of these benchmarks that the headline leaves out:
+    the maker's own numbers, English only, a test the model may have seen in
+    training. It must be stated or plainly shown by the source. A caveat you
+    infer yourself is the error the fact-check blocks most.
+  - figure_sources is a list of strings, one per hardware figure: "<rung>:
+    <url>". A figure you computed rather than read says "about … ,
+    estimated" in its line, and its figure_sources entry names the
+    calculator or the arithmetic. No figure without an entry.
+  - caption ends in a one-word question, such as "What do you run models on?"
+
+{{rules}}
+Finish by printing the ref you built on and the hook.
+""".replace("{{rules}}", SHARED_RULES).replace("{{", "{").replace("}}", "}")
+
+
 # ---------------------------------------------------------------- finishing
 
 def slug(text: str) -> str:
@@ -300,7 +468,8 @@ def required(kind: Kind) -> list[str]:
     return [f for f in fields if f not in CREDIT]
 
 
-def problems(name: str, post: dict, directory: Path = POSTS_DIR) -> list[str]:
+def problems(name: str, post: dict, directory: Path = POSTS_DIR,
+             today: date | None = None) -> list[str]:
     """Why this draft is not one weekly.yml may commit. Empty means fine."""
     kind = KINDS[name]
     found = []
@@ -321,6 +490,8 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR) -> list[str]:
         if stem and stem not in {s for s, _ in examples(directory)}:
             found.append(f"example_post {stem!r} is not one of the published "
                          f"posts the brief offered")
+    if name == "reference":
+        found.extend(reference_problems(post, directory, today))
     if name == "breakdown":
         steps = post.get("mechanism")
         if not (isinstance(steps, list) and 2 <= len(steps) <= 3
@@ -330,12 +501,59 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR) -> list[str]:
     return found
 
 
-def built_from(name: str, post: dict, directory: Path) -> str:
-    """The stem of the published post whose credit this draft carries."""
+def reference_problems(post: dict, directory: Path,
+                       today: date | None = None) -> list[str]:
+    """Why a "Can I run it?" draft is not this Sunday's sheet."""
+    found = []
+    ref = str(post.get("source_post", "")).strip()
+    if ref and ref not in {r for r, _ in sources(today or date.today(),
+                                                 directory)}:
+        found.append(f"source_post {ref!r} is not one of the posts the brief "
+                     f"offered")
+    items = post.get("items")
+    if not (isinstance(items, list)
+            and all(isinstance(i, str) for i in items)):
+        return [*found, "items must be a list of \"Term: line\" strings"]
+    terms = [i.partition(PAIR)[0].strip() for i in items]
+    if tuple(terms[:len(LADDER)]) != LADDER:
+        found.append(f"items must open on the hardware ladder, in order: "
+                     f"{'; '.join(LADDER)}")
+    if long := [f"{t} ({len(line.split())} words)"
+                for t, line in (i.split(PAIR, 1) for i in items[:len(LADDER)]
+                                if PAIR in i)
+                if len(line.split()) > MAX_RUNG_WORDS]:
+        found.append(f"a machine's line is at most {MAX_RUNG_WORDS} words, so "
+                     f"the five fit one slide: {', '.join(long)}")
+    lo, hi = BENCHMARK_LINES
+    if not lo <= len(items) - len(LADDER) <= hi:
+        found.append(f"after the ladder come {lo} or {hi} benchmark lines, "
+                     f"not {len(items) - len(LADDER)}")
+    if bad := unpaired(post):
+        found.append(f"no \"Term: line\" split in {', '.join(bad)}")
+    if low := [t for t, line in (i.split(PAIR, 1) for i in items if PAIR in i)
+               if line.strip()[:1].islower()]:
+        found.append(f"each line starts with a capital, as the sheet sets "
+                     f"them: {', '.join(low)}")
+    figures = post.get("figure_sources")
+    if not (isinstance(figures, list) and figures
+            and all(isinstance(f, str) and f.strip() for f in figures)):
+        found.append("figure_sources must list where each hardware figure "
+                     "comes from")
+    return found
+
+
+def built_from(name: str, post: dict, directory: Path) -> tuple[str, dict]:
+    """The published post (or Signal item) whose credit this draft carries:
+    its name, for the log, and its record."""
     if name == "glossary":
-        return str(post["example_post"]).strip()
-    found = subject(directory)
-    return found[0] if found else ""
+        stem = str(post["example_post"]).strip()
+    elif name == "reference":
+        ref = str(post["source_post"]).strip()
+        return ref, resolve(ref, directory)
+    else:
+        found = subject(directory)
+        stem = found[0] if found else ""
+    return stem, read(directory / f"{stem}.json") or {}
 
 
 def finish(name: str, draft: Path, today: date,
@@ -352,15 +570,14 @@ def finish(name: str, draft: Path, today: date,
         print(f"{draft} is not a JSON object. Nothing has been committed; read "
               f"the writer's output in this log.", file=sys.stderr)
         return 1
-    if bad := problems(name, post, directory):
+    if bad := problems(name, post, directory, today):
         print(f"Refusing {draft.name}:", file=sys.stderr)
         for line in bad:
             print(f"  - {line}", file=sys.stderr)
         print(f"Nothing has been committed. Dispatch weekly.yml with "
               f"kind={name} and force to write another.", file=sys.stderr)
         return 1
-    stem = built_from(name, post, directory)
-    source = read(directory / f"{stem}.json") or {}
+    stem, source = built_from(name, post, directory)
     for field in CREDIT:
         if field in source:
             post[field] = source[field]
@@ -372,7 +589,7 @@ def finish(name: str, draft: Path, today: date,
         post["beat"] = source["beat"]
     post["hashtags"] = hashtags(post.get("hashtags"))
     words = post["term"] if name == "glossary" else post["hook"]
-    prefix = "glossary-" if name == "glossary" else ""
+    prefix = {"glossary": "glossary-", "reference": "reference-"}.get(name, "")
     path = directory / f"{today.isoformat()}-{prefix}{slug(words)}.json"
     path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
     print(f"Built from {stem}; credit {post.get('attribution')!r} copied "

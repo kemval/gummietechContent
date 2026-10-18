@@ -16,28 +16,46 @@
    Each item is "Term: line" (formats.PAIR); render.load_post() refuses
    one without the separator, so the split here always has two halves.
 
-   rhythm(n, 0): no catch. A reference has no single caveat, and
+   rhythm(n, 0): no catch. A cheat sheet has no single caveat, and
    formats.py declares it with `catch=False`.
+
+   Sunday's "Can I run it?" (post_type "reference") is the same sheet about
+   one model, plus the catch, which is the limit of its benchmarks. It goes
+   second from last, as in every other format, so whether to have it is
+   decided by whether the record has the field. Its hardware ladder
+   (formats.LADDER) is one slide, all five machines, since comparing them is
+   the point; the benchmark lines get the next one. Five fit at the sheet's
+   size only while each is one line, so weekly.MAX_RUNG_WORDS caps them.
 #}
 {% import 'slide_parts.html' as parts with context %}
+{% set fmt = "can I run it" if post_type == "reference" else "cheat sheet" %}
+{% set has_catch = the_catch is defined %}
 {% set per = 3 %}
+{% if has_catch %}
+{% set rungs = LADDER|length %}
+{% set pages = [items[:rungs], items[rungs:]] %}
+{% set rights = ["which machine", "what the scores mean"] %}
+{% else %}
 {% set pages = items|batch(per)|list %}
-{% set n = 3 + pages|length %}
-{% set fields = rhythm(n, 0) %}
+{% set rights = [domain] * pages|length %}
+{% endif %}
+{% set n = 3 + pages|length + (1 if has_catch else 0) %}
+{% set fields = rhythm(n, n - 1 if has_catch else 0) %}
+{% set whole = n - 2 if has_catch else n - 1 %}
 
 <!-- 1. COVER -->
-{{ parts.cover("cheat sheet", n, fields[0], [
+{{ parts.cover(fmt, n, fields[0], [
      ("domain", domain, false),
-     ("terms", items|length ~ " terms", false),
+     ("machines", LADDER|length, false) if has_catch else ("terms", items|length ~ " terms", false),
      ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2..n-2. THE ENTRIES -->
 {% for page in pages %}
 {% set at = loop.index + 1 %}
-{% set first = loop.index0 * per %}
+{% set first = pages[:loop.index0]|map("length")|sum %}
 <div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
-  {{ parts.corners("cheat sheet", at, n, domain) }}
+  {{ parts.corners(fmt, at, n, rights[loop.index0]) }}
   <div class="body top sheet">
     {% for item in page %}
     <div class="entry">
@@ -50,9 +68,9 @@
 </div></div>
 {% endfor %}
 
-<!-- n-1. THE WHOLE SHEET -->
-<div class="slide {{ fields[n - 2] }}" id="slide-{{ n - 1 }}"><div class="frame">
-  {{ parts.corners("cheat sheet", n - 1, n, "save this") }}
+<!-- THE WHOLE SHEET -->
+<div class="slide {{ fields[whole - 1] }}" id="slide-{{ whole }}"><div class="frame">
+  {{ parts.corners(fmt, whole, n, "save this") }}
   <div class="body top index">
     {{ parts.sec(items|length, "The whole sheet") }}
     <dl>
@@ -62,8 +80,13 @@
   <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(save)</div>
 </div></div>
 
+{% if has_catch %}
+<!-- n-1. THE CATCH -->
+{{ parts.catch(fmt, n - 1, n, fields[n - 2], items|length + 1, "The catch") }}
+{% endif %}
+
 <!-- n. CTA + SOURCE -->
-{{ parts.follow("cheat sheet", n, fields[n - 1], [("source", attribution)]) }}
+{{ parts.follow(fmt, n, fields[n - 1], [("source", attribution)]) }}
 
 <script>
 {% include 'slides_layout.js' %}

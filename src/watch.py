@@ -177,25 +177,33 @@ def check_weekly(today: str, report: Report,
     one's weekday: a week that already ended without one is history, and
     repeating it every day until the next Monday is the nagging this file
     exists to avoid. weekly.KINDS is the one table of which day is whose.
+    Sunday's reference is the exception that rule needs: its week ends on
+    its own day, so it is asked about on the Monday after, once.
     """
     day = date.fromisoformat(today)
     monday = day - timedelta(days=day.weekday())
-    week = []
-    for path in post_order(directory or POSTS_DIR):
-        try:
-            drafted = date.fromisoformat(path.name[:10])
-        except ValueError:
-            continue
-        if monday <= drafted <= day:
-            week.append((path, (read_post(path) or {}).get("post_type")))
     for name, kind in WEEKLY.items():
-        if day.weekday() <= kind.weekday:
-            continue
-        found = [path for path, post_type in week if post_type in kind.slot]
+        due = monday + timedelta(days=kind.weekday)
+        if due >= day:
+            # Not yet passed this week. A Sunday's kind is asked about on
+            # the Monday after, the only day after its own, or it never would
+            # be; every other kind's last week is history.
+            due -= timedelta(days=7)
+            if (day - due).days > 1:
+                continue
+        start = due - timedelta(days=due.weekday())
+        found = []
+        for path in post_order(directory or POSTS_DIR):
+            try:
+                drafted = date.fromisoformat(path.name[:10])
+            except ValueError:
+                continue
+            if (start <= drafted <= day
+                    and (read_post(path) or {}).get("post_type") in kind.slot):
+                found.append(path)
         if found:
             report.note(name, f"this week's is {found[0].stem}")
             continue
-        due = monday + timedelta(days=kind.weekday)
         report.fix(name, f"no {' or '.join(kind.slot)} post this week (due "
                          f"{due:%A} {due}). weekly.yml did not write one — "
                          f"read its last run, or dispatch it with "
