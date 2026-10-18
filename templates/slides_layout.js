@@ -196,14 +196,46 @@ document.fonts.ready.then(() => {
         // below whatever text sits above it, and never past the corner labels
         const above = slide.querySelector('.body.top');
         // clear of the footer band (rule at y 1240) and its corner labels:
-        // parentheses and descenders hang ~.22em below the line box
-        const lift = () => { g.style.bottom = (106 + parseFloat(g.style.fontSize) * .22).toFixed(0) + 'px'; };
+        // parentheses and descenders hang ~.22em below the line box.
+        // data-lift raises it further: an incident's timestamp clears the
+        // grid's centre tick (y 1130-1240) too, which cut through its glass.
+        const base = +(g.dataset.lift || 106);
+        const lift = () => { g.style.bottom = (base + parseFloat(g.style.fontSize) * .22).toFixed(0) + 'px'; };
         lift();
         // too tall for the gap under the text: shrink, re-lift, and repeat,
         // since the lift itself grows with the size
-        for (let i = 0; i < 6 && above && top(g) < bottom(above) + 40; i++) {
-          const room = Fh - parseFloat(g.style.bottom) - bottom(above) - 40;
-          fit(g, g.offsetWidth * room / g.offsetHeight, 520); lift();   // its own width: a capped short word ("1/2") never fills the column
+        const settle = () => {
+          for (let i = 0; i < 6 && above && top(g) < bottom(above) + 40; i++) {
+            const room = Fh - parseFloat(g.style.bottom) - bottom(above) - 40;
+            fit(g, g.offsetWidth * room / g.offsetHeight, +g.dataset.max || 520); lift();   // its own width: a capped short word ("1/2") never fills the column
+          }
+        };
+        settle();
+        // data-fill: a phrase of several words ("About 36 seconds in") set
+        // on one line is as small as its width allows and leaves the height
+        // under the text empty. Try it on 1 to 4 balanced lines and keep the
+        // break that sets it largest in the room it has. Only the breaks
+        // change; the words are the template's.
+        if (g.dataset.fill) {
+          const words = g.textContent.trim().split(/\s+/);
+          const lines = k => {
+            const per = words.join(' ').length / k, out = [[]];
+            for (const w of words) {
+              const cur = out[out.length - 1];
+              if (cur.length && cur.join(' ').length + w.length / 2 > per && out.length < k) out.push([w]);
+              else cur.push(w);
+            }
+            return out.map(l => l.join(' '));
+          };
+          let best = null;
+          for (let k = 1; k <= Math.min(4, words.length); k++) {
+            g.innerHTML = lines(k).map(l => l.replace(/&/g, '&amp;').replace(/</g, '&lt;')).join('<br>');
+            fit(g, COLUMN, +g.dataset.max || 520); lift(); settle();
+            const px = parseFloat(g.style.fontSize);
+            if (!best || px > best.px) best = { k, px };
+          }
+          g.innerHTML = lines(best.k).map(l => l.replace(/&/g, '&amp;').replace(/</g, '&lt;')).join('<br>');
+          fit(g, COLUMN, +g.dataset.max || 520); lift(); settle();
         }
       }
     });

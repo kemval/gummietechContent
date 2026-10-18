@@ -74,6 +74,11 @@ FRESH_DAYS = 10
 # only say so at the gate.
 MAX_RUNG_WORDS = 8
 
+# An Incident Report's timeline entry is "<time>: <Sentence>". incident.html
+# sets the time as the slide's glass, broken over as many lines as set it
+# largest, so it must be a time and not a clause: at most this many words.
+MAX_TIME_WORDS = 4
+
 # The benchmark lines after the ladder: docs' Benchmark Decoder, sharing the
 # post rather than taking a Sunday of its own.
 BENCHMARK_LINES = (2, 3)
@@ -342,6 +347,7 @@ def brief(name: str, directory: Path = POSTS_DIR,
                              "evergreen-scout agent for more, or write this "
                              "Sunday's by hand.")
         return INCIDENT_BRIEF.format(rank=row.rank, title=row.title,
+                                     words=MAX_TIME_WORDS,
                                      row=row.body.strip(),
                                      source_url=evergreen.source_url(row.fields))
     if name == "glossary":
@@ -547,9 +553,11 @@ keywords, hashtags, alt_text.
     the source.
   - what_broke is what people saw: the outage, the loss, the explosion, in
     the report's own figures.
-  - timeline entries are in order, and each opens with its time as the
-    source gives it ("37 seconds after lift-off", "09:30 ET"). No time the
-    source does not state.
+  - timeline entries are in order, each "<time>: <Sentence>": the time as
+    the source gives it, at most {words} words ("About 37 seconds in",
+    "09:30 ET", "Lift-off"), a colon, then a sentence starting with a
+    capital. The time is also set large on the slide. No time the source
+    does not state.
   - root_cause is the mechanism the report names, at the level a reader can
     follow. the_fix is what was changed afterwards, per the source.
   - the_catch is what people usually get wrong about this incident, and the
@@ -613,6 +621,17 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR,
                 and all(isinstance(s, str) and s.strip() for s in steps)):
             found.append("timeline must be a list of 2 or 3 non-empty "
                          "entries — one slide each")
+        else:
+            for n, step in enumerate(steps, start=1):
+                when, sep, what = step.partition(PAIR)
+                if not (sep and when.strip() and what.strip()):
+                    found.append(f"timeline[{n}] must be \"<time>: <Sentence>\"")
+                elif len(when.split()) > MAX_TIME_WORDS:
+                    found.append(f"timeline[{n}]'s time is at most "
+                                 f"{MAX_TIME_WORDS} words: {when!r}")
+                elif what.strip()[:1].islower():
+                    found.append(f"timeline[{n}]'s sentence starts with a "
+                                 f"capital: {what.strip()[:30]!r}")
     if name == "breakdown":
         steps = post.get("mechanism")
         if not (isinstance(steps, list) and 2 <= len(steps) <= 3

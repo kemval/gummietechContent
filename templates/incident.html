@@ -51,9 +51,14 @@
   <div class="body top">
     {{ parts.sec(2, t("Timeline", "Cronología")) }}
     <div class="steps">{% for _ in steps %}<i class="{{ 'on' if loop.index <= current }}"></i>{% endfor %}</div>
+    {% set when, sep, what = step.partition(": ") %}
     <p class="text">{{ parts.boxed(step) }}</p>
   </div>
-  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">{{ loop.index }}/{{ steps|length }}</div>
+  {# The entry's own time, as glass. data-fill lets the layout pass break it
+     over as many lines as set it largest, so "About 36 seconds in" fills
+     the space under the text; data-lift keeps it clear of the grid's
+     centre tick. #}
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom" data-lift="225" data-fill="1" data-max="400">{{ when if sep else loop.index ~ "/" ~ steps|length }}</div>
 </div></div>
 {% endfor %}
 

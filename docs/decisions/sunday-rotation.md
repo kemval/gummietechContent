@@ -92,6 +92,26 @@ first in `KINDS`.
   "Peer-reviewed". Both are false. The label is code's (`weekly.py`),
   like `news_report`.
 
+### The timeline slide
+
+The owner went through five versions on 2026-10-18. The "1/3" ghost read
+as the Breakdown's. Solid black, outlined, monospaced and light timestamps
+were all off-brand. What stayed is the brand's glass: each entry is
+"<time>: <Sentence>", the slide shows the whole entry as text, and the time
+is set again as the glass ghost. Two layout options carry it, both in
+`slides_layout.js` and both opt-in:
+
+- `data-fill`: the layout pass tries the phrase on 1–4 lines and keeps the
+  break that sets it largest in the room under the text. "About 36 seconds
+  in" fills the slide as "About 36 / seconds / in". The owner chose that
+  over a smaller version with no single short word on its own line.
+- `data-lift`: raises a bottom ghost clear of the grid's centre tick (y
+  1130–1240), which cut through the glass.
+
+`finish` refuses an entry that is not "<time>: <Sentence>", a time over
+`MAX_TIME_WORDS` (4) words, or a sentence that starts in lower case. The
+writer gets one rewrite.
+
 ## Not built yet
 
 Hype Check and True or false?, phase 4 of the 2026-10-12 plan. Each would
