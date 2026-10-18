@@ -562,6 +562,16 @@ Finish by printing the hook and one line on the root cause.
 
 # ---------------------------------------------------------------- finishing
 
+# The longest a post's stem may be. telegram.py carries it in a button's
+# callback_data, which Telegram caps at 64 bytes (telegram.CALLBACK_LIMIT),
+# after its longest prefix, "held:" or "reel:". Restated, not imported:
+# telegram.py needs `requests`, and this runs before pip install;
+# tests/test_weekly.py holds the two equal. 2026-10-18: the first reference,
+# "2026-10-18-reference-" plus a 40-character slug, came to 65 bytes and
+# review.yml could not send it.
+STEM_LIMIT = 64 - len("held:")
+
+
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40] or "post"
 
@@ -706,7 +716,8 @@ def finish(name: str, draft: Path, today: date,
     words = post["term"] if name == "glossary" else post["hook"]
     prefix = {"glossary": "glossary-", "reference": "reference-",
               "incident": "incident-"}.get(name, "")
-    path = directory / f"{today.isoformat()}-{prefix}{slug(words)}.json"
+    filed = f"{today.isoformat()}-{prefix}{slug(words)}"[:STEM_LIMIT].rstrip("-")
+    path = directory / f"{filed}.json"
     path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
     print(f"Built from {stem}; credit {post.get('attribution')!r} copied "
           f"from it.")
