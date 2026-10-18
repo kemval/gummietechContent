@@ -1,0 +1,62 @@
+{
+  "post_type": "reference",
+  "domain": "AI models",
+  "colorway": "signal",
+  "hook": "No, DeepSeek V4.1 Flash will not run on any of these",
+  "items": [
+    "Flagship phone: No, smallest quant read is 359 GB",
+    "Laptop, 8 GB, no GPU: No, needs 80 GiB free RAM",
+    "MacBook Air, 16 GB: No, needs 80 GiB free RAM",
+    "RTX 4060, 8 GB: No, needs a 32 GB GPU",
+    "RTX 4090, 24 GB: No, asks for a 32 GB GPU",
+    "Terminal-Bench 4.0 42.3: Command-line tasks; Opus 5 scores 51.8",
+    "DeepSWE 77.0: Software-engineering tasks; Opus 5 scores 74.0",
+    "HLE 42.6: Hard exam questions without tools; Opus 5 scores 56.3"
+  ],
+  "the_catch": "These scores come from DeepSeek's own model card. The card lists no limitations and gives no memory needs.",
+  "source_post": "2026-10-17-signal-week-42#5",
+  "figure_sources": [
+    "Flagship phone: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
+    "Laptop, 8 GB, no GPU: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
+    "MacBook Air, 16 GB: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
+    "RTX 4060, 8 GB: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF",
+    "RTX 4090, 24 GB: https://huggingface.co/acrogenesis/DeepSeek-V4.1-Flash-1017-IQ2_XXS-GGUF"
+  ],
+  "caption": "DeepSeek's model card gives no memory figures. The one quantized repo we read lists a 359.32 GB file and asks for a 32 GB GPU and 128 GB of RAM. Save this for the next open model. What do you run models on?",
+  "keywords": [
+    "DeepSeek",
+    "open weights",
+    "VRAM",
+    "quantization",
+    "local AI"
+  ],
+  "hashtags": [
+    "#deepseek",
+    "#openweights",
+    "#localai",
+    "#ai",
+    "#gummietech"
+  ],
+  "alt_text": "A cheat sheet asking whether DeepSeek V4.1 Flash runs on a phone, an 8 GB laptop, a 16 GB MacBook Air, an RTX 4060 and an RTX 4090. The answer for each is no. Below are three benchmark scores and the catch.",
+  "source_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017",
+  "attribution": "DeepSeek",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "No, DeepSeek V4.1 Flash no se ejecutará en ninguno de ellos",
+    "items": [
+      "Teléfono insignia: No, la lectura cuantizada mínima es de 359 GB",
+      "Portátil, 8 GB, sin GPU: No, necesita 80 GiB de RAM libre",
+      "MacBook Air, 16 GB: No, necesita 80 GiB de RAM libre",
+      "RTX 4060, 8 GB: No, necesita una GPU de 32 GB",
+      "RTX 4090, 24 GB: No, solicita una GPU de 32 GB",
+      "Terminal‑Bench 4.0 42,3: Tareas de línea de comandos; Opus 5 puntúa 51,8",
+      "DeepSWE 77,0: Tareas de ingeniería de software; Opus 5 puntúa 74,0",
+      "HLE 42,6: Preguntas de examen difíciles sin herramientas; Opus 5 puntúa 56,3"
+    ],
+    "the_catch": "Estas puntuaciones provienen de la propia tarjeta del modelo de DeepSeek. La tarjeta no enumera limitaciones ni indica requisitos de memoria.",
+    "_en": "64fea0e5fb288fa2"
+  }
+}
