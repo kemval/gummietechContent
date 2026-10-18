@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<title>gummietech — Incident report</title>
+<style>
+{% include 'slides.css' %}
+</style>
+</head>
+<body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
+{#
+   Sunday's Incident Report: cover → what broke → the timeline, one slide per
+   entry (2–3) → the root cause → the fix → the catch → CTA. Eight or nine
+   slides; the count follows `timeline`, as a Breakdown's follows its
+   mechanism.
+
+   The catch is second from last, the dark slide, as in every format. Here it
+   is the common misreading of the incident ("a programmer forgot a check"),
+   which is what the row's own catch usually is.
+
+   The cover, the catch and the follow slide are slide_parts.html's. The
+   timeline borrows the Breakdown's step dots, because it is a sequence and
+   the dots show where in it the reader is.
+#}
+{% import 'slide_parts.html' as parts with context %}
+{% set steps = timeline or [] %}
+{% set n = 6 + steps|length %}
+{% set fields = rhythm(n) %}
+
+<!-- 1. COVER -->
+{{ parts.cover("incident report", n, fields[0], [
+     ("domain", domain, false),
+     ("status", parts.status(), true),
+     ("source", attribution, false)]) }}
+
+<!-- 2. WHAT BROKE — the rest slide, the failure as a reader would have met it -->
+<div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
+  {{ parts.corners("incident report", 2, n, domain) }}
+  <div class="body top">
+    {{ parts.sec(1, t("What broke", "Qué se rompió")) }}
+    <p class="text display">{{ parts.boxed(what_broke) }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">{{ t("(down)", "(caído)") }}</div>
+</div></div>
+
+<!-- 3..n-4. THE TIMELINE, one slide per entry -->
+{% for step in steps %}
+{% set at = loop.index + 2 %}{% set current = loop.index %}
+<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
+  {{ parts.corners("incident report", at, n, domain) }}
+  <div class="body top">
+    {{ parts.sec(2, t("Timeline", "Cronología")) }}
+    <div class="steps">{% for _ in steps %}<i class="{{ 'on' if loop.index <= current }}"></i>{% endfor %}</div>
+    <p class="text">{{ parts.boxed(step) }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">{{ loop.index }}/{{ steps|length }}</div>
+</div></div>
+{% endfor %}
+
+<!-- ROOT CAUSE — ghost above, text below -->
+{% set at = 3 + steps|length %}
+<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
+  {{ parts.corners("incident report", at, n, domain) }}
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">{{ t("(why)", "(por qué)") }}</div>
+  <div class="body">
+    {{ parts.sec(3, t("Root cause", "La causa")) }}
+    <p class="text">{{ parts.boxed(root_cause) }}</p>
+  </div>
+</div></div>
+
+<!-- THE FIX — text from the top, ghost below: the mirror of the cause -->
+{% set at = 4 + steps|length %}
+<div class="slide {{ fields[at - 1] }}" id="slide-{{ at }}"><div class="frame">
+  {{ parts.corners("incident report", at, n, domain) }}
+  <div class="body top">
+    {{ parts.sec(4, t("The fix", "El arreglo")) }}
+    <p class="text">{{ parts.boxed(the_fix) }}</p>
+  </div>
+  <div class="giant ghost" aria-hidden="true" data-anchor="bottom">{{ t("(fixed)", "(arreglado)") }}</div>
+</div></div>
+
+<!-- THE CATCH — the dark slide -->
+{{ parts.catch("incident report", n - 1, n, fields[n - 2], 5, t("The catch", "El detalle")) }}
+
+<!-- CTA + SOURCE -->
+{{ parts.follow("incident report", n, fields[n - 1], [("source", attribution)]) }}
+
+<script>
+{% include 'slides_layout.js' %}
+</script>
+</body>
+</html>

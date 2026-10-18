@@ -69,10 +69,31 @@ day after its weekday. Sunday is the last day of the week, so that rule
 would never ask about it. Sunday's kind is asked about on the Monday after,
 once.
 
+## The Incident Report, and the rotation
+
+Built the same day, the second format. Two kinds share weekday 6, and
+`weekly.scheduled()` gives Sunday to one of them by ISO week, in `KINDS`
+order. The gate, `due` and `watch.check_weekly()` all ask it. Week 42, the
+day the first reference went out, is even, which is why the reference comes
+first in `KINDS`.
+
+- **Its subject is an evergreen row, not a published post.** Incidents are
+  evergreen and the queue already holds them with a primary and a credit.
+  Rows are marked `**Kind** — incident` by a person, because "is this an
+  incident with a stated cause and fix" is a judgement. #9 (Uber, Tempe) is
+  a death, and the owner did not ask for one on a rotation.
+- **`src/evergreen.py`** holds the row parser. `draft.py` had it, and
+  `weekly.py` cannot import `draft.py` (gspread, before `pip install`). A
+  second copy of the regexes would have been a second place for the
+  queue's shape to drift.
+- **`incident_report`, a fifth label.** These sources are post-mortems and
+  official findings. With `peer_reviewed: false` the slides would have said
+  "Preprint", and with `true` the archive page would have said
+  "Peer-reviewed". Both are false. The label is code's (`weekly.py`),
+  like `news_report`.
+
 ## Not built yet
 
-Hype Check, Incident Report and True or false?. Their spec is phase 4 of the
-2026-10-12 plan. When a second one is built, Sunday stops being one kind:
-`weekly.KINDS` would have two kinds on weekday 6, and the gate's lookup by
-weekday would need to pick one by ISO week (`sunday_kind()` in the plan).
-That is not built ahead of time, while there is only one kind to pick.
+Hype Check and True or false?, phase 4 of the 2026-10-12 plan. Each would
+be a third kind on weekday 6, and `scheduled()` already handles any number
+of kinds.

@@ -197,6 +197,20 @@ FORMATS: dict[str, Format] = {
         record=(*RECORD, "source_post", "figure_sources"),
         by_hand=True,
     ),
+    # Sunday's Incident Report: something in production broke, and the
+    # people who ran it said why. The timeline is one slide per entry, as a
+    # Breakdown's mechanism is, and the catch is what people usually get
+    # wrong about the incident, not a weakness of the report. Its subject is
+    # an evergreen row marked `**Kind** — incident`, picked by weekly.py,
+    # and its credit is that row's. Its source is a post-mortem or an
+    # official finding, so it says so (`incident_report`), not "preprint".
+    "incident": Format("incident.html", (
+        Section("what_broke", "What broke",  "Qué se rompió"),
+        Section("timeline",   "Timeline",    "Cronología", many=True),
+        Section("root_cause", "Root cause",  "La causa"),
+        Section("the_fix",    "The fix",     "El arreglo"),
+        Section("the_catch",  "The catch",   "El detalle"),
+    ), by_hand=True),
     # A Drop whose paper ships its code, with one slide on running it. The
     # repo is required, and it is code_link()'s, never the model's: a run
     # post pointing at an invented repo is the worst wrong credit there is.
@@ -365,7 +379,8 @@ def preprint(record: dict) -> bool:
     render.py refuses such a record before this is asked.
     """
     return (not record.get("peer_reviewed", False)
-            and not record.get("announcement") and not record.get("news_report"))
+            and not record.get("announcement") and not record.get("news_report")
+            and not record.get("incident_report"))
 
 
 def announcement(record: dict) -> bool:
@@ -385,6 +400,18 @@ def news_report(record: dict) -> bool:
     model's. Absent on every post before 2026-10-17.
     """
     return bool(record.get("news_report")) and not record.get("peer_reviewed")
+
+
+def incident_report(record: dict) -> bool:
+    """Whether a source is an incident's own report — a post-mortem, an
+    inquiry board's, a regulator's finding — rather than a study.
+
+    Written only by weekly.py, for an Incident Report built on an evergreen
+    row, so it is code's label. Without it a Cloudflare post-mortem would
+    have had two labels to choose from and both were false: "Preprint" on
+    the slides, and "Peer-reviewed" on the archive page.
+    """
+    return bool(record.get("incident_report")) and not record.get("peer_reviewed")
 
 
 def post_preprint_flag(post: dict) -> bool:

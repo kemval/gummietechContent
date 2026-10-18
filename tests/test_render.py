@@ -113,6 +113,8 @@ MINIMAL = {
                             "MMLU 78: 78 of 100 exam questions."],
                   "the_catch": "C.", "source_post": "2026-09-01-the-example",
                   "figure_sources": ["MacBook Air, 16 GB: https://x.org"]},
+    "incident": {"what_broke": "W 2x.", "timeline": ["T1.", "T2."],
+                 "root_cause": "R.", "the_fix": "F.", "the_catch": "C."},
     "run": {"what_happened": "W.", "try_it": "A GPU 2x.", "why_it_matters": "Y.",
             "the_catch": "C.", "code_url": "https://github.com/a/b"},
 }
@@ -566,6 +568,21 @@ def test_a_news_report_is_not_a_preprint():
     assert not render.preprint(record) and render.news_report(record)
     items = [SIGNAL["items"][0], {**SIGNAL["items"][1], "news_report": True}]
     assert render.preprint_claims({**SIGNAL, "items": items}) == 0
+
+
+def test_an_incident_report_is_neither_a_preprint_nor_peer_reviewed():
+    """2026-10-18: a Cloudflare post-mortem had two labels to choose from and
+    both were false — "Preprint" on the slides if peer_reviewed was false,
+    "Peer-reviewed" on the archive page if it was true. The fifth label is
+    what it is."""
+    record = {"peer_reviewed": False, "incident_report": True}
+    assert not render.preprint(record) and render.incident_report(record)
+    post = {"post_type": "incident", "hook": "H", "domain": "d",
+            "attribution": "A", "alt_text": "T", "source_url": "https://x.org",
+            **record, **MINIMAL["incident"]}
+    html = render.render_html(post)
+    assert "Incident report — not a peer-reviewed study" in html
+    assert "Preprint" not in html
 
 
 def test_an_empty_catch_renders_held_but_a_missing_one_is_refused():

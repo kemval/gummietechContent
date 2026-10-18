@@ -60,7 +60,8 @@ disagree again, this one wins and the other is corrected to match.
 | **Run it** | Wednesday's Drop | Reach → trust | Carousel, 6 slides | `draft.py --run`, on a cron |
 | **The Glossary** | 1×/week, Tuesday | Saves | Carousel, 5 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 | **The Cheat Sheet** | every sixth Tuesday, in the Glossary's place | Saves | Carousel, 4+ slides | a person, then the pipeline |
-| **Can I run it?** | 1×/week, Sunday | Saves | Carousel, 7 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
+| **Can I run it?** | Sunday, even ISO weeks | Saves | Carousel, 6 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
+| **Incident Report** | Sunday, odd ISO weeks | Saves, shares | Carousel, 8–9 slides | Claude, on a cron (`weekly.yml`), then the pipeline |
 
 **The column is about the words, not the rest of the work.** §4 splits
 drafting by stakes: the free LLM tier writes the formats whose sentences are
@@ -168,9 +169,24 @@ weights:
   "estimated". These figures are rarely in the paper, and the fact-check
   blocks a figure with no source.
 
-While it is the only Sunday format built, every Sunday is a Can I run it?.
-When a second one is built, `weekly.py` picks the format by ISO week. Settled
-by: saves per post against the Drop's median, over its first four.
+**The Incident Report was added the same day,** the second Sunday format.
+Sundays now alternate by ISO week (`weekly.scheduled()`): even weeks are Can
+I run it?, odd weeks the Incident Report. It tells one famous production
+failure: what broke, a 2–3 slide timeline, the root cause, the fix, and on
+the dark slide what people usually get wrong about it.
+
+- **The subject is the next evergreen row marked `**Kind** — incident`**
+  that no post covers yet, in score order. Five rows are marked today
+  (Ariane 5, Knight Capital, xz, Cloudflare's regex, CrowdStrike), about ten
+  weeks of odd Sundays. The Uber fatality (#9) is left unmarked on purpose.
+- **Its credit is the row's,** copied by code, as a term's is copied from
+  its post.
+- **A fifth source label: "Incident report — not a peer-reviewed study".**
+  A post-mortem is neither a preprint nor peer-reviewed, and both existing
+  labels would have been false about it.
+
+Settled by: saves and shares per post against the Drop's median, over the
+first four of each format.
 
 ### The Status Report — the second pillar
 

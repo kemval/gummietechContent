@@ -156,6 +156,17 @@ def test_a_sunday_with_nothing_is_said_on_the_monday(posts):
     assert not findings(report, "reference")
 
 
+def test_sunday_owes_only_the_kind_whose_week_it_is(posts):
+    """Two kinds share Sunday, by ISO week. Week 43's Sunday is an incident;
+    asking it for a reference too would report a miss every Sunday."""
+    directory, write = posts
+    write("2026-10-25-incident-the-rocket.json", post_type="incident")
+    report = Report("WATCH")
+    watch.check_weekly("2026-10-26", report, directory)
+    assert not findings(report, "reference")
+    assert not findings(report, "incident")
+
+
 def test_last_weeks_breakdown_does_not_count_for_this_one(posts):
     directory, write = posts
     write("2026-09-19-the-tube.json", post_type="breakdown")

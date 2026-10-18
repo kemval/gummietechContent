@@ -42,8 +42,8 @@ from playwright.sync_api import Page, sync_playwright
 # is where the rest of the shared vocabulary already lives.
 from formats import (DEFAULT_FORMAT, FORMATS, LADDER, PAIR, RECORD, Format, Section,  # noqa: F401
                      body_text, entries, es_fields, format_name,  # noqa: F401
-                     announcement, missing_fields, missing_from_entries, news_report, pieces,
-                     post_preprint_flag, preprint, preprint_claims, required,
+                     announcement, incident_report, missing_fields,
+                     missing_from_entries, news_report, pieces, post_preprint_flag, preprint, preprint_claims, required,
                      sections, spec, template_for, unpaired)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -588,6 +588,7 @@ def render_html(post: dict, colorway: str | None = None,
         # preprint. Post-level only, like the flag; a Signal labels items.
         show_announcement=not spec(post).entries and announcement(post),
         show_news_report=not spec(post).entries and news_report(post),
+        show_incident_report=not spec(post).entries and incident_report(post),
         hook_size=hook_size_class(post.get("hook", "")),
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
@@ -838,6 +839,9 @@ def main() -> int:
     elif news_report(post):
         print("  news report — the cover says it is not a peer-reviewed "
               "study; check the report against what it covers")
+    elif incident_report(post):
+        print("  incident report — the cover says it is the incident's own "
+              "report, not a peer-reviewed study")
 
     html = render_html(post, args.colorway, lang=args.lang)
     written = shoot(html, outdir)

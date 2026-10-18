@@ -151,6 +151,9 @@ label, so check it both ways:
   number, not a measurement. If a slide states a maker's claim as
   independent fact, that is a **FIX**: it must read as their claim.
 
+A fifth label, `"incident_report": true`, since 2026-10-18, is written only
+by `weekly.py` for an Incident Report: see §7c.
+
 A fourth label, since 2026-10-17: `"news_report": true` (always with
 `peer_reviewed: false`) means the source is a news outlet's report — code
 writes it for a declared outlet's page (`reports` in `feeds/*.yaml`) with no
@@ -219,6 +222,25 @@ is built on a published post or Signal item (`source_post`, "stem" or
   benchmark measures what the line says it does.
 - **`the_catch`** must be stated or plainly shown by the source, as for a
   Drop.
+
+An Incident Report (`post_type: "incident"`) tells one failure from its own
+report: a post-mortem, an inquiry board's or a regulator's finding. Its
+subject is an evergreen row (`docs/evergreen_queue.md`, `**Kind** —
+incident`), and its credit is that row's. It carries `"incident_report":
+true`, so the cover says "Incident report — not a peer-reviewed study". That
+label is correct; do not ask for `peer_reviewed: true`. Check against the
+source itself, not the row:
+
+- **Every time in `timeline`** must be in the source, in the source's own
+  terms ("about 37 seconds", not "37 seconds" if it says about). A time the
+  source does not give is a **BLOCK**.
+- **`root_cause`** must be the cause the report names. A tidier cause than
+  the report gives, such as "a programmer forgot a check" when the report
+  says the check was removed on purpose, is a **BLOCK**: it is the
+  misreading this format's catch exists to correct.
+- **`the_fix`** must be what the report says was changed or recommended.
+- **The numbers the queue warns about** ("Before drafting any of these")
+  must not appear.
 
 ### 7d. The Spanish: check `es` against the English
 
