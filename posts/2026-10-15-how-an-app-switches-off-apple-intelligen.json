@@ -46,5 +46,8 @@
     "the_catch": "Es un anuncio del creador, no un estudio. El README aclara que no puede eliminar las aplicaciones integradas de Apple, y que actualizaciones de macOS podrían restablecer algunos ajustes.",
     "_en": "a15ffe200f449bb9"
   },
-  "published_at": "2026-10-15"
+  "published_at": "2026-10-15",
+  "metrics": {
+    "asked_at": "2026-10-18"
+  }
 }
