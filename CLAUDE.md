@@ -74,7 +74,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
                      weekly.yml (Claude writes Tue's term, Thu's
-                     Breakdown, Sun's "Can I run it?" → commit) ·
+                     Breakdown, Sun's "Can I run it?" or Incident
+                     Report by ISO week → commit) ·
                      review.yml (fact-check · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
@@ -97,6 +98,8 @@ src/
   score.py           LLM scoring, batched
   papers.py          page → DOI → Crossref → the paper a story covers,
                      and the paper-first text a post is drafted from
+  evergreen.py       docs/evergreen_queue.md read as rows, for draft.py
+                     and weekly.py
   draft.py           winning item → papers.py → JSON;
                      --signal walks five rows for the weekly roundup
   render.py          JSON + template → PNGs
@@ -107,8 +110,8 @@ src/
   wording.py         the voice rules code can check: dating words, and
                      "you" or an unattributed figure in a maker's release
   hook.py            swaps a draft's cover line for one of its alternates
-  weekly.py          Tuesday's term, Thursday's Breakdown and Sunday's
-                     "Can I run it?" (`reference`): is it owed,
+  weekly.py          Tuesday's term, Thursday's Breakdown, and Sunday's
+                     `reference` or `incident` (`scheduled()`): is it owed,
                      what is it built from, and the check, file name and
                      credit around Claude's draft
   site.py            published posts → static web archive, with each
@@ -135,6 +138,7 @@ templates/
   drop_slides.html   the Drop's five slides, shared with reel.html
   breakdown.html     8–10 slides; signal.html — the weekly roundup
   sheet.html         the cheat sheet, and Sunday's reference with its catch
+  incident.html      Sunday's Incident Report, 8–9 slides
   run.html           a Drop + the code slide; term.html — the glossary
   build.html         The Build's 9:16 kit, inside the reel and 4:5 grid crops
   reel.html          the same slides swiped through at 1080x1920
@@ -355,7 +359,7 @@ does not state. A source that cannot be read is a hold, not a pass.
 
 ```json
 {
-  "post_type": "drop | run | breakdown | term | sheet | reference | signal",
+  "post_type": "drop | run | breakdown | term | sheet | reference | incident | signal",
   "domain": "2-3 word field label, e.g. AI research, materials, astronomy",
   "colorway": "signal | orbit | bloom | ember",
   "hook": "",
@@ -404,7 +408,9 @@ does not state. A source that cannot be read is a hold, not a pass.
   do not copy it anywhere, and `telegram.py` must never import `render.py`.
 - A term (Tuesday), a Breakdown (Thursday) and a reference (Sunday: "Can
   I run it?", a sheet about one fresh model on the fixed hardware ladder
-  `formats.LADDER`, with a catch) are written by Claude in `weekly.yml`, and
+  `formats.LADDER`, with a catch) or an incident (Sunday, odd ISO weeks:
+  an evergreen row marked `**Kind** — incident`) are written by Claude in
+  `weekly.yml`, and
   a sheet by hand — none by `draft.py`. `formats.by_hand()` is the
   one test of that, for the Drop-day gate, `watch.py` and redrafting;
   never compare `post_type` to `"breakdown"`. A Signal (five items, or as few as
@@ -414,7 +420,10 @@ does not state. A source that cannot be read is a hold, not a pass.
   on (a term's `example_post`, a Breakdown's Drop, a reference's
   `source_post`, which may be one Signal item, "stem#N"), never written by
   the model. A reference's `figure_sources` names the source of every
-  hardware figure; the fact-check blocks a figure without one.
+  hardware figure; the fact-check blocks a figure without one. An
+  incident's credit is its row's, and it carries `"incident_report": true`,
+  the fifth label ("Incident report — not a peer-reviewed study"),
+  `formats.incident_report()`, code's alone.
 
 → `docs/decisions/post-record.md`
 
@@ -471,7 +480,7 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
   times and gated to one draft per day; `force` is the override. Wednesday
   passes `--run`, which falls back to a plain Drop when nothing links code.
 - `weekly.yml` writes Tuesday's term, Thursday's Breakdown and Sunday's
-  reference the same way
+  reference or incident (`weekly.scheduled()`, by ISO week) the same way
   (four firings, one post, `kind` and `force` on dispatch). Claude writes
   outside the repo from `weekly.py brief`; `weekly.py finish` refuses a bad
   draft (the writer gets one rewrite, given the refusal, then the run
@@ -480,7 +489,8 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
   first, whose paper no Breakdown covers yet — code picks it, not Claude.
   A reference is built on a published AI post or Signal item from the last
   ten days, or an older run post. Code lists them and Claude picks the one
-  with downloadable weights, because no record says that.
+  with downloadable weights, because no record says that. An incident tells
+  the next uncovered evergreen row marked as one, and code picks it.
   → `docs/decisions/sunday-rotation.md`
 - `review.yml` is the one reusable review; callers commit before calling it.
   `.github/actions/resolve-post` is the one answer to "which post is held".
@@ -547,7 +557,7 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
 ## Watching the pipeline
 
 `src/watch.py`, via `watch.yml` once a day, reports what should have
-happened and did not (cadence, glossary, breakdown, reference, subject, gate, series, metrics, colour,
+happened and did not (cadence, glossary, breakdown, reference, incident, subject, gate, series, metrics, colour,
 buffer, feeds, queue, lift, structure, fact-check). It only asks about obligations
 already due, keeps unactionable findings as notes, exits 0 on findings,
 degrades per check, and reads `getUpdates` without an offset. It cannot

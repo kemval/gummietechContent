@@ -75,6 +75,7 @@ from telegram import (METRICS_ASK_RE, METRICS_CORE, METRICS_KEY,
                       parse_callback, poll, publish_date, read_post, recorded,
                       send_report)
 from weekly import KINDS as WEEKLY
+from weekly import scheduled
 import series
 
 # What each drafting day owes. docs §1 fixes the Drop at 3×/week and the
@@ -177,8 +178,9 @@ def check_weekly(today: str, report: Report,
     one's weekday: a week that already ended without one is history, and
     repeating it every day until the next Monday is the nagging this file
     exists to avoid. weekly.KINDS is the one table of which day is whose.
-    Sunday's reference is the exception that rule needs: its week ends on
-    its own day, so it is asked about on the Monday after, once.
+    Sunday is the exception that rule needs: its week ends on its own day,
+    so it is asked about on the Monday after, once, and only for the kind
+    weekly.scheduled() gave that Sunday.
     """
     day = date.fromisoformat(today)
     monday = day - timedelta(days=day.weekday())
@@ -191,6 +193,8 @@ def check_weekly(today: str, report: Report,
             due -= timedelta(days=7)
             if (day - due).days > 1:
                 continue
+        if scheduled(due) != name:
+            continue                    # the other Sunday kind's week
         start = due - timedelta(days=due.weekday())
         found = []
         for path in post_order(directory or POSTS_DIR):

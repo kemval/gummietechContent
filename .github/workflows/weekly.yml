@@ -1,8 +1,8 @@
 name: weekly
 
 # The weekly carousels Claude writes: the glossary term on Tuesday, the
-# Breakdown on Thursday, "Can I run it?" on Sunday. Each is then reviewed
-# like any Drop.
+# Breakdown on Thursday, and on Sunday "Can I run it?" or the Incident
+# Report, turn about by ISO week. Each is then reviewed like any Drop.
 #
 # Neither is drafted by draft.py's free-tier model: a definition and a
 # mechanism are exactly where a model invents a confident one, and docs §4
@@ -26,15 +26,15 @@ on:
     # cron here lands hours late, so it asks early and often and the `gate`
     # job turns every firing after the first honoured one into a no-op.
     # 06:17 UTC = 00:17 in America/Costa_Rica, which has no DST. Tuesday is
-    # the glossary, Thursday the Breakdown, Sunday (cron's 0) the reference
-    # — weekly.KINDS says which.
+    # the glossary, Thursday the Breakdown, Sunday (cron's 0) a reference or
+    # an incident — weekly.scheduled() says which.
     - cron: '17 6,8,10,12 * * 0,2,4'
   workflow_dispatch:
     inputs:
       kind:
         description: Which post to write.
         type: choice
-        options: [glossary, breakdown, reference]
+        options: [glossary, breakdown, reference, incident]
         required: true
       force:
         description: >
@@ -65,15 +65,15 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       # weekly.py is stdlib only, so the runner's own python3 answers this
-      # before anything is installed. A cron run takes its kind from the
-      # weekday, on the same runner clock `due` reads.
+      # before anything is installed. A cron run takes its kind from
+      # weekly.scheduled(), on the same runner clock `due` reads.
       - id: check
         env:
           KIND: ${{ inputs.kind }}
           FORCE: ${{ inputs.force }}
         run: |
           if [ -z "$KIND" ]; then
-            KIND=$(python3 -c 'import sys; sys.path.insert(0, "src"); from datetime import date; from weekly import KINDS; print(next((n for n, k in KINDS.items() if k.weekday == date.today().weekday()), ""))')
+            KIND=$(python3 -c 'import sys; sys.path.insert(0, "src"); from datetime import date; from weekly import scheduled; print(scheduled(date.today()))')
           fi
           if [ -z "$KIND" ]; then
             echo "write=false" >> "$GITHUB_OUTPUT"
@@ -121,7 +121,8 @@ jobs:
 
       # The whole instruction, with what code already chose filled in: the
       # terms taken and the posts a term may use, the Drop a Breakdown
-      # explains, or the fresh posts a reference may be built on. Exits non-zero, with what to do, when nothing is left.
+      # explains, the fresh posts a reference may be built on, or the
+      # evergreen row an incident tells. Exits non-zero, with what to do, when nothing is left.
       - name: Write the brief
         run: |
           mkdir -p /tmp/weekly

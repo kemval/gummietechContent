@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
 The weekly carousels Claude writes: Tuesday's glossary term, Thursday's
-Breakdown and Sunday's "Can I run it?". What weekly.yml decides in code,
-around the one step a model does.
+Breakdown, and on Sunday, alternating by ISO week, "Can I run it?" or the
+Incident Report. What weekly.yml decides in code, around the one step a
+model does.
 
     python src/weekly.py due <kind>             # exit 0 if this week still owes one
     python src/weekly.py brief <kind>           # the writer's instructions
     python src/weekly.py finish <kind> <draft>  # refuse a bad draft, or file it
 
-<kind> is a key of KINDS: glossary, breakdown or reference.
+<kind> is a key of KINDS: glossary, breakdown, reference or incident.
 
 Neither is drafted by draft.py's free-tier model. A definition and a
 mechanism are exactly where a model invents a confident one, and docs §4
@@ -21,14 +22,14 @@ model is decided here, before and after it writes:
     writer picks from a list; a Breakdown's subject is a published Drop this
     file picks, tech first, that has no Breakdown yet; a reference's model
     is a fresh published AI post, or Signal item, the writer picks from a
-    list
+    list; an incident is the next evergreen row marked as one
   - a repeated term, a missing field, a mechanism of the wrong length
   - the credit. source_url, doi, attribution, peer_reviewed,
     announcement and news_report are copied
     from the post it is built from, never typed by the model. A retyped
     credit is the one way a correct explanation still goes out wrong.
 
-Standard library and formats.py only: `due` runs in the gate job, before
+Standard library, formats.py and evergreen.py only: `due` runs in the gate job, before
 anything is installed, and watch.py reads KINDS.
 """
 
@@ -41,6 +42,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
+import evergreen
 from formats import FORMATS, LADDER, PAIR, hashtags, unpaired
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -51,7 +53,7 @@ POSTS_DIR = REPO_ROOT / "posts"
 # `announcement` travels with the rest: a Breakdown of a launch is about an
 # announcement too, and without it the slides would call it a preprint.
 CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement",
-          "news_report")
+          "news_report", "incident_report")
 
 # draft.PRIORITY_BEATS, restated rather than imported: draft.py pulls in the
 # LLM clients and gspread, and this runs before pip install. Posts drafted
@@ -72,6 +74,11 @@ FRESH_DAYS = 10
 # only say so at the gate.
 MAX_RUNG_WORDS = 8
 
+# An Incident Report's timeline entry is "<time>: <Sentence>". incident.html
+# sets the time as the slide's glass, broken over as many lines as set it
+# largest, so it must be a time and not a clause: at most this many words.
+MAX_TIME_WORDS = 4
+
 # The benchmark lines after the ladder: docs' Benchmark Decoder, sharing the
 # post rather than taking a Sunday of its own.
 BENCHMARK_LINES = (2, 3)
@@ -91,8 +98,21 @@ class Kind(NamedTuple):
 KINDS: dict[str, Kind] = {
     "glossary":  Kind("term", ("term", "sheet"), 1),      # Tuesday
     "breakdown": Kind("breakdown", ("breakdown",), 3),    # Thursday
-    "reference": Kind("reference", ("reference",), 6),    # Sunday
+    "reference": Kind("reference", ("reference",), 6),    # Sunday, even weeks
+    "incident":  Kind("incident", ("incident",), 6),      # Sunday, odd weeks
 }
+
+
+def scheduled(day: date) -> str:
+    """The kind written on this day, or "" for a day with none.
+
+    Two kinds share Sunday, and they take turns by ISO week, in KINDS order:
+    week 42 of 2026, the first Sunday with any, is a reference. The gate in
+    weekly.yml and watch.check_weekly() both ask here, so they agree about
+    whose Sunday it is.
+    """
+    names = [n for n, k in KINDS.items() if k.weekday == day.weekday()]
+    return names[day.isocalendar().week % len(names)] if names else ""
 
 
 def read(path: Path) -> dict | None:
@@ -261,6 +281,44 @@ def resolve(ref: str, directory: Path = POSTS_DIR) -> dict:
     return items[at] if 0 <= at < len(items) and isinstance(items[at], dict) else {}
 
 
+# --------------------------------------------------------- the incident
+
+def incident(directory: Path = POSTS_DIR,
+             queue: Path = evergreen.QUEUE) -> evergreen.Row | None:
+    """The evergreen row this Sunday's Incident Report tells, or None.
+
+    The first row marked `**Kind** — incident`, in the file's score order,
+    whose source no post in posts/ or posts/rejected/ already carries,
+    whether it was drafted as an Incident Report, a Drop or a Signal item.
+    """
+    covered = set()
+    for post in every_post(directory):
+        for record in (post, *(i for i in post.get("items") or []
+                               if isinstance(i, dict))):
+            if url := str(record.get("source_url", "")).strip().lower():
+                covered.add(url)
+    try:
+        text = queue.read_text()
+    except OSError as exc:
+        raise SystemExit(f"Cannot read {queue}: {exc}. The Incident Report "
+                         f"is picked from it; restore the file.")
+    for row in evergreen.rows(text):
+        if (row.fields.get("kind", "").strip().lower() == "incident"
+                and evergreen.source_url(row.fields).lower() not in covered):
+            return row
+    return None
+
+
+def incident_credit(row: evergreen.Row) -> dict:
+    """The credit an Incident Report carries, from its row: the row's
+    primary, the person or body it says to attribute, and the label that
+    says what such a source is."""
+    return {"source_url": evergreen.source_url(row.fields),
+            "attribution": evergreen.credit(row.fields),
+            "peer_reviewed": False,
+            "incident_report": True}
+
+
 # ---------------------------------------------------------------- the brief
 
 def brief(name: str, directory: Path = POSTS_DIR,
@@ -281,6 +339,17 @@ def brief(name: str, directory: Path = POSTS_DIR,
                                       rungs=len(LADDER), words=MAX_RUNG_WORDS,
                                       lo=BENCHMARK_LINES[0],
                                       hi=BENCHMARK_LINES[1])
+    if name == "incident":
+        row = incident(directory)
+        if row is None:
+            raise SystemExit("Every evergreen row marked `**Kind** — "
+                             "incident` is already covered. Run the "
+                             "evergreen-scout agent for more, or write this "
+                             "Sunday's by hand.")
+        return INCIDENT_BRIEF.format(rank=row.rank, title=row.title,
+                                     words=MAX_TIME_WORDS,
+                                     row=row.body.strip(),
+                                     source_url=evergreen.source_url(row.fields))
     if name == "glossary":
         terms = [f"  - {t}" for t in defined_terms(directory)] or ["  (none)"]
         menu = [f"  - {stem}  —  {post.get('hook', '')}"
@@ -455,7 +524,61 @@ Finish by printing the ref you built on and the hook.
 """.replace("{{rules}}", SHARED_RULES).replace("{{", "{").replace("}}", "}")
 
 
+INCIDENT_BRIEF = """\
+Write this Sunday's Incident Report for @gummietech, an Instagram account on
+technology. It tells one real failure in production: what broke, when, why,
+how it was fixed, and what people usually get wrong about it. It explains a
+famous failure; it does not report news.
+
+It tells evergreen row #{rank} of docs/evergreen_queue.md, "{title}":
+
+{row}
+
+Read first:
+  - docs/evergreen_queue.md, "Before drafting any of these": the numbers
+    not to add apply to you
+  - src/formats.py, the "incident" entry
+  - docs/voice.md
+  - the source itself, {source_url}, in full. The row is a summary, and a
+    timeline written from a summary is the failure this format exists to
+    avoid. If you cannot read the source, say so in your final message and
+    write nothing.
+
+Write /tmp/weekly/draft.json with exactly these fields: post_type
+("incident"), domain, colorway, hook, what_broke, timeline (a list of 2 or
+3 entries, one slide each), root_cause, the_fix, the_catch, caption,
+keywords, hashtags, alt_text.
+
+  - hook may start from the row's Hook, but check every word of it against
+    the source.
+  - what_broke is what people saw: the outage, the loss, the explosion, in
+    the report's own figures.
+  - timeline entries are in order, each "<time>: <Sentence>": the time as
+    the source gives it, at most {words} words ("About 37 seconds in",
+    "09:30 ET", "Lift-off"), a colon, then a sentence starting with a
+    capital. The time is also set large on the slide. No time the source
+    does not state.
+  - root_cause is the mechanism the report names, at the level a reader can
+    follow. the_fix is what was changed afterwards, per the source.
+  - the_catch is what people usually get wrong about this incident, and the
+    source must support it. The row's own "The catch" is a good start.
+
+{rules}
+Finish by printing the hook and one line on the root cause.
+""".replace("{rules}", SHARED_RULES)
+
+
 # ---------------------------------------------------------------- finishing
+
+# The longest a post's stem may be. telegram.py carries it in a button's
+# callback_data, which Telegram caps at 64 bytes (telegram.CALLBACK_LIMIT),
+# after its longest prefix, "held:" or "reel:". Restated, not imported:
+# telegram.py needs `requests`, and this runs before pip install;
+# tests/test_weekly.py holds the two equal. 2026-10-18: the first reference,
+# "2026-10-18-reference-" plus a 40-character slug, came to 65 bytes and
+# review.yml could not send it.
+STEM_LIMIT = 64 - len("held:")
+
 
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40] or "post"
@@ -492,6 +615,23 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR,
                          f"posts the brief offered")
     if name == "reference":
         found.extend(reference_problems(post, directory, today))
+    if name == "incident":
+        steps = post.get("timeline")
+        if not (isinstance(steps, list) and 2 <= len(steps) <= 3
+                and all(isinstance(s, str) and s.strip() for s in steps)):
+            found.append("timeline must be a list of 2 or 3 non-empty "
+                         "entries — one slide each")
+        else:
+            for n, step in enumerate(steps, start=1):
+                when, sep, what = step.partition(PAIR)
+                if not (sep and when.strip() and what.strip()):
+                    found.append(f"timeline[{n}] must be \"<time>: <Sentence>\"")
+                elif len(when.split()) > MAX_TIME_WORDS:
+                    found.append(f"timeline[{n}]'s time is at most "
+                                 f"{MAX_TIME_WORDS} words: {when!r}")
+                elif what.strip()[:1].islower():
+                    found.append(f"timeline[{n}]'s sentence starts with a "
+                                 f"capital: {what.strip()[:30]!r}")
     if name == "breakdown":
         steps = post.get("mechanism")
         if not (isinstance(steps, list) and 2 <= len(steps) <= 3
@@ -550,6 +690,10 @@ def built_from(name: str, post: dict, directory: Path) -> tuple[str, dict]:
     elif name == "reference":
         ref = str(post["source_post"]).strip()
         return ref, resolve(ref, directory)
+    elif name == "incident":
+        row = incident(directory)
+        return ((f"evergreen #{row.rank}", incident_credit(row)) if row
+                else ("", {}))
     else:
         found = subject(directory)
         stem = found[0] if found else ""
@@ -589,8 +733,10 @@ def finish(name: str, draft: Path, today: date,
         post["beat"] = source["beat"]
     post["hashtags"] = hashtags(post.get("hashtags"))
     words = post["term"] if name == "glossary" else post["hook"]
-    prefix = {"glossary": "glossary-", "reference": "reference-"}.get(name, "")
-    path = directory / f"{today.isoformat()}-{prefix}{slug(words)}.json"
+    prefix = {"glossary": "glossary-", "reference": "reference-",
+              "incident": "incident-"}.get(name, "")
+    filed = f"{today.isoformat()}-{prefix}{slug(words)}"[:STEM_LIMIT].rstrip("-")
+    path = directory / f"{filed}.json"
     path.write_text(json.dumps(post, indent=2, ensure_ascii=False) + "\n")
     print(f"Built from {stem}; credit {post.get('attribution')!r} copied "
           f"from it.")

@@ -62,6 +62,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import llm                       # forwards per LLM_PROVIDER, failing over (llm.py)
+from evergreen import QUEUE, credit, source_url
+from evergreen import rows as queue_rows
 from formats import by_hand, format_name, hashtags
 from formats import entries as format_entries
 from formats import (missing_fields, missing_from_entries,
@@ -77,7 +79,7 @@ from wording import problems as wording_problems
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
-EVERGREEN_QUEUE = REPO_ROOT / "docs" / "evergreen_queue.md"
+EVERGREEN_QUEUE = QUEUE
 # How every post sounds. A doc rather than prompt text so a person can edit
 # the voice without touching code; weekly.py's brief points Claude at the
 # same file. See docs/decisions/voice-and-selection.md.
@@ -556,46 +558,8 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
                if idx < len(row)} | {"score": score}
 
 
-# Tier 6 evergreen subjects never come through a feed, so there is no page to
-# scrape and no row in the sheet. What there is instead is the queue the
-# evergreen-scout agent writes, where each candidate already carries the hook,
-# the mechanism, the catch and the primary to attribute — the substance a
-# scrape would have had to recover. Drafting from a URL instead throws that
-# away and the model fills the gap from memory: pointed at the tides
-# candidate's sources it produced the two-bulge myth the post exists to
-# debunk, and a Wikipedia history section, whose reference list then supplied
-# a DOI that overwrote the attribution. So the brief is the source text.
-#
-# The agent writes a fixed shape, in score order:
-#
-#   ### 1 · 8.50 · `orbit` — The tidal bulges that don't exist
-#   **Hook** — ...
-#   **Source** — [Physics SE](url) · **attribute to** Laplace's ...
-#   **Settled?** / **Why it matters** / **The catch**
-CANDIDATE_RE = re.compile(
-    r"^### (?P<rank>\d+) [·.] (?P<score>[\d.]+) [·.] `(?P<colorway>\w+)`"
-    r" [—-] (?P<title>.+)$", re.M)
-FIELD_RE = re.compile(r"^\*\*(?P<label>[^*]+)\*\*\s*[—-]?\s*(?P<value>.+)$",
-                      re.M)
-MD_LINK_RE = re.compile(r"\[[^\]]*\]\((https?://[^)\s]+)\)")
-# Seven rows name who to credit, because the page a subject is explained on is
-# rarely the work being credited — a Stack Exchange answer about Laplace's
-# tides, a Wikipedia article about a 2008 review. Left to itself the model
-# credits the page's organisation ("Physics SE"), which is what fact-check
-# BLOCKs on. This cannot be copied into the field verbatim, though: three of
-# the seven are instructions to a person, naming a choice ("the vis-viva
-# result or a NASA mission page") or carrying a second sentence of guidance.
-# So it is hoisted to the top of the brief as binding, and the model resolves
-# it to a citation — then a person checks it at the gate.
-ATTRIBUTE_RE = re.compile(r"\*\*attribute to\*\*\s*(?P<who>[^\n]+)", re.I)
-# A row whose primary is a preprint cites it as a bare "arXiv:2601.04621" and
-# links only the coverage, so taking the first link would put a magazine URL
-# in source_url and leave PREPRINT_HOSTS silent on a preprint. The id is the
-# primary, so it wins — which is what makes the flag fire, as the queue's own
-# preface promises it does.
-ARXIV_RE = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}(?:v\d+)?)", re.I)
-
-
+# The queue's shape — the row regexes and why each exists — is
+# evergreen.py's, shared with weekly.py.
 def evergreen_candidate(rank: int, skip: frozenset[int] = frozenset()) -> dict:
     """
     A row from the evergreen queue as a draftable item, rank 0 meaning the
@@ -611,23 +575,22 @@ def evergreen_candidate(rank: int, skip: frozenset[int] = frozenset()) -> dict:
                  f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)}. Run the "
                  "evergreen-scout agent to fill it, then draft from it.")
 
-    text = EVERGREEN_QUEUE.read_text()
-    heads = list(CANDIDATE_RE.finditer(text))
-    if not heads:
+    candidates = queue_rows(EVERGREEN_QUEUE.read_text())
+    if not candidates:
         sys.exit(f"No candidates found in "
                  f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)}. Rows must look "
                  "like '### 1 · 8.50 · `orbit` — Title'; re-run "
                  "evergreen-scout if the file has drifted.")
 
     if rank:
-        picked = next((h for h in heads if int(h["rank"]) == rank), None)
+        picked = next((r for r in candidates if r.rank == rank), None)
         if picked is None:
-            ranks = ", ".join(h["rank"] for h in heads)
+            ranks = ", ".join(str(r.rank) for r in candidates)
             sys.exit(f"No candidate #{rank} in the queue. Available: {ranks}.")
     else:
         # The file is written in score order, so the first candidate this run
         # has not rejected is the best one still worth drafting.
-        picked = next((h for h in heads if int(h["rank"]) not in skip), None)
+        picked = next((r for r in candidates if r.rank not in skip), None)
         if picked is None:
             sys.exit(f"Every candidate in "
                      f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)} is already "
@@ -635,33 +598,21 @@ def evergreen_candidate(rank: int, skip: frozenset[int] = frozenset()) -> dict:
                      f"agent to refill the queue, or pass --evergreen N to "
                      f"draft one of them anyway.")
 
-    ends = [h.start() for h in heads if h.start() > picked.start()]
-    body = text[picked.end():ends[0] if ends else len(text)]
-    fields = {m["label"].strip().lower(): m["value"].strip()
-              for m in FIELD_RE.finditer(body)}
-
+    fields, body = picked.fields, picked.body
     missing = [f for f in ("hook", "source", "why it matters", "the catch")
                if f not in fields]
     if missing:
-        sys.exit(f"Candidate #{picked['rank']} is missing "
+        sys.exit(f"Candidate #{picked.rank} is missing "
                  f"{', '.join(missing)}. Fix the row in "
                  f"{EVERGREEN_QUEUE.relative_to(REPO_ROOT)} and re-run.")
 
-    arxiv = ARXIV_RE.search(fields["source"])
-    link = MD_LINK_RE.search(fields["source"])
-    if arxiv:
-        url = f"https://arxiv.org/abs/{arxiv['id']}"
-    elif link:
-        url = link.group(1)
-    else:
-        url = ""
+    url = source_url(fields)
+    if not url:
         print("  warning: the Source line has no URL, so source_url will be "
               "empty — the web archive prints it, so add one at the gate")
 
     lines = [f"{label.title()}: {value}" for label, value in fields.items()]
-    credit = ATTRIBUTE_RE.search(fields["source"])
-    if credit:
-        who = credit["who"].strip().rstrip(".")
+    if who := credit(fields):
         print(f"  credit: the queue says attribute to {who!r} — check the "
               "field below says that and not the page's publisher")
         lines.insert(0, f"Attribution to use, overriding every rule below "
@@ -674,12 +625,12 @@ def evergreen_candidate(rank: int, skip: frozenset[int] = frozenset()) -> dict:
     # "not yet peer-reviewed" flag on a textbook result.
     return {
         "url": url,
-        "rank": int(picked["rank"]),
-        "source": f"evergreen queue #{picked['rank']}",
-        "title": picked["title"].strip(),
+        "rank": picked.rank,
+        "source": f"evergreen queue #{picked.rank}",
+        "title": picked.title,
         "summary": "\n".join(lines),
-        "score": picked["score"],
-        "colorway": picked["colorway"],
+        "score": picked.score,
+        "colorway": picked.colorway,
         "peer_reviewed": "peer_reviewed: false" not in body.lower(),
     }
 

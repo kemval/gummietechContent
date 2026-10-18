@@ -15,13 +15,15 @@
    status, never a .flag: proof.py counts .flag elements against
    formats.preprint_claims(), and an announcement is not a preprint claim. #}
 {% set ANNOUNCEMENT = t("Announcement — not a peer-reviewed study", "Anuncio — no es un estudio revisado por pares") %}
-{# The same for a news outlet's report (formats.news_report). #}
+{# The same for a news outlet's report (formats.news_report), and for an
+   incident's own post-mortem or official finding (formats.incident_report). #}
 {% set NEWS_REPORT = t("News report — not a peer-reviewed study", "Reportaje — no es un estudio revisado por pares") %}
+{% set INCIDENT_REPORT = t("Incident report — not a peer-reviewed study", "Informe de incidente — no es un estudio revisado por pares") %}
 
 {# The cover's [status]: the preprint, announcement or news report label,
    or nothing for a peer-reviewed paper. formats.py decided which. #}
 {% macro status() -%}
-{%- if show_preprint_flag %}{{ PREPRINT }}{% elif show_announcement %}{{ ANNOUNCEMENT }}{% elif show_news_report %}{{ NEWS_REPORT }}{% endif -%}
+{%- if show_preprint_flag %}{{ PREPRINT }}{% elif show_announcement %}{{ ANNOUNCEMENT }}{% elif show_news_report %}{{ NEWS_REPORT }}{% elif show_incident_report %}{{ INCIDENT_REPORT }}{% endif -%}
 {%- endmacro %}
 
 {# Four corner labels: the account and format, the field (or what the slide

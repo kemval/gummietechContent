@@ -35,6 +35,11 @@ This is an idea queue, not drafted content. Nothing here has been through
   catch slide (`peer_reviewed: false`, arXiv URL in `source_url` so
   `PREPRINT_HOSTS` fires); #34–39 are makers' own READMEs, every figure
   theirs.
+- **`**Kind** — incident`** marks a row Sunday's Incident Report may take
+  (`weekly.py`, 2026-10-18): a failure with a stated cause and fix, in a
+  primary report. #9 (Uber, Tempe) is a fatal crash and is left unmarked,
+  so it stays a Drop that a person chooses to draft and never comes from a
+  weekly rotation; its NTSB PDF cannot be read either.
 - **Colour.** The tech rows are 10 `signal` and 2 `ember`; taking several in
   a row puts `signal` next to `signal`, and `render.vary()` rotates it.
 
@@ -52,6 +57,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 
 ### 2 · 8.25 · `ember` — The rocket killed by code it no longer needed
 
+**Kind** — incident
 **Hook** — Ariane 5 blew up 37 seconds into its first flight because of software that had no job to do once the rocket left the pad.
 **Source** — [Inquiry Board report, full text](https://www-users.cse.umn.edu/~arnold/disasters/ariane5rep.html) (the [ESA PDF](https://esamultimedia.esa.int/docs/esa-x-1819eng.pdf) is a scan with no text layer) · **attribute to** Ariane 501 Inquiry Board, chaired by J. L. Lions, ESA/CNES, July 1996.
 **Settled?** — Settled. It is the official inquiry, and the board states the chain of events is established "beyond reasonable doubt".
@@ -68,6 +74,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 
 ### 4 · 7.75 · `signal` — Eight servers, one missed
 
+**Kind** — incident
 **Hook** — A technician updated seven of eight servers, and the eighth lost Knight Capital more than $460 million in 45 minutes.
 **Source** — [SEC Order, Release No. 34-70694](https://www.sec.gov/litigation/admin/2013/34-70694.pdf) · **attribute to** U.S. Securities and Exchange Commission, In the Matter of Knight Capital Americas LLC, Release 34-70694, 16 Oct 2013.
 **Settled?** — Settled. These are the SEC's findings in a settled order.
@@ -100,6 +107,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 
 ### 8 · 7.50 · `signal` — Caught by half a second
 
+**Kind** — incident
 **Hook** — A backdoor planted in software used by much of the internet was caught because SSH logins got half a second slower.
 **Source** — [Andres Freund, oss-security, 29 Mar 2024](https://www.openwall.com/lists/oss-security/2024/03/29/4) · **attribute to** Andres Freund's disclosure to oss-security (CVE-2024-3094).
 **Settled?** — Settled as a documented incident. Who was behind it is unknown.
@@ -116,6 +124,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 
 ### 10 · 7.50 · `signal` — The regex that took down Cloudflare
 
+**Kind** — incident
 **Hook** — One line of pattern-matching code knocked out Cloudflare's network for 27 minutes by making its CPUs try billions of dead ends.
 **Source** — [Cloudflare blog, 12 Jul 2019](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/) · **attribute to** John Graham-Cumming (Cloudflare CTO), "Details of the Cloudflare outage on July 2, 2019".
 **Settled?** — Settled. It is the company's own post-mortem.
@@ -132,6 +141,7 @@ This is an idea queue, not drafted content. Nothing here has been through
 
 ### 12 · 7.00 · `signal` — Twenty inputs, twenty-one expected
 
+**Kind** — incident
 **Hook** — The 2024 CrowdStrike crash that grounded airlines came down to code expecting 21 inputs and receiving 20.
 **Source** — [CrowdStrike, Channel File 291 Root Cause Analysis](https://www.crowdstrike.com/wp-content/uploads/2024/08/Channel-File-291-Incident-Root-Cause-Analysis-08.06.2024.pdf) · **attribute to** CrowdStrike, "Channel File 291 Incident: Root Cause Analysis", 6 Aug 2024.
 **Settled?** — Settled as the vendor's own root-cause analysis.
