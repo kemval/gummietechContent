@@ -45,7 +45,7 @@
   "beat": "ai",
   "es": {
     "domain": "modelos de IA",
-    "hook": "Ninguno de ellos puede ejecutar la cuantización Flash V4.1 de DeepSeek que leímos",
+    "hook": "Ninguno de ellos puede ejecutar la cuantización de DeepSeek V4.1 Flash que leímos",
     "items": [
       "Teléfono insignia: No, la cuantización que leímos es de 359 GB",
       "Portátil, 8 GB, sin GPU: No, requiere 80 GiB de RAM",
