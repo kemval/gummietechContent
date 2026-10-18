@@ -65,6 +65,13 @@ TECH_BEATS = frozenset({"ai", "software", "automation", "robotics", "computing",
 # came out last month" is a question nobody is asking any more.
 FRESH_DAYS = 10
 
+# A rung's line, after its colon, in words. sheet.html sets all five rungs on
+# one slide at the sheet's type size, which holds five one-line entries and
+# not five two-line ones: the 2026-10-18 sample fitted with lines of four to
+# eight words. Refused in finish() rather than left to proof.py, which would
+# only say so at the gate.
+MAX_RUNG_WORDS = 8
+
 # The benchmark lines after the ladder: docs' Benchmark Decoder, sharing the
 # post rather than taking a Sunday of its own.
 BENCHMARK_LINES = (2, 3)
@@ -271,7 +278,7 @@ def brief(name: str, directory: Path = POSTS_DIR,
         ladder = "\n".join(f"  {n}. {rung}" for n, rung in
                            enumerate(LADDER, start=1))
         return REFERENCE_BRIEF.format(menu="\n".join(menu), ladder=ladder,
-                                      rungs=len(LADDER),
+                                      rungs=len(LADDER), words=MAX_RUNG_WORDS,
                                       lo=BENCHMARK_LINES[0],
                                       hi=BENCHMARK_LINES[1])
     if name == "glossary":
@@ -420,7 +427,8 @@ Then:
     Each rung's line says the largest size and quantization of this model
     that fits on that machine, and its memory, or "No" and the smaller model
     to use instead. For example "MacBook Air, 16 GB: Yes, 8B at Q4, about 6
-    GB". Tokens per second only when a source measured them on that machine.
+    GB". At most {{words}} words after the colon: all five share one slide.
+    Tokens per second only when a source measured them on that machine.
   - Then {{lo}} or {{hi}} benchmark lines, each a benchmark the model card
     reports, turned into the task it measures, with the number. For example
     "MMLU 78: Answers 78 of 100 university-exam questions right". Every
@@ -510,6 +518,12 @@ def reference_problems(post: dict, directory: Path,
     if tuple(terms[:len(LADDER)]) != LADDER:
         found.append(f"items must open on the hardware ladder, in order: "
                      f"{'; '.join(LADDER)}")
+    if long := [f"{t} ({len(line.split())} words)"
+                for t, line in (i.split(PAIR, 1) for i in items[:len(LADDER)]
+                                if PAIR in i)
+                if len(line.split()) > MAX_RUNG_WORDS]:
+        found.append(f"a machine's line is at most {MAX_RUNG_WORDS} words, so "
+                     f"the five fit one slide: {', '.join(long)}")
     lo, hi = BENCHMARK_LINES
     if not lo <= len(items) - len(LADDER) <= hi:
         found.append(f"after the ladder come {lo} or {hi} benchmark lines, "

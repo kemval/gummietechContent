@@ -23,8 +23,9 @@
    one model, plus the catch, which is the limit of its benchmarks. It goes
    second from last, as in every other format, so whether to have it is
    decided by whether the record has the field. Its hardware ladder
-   (formats.LADDER) gets slides of its own, and the benchmark lines after it
-   get one more, so a machine and a score never share a slide.
+   (formats.LADDER) is one slide, all five machines, since comparing them is
+   the point; the benchmark lines get the next one. Five fit at the sheet's
+   size only while each is one line, so weekly.MAX_RUNG_WORDS caps them.
 #}
 {% import 'slide_parts.html' as parts with context %}
 {% set fmt = "can I run it" if post_type == "reference" else "cheat sheet" %}
@@ -32,8 +33,8 @@
 {% set per = 3 %}
 {% if has_catch %}
 {% set rungs = LADDER|length %}
-{% set pages = items[:rungs]|batch(per)|list + [items[rungs:]] %}
-{% set rights = ["which machine"] * (pages|length - 1) + ["what the scores mean"] %}
+{% set pages = [items[:rungs], items[rungs:]] %}
+{% set rights = ["which machine", "what the scores mean"] %}
 {% else %}
 {% set pages = items|batch(per)|list %}
 {% set rights = [domain] * pages|length %}

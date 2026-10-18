@@ -47,6 +47,21 @@ term and the Breakdown are, and reviewed by `review.yml` like any post.
 - **The cover is the verdict.** "Requirements of model X" is a label;
   "Yes, it runs on a MacBook Air" answers the question the reader came with.
 
+## One slide for the ladder, and the rewrite
+
+The owner picked all five machines on one slide over two slides of three
+and two: the ladder is something to compare, and comparing across a swipe is
+harder. Five entries fit at the sheet's type size only while each is one
+line, so `MAX_RUNG_WORDS` (8) caps a rung's line and `finish` refuses a
+longer one. Leaving it to `proof.py` would have held the post at the gate
+instead.
+
+A refusal used to end the run, and a person had to dispatch the whole post
+again. Since this change, `weekly.yml` gives the writer one rewrite, with
+`finish`'s reasons in `/tmp/weekly/finish.log`, for every kind and not only
+this one. A draft refused twice fails the run as before, with the Telegram
+failure notice.
+
 ## The watch
 
 `watch.check_weekly()` asks about each kind within its own week, from the

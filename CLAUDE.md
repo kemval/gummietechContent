@@ -474,7 +474,8 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
   reference the same way
   (four firings, one post, `kind` and `force` on dispatch). Claude writes
   outside the repo from `weekly.py brief`; `weekly.py finish` refuses a bad
-  draft, names the file and copies the credit; a fresh fact-check in
+  draft (the writer gets one rewrite, given the refusal, then the run
+  fails), names the file and copies the credit; a fresh fact-check in
   `review.yml` grades it. A Breakdown explains a published Drop, tech
   first, whose paper no Breakdown covers yet — code picks it, not Claude.
   A reference is built on a published AI post or Signal item from the last
