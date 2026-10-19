@@ -1,0 +1,32 @@
+{
+  "post_type": "drop",
+  "domain": "AI agents",
+  "colorway": "bloom",
+  "hook": "Four Gemini 4 Argon agents beat Minecraft without any human help.",
+  "hooks": [
+    "Four Gemini 4 Argon agents beat Minecraft without any human help.",
+    "Four AI bots entered a random Minecraft world and killed the dragon.",
+    "Google says the agents ran for over 27 hours and 14 minutes."
+  ],
+  "what_happened": "Four Gemini 4 Argon agents autonomously explored a random Minecraft world, coordinated tasks, and killed the Ender Dragon after 27 hours and 14 minutes.",
+  "why_it_matters": "It proves agentic AI can beat complex games without purpose‑built training, suggesting broader autonomous AI possibilities.",
+  "the_catch": "",
+  "caption": "Four Gemini 4 Argon agents autonomously completed Minecraft, slaying the Ender Dragon after more than 27 hours of play. Minecraft or Fortnite?",
+  "keywords": [
+    "gemini",
+    "agents",
+    "minecraft"
+  ],
+  "hashtags": [
+    "#gemini",
+    "#aiagents",
+    "#minecraft",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains how four Gemini 4 Argon AI agents autonomously completed Minecraft, coordinating tasks and defeating the Ender Dragon.",
+  "source_url": "https://the-decoder.com/four-gemini-4-argon-agents-beat-minecraft-without-any-human-help/",
+  "attribution": "The Decoder",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "ai"
+}
