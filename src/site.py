@@ -434,10 +434,18 @@ def newsletter(posts: list[dict], today: date,
     `**` (2026-10-12). Opened in a browser and copied, a page arrives as
     formatted text — headings, bold and links intact. The title line is
     the issue's title, and stays out of the body.
+
+    The issue covers the `days` before `today`, not today: the issue and
+    Monday's Drop go out the same day, and a window ending on today dropped
+    the Drop twice (2026-10-05 fell outside the next issue's start, and
+    2026-10-12 was published after its issue was built). Half-open on the
+    same edge, consecutive weekly issues meet exactly — every post lands in
+    one issue, none in two.
     """
     since = today - timedelta(days=days)
-    recent = [p for p in reversed(posts) if since < p["published"] <= today]
-    title = f"gummietech — the week to {human_date(today)}"
+    recent = [p for p in reversed(posts) if since <= p["published"] < today]
+    last = today - timedelta(days=1)
+    title = f"gummietech — the week to {human_date(last)}"
     body: list[str] = []
     for post in recent:
         # Slide 1 as the archive already serves it (covers()), so the email
@@ -461,7 +469,7 @@ def newsletter(posts: list[dict], today: date,
         body.append(f'<p>Source: {escape(credits)} — <a href="{page}">'
                     "sources and full post</a></p>")
     if not body:
-        body.append(f"<p>Nothing published between {since} and {today}.</p>")
+        body.append(f"<p>Nothing published between {since} and {last}.</p>")
     return ("<!doctype html><meta charset=utf-8>"
             f"<title>{escape(title)}</title>"
             "<style>body{font:17px/1.55 Georgia,serif;max-width:640px;"
@@ -613,6 +621,10 @@ def main() -> int:
         page = REPO_ROOT / "output" / f"newsletter-{today}.html"
         page.parent.mkdir(exist_ok=True)
         page.write_text(newsletter(posts, today))
+        # The bot publishes on GitHub: a clone not pulled since builds an
+        # issue without the week's last posts (2026-10-12's issue did).
+        print("Built from this clone's posts/ — `git pull` first if you "
+              "have not today.", file=sys.stderr)
         print(f"Wrote {page.relative_to(REPO_ROOT)}. Open it in a browser, "
               "select from the first headline down, copy, and paste into a "
               "new Substack post; the title is at the top.")
