@@ -2,7 +2,7 @@
   "post_type": "drop",
   "domain": "AI agents",
   "colorway": "bloom",
-  "hook": "Four Gemini 4 Argon agents beat Minecraft without any human help.",
+  "hook": "Four AI bots entered a random Minecraft world and killed the dragon.",
   "hooks": [
     "Four Gemini 4 Argon agents beat Minecraft without any human help.",
     "Four AI bots entered a random Minecraft world and killed the dragon.",
@@ -31,10 +31,10 @@
   "beat": "ai",
   "es": {
     "domain": "agentes de IA",
-    "hook": "Cuatro agentes Gemini 4 Argon superaron a Minecraft sin ayuda humana.",
-    "what_happened": "Los cuatro agentes Gemini 4 Argon exploraron de forma autónoma un mundo aleatorio de Minecraft, coordinaron tareas y mataron al Ender Dragon después de 27 horas y 14 minutos.",
-    "why_it_matters": "Los agentes de codificación de propósito general, que no fueron diseñados para Minecraft, mantuvieron un plan durante más de un día. El trabajo de software necesita la misma coordinación a largo plazo.",
-    "the_catch": "Dificultad fácil, una sola ejecución, y los agentes obtienen datos exactos del mundo mediante código, no mediante píxeles.",
-    "_en": "f01a869377ab70b4"
+    "hook": "Cuatro bots de IA entraron en un mundo aleatorio de Minecraft y mataron al dragón Ender.",
+    "what_happened": "Cuatro agentes Gemini 4 Argon exploraron de forma autónoma un mundo aleatorio de Minecraft, coordinaron tareas y mataron al dragón Ender tras 27 horas y 14 minutos.",
+    "why_it_matters": "Los agentes de codificación de propósito general, que no fueron diseñados para Minecraft, mantuvieron un único plan durante más de un día. El trabajo de software necesita la misma coordinación a largo plazo.",
+    "the_catch": "Dificultad fácil, una sola ejecución y los agentes obtienen datos exactos del mundo mediante código, no mediante píxeles.",
+    "_en": "3f15ad36763475de"
   }
 }
