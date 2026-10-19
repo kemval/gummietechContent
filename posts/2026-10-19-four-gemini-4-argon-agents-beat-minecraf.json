@@ -9,8 +9,8 @@
     "Google says the agents ran for over 27 hours and 14 minutes."
   ],
   "what_happened": "Four Gemini 4 Argon agents autonomously explored a random Minecraft world, coordinated tasks, and killed the Ender Dragon after 27 hours and 14 minutes.",
-  "why_it_matters": "It proves agentic AI can beat complex games without purpose‑built training, suggesting broader autonomous AI possibilities.",
-  "the_catch": "",
+  "why_it_matters": "General-purpose coding agents, not built for Minecraft, held one plan together for over a day. Software work needs the same long-horizon coordination.",
+  "the_catch": "Easy difficulty, one run, and the agents get exact world data from code, not pixels.",
   "caption": "Four Gemini 4 Argon agents autonomously completed Minecraft, slaying the Ender Dragon after more than 27 hours of play. Minecraft or Fortnite?",
   "keywords": [
     "gemini",
@@ -24,9 +24,17 @@
     "#gummietech"
   ],
   "alt_text": "The carousel explains how four Gemini 4 Argon AI agents autonomously completed Minecraft, coordinating tasks and defeating the Ender Dragon.",
-  "source_url": "https://the-decoder.com/four-gemini-4-argon-agents-beat-minecraft-without-any-human-help/",
-  "attribution": "The Decoder",
+  "source_url": "https://arxiv.org/abs/2610.22319",
+  "attribution": "Faldor et al., arXiv (2026)",
   "peer_reviewed": false,
-  "news_report": true,
-  "beat": "ai"
+  "news_report": false,
+  "beat": "ai",
+  "es": {
+    "domain": "agentes de IA",
+    "hook": "Cuatro agentes Gemini 4 Argon superaron a Minecraft sin ayuda humana.",
+    "what_happened": "Los cuatro agentes Gemini 4 Argon exploraron de forma autónoma un mundo aleatorio de Minecraft, coordinaron tareas y mataron al Ender Dragon después de 27 horas y 14 minutos.",
+    "why_it_matters": "Los agentes de codificación de propósito general, que no fueron diseñados para Minecraft, mantuvieron un plan durante más de un día. El trabajo de software necesita la misma coordinación a largo plazo.",
+    "the_catch": "Dificultad fácil, una sola ejecución, y los agentes obtienen datos exactos del mundo mediante código, no mediante píxeles.",
+    "_en": "f01a869377ab70b4"
+  }
 }
