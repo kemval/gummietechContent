@@ -36,5 +36,8 @@
     "the_catch": "Apple mide el tamaño de sus pantallas como un rectángulo completo. Señala que el área visible real es menor.",
     "_en": "76af5fcdd56ed479"
   },
-  "published_at": "2026-10-16"
+  "published_at": "2026-10-16",
+  "metrics": {
+    "asked_at": "2026-10-19"
+  }
 }
