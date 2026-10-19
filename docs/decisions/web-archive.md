@@ -150,6 +150,9 @@ out — none of them new writing, all of them pure functions of the posts:
   markdown as literal `##` and `**`, so markdown was dropped the same day.
   No free plan sends RSS-to-email, so the paste is the route on any
   provider.
+  The issue covers the seven days *before* the day it is built, never that
+  day (2026-10-19): the Monday issue and Monday's Drop share a day, and a
+  window ending on today lost both 2026-10-05's and 2026-10-12's Drops.
 - **Cloudflare Web Analytics** (free, cookieless): the bio link measured nothing,
   and it is the funnel's one click. The token is a repo variable, public by
   design; unset, no script is added, so local builds and forks measure
