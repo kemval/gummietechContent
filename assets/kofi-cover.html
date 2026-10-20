@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+  The Ko-fi cover, 1200x400 — Ko-fi asks for 3:1. Exported at 2x as
+  assets/kofi-cover.png. Chosen by the owner on 2026-10-15: the Substack
+  banner's layout (assets/substack-banner.html) with orbit's backdrop (sky
+  field, pink and cream ribbons) as a still, seed "kofi". Every block is
+  something the account already does: posts are free, the archive links
+  every source.
+
+  To re-export after a change, from the repo root:
+    venv/bin/python -c "from playwright.sync_api import sync_playwright as s; \
+    import pathlib; p = s().start(); b = p.chromium.launch(); \
+    g = b.new_page(viewport={'width': 1200, 'height': 400}, device_scale_factor=2); \
+    g.goto(pathlib.Path('assets/kofi-cover.html').resolve().as_uri()); \
+    g.wait_for_timeout(1000); g.screenshot(path='assets/kofi-cover.png'); b.close(); p.stop()"
+-->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../templates/tokens.css">
+<style>
+@font-face { font-family: 'Hubot Sans'; src: url('../fonts/HubotSans.ttf'); font-weight: 200 900; font-stretch: 75% 125%; }
+@font-face { font-family: 'Mona Sans'; src: url('../fonts/MonaSans.ttf'); font-weight: 200 900; font-stretch: 75% 125%; }
+@font-face { font-family: 'Monaspace Neon'; src: url('../fonts/MonaspaceNeon-SemiBold.otf'); font-weight: 600; }
+* { margin: 0; box-sizing: border-box; }
+body { width: 1200px; height: 400px; overflow: hidden; }
+.banner { width: 1200px; height: 400px; display: grid; grid-template-columns: 1fr 340px;
+  color: var(--ink); font-family: var(--body); background: var(--sky); }
+.mono { font-family: var(--mono); font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
+.lead { position: relative; padding: 48px 60px; display: flex; flex-direction: column; justify-content: space-between; }
+.lead > canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.lead > :not(canvas) { position: relative; z-index: 1; }
+.word { font-family: var(--display); font-weight: 800; font-stretch: 110%; letter-spacing: -.02em; line-height: .9; font-size: 104px; }
+.tag { font-size: 23px; line-height: 1.3; font-weight: 500; max-width: 640px; }
+.parts { display: grid; grid-template-rows: 1fr 1fr 1fr; }
+.parts div { display: flex; align-items: center; padding: 0 30px; white-space: nowrap;
+  font-family: var(--display); font-weight: 700; font-size: 27px; }
+.parts .mono { font-size: 14px; margin-right: 18px; opacity: .7; }
+</style></head><body>
+<div class="banner">
+  <div class="lead">
+    <div class="mono">@gummietech · on ko-fi</div>
+    <div class="word">GummieTech</div>
+    <p class="tag">Tech and science, explained free every week. A coffee keeps it going.</p>
+  </div>
+  <div class="parts">
+    <div style="background: var(--pink)"><span class="mono">01</span>Every post free</div>
+    <div style="background: var(--olive)"><span class="mono">02</span>Sources linked</div>
+    <div style="background: var(--sky)"><span class="mono">03</span>Kept going by you</div>
+  </div>
+</div>
+<script src="../templates/backdrop.js"></script>
+<script>
+// The slides' own shader, drawn once at frame 0: the same ribbons as a post,
+// standing still. Without WebGL the field stays flat sky.
+if (window.Ribbons) Ribbons.attach(document.querySelector('.lead'),
+  { field: 'sky', palette: ['sky', 'pink'], seed: 'kofi' });
+</script>
+</body></html>
