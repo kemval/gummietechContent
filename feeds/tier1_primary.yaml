@@ -123,10 +123,13 @@ feeds:
     topic: ai
     announces: [research.google/blog/]
 
+  # skip_tags: OpenAI files its startup case studies under /index/ beside
+  # its launches, tagged `Startup`; ingest.py drops them (2026-10-17, Amp).
   - name: OpenAI
     url: https://openai.com/news/rss.xml
     topic: ai
     announces: [openai.com/index/]
+    skip_tags: [Startup]
 
   # Added 2026-10-07 with score.py's relevance axis: model launches are what
   # the AI digests lead with, and a lab's own announcement is the source

@@ -121,6 +121,29 @@ def test_an_arxiv_mega_category_is_held_to_new_papers_and_a_cap(monkeypatch):
     assert [i["title"] for i in items] == ["Paper 2", "Paper 4"]
 
 
+def test_a_newsroom_customer_story_is_dropped_by_its_tag(monkeypatch):
+    """2026-10-17: OpenAI's "Amp puts AI agents to work beyond code" is a
+    startup case study whose summary names three models. score.py scored it
+    9 as a launch, the `announces` prefix labelled it an announcement, and
+    it reached the Signal. The feed tags it `Startup`; the tag decides."""
+    import ingest
+
+    def item(n: int, tag: str) -> bytes:
+        category = f"<category>{tag}</category>" if tag else ""
+        return (f"<item><title>Post {n}</title><link>https://openai.com/index/"
+                f"{n}</link>{category}</item>").encode()
+
+    class Resp:
+        status_code = 200
+        content = (b"<rss><channel>" + item(1, "Startup") + item(2, "Product")
+                   + item(3, "") + item(4, "startup") + b"</channel></rss>")
+
+    monkeypatch.setattr(ingest.requests, "get", lambda *a, **k: Resp())
+    monkeypatch.setattr(ingest, "pace_host", lambda url: None)
+    items, _ = ingest.fetch_feed({"name": "OpenAI", "url": "https://x",
+                                  "skip_tags": ["Startup"]})
+    assert [i["title"] for i in items] == ["Post 2", "Post 3"]
+
 def test_hugging_face_daily_papers_arrive_as_arxiv_rows(monkeypatch):
     """2026-10-09: the only RSS of this list (papers.takara.ai) linked its
     own pages, which PREPRINT_HOSTS does not know, so a preprint would have
