@@ -1,0 +1,38 @@
+{
+  "post_type": "term",
+  "domain": "AI agents",
+  "colorway": "signal",
+  "hook": "An AI agent doesn't just answer. It plans, acts and fixes its own work.",
+  "term": "AI agent",
+  "definition": "An AI system that works toward a goal by itself: it plans, writes and debugs its own code, and acts, instead of answering once.",
+  "example": "Four agents played Minecraft with one goal. They planned, wrote and debugged every program themselves, and no one assigned roles.",
+  "the_catch": "Autonomous does not mean unwatched. In that study, researchers could follow the run on a live dashboard and pause or stop it at any time.",
+  "example_post": "2026-10-19-four-gemini-4-argon-agents-beat-minecraf",
+  "caption": "An AI agent is an AI system that works toward a goal by itself, planning, writing and debugging its own code. In a 2026 preprint, four of them played Minecraft, and no one assigned roles or wrote game logic. The catch: the researchers could watch the run live and pause or stop it at any time. Would you let an agent work on your computer unsupervised, yes or no?",
+  "keywords": [
+    "AI agent",
+    "autonomous AI",
+    "multi-agent"
+  ],
+  "hashtags": [
+    "#ai",
+    "#aiagents",
+    "#llm",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining an AI agent: a system that works toward a goal by planning, writing and debugging its own code. It shows an earlier gummietech post about four agents playing Minecraft, and the common mistake of reading autonomous as unwatched, since researchers could pause or stop the run.",
+  "source_url": "https://arxiv.org/abs/2610.22319",
+  "attribution": "Faldor et al., arXiv (2026)",
+  "peer_reviewed": false,
+  "news_report": false,
+  "beat": "ai",
+  "es": {
+    "domain": "agentes de IA",
+    "hook": "Un agente de IA no solo responde: planifica, actúa y corrige su propio trabajo.",
+    "term": "agente de IA",
+    "definition": "Un sistema de IA que persigue un objetivo por sí mismo: planifica, escribe y depura su propio código, y actúa, en lugar de responder solo una vez.",
+    "example": "Cuatro agentes jugaron Minecraft con un único objetivo. Planificaron, escribieron y depuraron cada programa por sí mismos, y nadie asignó roles.",
+    "the_catch": "Autónomo no significa que esté sin supervisión. En ese estudio, los investigadores podían seguir la ejecución en un panel en tiempo real y pausarla o detenerla en cualquier momento.",
+    "_en": "a9c119e53ac94664"
+  }
+}
