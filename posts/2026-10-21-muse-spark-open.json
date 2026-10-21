@@ -32,5 +32,6 @@
     "why_it_matters": "Meta afirma que los desarrolladores pueden ejecutar localmente un modelo multimodal, con tareas de codificación y de agente que se ejecutan completamente en el dispositivo, sin servicios en la nube.",
     "the_catch": "El informe completo de evaluación de Meta está \"disponible pronto\", por lo que, por ahora, los resultados provienen de Meta. Los pesos se distribuyen bajo la Muse Model License, que incluye \"términos comerciales limitados\".",
     "_en": "958a40f12ff5547b"
-  }
+  },
+  "published_at": "2026-10-21"
 }
