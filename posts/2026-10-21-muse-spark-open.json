@@ -3,10 +3,10 @@
   "domain": "AI models",
   "colorway": "orbit",
   "hook": "Meta says Muse Spark Open has 816 billion parameters, a 1 million‑token context window.",
-  "what_happened": "Meta released Muse Spark Open, an 816 billion‑parameter open‑weight model that can run on two Apple M5 Ultra Mac Studios.",
-  "why_it_matters": "It lets developers run a powerful multimodal model locally, enabling on‑device coding and agentic tasks without cloud services.",
-  "the_catch": "It is released under a license that restricts commercial use.",
-  "caption": "Meta released Muse Spark Open, an 816 billion‑parameter open‑weight AI model that runs on two Apple M5 Ultra Mac Studios. Desktop or cloud?",
+  "what_happened": "Meta released Muse Spark Open, an 816 billion‑parameter open‑weight model that Meta says runs on two Apple M5 Ultra Mac Studios.",
+  "why_it_matters": "Meta says developers can run a multimodal model locally, with coding and agentic tasks running entirely on-device, without cloud services.",
+  "the_catch": "Meta's full evaluation report is 'available soon', so results are Meta's own for now. Weights use the Muse Model License, with 'limited commercial terms'.",
+  "caption": "Meta released Muse Spark Open, an 816 billion‑parameter open‑weight AI model that Meta says runs on two Apple M5 Ultra Mac Studios. Desktop or cloud?",
   "keywords": [
     "open‑weight",
     "multimodal",
@@ -18,7 +18,7 @@
     "#desktopai",
     "#gummietech"
   ],
-  "alt_text": "The carousel explains that Meta released Muse Spark Open, an 816 billion‑parameter open‑weight AI model that can run on two Apple M5 Ultra Mac Studios, its benefits, and its license limitation.",
+  "alt_text": "The carousel explains that Meta released Muse Spark Open, an 816 billion‑parameter open‑weight AI model that Meta says runs on two Apple M5 Ultra Mac Studios, what Meta says it enables, and the caveats on its results and license.",
   "source_url": "https://research.meta.ai/blog/muse-spark-open",
   "code_url": "https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B",
   "attribution": "Meta",
@@ -27,10 +27,10 @@
   "beat": "ai",
   "es": {
     "domain": "modelos de IA",
-    "hook": "Meta dice que Muse Spark Open tiene 816 mil millones de parámetros y una ventana de contexto de 1 millón de tokens",
-    "what_happened": "Meta lanzó Muse Spark Open, un modelo de peso abierto de 816 mil millones de parámetros que puede ejecutarse en dos Apple M5 Ultra Mac Studios",
-    "why_it_matters": "Permite a los desarrolladores ejecutar localmente un modelo multimodal potente, lo que habilita la codificación en el dispositivo y tareas agentic sin depender de servicios en la nube",
-    "the_catch": "Meta la publica bajo una licencia que restringe el uso comercial",
-    "_en": "73b563f8ed9d0f7b"
+    "hook": "Meta dice que Muse Spark Open tiene 816 mil millones de parámetros y una ventana de contexto de 1 millón de tokens.",
+    "what_happened": "Meta lanzó Muse Spark Open, un modelo de pesos abiertos de 816 mil millones de parámetros que, según Meta, se ejecuta en dos Apple M5 Ultra Mac Studios.",
+    "why_it_matters": "Meta afirma que los desarrolladores pueden ejecutar localmente un modelo multimodal, con tareas de codificación y de agente que se ejecutan completamente en el dispositivo, sin servicios en la nube.",
+    "the_catch": "El informe completo de evaluación de Meta está \"disponible pronto\", por lo que, por ahora, los resultados provienen de Meta. Los pesos se distribuyen bajo la Muse Model License, que incluye \"términos comerciales limitados\".",
+    "_en": "958a40f12ff5547b"
   }
 }
