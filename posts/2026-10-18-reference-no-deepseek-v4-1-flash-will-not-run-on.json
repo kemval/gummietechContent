@@ -59,5 +59,8 @@
     "the_catch": "Estas puntuaciones son propias de DeepSeek. Las líneas de hardware provienen de una cuantización comunitaria, que alcanza un máximo de 16 K de contexto y es solo de texto.",
     "_en": "a1ccb85e5195ae88"
   },
-  "published_at": "2026-10-18"
+  "published_at": "2026-10-18",
+  "metrics": {
+    "asked_at": "2026-10-21"
+  }
 }
