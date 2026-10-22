@@ -1,0 +1,49 @@
+{
+  "post_type": "breakdown",
+  "domain": "AI models",
+  "colorway": "signal",
+  "hook": "Meta says Muse Spark Open uses 42 billion of 816 billion parameters.",
+  "the_question": "Meta says Muse Spark Open has 816 billion parameters but 42 billion active. What does “active” mean?",
+  "the_intuition": "The common guess: a model that big uses every parameter on each token, a piece of text, so it needs a huge machine.",
+  "mechanism": [
+    "The model card calls it a mixture-of-experts transformer. It lists 256 experts: separate blocks of parameters the model can draw on.",
+    "For each token, top-k routing picks 8 of the 256 experts. The model card lists 42 billion parameters as active.",
+    "The card asks for 700GB of VRAM at least (NVFP4) or 2TB (BF16). Meta says two Mac Studios, up to 512GB each, hold the model."
+  ],
+  "why_it_matters": "Meta says developers can run a multimodal model locally, with coding and agentic tasks running entirely on-device, without cloud services.",
+  "the_catch": "Meta's own announcement, not a study; its full evaluation report is “available soon”. The card says it may still make errors in multi-step reasoning.",
+  "caption": "Meta says Muse Spark Open has 816 billion parameters, but only 42 billion are active per token. A router picks 8 of 256 experts for each token, according to the model card. Meta says two Mac Studios can hold the whole model. Would you rather run an AI model on your own desk or in the cloud?",
+  "keywords": [
+    "mixture of experts",
+    "open-weight",
+    "active parameters",
+    "Muse Spark Open"
+  ],
+  "hashtags": [
+    "#ai",
+    "#mixtureofexperts",
+    "#openweights",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining what 42 billion active parameters means in Meta's Muse Spark Open: a mixture-of-experts model with 256 experts, 8 picked per token by a router, and large memory needs even so. Based on Meta's announcement and model card.",
+  "source_url": "https://research.meta.ai/blog/muse-spark-open",
+  "attribution": "Meta",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "Meta dice que Muse Spark Open usa 42 mil millones de los 816 mil millones de parámetros.",
+    "the_question": "Meta dice que Muse Spark Open tiene 816 mil millones de parámetros, pero solo 42 mil millones están activos. ¿Qué significa «activo»?",
+    "the_intuition": "La suposición más frecuente: un modelo tan grande emplea todos sus parámetros para cada token (es decir, cada fragmento de texto), por lo que requiere una máquina enorme.",
+    "mechanism": [
+      "La tarjeta del modelo lo describe como un transformador de mezcla de expertos. Enumera 256 expertos: bloques separados de parámetros a los que el modelo puede recurrir.",
+      "Para cada token, el enrutamiento top‑k selecciona 8 de los 256 expertos. La tarjeta del modelo indica que 42 mil millones de parámetros están activos.",
+      "La tarjeta requiere al menos 700 GB de VRAM (NVFP4) o 2 TB (BF16). Meta afirma que dos Mac Studios, con hasta 512 GB cada uno, pueden alojar el modelo."
+    ],
+    "why_it_matters": "Meta asegura que los desarrolladores pueden ejecutar localmente un modelo multimodal, con tareas de codificación y de tipo agente que se ejecutan completamente en el dispositivo, sin necesidad de servicios en la nube.",
+    "the_catch": "Se trata del propio anuncio de Meta, no de un estudio; su informe de evaluación completo está disponible pronto. La tarjeta advierte que aún puede cometer errores en razonamiento de varios pasos.",
+    "_en": "7905af74d3db4f83"
+  }
+}
