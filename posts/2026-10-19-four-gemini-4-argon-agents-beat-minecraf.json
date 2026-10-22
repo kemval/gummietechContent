@@ -37,5 +37,8 @@
     "the_catch": "Dificultad fácil, una sola ejecución y los agentes obtienen datos exactos del mundo mediante código, no mediante píxeles.",
     "_en": "3f15ad36763475de"
   },
-  "published_at": "2026-10-19"
+  "published_at": "2026-10-19",
+  "metrics": {
+    "asked_at": "2026-10-22"
+  }
 }
