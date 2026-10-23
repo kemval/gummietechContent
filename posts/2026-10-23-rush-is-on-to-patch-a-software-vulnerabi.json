@@ -36,5 +36,6 @@
     "why_it_matters": "Aplicar parches es importante porque PHP está presente en aproximadamente el 70 % de los sitios web, y el FBI advirtió que las vulnerabilidades podrían permitir la ejecución remota de código.",
     "the_catch": "Aplicar parches es lento: podría tomar meses o años antes de que todos los sitios rezagados sean actualizados, porque primero hay que localizar cada sitio.",
     "_en": "2f4966e6a14ed275"
-  }
+  },
+  "published_at": "2026-10-23"
 }
