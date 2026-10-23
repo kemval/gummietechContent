@@ -451,6 +451,12 @@ to <https://kemval.github.io/gummietechContent/> — the Instagram bio link.
 - Each post page uses its own rendered slide 1 as the link-preview image;
   a browser that will not launch degrades to text-only previews.
 - A malformed post is skipped with a warning, never fails the build.
+- **The index has a front and filters** (2026-10-22): the latest post
+  large, three more beside it, then the months, each row with a small
+  `thumb.jpg` (never the 1.3 MB `cover.png`). Each format is its own static
+  page (`<post_type>/`), so a filter is a link that works without
+  JavaScript; the script in `index.html` only swaps pages without a reload.
+  Format names live in `formats.FORMATS` (`en`/`es`).
 - **Beyond the pages:** `feed.xml` (RSS 2.0), one page per month with its
   PDF (`<yyyy-mm>/`, printed through the slides' browser; no browser, no
   download link), and `site.py --newsletter`, the last week as an HTML page to

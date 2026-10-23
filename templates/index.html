@@ -1,10 +1,12 @@
 {% extends 'site_base.html' %}
 
-{% block title %}gummietech — sources{% endblock %}
+{% block title %}{% if active %}{{ active.en }} — {% endif %}gummietech — sources{% endblock %}
 {% block description %}Every @gummietech carousel, with the source you can actually click.{% endblock %}
+{% block og_path %}{% if active %}{{ active.key }}/{% endif %}{% endblock %}
+{% block wrap %}wide{% endblock %}
 
 {% block masthead %}
-    <div class="mark">gummietech</div>
+    <a class="mark" href="{{ base or './' }}">gummietech</a>
     <p class="tagline">
       {{ t("Every carousel, with the paper, the press release and the code — the links Instagram will not let you tap.",
             translated and "Cada carrusel con su artículo científico, su comunicado de prensa y su código: los enlaces que Instagram no te deja abrir.") }}
@@ -14,25 +16,130 @@
     {% if months %}
     <nav class="months">
       <span class="label">{{ t("Each month on one page", translated and "Cada mes en una página") }}</span>
-      {% for month in months %}<a href="{{ month.key }}/">{{ t(month.label, translated and month.label_es) }}</a>{% endfor %}
+      {% for month in months %}<a href="{{ base }}{{ month.key }}/">{{ t(month.label, translated and month.label_es) }}</a>{% endfor %}
     </nav>
     {% endif %}
 {% endblock %}
 
-{% block content %}
-  {% for post in posts %}
-  <a class="entry" href="{{ post.slug }}/">
-    <article class="panel" style="--accent: var(--{{ post.lead }})">
+{% macro thumb(post, eager=false) %}{% if post.cover %}<img class="thumb" src="{{ base }}{{ post.slug }}/thumb.jpg" width="480" height="600" alt=""
+  {% if eager %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">{% endif %}{% endmacro %}
+
+{% macro meta(post, domain=true) %}
       <div class="meta">
-        {% if post.domain %}{{ t(post.domain, post.es.domain) }} · {% endif %}<time datetime="{{ post.published_at }}">{{ t(post.published_on, post.published_on_es if post.es else "") }}</time>
+        <span class="fmt">{{ t(post.kind_name[0], translated and post.kind_name[1]) }}</span>
+        <span>{% if domain and post.domain %}{{ t(post.domain, post.es.domain) }} · {% endif %}<time datetime="{{ post.published_at }}">{{ t(post.published_on, post.published_on_es if post.es else "") }}</time></span>
       </div>
-      <h2 class="hook">{{ t(post.hook, post.es.hook) }}</h2>
+{%- endmacro %}
+
+{% block content %}
+{# Everything the filters swap lives in #feed, chips included, so the
+   script replaces one element and the active chip comes with it. #}
+<main id="feed">
+  {% if filters|length > 1 %}
+  <nav class="chips" aria-label="Filter by format">
+    <a href="{{ base or './' }}"{% if not active %} class="on" aria-current="page"{% endif %}>{{ t("All", translated and "Todo") }}<span class="n">{{ filters|sum(attribute='count') }}</span></a>
+    {% for f in filters %}<a href="{{ base }}{{ f.key }}/"{% if active and active.key == f.key %} class="on" aria-current="page"{% endif %}>{{ t(f.en, translated and f.es) }}<span class="n">{{ f.count }}</span></a>{% endfor %}
+  </nav>
+  {% endif %}
+
+  {% for post in featured %}
+  <h2 class="rule">{{ t("Latest", translated and "Lo último") }}</h2>
+  <a class="feat entry" href="{{ base }}{{ post.slug }}/">
+    <article class="panel" style="--accent: var(--{{ post.lead }})">
+      {{ thumb(post, eager=true) }}
+      <div class="txt">
+        {{ meta(post) }}
+        <h3 class="hook">{{ t(post.hook, post.es.hook) }}</h3>
+        {% if post.teaser[0] %}<p>{{ t(*post.teaser) }}</p>{% endif %}
+      </div>
     </article>
   </a>
-  {% else %}
+  {% endfor %}
+
+  {% if recent %}
+  <h2 class="rule">{{ t("Also recent", translated and "También reciente") }}</h2>
+  <div class="recent">
+    {% for post in recent %}
+    <a class="entry" href="{{ base }}{{ post.slug }}/">
+      <article class="panel" style="--accent: var(--{{ post.lead }})">
+        {{ meta(post, domain=false) }}
+        <h3 class="hook">{{ t(post.hook, post.es.hook) }}</h3>
+      </article>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% for month in groups %}
+  <h2 class="rule"><span>{{ t(month.label, translated and month.label_es) }}</span><span>{{ month.posts|length }}</span></h2>
+  {% for post in month.posts %}
+  <a class="post-row" href="{{ base }}{{ post.slug }}/">
+    {{ thumb(post) }}
+    <div>
+      {{ meta(post) }}
+      <h3 class="hook">{{ t(post.hook, post.es.hook) }}</h3>
+    </div>
+  </a>
+  {% endfor %}
+  {% else %}{% if not featured %}
   <p class="empty">
     {{ t("Nothing published yet. Posts appear here once they clear the human gate and get a published_at date.",
           translated and "Todavía no hay nada publicado. Los posts aparecen aquí cuando una persona los aprueba y reciben su fecha published_at.") }}
   </p>
-  {% endfor %}
+  {% endif %}{% endfor %}
+</main>
+
+{% if filters|length > 1 %}
+<script>
+  /* The filters are links to real pages, and work as links without this.
+     It only skips the reload: fetch the page, swap #feed, push the URL.
+     The URL moves first, then the HTML goes in, so the relative links and
+     images in it resolve against the page they were written for. Anything
+     that fails — file://, offline, an old browser — falls back to the link. */
+  (function () {
+    if (!window.fetch || !window.DOMParser || !history.pushState) return;
+    var cache = {};
+    function get(url) {
+      if (!cache[url]) cache[url] = fetch(url).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.text();
+      });
+      return cache[url];
+    }
+    function swap(html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var next = doc.getElementById('feed');
+      if (!next) throw new Error('no #feed');
+      document.getElementById('feed').replaceWith(next);
+      document.title = doc.title;
+    }
+    function go(url, push) {
+      return get(url).then(function (html) {
+        if (push) history.pushState({}, '', url);
+        swap(html);
+      });
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('.chips a');
+      if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      e.preventDefault();
+      var chips = a.parentNode, top = chips.getBoundingClientRect().top;
+      go(a.href, true).then(function () {
+        /* Keep the chips where the reader's thumb was, not the page top. */
+        if (top < 0) document.querySelector('.chips').scrollIntoView();
+      }, function () { location.href = a.href; });
+    });
+    /* Fetched on hover or touch, so the swap is usually instant. */
+    ['pointerenter', 'touchstart'].forEach(function (type) {
+      document.addEventListener(type, function (e) {
+        var a = e.target.closest && e.target.closest('.chips a');
+        if (a) get(a.href).catch(function () {});
+      }, { capture: true, passive: true });
+    });
+    window.addEventListener('popstate', function () {
+      go(location.href, false).catch(function () { location.reload(); });
+    });
+  })();
+</script>
+{% endif %}
 {% endblock %}

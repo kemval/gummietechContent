@@ -157,3 +157,38 @@ out — none of them new writing, all of them pure functions of the posts:
   and it is the funnel's one click. The token is a repo variable, public by
   design; unset, no script is added, so local builds and forks measure
   nothing.
+
+## The front of the index and the format filters (2026-10-22)
+
+At 42 posts in seven weeks across six formats, one column of hooks had
+stopped being navigable, and nothing on it said a post was a Breakdown
+rather than a Drop. Mocks were judged by eye; the owner picked a featured
+post with its slide 1, three recent cards, then the months as rows with a
+thumbnail, plus filter chips by format.
+
+- **A filter is a page, not a script.** `site.py` writes `<post_type>/` per
+  format with posts, from the same `index.html`. A link works without
+  JavaScript, can go in a story or the bio, is indexed, and each page
+  carries only its own posts. The script fetches the target page and swaps
+  `#feed`, pushing the URL *before* inserting the HTML so its relative links
+  resolve against the page they were written for; any failure (file://,
+  offline) falls back to following the link. Prefetched on hover or touch.
+- **Thumbnails, not covers.** `covers()` scales each screenshot to a
+  480×600 `thumb.jpg` (~35 KB against 1.3 MB) in the same browser, through a
+  data URL, so no image library is added for one resize. The featured one
+  loads eagerly with `fetchpriority="high"`; the rest lazily; every `<img>`
+  carries its size so nothing jumps. Measured on slow 4G with a 4× CPU:
+  LCP 1.7 s, CLS 0.018. Of the ~1.6 MB first load, ~1.4 MB is the TTF/OTF
+  fonts; WOFF2 is the next saving.
+- **"Also recent", not "This week"**: the page is rebuilt only on publish,
+  so a label about the calendar would be false by the weekend.
+- **Topic filters wait for data.** `beat` is `science` on 19 of the 42
+  posts and missing on 5, and colourways only meant topics from 2026-10-17;
+  a topic filter needs those backfilled first.
+- **Grids tried for the months and rejected** (all by eye): bento, a
+  calendar, an editorial ruled grid and four variants of it, and three Swiss
+  posters (column staircase, split block, modular grid). The rows stayed.
+- **The pitch is olive** with ink type and olive ribbons; the ink field it
+  had read as a brown slab before the footer. It carries the cards' shadow so
+  an olive post's page does not swallow it.
+
