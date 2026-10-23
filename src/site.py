@@ -34,6 +34,7 @@ Layer 5 exists to prevent. Add the date by hand when the post goes live.
 from __future__ import annotations
 
 import argparse
+import base64
 import contextlib
 import json
 import os
@@ -48,7 +49,8 @@ from urllib.parse import urlparse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from formats import (PAIR, announcement, entries, es_fields, incident_report,
+from formats import (FORMATS, PAIR, announcement, entries, es_fields,
+                     format_name, incident_report,
                      missing_from_entries, news_report, pieces, post_preprint_flag,
                      preprint, required, sections, spec, unpaired)
 from render import REPO_ROOT, colorway_pair, open_page, render_html, typeset
@@ -71,6 +73,19 @@ BEACON_ENV = "CF_BEACON_TOKEN"
 
 FEED = "feed.xml"
 NEWSLETTER_DAYS = 7
+
+# The index's small copy of each slide 1, beside the full cover.png that link
+# previews need. Forty 1080px PNGs on one page is megabytes a phone pays
+# before it can scroll; this is a few dozen kilobytes each, at the 2x a phone
+# screen wants for the featured post. Its size is written into the <img> so
+# the page does not jump as they load.
+THUMB = "thumb.jpg"
+THUMB_W, THUMB_H = 480, 600
+
+# The top of the index: one post set large, then this many beside it, then
+# the rest by month. Only on the "everything" page; a format's own page is
+# months alone.
+RECENT = 3
 
 
 # Hard-coded rather than taken from the C locale: es_ES is not installed on
@@ -296,6 +311,7 @@ def load_posts() -> tuple[list[dict], int]:
         # English piece with its Spanish and must use the block that passed
         # validation rather than the raw one that may have just failed it.
         es_block = spanish(post, path.name)
+        kind = format_name(post.get("post_type"))
 
         post.update(
             slug=path.stem,
@@ -328,11 +344,28 @@ def load_posts() -> tuple[list[dict], int]:
             preprint=post_preprint_flag(post),
             code_href=absolute(post["code_url"]) if post.get("code_url") else "",
             domain=post.get("domain", ""),
+            # The format's tag and the filter page it belongs to.
+            kind=kind,
+            kind_name=(FORMATS[kind].en, FORMATS[kind].es),
+            teaser=teaser(post, es_block),
         )
         posts.append(post)
 
     posts.sort(key=lambda p: p["published"], reverse=True)
     return posts, skipped
+
+
+def teaser(post: dict, es_block: dict) -> tuple[str, str]:
+    """The paragraph under the featured post's hook, English and Spanish.
+
+    Why it matters where the format has it, else the definition (a term);
+    a Signal or a sheet has neither and shows the hook alone.
+    """
+    for field in ("why_it_matters", "definition"):
+        if isinstance(post.get(field), str) and post[field].strip():
+            es = (es_block or {}).get(field, "")
+            return post[field], es if isinstance(es, str) else ""
+    return "", ""
 
 
 def prepare(outdir: Path) -> None:
@@ -375,7 +408,18 @@ def covers(posts: list[dict], outdir: Path) -> None:
                 first = page.query_selector(".slide")
                 if first is None:
                     raise RuntimeError("the template rendered no .slide")
-                first.screenshot(path=str(outdir / post["slug"] / "cover.png"))
+                cover = outdir / post["slug"] / "cover.png"
+                first.screenshot(path=str(cover))
+                # The thumbnail from the cover just taken, scaled by the
+                # same browser: no image library for one resize. A data URL,
+                # because set_content() pages may not load file:// images.
+                data = base64.b64encode(cover.read_bytes()).decode()
+                page.set_content(
+                    f'<img src="data:image/png;base64,{data}" style="display:'
+                    f'block;width:{THUMB_W}px;height:{THUMB_H}px">')
+                page.locator("img").screenshot(
+                    path=str(outdir / post["slug"] / THUMB),
+                    type="jpeg", quality=80)
             post["cover"] = True
         except Exception as exc:              # noqa: BLE001 — see docstring
             print(f"  warning: no preview images — {post['slug']} would not "
@@ -494,6 +538,12 @@ def months(posts: list[dict]) -> list[dict]:
             for key, items in sorted(found.items(), reverse=True)]
 
 
+def newest_first(found: list[dict]) -> list[dict]:
+    """months() reads each month oldest first, as its printed page does; the
+    index reads it newest first."""
+    return [{**m, "posts": list(reversed(m["posts"]))} for m in found]
+
+
 def month_pdfs(found: list[dict], outdir: Path) -> None:
     """Print each month's page to its PDF, through the slides' browser.
 
@@ -544,12 +594,6 @@ def build(posts: list[dict], outdir: Path) -> None:
     # directory down. Relative, not root-absolute, because Pages serves
     # this under /gummietechContent/ while a local preview is opened at file://.
     by_month = months(posts)
-    (outdir / "index.html").write_text(
-        env.get_template("index.html").render(
-            posts=posts, months=by_month, base="",
-            translated=bool(translated))
-    )
-    print(f"  wrote index.html ({len(posts)} post{'s' * (len(posts) != 1)})")
 
     # The one page that is not a post. §6b keeps every page a pure function
     # of the drafting JSON so that publishing costs no prose; this one costs
@@ -568,6 +612,32 @@ def build(posts: list[dict], outdir: Path) -> None:
         (outdir / post["slug"]).mkdir()
     # Before the pages, which only point at an image that exists.
     covers(posts, outdir)
+
+    # The index, and one page per format with that format's posts: plain
+    # pages with their own URLs, so a filter works without JavaScript, can be
+    # linked from a story, and is indexed. The script in index.html only
+    # swaps between them without a reload.
+    filters = [{"key": key, "en": fmt.en, "es": fmt.es,
+                "count": sum(p["kind"] == key for p in posts)}
+               for key, fmt in FORMATS.items()]
+    filters = [f for f in filters if f["count"]]
+    index = env.get_template("index.html")
+    top = posts[:1 + RECENT]
+    (outdir / "index.html").write_text(index.render(
+        posts=posts, featured=top[:1], recent=top[1:],
+        groups=newest_first(months(posts[len(top):])),
+        months=by_month, filters=filters, active="", base="",
+        translated=bool(translated)))
+    print(f"  wrote index.html ({len(posts)} post{'s' * (len(posts) != 1)})")
+    for f in filters:
+        kind = [p for p in posts if p["kind"] == f["key"]]
+        (outdir / f["key"]).mkdir()
+        (outdir / f["key"] / "index.html").write_text(index.render(
+            posts=kind, featured=[], recent=[],
+            groups=newest_first(months(kind)),
+            months=by_month, filters=filters, active=f, base="../",
+            translated=bool(translated)))
+        print(f"  wrote {f['key']}/index.html ({f['count']})")
 
     post_template = env.get_template("post.html")
     for post in posts:

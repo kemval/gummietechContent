@@ -82,6 +82,9 @@ class Format(NamedTuple):
     it — a person does, or for a term or a Breakdown weekly.yml — so it is
     never a Drop day's Drop, and "Another story" cannot draft another in its
     place.
+
+    `en`/`es` are what the web archive calls the format, on each post's tag
+    and on the filter that lists every post of it.
     """
     template: str
     sections: tuple[Section, ...]
@@ -89,6 +92,8 @@ class Format(NamedTuple):
     entries: tuple[str, ...] = ()
     catch: bool = True
     by_hand: bool = False
+    en: str = ""
+    es: str = ""
 
 
 # The hardware ladder of Sunday's "Can I run it?": the same machines, in this
@@ -131,7 +136,7 @@ FORMATS: dict[str, Format] = {
         Section("what_happened",  "What happened",  "Qué pasó"),
         Section("why_it_matters", "Why it matters", "Por qué importa"),
         Section("the_catch",      "The catch",      "El detalle"),
-    )),
+    ), en="Drop", es="Drop"),
     "breakdown": Format("breakdown.html", (
         Section("the_question",   "The question",   "La pregunta"),
         Section("the_intuition",  "The intuition",  "La intuición"),
@@ -144,13 +149,14 @@ FORMATS: dict[str, Format] = {
         # learn.py can settle whether it earns its slide.
         Section("recap",          "In one line",    "En una línea",
                 optional=True),
-    ), by_hand=True),
+    ), by_hand=True, en="Breakdown", es="Breakdown"),
     "signal": Format(
         "signal.html",
         (Section("items", "This week", "Esta semana", many=True, key="claim"),),
         record=("hook", "alt_text", "items"),
         entries=("claim", "attribution", "source_url", "peer_reviewed"),
         catch=False,
+        en="Signal", es="Signal",
     ),
     # The glossary: one term, defined, then shown in a post this account
     # already published. `example_post` names that post's stem, and
@@ -166,6 +172,7 @@ FORMATS: dict[str, Format] = {
          Section("the_catch",  "The common mistake", "El error común")),
         record=(*RECORD, "example_post"),
         by_hand=True,
+        en="Glossary", es="Glosario",
     ),
     # The cheat sheet: several terms, one line each, from one source. Each
     # entry is one string, "Term: line" — `pair` — rather than an object, so
@@ -179,6 +186,7 @@ FORMATS: dict[str, Format] = {
         (Section("items", "The sheet", "La chuleta", many=True, pair=True),),
         catch=False,
         by_hand=True,
+        en="Cheat sheet", es="Chuleta",
     ),
     # Sunday's "Can I run it?": a cheat sheet about one fresh model, and the
     # one sheet with a catch. Its items are the hardware ladder (LADDER,
@@ -196,6 +204,7 @@ FORMATS: dict[str, Format] = {
          Section("the_catch", "The catch",     "El detalle")),
         record=(*RECORD, "source_post", "figure_sources"),
         by_hand=True,
+        en="Can I run it?", es="¿Lo puedo correr?",
     ),
     # Sunday's Incident Report: something in production broke, and the
     # people who ran it said why. The timeline is one slide per entry, as a
@@ -210,7 +219,7 @@ FORMATS: dict[str, Format] = {
         Section("root_cause", "Root cause",  "La causa"),
         Section("the_fix",    "The fix",     "El arreglo"),
         Section("the_catch",  "The catch",   "El detalle"),
-    ), by_hand=True),
+    ), by_hand=True, en="Incident report", es="Informe de incidente"),
     # A Drop whose paper ships its code, with one slide on running it. The
     # repo is required, and it is code_link()'s, never the model's: a run
     # post pointing at an invented repo is the worst wrong credit there is.
@@ -219,7 +228,7 @@ FORMATS: dict[str, Format] = {
         Section("try_it",         "Run it yourself",  "Córrelo tú"),
         Section("why_it_matters", "Why it matters",   "Por qué importa"),
         Section("the_catch",      "The catch",        "El detalle"),
-    ), record=(*RECORD, "code_url")),
+    ), record=(*RECORD, "code_url"), en="Run it", es="Córrelo"),
 }
 DEFAULT_FORMAT = "drop"
 
