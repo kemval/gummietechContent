@@ -21,8 +21,11 @@
     {% endif %}
 {% endblock %}
 
+{# The featured cover (eager) offers the full-size cover.jpg too: it is shown
+   340px wide, or the phone's full width, and the 480px thumb stretched to
+   that is blurred. A row's 72px never needs more than the thumb. #}
 {% macro thumb(post, eager=false) %}{% if post.cover %}<img class="thumb" src="{{ base }}{{ post.slug }}/thumb.jpg" width="480" height="600" alt=""
-  {% if eager %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">{% endif %}{% endmacro %}
+  {% if eager %}srcset="{{ base }}{{ post.slug }}/thumb.jpg 480w, {{ base }}{{ post.slug }}/cover.jpg 1080w" sizes="(max-width: 760px) 100vw, 340px" fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">{% endif %}{% endmacro %}
 
 {% macro meta(post, domain=true) %}
       <div class="meta">
