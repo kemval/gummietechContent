@@ -188,9 +188,9 @@ CAROUSEL_PDF = "carousel.pdf"
 # template's business, so this file does not get to assume ten is enough.
 MEDIA_GROUP_LIMIT = 10
 
-# Both checkers state their verdict on the report's first line — proof.py
-# prints "PROOF · PASS", fact-check.md requires "FACT-CHECK · PASS" — and that
-# line is what the gate reads. A verdict of BLOCK withholds the approval
+# Every checker states its verdict on the report's first line — proof.py
+# prints "PROOF · PASS", fact-check.md requires "FACT-CHECK · PASS",
+# slide-proof.md "SLIDE-PROOF · PASS" — and that line is what the gate reads. A verdict of BLOCK withholds the approval
 # button, so the post cannot be marked live from the phone at all.
 #
 # Reading the header rather than scanning the prose is not tidiness. The first
@@ -204,7 +204,8 @@ MEDIA_GROUP_LIMIT = 10
 # between Apply the fixes and Re-run the checks needs to know nothing was
 # found wrong, only that nothing could be confirmed.
 VERDICT_RE = re.compile(
-    r"^(?:PROOF|FACT-CHECK) · (BLOCK|UNVERIFIED|FIX|PASS)\s*$", re.M)
+    r"^(?:PROOF|FACT-CHECK|SLIDE-PROOF) · (BLOCK|UNVERIFIED|FIX|PASS)\s*$",
+    re.M)
 HOLDING = ("BLOCK", "UNVERIFIED")
 
 # A report with no verdict line has not said anything a machine can act on, so

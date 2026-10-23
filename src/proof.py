@@ -242,7 +242,7 @@ class Report:
     `name` is the word before the verdict on the first line. It is a
     parameter because watch.py reports `WATCH · FIX` in exactly this shape
     and a second copy of this class would be a second place for the verdict
-    rule to drift. telegram.py's VERDICT_RE only ever reads the two names
+    rule to drift. telegram.py's VERDICT_RE only ever reads the names
     that gate the button, which is why adding one here changes no gate.
     """
 

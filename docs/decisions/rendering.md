@@ -456,8 +456,13 @@ find as arriving at the end of the archive, which made every fixture report
 as clashing with the newest real draft.
 
 The `slide-proof` agent (`.claude/agents/slide-proof.md`) still exists for
-what a measurement cannot answer — whether the slides *look* wrong. Run it
-locally on a post that matters. It is read-only: it never edits the JSON or
+what a measurement cannot answer — whether the slides *look* wrong. Since
+2026-10-23 `review.yml` runs it on every post, after `proof.py`, on the PNGs
+it is about to send: that day's cover set "70% OF WEBSITES" over a hook that
+said "an estimated 70%", and `proof.py` passed it because every box was in
+the frame. The PNGs are hashed before and after, since the session has Bash
+and those files are what the chat gets; a change is UNVERIFIED. Its verdict
+gates the button. It is read-only: it never edits the JSON or
 renders into `output/`, and like `proof.py` it does not check claims or
 wording accuracy — that is `fact-check`'s half.
 

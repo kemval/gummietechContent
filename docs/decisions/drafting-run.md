@@ -171,7 +171,7 @@ no "next one" to draft). The form takes an optional reason.
 - A link, not a callback, for `workflow_url()`'s reason. It shares
   `daily.yml`'s concurrency group: both take a row and push to master.
 
-### Both reviews gate the button
+### Every review gates the button
 
 `telegram.py send --review FILE` carries each report into the message, and a
 report containing `BLOCK` or `UNVERIFIED` withholds the approval button. That
