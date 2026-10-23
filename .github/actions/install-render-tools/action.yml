@@ -21,6 +21,14 @@ description: >
 # gets it too. A retry after a kill first lets dpkg finish what it was
 # doing, or the second attempt would wait on its lock.
 #
+# 2026-10-23: that retry never ran. Attempt 1 timed out on a crawling
+# mirror, and attempt 2 failed in two seconds on the dpkg lock, held by
+# attempt 1's apt-get. `--with-deps` runs apt through sudo, as root, and a
+# timeout running as the runner user may not signal a root process: the
+# kill was refused and apt went on. So the apt half (Chromium's libraries,
+# ffmpeg) runs under a timeout that is itself root, and only the browser
+# download, which belongs in the runner's own cache, runs as the user.
+#
 # Worst case is two full attempts, about ten minutes: every caller's
 # timeout-minutes leaves room for that on top of its normal run.
 
@@ -35,30 +43,33 @@ runs:
     - name: Install Chromium${{ inputs.ffmpeg == 'true' && ' and ffmpeg' || '' }}
       shell: bash
       env:
-        ATTEMPT_MINUTES: '5'
+        # apt is the slow half; the browser comes from Playwright's CDN
+        APT_MINUTES: '4'
+        BROWSER_MINUTES: '1'
         FFMPEG: ${{ inputs.ffmpeg }}
       run: |
         printf '%s\n' 'Acquire::Retries "3";' \
           'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' |
           sudo tee /etc/apt/apt.conf.d/80-retries >/dev/null
 
-        install() {
-          python -m playwright install --with-deps chromium || return 1
-          if [ "$FFMPEG" = "true" ]; then
-            sudo apt-get install -y --no-install-recommends ffmpeg || return 1
-          fi
-        }
+        # Run as root, values baked in: sudo resets PATH and the environment.
+        apt_half="$(command -v python) -m playwright install-deps chromium"
+        if [ "$FFMPEG" = "true" ]; then
+          apt_half="$apt_half && apt-get install -y --no-install-recommends ffmpeg"
+        fi
 
         for attempt in 1 2; do
           if [ "$attempt" -gt 1 ]; then
             sudo dpkg --configure -a || true
           fi
-          # timeout signals the whole process group, sudo and apt included,
-          # and kills it outright if a TERM is ignored.
-          if timeout --kill-after=30s "${ATTEMPT_MINUTES}m" bash -c "$(declare -f install); install"; then
+          # Each timeout signals its whole process group, and kills it
+          # outright if a TERM is ignored. The first is root, so it reaches
+          # apt and dpkg; see the 2026-10-23 note above.
+          if sudo timeout --kill-after=30s "${APT_MINUTES}m" bash -c "$apt_half" &&
+             timeout --kill-after=30s "${BROWSER_MINUTES}m" python -m playwright install chromium; then
             exit 0
           fi
-          echo "::warning::Install attempt $attempt failed or ran past ${ATTEMPT_MINUTES} minutes — the Ubuntu mirror is the usual cause."
+          echo "::warning::Install attempt $attempt failed or ran past its ${APT_MINUTES}+${BROWSER_MINUTES} minutes — the Ubuntu mirror is the usual cause."
         done
         what=Chromium; [ "$FFMPEG" = "true" ] && what="Chromium and ffmpeg"
         echo "::error::$what did not install in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."

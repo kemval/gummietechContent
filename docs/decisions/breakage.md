@@ -113,3 +113,12 @@ check, review, reel and site: five minutes an attempt, one retry after
 letting dpkg finish, and apt's own retry and 30-second stall timeout. Each
 caller's `timeout-minutes` was set from its measured run plus ten minutes
 for that retry: check 30, reel 30, site 15; review's 25 already had room.
+**The retry has to be able to kill what it retries** (2026-10-23). PR #64's
+check failed with the retry never run: attempt 1 timed out on a crawling
+mirror and attempt 2 died at once on the dpkg lock, still held by attempt 1's
+apt-get. `--with-deps` runs apt through sudo, so apt was root, and a
+`timeout` running as the runner user is not allowed to signal a root
+process. The apt half (Chromium's libraries and ffmpeg) now runs under
+`sudo timeout`, four minutes, and only the browser download runs as the user
+(one minute), since it belongs in the runner's cache: the same five minutes
+an attempt.
