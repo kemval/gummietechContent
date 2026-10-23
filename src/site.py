@@ -82,6 +82,13 @@ NEWSLETTER_DAYS = 7
 THUMB = "thumb.jpg"
 THUMB_W, THUMB_H = 480, 600
 
+# The featured post's cover at full size, offered beside THUMB in a srcset.
+# It is shown 340px wide on a desktop and the full width of a phone, which
+# at 2x and 3x is 680 to 1100 device pixels: the 480px thumbnail stretched
+# to that read as a blurred slide (2026-10-23). A JPEG, not cover.png, so
+# the one large image on the page is a few hundred kilobytes, not 1.3 MB.
+FULL = "cover.jpg"
+
 # The top of the index: one post set large, then this many beside it, then
 # the rest by month. Only on the "everything" page; a format's own page is
 # months alone.
@@ -410,6 +417,8 @@ def covers(posts: list[dict], outdir: Path) -> None:
                     raise RuntimeError("the template rendered no .slide")
                 cover = outdir / post["slug"] / "cover.png"
                 first.screenshot(path=str(cover))
+                first.screenshot(path=str(outdir / post["slug"] / FULL),
+                                 type="jpeg", quality=85)
                 # The thumbnail from the cover just taken, scaled by the
                 # same browser: no image library for one resize. A data URL,
                 # because set_content() pages may not load file:// images.
