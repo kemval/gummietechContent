@@ -494,6 +494,14 @@ def test_a_hook_with_two_figures_gets_no_cover_figure():
     assert render.cover_figure(hook) is None
 
 
+def test_a_hedged_figure_gets_no_cover_figure():
+    """2026-10-23: "an estimated 70%" was set large as "70% of websites" —
+    the hedge sits before the figure, where the qualifier never looked."""
+    hook = "AI helped find PHP flaws; it runs an estimated 70% of websites."
+    assert render.cover_figure(hook) is None
+    assert render.cover_figure("Uses up to 40% less power, says Arm") is None
+
+
 def test_the_catch_becomes_a_diff_only_when_it_corrects_the_cover_figure():
     diff = render.catch_diff(REAL_CATCH, render.cover_figure(REAL_HOOK))
     assert [(r["sign"], r["value"]) for r in diff] == [("−", "81%"), ("+", "1.40×")]
