@@ -67,7 +67,9 @@ keep them, and `rhythm()` still colours every slide. What changed, and why:
   cover, the best-of-15 result, while the catch existed to say the model's
   own picks gave 1.40×. `cover_figure()` shows a figure only when the hook
   has exactly one, and always with the hook's own qualifier (after its em
-  dash, or the rest of the clause). `catch_diff()` strikes it and sets the
+  dash, or the rest of the clause), and never when a hedge stands before
+  it ("an estimated 70%" was set as "70% of websites", 2026-10-23).
+  `catch_diff()` strikes it and sets the
   correction beside it only when the catch names that figure first and a
   second one after it; anything less regular is plain text.
 - **Layout is measured, in `slides_layout.js`.** Fitting type to a column,

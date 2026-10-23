@@ -216,6 +216,14 @@ MULTIPLIER = re.compile(r"(\d)x\b")
 FIGURE = re.compile(r"\d[\d.,]*(?:[–-]\d[\d.,]*)?\s?(?:%|×|x\b)")
 
 
+# Words before a figure that make it an estimate or a bound: the cover's
+# giant figure cannot carry them, so a hedged figure is not set large.
+HEDGE = re.compile(
+    r"~|\b(?:estimated|estimate[sd]?|about|around|roughly|approximately|"
+    r"nearly|almost|some|up to|over|under|more than|less than|fewer than|"
+    r"at least|at most|as much as|as many as)\b", re.IGNORECASE)
+
+
 LINKING_WORDS = {"of", "the", "a", "an", "to", "in", "on", "for", "and", "or",
                  "per", "at", "by", "with", "from", "than", "as", "is", "was"}
 
@@ -263,12 +271,20 @@ def cover_figure(hook: str) -> dict | None:
     em dash, or failing that the rest of the clause the figure opens,
     verbatim. And a hook with two figures gets none: "survival rose 8% to
     60%" would set "8%" large, the one number the hook is moving away from.
+
+    A figure hedged before it gets none either. On 2026-10-23 "it runs an
+    estimated 70% of websites" set "70%" over "of websites": the qualifier
+    only looks after the figure, so the cover stated as fact the estimate
+    the fact-check had made the hook say.
     """
     t = typeset(hook)
     found = list(FIGURE.finditer(t))
     if len(found) != 1:
         return None
     m = found[0]
+    clause = re.split(r"[.;:,—]", t[:m.start()])[-1]
+    if HEDGE.search(clause):
+        return None
     if " — " in t:
         qualifier = t.rsplit(" — ", 1)[1]
     else:
