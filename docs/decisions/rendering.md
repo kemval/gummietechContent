@@ -143,6 +143,22 @@ the rhythm, the type and every text rule, and adds the system:
   warps, over a lit waving surface. Two earlier attempts, a single hue
   shaded and soft folds, were rejected as "not Neat": it is the layered
   colours that make it.
+  - **The ribbons travel (2026-10-23).** The owner put our clips beside
+    neat.rebase.pro and saw nothing alike in the motion or its direction.
+    Read against Neat's source, the cause was the loop: time entered only as
+    an angle, so every point went round a small circle and came back — the
+    field breathed in place, with no net travel. Neat's clock runs on, each
+    colour layer slides sideways at its own speed and the waves run on a
+    diagonal. Ours now does the same and still loops: the noise is wrapped
+    round a cylinder along x, so it repeats every P, and each layer slides
+    exactly one P per loop (P grows by layer, so upper layers are faster).
+    Neat's plane is also tilted away from the camera; the shader now leans
+    its plane the same way (rows nearer the top see more of it, and the
+    waves lift the colour more). Chosen from five variants filmed side by
+    side with a Neat recording. **Grain was tried and left out**: per-frame
+    grain took a cover clip from 4 MB to 81–125 MB, over the Bot API's 50 MB
+    upload cap, and it darkens pixels under ink type. A slowly evolving
+    grain, as Neat draws it, is the route if it is wanted again.
   - **Contrast holds on every frame by construction.** Light slides use
     only palette hues, and every one clears 4.5:1 against ink (`RIBBONS`,
     field last and widest so the slide still reads as its colour); their
@@ -162,8 +178,9 @@ the rhythm, the type and every text rule, and adds the system:
     remains in every family (pink or blush in all four `COLORWAYS`); that is
     the palette, not the ribbons.
   - **Seamless and deterministic.** Time enters only as the angle of one
-    12s loop (noise sampled around a circle), seeded by the hook and slide
-    id. Frame 0 and frame 12000ms are byte-identical. The PNG is frame 0.
+    24s loop (the travel above, plus a little noise sampled around a
+    circle), seeded by the hook and slide id. Frame 0 and frame 24000ms are
+    byte-identical. The PNG is frame 0.
     `render.py` films each slide over one loop (JPEG frames, TV-range
     yuv420p, which Instagram expects), and `--no-motion` skips it.
     `reel.py` stretches the backdrop's clock to a whole number of loops
@@ -212,7 +229,14 @@ the rhythm, the type and every text rule, and adds the system:
     whatever the circle, so on 2026-10-15 the loop itself went from 8s to
     12s (chosen by eye over 16s from clips side by side). Every term slows
     evenly and frame 0 — the PNG — is unchanged; the cost is clips half as
-    long again and ~50% more filming time. `check.yml` renders with
+    long again and ~50% more filming time. On 2026-10-23 the travelling
+    ribbons came in and the owner asked for them slower: a ribbon must move a
+    whole repeat per loop and a repeat must be wider than the slide, so at
+    12s the drift could fall only ~1.5×. The loop went to 24s (chosen over
+    that 12s version from clips side by side): clips ~6.6 MB, a Drop's five
+    ~9 minutes inside `review.yml`'s 70. A Drop reel (~18s) is unchanged:
+    `reel.py` rounds it to one 24s loop where it rounded to two 12s ones,
+    the same 1.33× stretch. `check.yml` renders with
     `--no-motion`; its reel smoke drives the backdrop's clock. Telegram
     sends the clips after the stills, all or none.
 - **The hook sits on ruled baselines** (.84em at line-height 1.0).
