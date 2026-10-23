@@ -1,7 +1,8 @@
 // The moving backdrop: Neat's technique (github.com/FireCMSco/neat), our own
 // code. Neat layers colours one over another wherever a horizontally
-// stretched noise field crosses a threshold, curls the result with cos() flow
-// warps, and lights a waving surface. One fragment shader does the same here,
+// stretched noise field crosses a threshold, slides each layer sideways at its
+// own speed, curls the result with cos() flow warps, and lights a waving
+// surface tilted away from the camera. One fragment shader does the same here,
 // in the locked palette. Neat itself watermarks every render without a paid
 // key, which the $0 budget rules out (docs/decisions/rendering.md).
 //
@@ -22,20 +23,24 @@
 // shader draws W px wide and is scaled up, like Neat's renderScale: headless
 // Chrome runs WebGL on the CPU, and at full size a reel took over fifteen
 // minutes. The ribbons are smooth enough not to show it. Time enters only as
-// the angle of one LOOP (noise sampled around a circle), so every clip loops
-// seamlessly and a still is always the same picture.
+// the angle of one LOOP, so every clip loops seamlessly and a still is always
+// the same picture. Neat's time runs on forever, so its ribbons travel; ours
+// travel too, because the noise they slide through repeats along the way they
+// slide (x wrapped round a cylinder) and each moves exactly one repeat a loop.
 window.Ribbons = (() => {
   const gl = document.createElement('canvas').getContext('webgl', { preserveDrawingBuffer: true });
   if (!gl) return null;
-  // 12s since 2026-10-15 (owner's call, from 8/12/16s clips compared side
-  // by side): lengthening the loop slows every term evenly and leaves the
-  // picture, and so the PNG at frame 0, exactly as it was.
-  const LOOP = 12000, W = 360;
+  // 24s since 2026-10-23 (owner's call, from 12s and 24s clips side by
+  // side). A ribbon must travel a whole repeat per loop, and a repeat must
+  // be wider than the slide or it shows twice, so at 12s the drift could not
+  // go slower than about a slide-width every 12s; only a longer loop slows it.
+  const LOOP = 24000, W = 360;
   gl.canvas.width = W; gl.canvas.height = 640;   // grows for taller shapes
   const src = {
     v: 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }',
     f: `precision highp float;
       uniform vec3 C[5]; uniform int N; uniform float seed, a, dark; uniform vec2 res;
+      const float TAU = 6.2831853;
       // 3D simplex noise: Ashima Arts / Stefan Gustavson, MIT licence
       vec3 m289(vec3 x){ return x - floor(x*(1./289.))*289.; }
       vec4 m289(vec4 x){ return x - floor(x*(1./289.))*289.; }
@@ -62,15 +67,22 @@ window.Ribbons = (() => {
         return 42.*dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
       }
       vec2 ring(float r){ return r*vec2(cos(a), sin(a)); }   // one loop = one circle
+      // noise that repeats every P along x: x wrapped round a cylinder of
+      // circumference P. Slid by P over a loop, it ends where it began.
+      float cyl(float x, float P, float y){ float th = TAU*x/P; return snoise(vec3(P/TAU*cos(th), P/TAU*sin(th), y)); }
       float surf(vec2 p){                                    // the waving plane
-        vec2 r = ring(.45);   // a small circle: the same loop, a slow drift
-        return .55*snoise(vec3(p.x*.45, p.y*.55 + r.x, r.y + seed)) + .2*sin(p.x*1.1 + p.y*.7 + a);
+        // travels on a diagonal, like Neat's waves (x + t, y + t)
+        vec2 d = normalize(vec2(1., .45)), u = vec2(dot(p, d), dot(p, vec2(-d.y, d.x)));
+        return .6*cyl(u.x*.45 - a/TAU*1.6, 1.6, u.y*.6 + seed) + .28*sin(u.x*1.3 - a + u.y*.2);
       }
       void main(){
         vec2 uv = gl_FragCoord.xy / res; uv.y = 1. - uv.y;
-        vec2 p = vec2((uv.x - .5)*3.2, uv.y*3.6*(res.y/res.x)/1.25);   // ribbon scale follows the width
+        // Neat's plane leans away from the camera: a row nearer the top sees
+        // more of it (dep wide), and its waves look smaller
+        float dep = 1. + .7*(1. - uv.y), Y = uv.y + .7*(uv.y - .5*uv.y*uv.y);
+        vec2 p = vec2((uv.x - .5)*3.2*dep, Y*3.6*(res.y/res.x)/1.25);   // ribbon scale follows the width
         float z = surf(p);
-        vec2 q = p + vec2(0., z*.8);                           // colour rides the waves
+        vec2 q = p + vec2(0., z*1.05/dep);                     // colour rides the waves
         q += .12*cos(1.3*q.yx + a + vec2(.1, 1.1));            // Neat's flow curls, one
         q += .09*cos(1.9*q.yx - a + vec2(3.2, 3.4));           // turn per loop each: slow
         q += .06*cos(1.7*q.yx + a + vec2(1.8, 5.2));
@@ -79,8 +91,12 @@ window.Ribbons = (() => {
         for (int i = 1; i < 5; i++) {
           if (i >= N) break;
           float fi = float(i);
-          // stretched along x: long horizontal ribbons, like Neat's colour pressure
-          float n = snoise(vec3(q.x*.32 + fi*2.3, q.y*.95 + r.x + fi*1.7, r.y + seed + fi*3.1));
+          // stretched along x: long horizontal ribbons, like Neat's colour
+          // pressure. Each layer slides one repeat a loop, and the repeat
+          // widens with the layer, so the upper ones move faster (Neat's
+          // noiseFlow); the narrowest, 1.8, is still wider than the slide.
+          float P = 1.8 + .3*fi;
+          float n = cyl(q.x*.32 + fi*2.3 - a/TAU*P, P, q.y*.95 + fi*1.7 + seed*3. + fi*3.1 + .12*r.x);
           col = mix(col, C[i], smoothstep(-.22, .38, n + (fi == float(N - 1) ? .12 : 0.)));   // wide: soft edges
         }
         // light from the surface's slope

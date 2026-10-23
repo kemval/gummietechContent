@@ -265,7 +265,7 @@ Never commit `.env`, `credentials.json`, or any key.
 
 Slides render at **1080×1350** (4:5), one `.slide` div each inside
 `templates/<post_type>.html` (fallback `drop.html` with a warning), each
-screenshotted individually, and each also filmed as a seamless 12s MP4 of its
+screenshotted individually, and each also filmed as a seamless 24s MP4 of its
 moving backdrop (Neat-style ribbons, our own shader, in the post's own
 lead/support/cream since 2026-10-06 — never a fixed table; `--no-motion` skips). `render.py` discovers slides with
 `querySelectorAll('.slide')` and refuses fewer than `MIN_SLIDES` (4).
