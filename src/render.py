@@ -185,6 +185,23 @@ def warn_on_length(post: dict) -> None:
                   f"consider splitting across two slides")
 
 
+def over_budget(post: dict) -> int:
+    """The word budget as a gate, for an edit no person wrote.
+
+    A draft over budget only warns, because a person reads it at the gate.
+    review.yml's auto-fix applies a fact-check's replacement with nobody
+    reading in between, and on 2026-10-23 the replacement for a catch was 33
+    words against 25 — a slide that overflows reached the chat. 1 here
+    sends the edit back instead of rendering it.
+    """
+    over = [(where, count, limit) for where, count, limit in word_budget(post)
+            if count > limit]
+    for where, count, limit in over:
+        print(f"{where} is {count} words; the limit is {limit}. Shorten it by "
+              f"deleting words, never by adding a claim.")
+    return 1 if over else 0
+
+
 def hook_size_class(hook: str) -> str:
     """Pick a display size so long hooks shrink instead of overflowing."""
     n = len(hook)
@@ -812,6 +829,9 @@ def main() -> int:
     ap.add_argument("--lang", default="en", choices=("en", "es"),
                     help="es: the slides in the post's Spanish (a Drop or a "
                          "Breakdown), into output/<stem>-es")
+    ap.add_argument("--budget", action="store_true",
+                    help="check the word budget only, render nothing: exit 1 "
+                         "when a field is over its limit")
     args = ap.parse_args()
 
     post_path = Path(args.post)
@@ -823,6 +843,8 @@ def main() -> int:
     post = load_post(post_path)
     if args.lang == "es":
         post = spanish(post)
+    if args.budget:
+        return over_budget(post)
     warn_on_length(post)
 
     suffix = "-es" if args.lang == "es" else ""

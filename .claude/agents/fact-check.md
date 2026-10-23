@@ -316,6 +316,12 @@ Then, per post, most severe first. Use exactly three verdicts:
   edit is a copy-paste, not a rewrite.
 - **PASS** — verified, with the supporting quote.
 
+Every replacement you give, BLOCK or FIX, must fit its slide: the hook at
+most 12 words, every other slide field at most 25. review.yml applies your
+lines with no person in between and refuses one over budget
+(`render.py --budget`), so a 33-word catch — 2026-10-23's — leaves the post
+held. Count the words before you write the line.
+
 For every claim you checked, show the field, the verdict, and the quoted
 source sentence that settles it. Then close with one line: either
 `Safe to render` or `Hold — <n> to fix`, followed by the list of edits.

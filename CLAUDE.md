@@ -69,14 +69,17 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      retried against a crawling Ubuntu mirror) ·
                      push-to-master (the one way a job pushes: rebase,
                      retry a race, fail on a conflict) · heartbeat (the
-                     ping an outside watcher expects — see below)
+                     ping an outside watcher expects — see below) ·
+                     fact-check (one fresh check, report at
+                     /tmp/factcheck.md) · apply-factcheck (one applier:
+                     edit, guard, word budget, translate, push)
 .github/workflows/   check.yml (on push: the offline half, no secrets) ·
                      ingest.yml (feeds+scoring, 2h) · daily.yml (draft →
                      commit, Mon/Wed/Fri, Wed as `--run`; the Signal Sat) ·
                      weekly.yml (Claude writes Tue's term, Thu's
                      Breakdown, Sun's "Can I run it?" or Incident
                      Report by ISO week → commit) ·
-                     review.yml (fact-check · render
+                     review.yml (fact-check · auto-fix ×2 · render
                      · proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
@@ -347,8 +350,12 @@ agent is the read-only visual check for what measurement cannot see.
 
 Run the `fact-check` agent (`.claude/agents/fact-check.md`) before rendering.
 It is read-only — never give it Edit or Write, never let it add
-`published_at`. `fix.yml` applies its report in a separate session, guarded
-by a diff check; a fresh `review.yml` re-checks the result. Watch for the
+`published_at`. Its report is applied in a separate session
+(`.github/actions/apply-factcheck`), guarded by a diff check and the word
+budget (`render.py --budget`), and a fresh session re-checks the result.
+`review.yml` does this itself on a BLOCK or FIX, at most two rounds, before
+the chat (2026-10-23); `fix.yml` is the same applier on a tap. Every
+replacement the fact-check writes must fit its slide's word budget. Watch for the
 wrong author, a preprint behind a journal URL, and a `the_catch` the paper
 does not state. A source that cannot be read is a hold, not a pass.
 → `docs/decisions/fact-check.md`
@@ -499,6 +506,7 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
   the next uncovered evergreen row marked as one, and code picks it.
   → `docs/decisions/sunday-rotation.md`
 - `review.yml` is the one reusable review; callers commit before calling it.
+  Its only commit is the auto-fix's, so every caller grants `contents: write`.
   `.github/actions/resolve-post` is the one answer to "which post is held".
 - `hook.yml` swaps the cover line and re-runs the whole review.
 - `redraft.yml` (**Another story**) moves the waiting draft to

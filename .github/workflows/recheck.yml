@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write         # review.yml's auto-fix commits the edits it applies
   actions: read           # resolve-post reads which post the gate last sent
   id-token: write         # claude-code-action's default GitHub App auth
 

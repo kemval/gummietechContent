@@ -100,118 +100,24 @@ jobs:
           echo "Report from artifact $id:"
           head -3 /tmp/reports/factcheck.md
 
-      # Writes the edits, and only the edits. The read-only contract on
-      # .claude/agents/fact-check.md is unchanged and this is deliberately not
-      # that agent: the checker and the repairer are different sessions so that
-      # neither is marking its own homework.
-      - name: Apply what the fact-check asked for
-        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            /tmp/reports/factcheck.md is a fact-check report on the post at
-            ${{ steps.pick.outputs.post }}. Apply it.
-
-            Edit only ${{ steps.pick.outputs.post }}, and only the fields the
-            report marks BLOCK or a required FIX. Leave anything it marks PASS
-            exactly as it is.
-
-            For each finding:
-              - If the report gives a suggested replacement, use that wording.
-              - If it does not, delete the unsupported claim and leave the
-                sentence shorter. Do NOT write a new claim of your own and do
-                NOT go to the source to compose one. A caveat the paper does
-                not state is the exact failure this repairs; inventing a
-                different one repeats it.
-              - One finding often objects to several things in one field.
-                Address every one of them. The first run of this workflow
-                read a the_catch finding that rejected both "relies on a weak
-                solvent" (mechanism restated as a caveat) and "has not been
-                tested beyond the laboratory scale" (in no source), deleted
-                only the second, and the re-check blocked the survivor. Half
-                an edit costs a whole round.
-              - hook, what_happened, why_it_matters and the_catch are
-                required and cannot end up empty. If applying a finding in
-                full would empty one and the report offers no usable
-                replacement for it, change nothing at all and say the post
-                needs re-drafting.
-              - If a finding cannot be repaired by editing the JSON — the
-                source URL is the wrong paper, the whole post is about
-                something the paper does not say — change nothing and explain
-                why. A post that needs re-drafting is not a post to patch.
-
-            The fields are prose on a slide: keep the hook within 12 words and
-            what_happened, why_it_matters and the_catch within 25 each.
-
-            Do not touch the `es` block — it is regenerated after you. Do not
-            add `published_at` under any circumstance; nothing here publishes.
-            Do not edit any other file.
-
-            There is no shell here: Bash is not in your tools, so do not try
-            it. Read the post, make the edits, read it back.
-
-            Finish by printing the old and new text of every field you changed.
-          show_full_output: true
-          # 40, not 20: a Signal is five entries, each edited separately, and
-          # the 2026-10-10 Signal's fix made every edit in 32 turns and was
-          # still failed by the cap — the action fails a run that passes it
-          # even on success, so nothing was committed.
-          claude_args: |
-            --max-turns 40
-            --allowedTools "Read,Edit,Write,Grep,Glob"
-          settings: |
-            {
-              "permissions": {
-                "allow": ["Read(//tmp/reports/**)", "Edit(posts/**)",
-                          "Write(posts/**)"],
-                "deny": ["Write(src/**)", "Edit(src/**)",
-                         "Write(.github/**)", "Edit(.github/**)",
-                         "Write(templates/**)", "Edit(templates/**)"]
-              }
-            }
-
-      # The settings block above is the applier's contract; this is the part
-      # that does not depend on the applier honouring it. A prompt is an
-      # instruction, a diff is a fact.
-      - name: Check it changed that post and nothing else
-        env:
-          POST: ${{ steps.pick.outputs.post }}
-        run: |
-          changed=$(git diff --name-only)
-          if [ -z "$changed" ]; then
-            echo "::error::The applier changed nothing. Read its output in this log: either the report needed no edit, or it judged the post un-patchable and said why. Neither is fixed by running this again." >&2
-            exit 1
-          fi
-          if [ "$changed" != "$POST" ]; then
-            echo "::error::Expected only $POST to change, got: ${changed//$'\n'/ }. Nothing has been committed." >&2
-            git checkout -- .
-            exit 1
-          fi
-          if python3 -c "import json,sys,os; sys.exit(0 if not json.load(open(os.environ['POST'])).get('published_at') else 1)"; then
-            echo "Changed $POST only, still undated."
-          else
-            echo "::error::The applier added published_at. That is the human gate and it is not the applier's to give. Nothing has been committed." >&2
-            git checkout -- .
-            exit 1
-          fi
-          git --no-pager diff
-
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: 'pip'
 
       # No `playwright install` here: translate.py imports render.py for
-      # ES_FIELDS, which needs the playwright package but not its browsers.
-      # review.yml downloads Chromium when it renders.
+      # ES_FIELDS, and the applier's budget check runs render.py --budget;
+      # both need the playwright package but not its browsers. review.yml
+      # downloads Chromium when it renders.
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # The English just changed, so the Spanish on the archive is now stale.
-      # translate.py knows that from the `_en` stamp and re-translates only
-      # what moved — this is the corrected-at-the-gate case that stamp exists
-      # for. Its output is read at the gate like any other translation.
-      - name: Re-translate the Spanish
+      # The same applier review.yml's auto-fix runs, prompt and guard and all:
+      # one definition, so the two cannot drift. It commits and pushes before
+      # review.yml, which reads the post from its own checkout of master.
+      - name: Apply what the fact-check asked for
+        id: fix
+        uses: ./.github/actions/apply-factcheck
         env:
           LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -219,26 +125,21 @@ jobs:
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
-        run: python src/translate.py "${{ steps.pick.outputs.post }}"
-
-      # Before review.yml, which reads the post from its own checkout of
-      # master — the same reason daily.yml commits before it calls review.
-      # Pushed by .github/actions/push-to-master, which says why the remote
-      # is authenticated explicitly: this workflow's first run died on it.
-      - name: Commit the correction
-        env:
-          POST: ${{ steps.pick.outputs.post }}
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$POST"
-          git commit -m "Apply the fact-check to $(basename "$POST" .json)" \
-                     -m "Applied by .github/workflows/fix.yml from the report that held the post. Re-reviewed by review.yml before it goes back to the chat; still undated, so still unpublished."
-
-      - name: Push to master
-        uses: ./.github/actions/push-to-master
         with:
+          post: ${{ steps.pick.outputs.post }}
+          report: /tmp/reports/factcheck.md
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           token: ${{ github.token }}
+
+      # A tap that changed nothing is a failed run: the person asked for a
+      # fix, and re-reviewing an unchanged post would only send it back held.
+      - name: Stop if nothing was applied
+        if: steps.fix.outputs.applied != 'true'
+        env:
+          WHY: ${{ steps.fix.outputs.why }}
+        run: |
+          echo "::error::$WHY" >&2
+          exit 1
 
       - name: Say so in Telegram if this run broke
         if: failure()
