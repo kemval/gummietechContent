@@ -598,3 +598,18 @@ def test_an_empty_catch_renders_held_but_a_missing_one_is_refused():
     assert "No limitation found in the drafted text" in render.render_html(post)
     del post["the_catch"]
     assert render.missing_fields(post, render.required(post)) == ["the_catch"]
+
+
+def test_an_auto_applied_catch_over_budget_is_refused(capsys):
+    """2026-10-23: the fact-check's replacement catch was 33 words against 25,
+    and nothing between the applier and the chat counted them."""
+    post = {"post_type": "drop", "hook": "AI helped find PHP flaws.",
+            "what_happened": "x", "why_it_matters": "x",
+            "the_catch": ("Patching is slow: experts quoted say it could take "
+                          "months or years before all the stragglers are "
+                          "weeded out, because each site must be found, its "
+                          "owner located, and the risk assessed first.")}
+    assert render.over_budget(post) == 1
+    assert "the_catch is 33 words" in capsys.readouterr().out
+    post["the_catch"] = "Patching could take months or years."
+    assert render.over_budget(post) == 0

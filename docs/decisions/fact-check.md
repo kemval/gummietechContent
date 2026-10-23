@@ -100,3 +100,29 @@ a source that has since died makes every case an unreadable-source BLOCK,
 which proves only that the hold rule works — pick another case; and the
 cases are the drafts of their day, so `the_catch` failures from before
 2026-10-08 are invented catches, not the empty ones the prompt asks for now.
+
+## Applying the report before the chat (2026-10-23)
+
+A held post used to cost a tap on **Apply the fixes**, a `fix.yml` run and a
+second review, for edits the report had already written out word for word.
+`review.yml` now applies a BLOCK or FIX report itself and fact-checks the
+result in a fresh session, before anything is sent. The applier and the
+checker are the same two sessions as before — the applier is
+`.github/actions/apply-factcheck`, shared with `fix.yml`, so its prompt and
+guard cannot drift — and the checker still never edits.
+
+- **Two rounds, then the chat.** That day the second fact-check rejected the
+  catch the first had written ("weeks to months" against the source's
+  "months or years"). Without a cap the two could trade lines for as long
+  as the Pro quota lasted. After round two the latest report goes to the
+  chat as it is, held or not.
+- **UNVERIFIED is never applied.** An unreadable source is not repaired by
+  an edit.
+- **The word budget is enforced on the edit.** The replacement catch that
+  day was 33 words against 25; a person reading the gate would have seen it
+  overflow, an auto-fix would not. `render.py --budget` refuses the whole
+  edit, and `fact-check.md` now asks for replacements that fit.
+- **A refused round is said in the chat.** `autofix.md` is sent as one more
+  report, with no verdict line and none of the gate's words, so it never
+  holds or releases the button by itself. The report the refused round tried
+  to apply is the one the gate reads, since it still describes the post.

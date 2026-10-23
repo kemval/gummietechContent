@@ -1,0 +1,183 @@
+name: Fact-check a post
+description: >
+  Run the fact-check on a post in a fresh session, and leave its report at
+  /tmp/factcheck.md — a stand-in when it did not report, UNVERIFIED when it
+  touched what it may only read. Never fails: the report is the result.
+
+# Its own action because review.yml runs it up to three times — once on the
+# draft, and once after each edit its auto-fix applies. Each run is a new
+# session that never saw the applier, which is what keeps the repair from
+# grading itself. The steps were review.yml's own until 2026-10-23.
+
+inputs:
+  post:
+    description: Path to the post JSON, relative to the repo root.
+    required: true
+  oauth_token:
+    description: secrets.CLAUDE_CODE_OAUTH_TOKEN; empty skips the check and says so.
+    required: false
+    default: ''
+
+outputs:
+  verdict:
+    description: The report's last verdict line — BLOCK, UNVERIFIED, FIX, PASS — or empty.
+    value: ${{ steps.verdict.outputs.verdict }}
+
+runs:
+  using: composite
+  steps:
+    # The half a measurement cannot do: whether the slides are true. Runs on
+    # the Pro subscription via the OAuth token, not API billing, so it stays
+    # inside the $0 rule — `claude setup-token` mints it. That token shares
+    # its quota with interactive Claude Code sessions, which is why
+    # --max-turns is capped and why recheck.yml exists at all.
+    #
+    # The agent is read-only by contract (.claude/agents/fact-check.md), and
+    # the settings below hold that on the runner too: it may write its report
+    # under /tmp and nothing else. It reports; the applier is someone else.
+    #
+    # No Task in the allowlist, deliberately. Asked to "use the fact-check
+    # agent", Claude delegated to a subagent, backgrounded it, and ended the
+    # turn with "it is now running — I'll write the report once it finishes".
+    # The step exited successful after 12 seconds with /tmp/factcheck.md
+    # never written, and the stand-in below held the post as UNVERIFIED: a
+    # gate doing its job around a check that had not happened. The agent file
+    # is instructions, and this session can follow them itself.
+    - name: Fact-check the draft against its source
+      id: factcheck
+      if: inputs.oauth_token != ''
+      continue-on-error: true
+      uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
+      with:
+        claude_code_oauth_token: ${{ inputs.oauth_token }}
+        prompt: |
+          Read .claude/agents/fact-check.md and follow its instructions
+          yourself, on the post at ${{ inputs.post }}: re-fetch the source,
+          find the paper behind the coverage, check every slide claim, and
+          report in that file's BLOCK / FIX / PASS format.
+
+          Do the work in this session. Do not start a subagent for it.
+
+          Its first line must be the verdict line fact-check.md specifies
+          — FACT-CHECK · BLOCK, · UNVERIFIED, · FIX or · PASS — because
+          that line is what the gate in telegram.py reads.
+
+          Write the complete report to /tmp/factcheck.md before you finish.
+          Do not modify any file in posts/, do not render, and do not add
+          published_at.
+        # The step above is continue-on-error, so a fact-check that breaks
+        # leaves a green run and an empty report, and the log says only that
+        # the action failed. This is what makes it say why: every Claude
+        # message and tool result, in the run log. The log is public, as
+        # this repo is — affordable here because the job carries no secret
+        # into the agent but the OAuth token, which Actions masks, and the
+        # agent only ever reads posts/ and the public source it checks
+        # against. Turn it off if that stops being true.
+        show_full_output: true
+        # 60, not 30: a Signal is five sources, five Crossref lookups and a
+        # duplicate grep against posts/, so it spends roughly five times a
+        # Drop's turns on a cap that was set for a Drop. Week 38's Signal
+        # finished on turn 31 on 2026-09-20 — the report was written and the
+        # post reached the gate, but one turn the other way would have left
+        # no report at all, and the stand-in below would have held a post
+        # whose every claim had just been verified. The cap is a quota
+        # guard, not a budget: it exists so a runaway session cannot drain
+        # the Pro quota, and 60 is still well short of that.
+        claude_args: |
+          --max-turns 60
+          --allowedTools "Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
+        settings: |
+          {
+            "permissions": {
+              "allow": ["Write(/tmp/**)"],
+              "deny": ["Write(posts/**)", "Edit(posts/**)",
+                       "Write(src/**)", "Edit(src/**)"]
+            }
+          }
+
+    # Three outcomes, and only one of them is "reviewed".
+    #   skipped  — no token configured yet. Say so without the gate words,
+    #              so the button still works as it did before this existed.
+    #   failed   — configured and broken, or it wrote nothing. That is an
+    #              unknown, and fact-check.md is explicit that an
+    #              unverifiable post is a hold: UNVERIFIED withholds the
+    #              button.
+    - name: Stand in for a fact-check that did not report
+      shell: bash
+      run: |
+        if [ -s /tmp/factcheck.md ]; then
+          echo "fact-check reported."
+          exit 0
+        fi
+        if [ "${{ steps.factcheck.outcome }}" = "skipped" ]; then
+          cat > /tmp/factcheck.md <<'TXT'
+        Not configured — no claim on this post has been checked against its source.
+        Run `claude setup-token` locally and add the result as the repo secret
+        CLAUDE_CODE_OAUTH_TOKEN to turn this on. Until then, open the source
+        link above and read the slides against it yourself.
+        TXT
+        else
+          cat > /tmp/factcheck.md <<'TXT'
+        UNVERIFIED — fact-check was configured but produced no report.
+        See the workflow run log. An unverifiable post is a hold, not a pass.
+        TXT
+        fi
+
+    # The deny list above is the fact-check's contract; this is the part
+    # that does not depend on the agent honouring it — the applier's guard,
+    # pointed the other way. The agent has Bash, and Bash is not Write or
+    # Edit: a `sed -i` on the post gets past every deny rule. It also reads
+    # pages nobody here controls, so the instruction to change the post can
+    # come from the source itself. The caller renders and sends the
+    # working tree, while publish.yml dates what is on master, so a changed
+    # post would put slides in the chat that are not the post you approve.
+    #
+    # Only the paths that reach the slides or the gate are checked; the
+    # action is free to leave its own files elsewhere in the checkout. On a
+    # change they are put back to what was committed, and the report is
+    # replaced, not annotated: its own verdict line would outrank a note
+    # (telegram.blocked_by), and a session that edited what it was checking
+    # has not checked it. The original is kept beside it in the artifact.
+    - name: Check the fact-check left the post as committed
+      shell: bash
+      run: |
+        paths="posts src templates fonts assets"
+        # shellcheck disable=SC2086 # $paths is a list of pathspecs
+        changed=$(git status --porcelain --untracked-files=all -- $paths)
+        if [ -z "$changed" ]; then
+          echo "The fact-check changed nothing that is rendered or sent."
+          exit 0
+        fi
+        echo "::error::The fact-check session changed files it may only read. Restoring them; the post is held as UNVERIFIED." >&2
+        echo "$changed"
+        # shellcheck disable=SC2086
+        git --no-pager diff -- $paths
+        # The whole tree, not just $paths: nothing has run since checkout
+        # that may leave a tracked file changed, and a pathspec that names
+        # a missing directory would make a scoped checkout fail outright.
+        git reset --quiet --hard HEAD
+        # shellcheck disable=SC2086
+        git clean -fdq -- $paths
+        if [ -f /tmp/factcheck.md ]; then
+          mv /tmp/factcheck.md /tmp/factcheck.original.md
+        fi
+        {
+          echo "UNVERIFIED — the fact-check session changed files it may only read:"
+          echo
+          echo "$changed"
+          echo
+          echo "They were restored to master before rendering, and its report is"
+          echo "not trusted: it is kept as factcheck.original.md in the run's"
+          echo "artifact. Read the diff in the run log, then Re-run the checks."
+        } > /tmp/factcheck.md
+
+    # The same reading telegram.blocked_by gives the gate: the last verdict
+    # line wins. The caller decides from it whether to apply the report.
+    - name: Read the verdict
+      id: verdict
+      shell: bash
+      run: |
+        verdict=$(grep -oE '^FACT-CHECK · (BLOCK|UNVERIFIED|FIX|PASS)[[:space:]]*$' /tmp/factcheck.md \
+                    | tail -1 | awk '{print $3}')
+        echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+        echo "fact-check verdict: ${verdict:-none}"

@@ -4,14 +4,16 @@ name: review
 # against its source, render the slides, proof the layout, and put the lot in
 # Telegram for approval.
 #
-# It lives in its own file because two callers need it and the gate below must
+# It lives in its own file because several callers need it and the gate below must
 # not drift between them. `daily.yml` runs it on the post it has just drafted;
 # `recheck.yml` runs it again on a post whose first review broke. A second copy
 # of the gate would be a second place to forget to hold a post.
 #
-# It never drafts, never commits and never dates a post. The caller commits
-# first, deliberately: the Telegram button carries only the filename, so the
-# file has to be on master before publish.yml can find it.
+# It never drafts and never dates a post. The caller commits first,
+# deliberately: the Telegram button carries only the filename, so the file has
+# to be on master before publish.yml can find it. The one commit it makes is
+# the auto-fix's — a fact-check's own edits, applied and pushed before the
+# render, for the same reason.
 
 on:
   workflow_call:
@@ -22,16 +24,18 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write         # the auto-fix commits the edits it applies
   id-token: write         # claude-code-action's default GitHub App auth
 
 jobs:
   review:
     # Pinned — ubuntu-latest becomes 26.04 over Oct–Nov 2026. See docs/decisions/runner-pin.md.
     runs-on: ubuntu-24.04
-    # 2–10 minutes measured on 2026-10-08; the rest is room for
-    # install-render-tools' second attempt and a slow fact-check.
-    timeout-minutes: 25
+    # 2–10 minutes measured on 2026-10-08 for one fact-check; the auto-fix
+    # can add two more, and two applier runs with a re-translation each
+    # (fix.yml's took 9 minutes on 2026-10-23). The rest is room for
+    # install-render-tools' second attempt.
+    timeout-minutes: 60
 
     env:
       # Secrets cannot be read in a step `if:`, so presence is hoisted here.
@@ -82,148 +86,127 @@ jobs:
           # name rejects; the full path would, because of the slash.
           echo "stem=$(basename "$POST" .json)" >> "$GITHUB_OUTPUT"
 
-      # The half a measurement cannot do: whether the slides are true. Runs on
-      # the Pro subscription via the OAuth token, not API billing, so it stays
-      # inside the $0 rule — `claude setup-token` mints it. That token shares
-      # its quota with interactive Claude Code sessions, which is why
-      # --max-turns is capped and why recheck.yml exists at all.
-      #
-      # The agent is read-only by contract (.claude/agents/fact-check.md), and
-      # the settings below hold that on the runner too: it may write its report
-      # under /tmp and nothing else. It reports; a person applies the edits.
-      #
-      # No Task in the allowlist, deliberately. Asked to "use the fact-check
-      # agent", Claude delegated to a subagent, backgrounded it, and ended the
-      # turn with "it is now running — I'll write the report once it finishes".
-      # The step exited successful after 12 seconds with /tmp/factcheck.md
-      # never written, and the stand-in below held the post as UNVERIFIED: a
-      # gate doing its job around a check that had not happened. The agent file
-      # is instructions, and this session can follow them itself.
       - name: Fact-check the draft against its source
-        id: factcheck
-        if: env.HAS_CLAUDE == 'true'
-        continue-on-error: true
-        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
+        id: fc0
+        uses: ./.github/actions/fact-check
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            Read .claude/agents/fact-check.md and follow its instructions
-            yourself, on the post at ${{ inputs.post }}: re-fetch the source,
-            find the paper behind the coverage, check every slide claim, and
-            report in that file's BLOCK / FIX / PASS format.
+          post: ${{ inputs.post }}
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-            Do the work in this session. Do not start a subagent for it.
-
-            Its first line must be the verdict line fact-check.md specifies
-            — FACT-CHECK · BLOCK, · UNVERIFIED, · FIX or · PASS — because
-            that line is what the gate in telegram.py reads.
-
-            Write the complete report to /tmp/factcheck.md before you finish.
-            Do not modify any file in posts/, do not render, and do not add
-            published_at.
-          # The step above is continue-on-error, so a fact-check that breaks
-          # leaves a green run and an empty report, and the log says only that
-          # the action failed. This is what makes it say why: every Claude
-          # message and tool result, in the run log. The log is public, as
-          # this repo is — affordable here because the job carries no secret
-          # into the agent but the OAuth token, which Actions masks, and the
-          # agent only ever reads posts/ and the public source it checks
-          # against. Turn it off if that stops being true.
-          show_full_output: true
-          # 60, not 30: a Signal is five sources, five Crossref lookups and a
-          # duplicate grep against posts/, so it spends roughly five times a
-          # Drop's turns on a cap that was set for a Drop. Week 38's Signal
-          # finished on turn 31 on 2026-09-20 — the report was written and the
-          # post reached the gate, but one turn the other way would have left
-          # no report at all, and the stand-in below would have held a post
-          # whose every claim had just been verified. The cap is a quota
-          # guard, not a budget: it exists so a runaway session cannot drain
-          # the Pro quota, and 60 is still well short of that.
-          claude_args: |
-            --max-turns 60
-            --allowedTools "Read,Grep,Glob,Bash,WebFetch,WebSearch,Write"
-          settings: |
-            {
-              "permissions": {
-                "allow": ["Write(/tmp/**)"],
-                "deny": ["Write(posts/**)", "Edit(posts/**)",
-                         "Write(src/**)", "Edit(src/**)"]
-              }
-            }
-
-      # Three outcomes, and only one of them is "reviewed".
-      #   skipped  — no token configured yet. Say so without the gate words,
-      #              so the button still works as it did before this existed.
-      #   failed   — configured and broken, or it wrote nothing. That is an
-      #              unknown, and fact-check.md is explicit that an
-      #              unverifiable post is a hold: UNVERIFIED withholds the
-      #              button.
-      - name: Stand in for a fact-check that did not report
-        run: |
-          if [ -s /tmp/factcheck.md ]; then
-            echo "fact-check reported."
-            exit 0
-          fi
-          if [ "${{ steps.factcheck.outcome }}" = "skipped" ]; then
-            cat > /tmp/factcheck.md <<'TXT'
-          Not configured — no claim on this post has been checked against its source.
-          Run `claude setup-token` locally and add the result as the repo secret
-          CLAUDE_CODE_OAUTH_TOKEN to turn this on. Until then, open the source
-          link above and read the slides against it yourself.
-          TXT
-          else
-            cat > /tmp/factcheck.md <<'TXT'
-          UNVERIFIED — fact-check was configured but produced no report.
-          See the workflow run log. An unverifiable post is a hold, not a pass.
-          TXT
-          fi
-
-      # The deny list above is the fact-check's contract; this is the part
-      # that does not depend on the agent honouring it — fix.yml's guard,
-      # pointed the other way. The agent has Bash, and Bash is not Write or
-      # Edit: a `sed -i` on the post gets past every deny rule. It also reads
-      # pages nobody here controls, so the instruction to change the post can
-      # come from the source itself. Everything below renders and sends the
-      # working tree, while publish.yml dates what is on master, so a changed
-      # post would put slides in the chat that are not the post you approve.
+      # The auto-fix: a report that asks for edits gets them applied, and the
+      # corrected post a fresh fact-check, before anything reaches the chat.
+      # Until 2026-10-23 every such report cost a person a tap on "Apply the
+      # fixes", a fix.yml run and a second review — for edits the report had
+      # already written out word for word.
       #
-      # Only the paths that reach the slides or the gate are checked; the
-      # action is free to leave its own files elsewhere in the checkout. On a
-      # change they are put back to what was committed, and the report is
-      # replaced, not annotated: its own verdict line would outrank a note
-      # (telegram.blocked_by), and a session that edited what it was checking
-      # has not checked it. The original is kept beside it in the artifact.
-      - name: Check the fact-check left the post as committed
+      # BLOCK and FIX only. UNVERIFIED means the source could not be read, and
+      # no edit repairs that. Two rounds, never more: on 2026-10-23 the second
+      # fact-check rejected the catch the first had written, and checker and
+      # applier could trade lines for as long as the quota lasted. After the
+      # second round whatever the report says goes to the chat, held or not,
+      # and "Apply the fixes" is still there.
+      #
+      # Each round's report is kept beside the final one, so the chat and the
+      # artifact show what was asked for and applied, not just the last word.
+      - name: Set aside the report for round 1
+        id: r1
+        if: env.HAS_CLAUDE == 'true' && (steps.fc0.outputs.verdict == 'BLOCK' || steps.fc0.outputs.verdict == 'FIX')
+        run: mv /tmp/factcheck.md /tmp/factcheck.round-1.md
+
+      - name: Apply round 1
+        id: fix1
+        if: steps.r1.outcome == 'success'
+        uses: ./.github/actions/apply-factcheck
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
+        with:
+          post: ${{ inputs.post }}
+          report: /tmp/factcheck.round-1.md
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          token: ${{ github.token }}
+
+      - name: Fact-check the corrected post
+        id: fc1
+        if: steps.fix1.outputs.applied == 'true'
+        uses: ./.github/actions/fact-check
+        with:
+          post: ${{ inputs.post }}
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: Set aside the report for round 2
+        id: r2
+        if: steps.fc1.outputs.verdict == 'BLOCK' || steps.fc1.outputs.verdict == 'FIX'
+        run: mv /tmp/factcheck.md /tmp/factcheck.round-2.md
+
+      - name: Apply round 2
+        id: fix2
+        if: steps.r2.outcome == 'success'
+        uses: ./.github/actions/apply-factcheck
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
+        with:
+          post: ${{ inputs.post }}
+          report: /tmp/factcheck.round-2.md
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          token: ${{ github.token }}
+
+      - name: Fact-check the corrected post again
+        id: fc2
+        if: steps.fix2.outputs.applied == 'true'
+        uses: ./.github/actions/fact-check
+        with:
+          post: ${{ inputs.post }}
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      # What the auto-fix did, as one more report in the chat. A round whose
+      # edit was refused leaves its report as the one the gate reads — the
+      # post is exactly as that report found it — with the reason beneath.
+      # No verdict line and none of the gate's words, so this note never
+      # holds or releases anything by itself (telegram.blocked_by).
+      - name: Say what the auto-fix did
+        if: steps.r1.outcome == 'success'
+        env:
+          APPLIED1: ${{ steps.fix1.outputs.applied }}
+          WHY1: ${{ steps.fix1.outputs.why }}
+          RAN2: ${{ steps.r2.outcome }}
+          APPLIED2: ${{ steps.fix2.outputs.applied }}
+          WHY2: ${{ steps.fix2.outputs.why }}
         run: |
-          paths="posts src templates fonts assets"
-          # shellcheck disable=SC2086 # $paths is a list of pathspecs
-          changed=$(git status --porcelain --untracked-files=all -- $paths)
-          if [ -z "$changed" ]; then
-            echo "The fact-check changed nothing that is rendered or sent."
-            exit 0
-          fi
-          echo "::error::The fact-check session changed files it may only read. Restoring them; the post is held as UNVERIFIED." >&2
-          echo "$changed"
-          # shellcheck disable=SC2086
-          git --no-pager diff -- $paths
-          # The whole tree, not just $paths: nothing has run since checkout
-          # that may leave a tracked file changed, and a pathspec that names
-          # a missing directory would make a scoped checkout fail outright.
-          git reset --quiet --hard HEAD
-          # shellcheck disable=SC2086
-          git clean -fdq -- $paths
-          if [ -f /tmp/factcheck.md ]; then
-            mv /tmp/factcheck.md /tmp/factcheck.original.md
-          fi
           {
-            echo "UNVERIFIED — the fact-check session changed files it may only read:"
+            echo "AUTO-FIX — the fact-check's edits, applied before this message."
             echo
-            echo "$changed"
+            if [ "$APPLIED1" = "true" ]; then
+              echo "Round 1: applied and committed; the post was fact-checked again."
+            else
+              echo "Round 1: not applied. $WHY1"
+            fi
+            if [ "$RAN2" = "success" ]; then
+              if [ "$APPLIED2" = "true" ]; then
+                echo "Round 2: applied and committed; the post was fact-checked again."
+              else
+                echo "Round 2: not applied. $WHY2"
+              fi
+            fi
             echo
-            echo "They were restored to master before rendering, and its report is"
-            echo "not trusted: it is kept as factcheck.original.md in the run's"
-            echo "artifact. Read the diff in the run log, then Re-run the checks."
-          } > /tmp/factcheck.md
+            echo "Each round's report is in the run's artifact. The fact-check above"
+            echo "is the latest one, on the post as it is now on master."
+          } > /tmp/autofix.md
+          # A refused round leaves no fresh report: the one it tried to apply
+          # still describes the post, so it is the one the gate reads.
+          if [ ! -s /tmp/factcheck.md ]; then
+            rounds=(/tmp/factcheck.round-*.md)
+            cp "${rounds[-1]}" /tmp/factcheck.md
+          fi
 
       - name: Render the slides
         run: python src/render.py "${{ inputs.post }}"
@@ -252,6 +235,8 @@ jobs:
           path: |
             /tmp/factcheck.md
             /tmp/factcheck.original.md
+            /tmp/factcheck.round-*.md
+            /tmp/autofix.md
             /tmp/proof.md
           retention-days: 14
           if-no-files-found: warn
@@ -261,9 +246,11 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          # shellcheck disable=SC2046 # the note is one path or none
           python src/telegram.py send "${{ inputs.post }}" \
             --review /tmp/factcheck.md \
-            --review /tmp/proof.md
+            --review /tmp/proof.md \
+            $([ -s /tmp/autofix.md ] && echo --review /tmp/autofix.md)
 
       # A failed run is silent unless somebody opens the Actions tab. See
       # .github/actions/notify-failure for why that is the thing to fix.
