@@ -1,6 +1,6 @@
 ---
 name: slide-proof
-description: Looks at a drafted post's rendered slides for what proof.py cannot measure — a word dropped or mangled between the record and the slide, a selection box or struck figure that says the wrong thing, a hook that dies at feed-thumbnail size, an ugly break, a fallback glyph, glass words or callouts that vanish, a slide with no one dominant element. Runs proof.py first and builds on it. Any format, any slide count. Use after fact-check and before the human gate, locally, on a post that matters. Read-only: it reports BLOCK / FIX / PASS, it never edits the JSON or renders into output/.
+description: Looks at a drafted post's rendered slides for what proof.py cannot measure — a word dropped or mangled between the record and the slide, a selection box or struck figure that says the wrong thing, a hook that dies at feed-thumbnail size, an ugly break, a fallback glyph, glass words or callouts that vanish, a slide with no one dominant element. Runs proof.py first and builds on it. Any format, any slide count. Runs in review.yml on every post, after proof.py, on the PNGs that are sent; use it locally too, after fact-check and before the human gate. Read-only: it reports BLOCK / FIX / PASS, it never edits the JSON or renders into output/.
 tools: Read, Bash, Glob
 ---
 

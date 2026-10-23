@@ -80,7 +80,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
                      Breakdown, Sun's "Can I run it?" or Incident
                      Report by ISO week → commit) ·
                      review.yml (fact-check · auto-fix ×2 · render
-                     · proof · send — called, never scheduled) · recheck.yml (run
+                     · proof · slide-proof · send — called, never scheduled) · recheck.yml (run
                      review.yml again on a held post) · fix.yml (apply the
                      fact-check to a held post, then review.yml again) ·
                      hook.yml (put another of a draft's hooks on the cover,
@@ -343,7 +343,9 @@ cards come from `src/build_kit.py`; its reel is still a person's.
 and reports BLOCK / FIX / PASS: elements measured by shape, collisions by
 line boxes, contrast bar 4.5:1 for content and 3.0 (FIX only) for chrome;
 `check_colorway()` reports a repeated field as a FIX. The `slide-proof`
-agent is the read-only visual check for what measurement cannot see.
+agent is the read-only visual check for what measurement cannot see; since
+2026-10-23 `review.yml` runs it on the very PNGs it sends, hashed before and
+after, and its `SLIDE-PROOF · …` verdict gates the button like the others.
 → `docs/decisions/rendering.md`
 
 ## Fact-checking a draft
@@ -524,9 +526,10 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 - `publish.yml` dispatches `site.yml` by name and installs only `requests`
   and `python-dotenv`.
 
-### Both reviews gate the button
+### Every review gates the button
 
-A report whose first-line verdict (`PROOF · …`, `FACT-CHECK · …`) says
+A report whose first-line verdict (`PROOF · …`, `FACT-CHECK · …`,
+`SLIDE-PROOF · …`) says
 `BLOCK` or `UNVERIFIED` withholds the green button; a report with no verdict
 line falls back to `GATE_RE`. A held post offers **Apply the fixes** (only on
 a fact-check hold), **Re-run the checks** (both links, never callbacks) and

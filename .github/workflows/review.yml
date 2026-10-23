@@ -34,8 +34,8 @@ jobs:
     # 2–10 minutes measured on 2026-10-08 for one fact-check; the auto-fix
     # can add two more, and two applier runs with a re-translation each
     # (fix.yml's took 9 minutes on 2026-10-23). The rest is room for
-    # install-render-tools' second attempt.
-    timeout-minutes: 60
+    # install-render-tools' second attempt and the slide-proof.
+    timeout-minutes: 70
 
     env:
       # Secrets cannot be read in a step `if:`, so presence is hoisted here.
@@ -219,6 +219,108 @@ jobs:
         continue-on-error: true
         run: python src/proof.py "${{ inputs.post }}" | tee /tmp/proof.md
 
+      # The half of the layout a measurement cannot see: whether each slide
+      # reads right to a person — a word lost between the record and the
+      # slide, a cover figure without its qualifier, a box around "of the",
+      # a hook that dies at thumbnail size. 2026-10-23's cover set "70% OF
+      # WEBSITES" over a hook that said "an estimated 70%"; proof.py passed
+      # it, because every box was inside the frame. The slide-proof agent was
+      # written for that, and until then it ran only when someone remembered
+      # to run it locally.
+      #
+      # Read-only, like the fact-check, and after proof.py so it builds on its
+      # report instead of re-measuring. It looks at the PNGs render.py just
+      # wrote — the very files Telegram sends — so it must not touch them:
+      # the guard below hashes them before and after. No Task, for the
+      # fact-check's reason.
+      - name: Hash the slides the chat will get
+        id: shots
+        env:
+          STEM: ${{ steps.post.outputs.stem }}
+        run: |
+          sha256sum "output/$STEM"/slide-*.png > /tmp/slides.sha256
+          echo "dir=output/$STEM" >> "$GITHUB_OUTPUT"
+
+      - name: Look at the slides
+        id: slideproof
+        if: env.HAS_CLAUDE == 'true'
+        continue-on-error: true
+        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read .claude/agents/slide-proof.md and follow its instructions
+            yourself, on the post at ${{ inputs.post }}.
+
+            The slides are already rendered, at ${{ steps.shots.outputs.dir }}/slide-*.png:
+            those are the files that will be sent, so use them and skip the
+            agent's step 2. proof.py has already run, and its report is
+            /tmp/proof.md: read it instead of running step 1 again. Make the
+            thumbnail with ffmpeg into /tmp/slide-proof/ (there is no sips).
+
+            Do the work in this session. Do not start a subagent for it.
+
+            Its first line must be the verdict line slide-proof.md specifies
+            — SLIDE-PROOF · BLOCK, · FIX or · PASS — because that line is
+            what the gate in telegram.py reads.
+
+            Write the complete report to /tmp/slideproof.md before you
+            finish. Do not modify, move or re-render anything under posts/
+            or output/, and do not add published_at.
+          show_full_output: true
+          # A Drop is five PNGs and a thumbnail; a Breakdown ten. Each read
+          # is a turn, so 30 leaves room for the longest format twice over.
+          claude_args: |
+            --max-turns 30
+            --allowedTools "Read,Glob,Bash,Write"
+          settings: |
+            {
+              "permissions": {
+                "allow": ["Write(/tmp/**)"],
+                "deny": ["Write(posts/**)", "Edit(posts/**)",
+                         "Write(output/**)", "Edit(output/**)",
+                         "Write(src/**)", "Edit(src/**)"]
+              }
+            }
+
+      # The fact-check's three outcomes, and its guard, for the same reasons:
+      # no token is said without the gate words; a configured check that
+      # wrote nothing is UNVERIFIED; and a session that changed the post or
+      # the slides it was looking at has not looked at what is sent.
+      - name: Stand in for a slide-proof that did not report, or touched the slides
+        env:
+          OUTCOME: ${{ steps.slideproof.outcome }}
+        run: |
+          paths="posts src templates fonts assets"
+          # shellcheck disable=SC2086 # $paths is a list of pathspecs
+          changed=$(git status --porcelain --untracked-files=all -- $paths)
+          if [ -n "$changed" ] || ! sha256sum --quiet -c /tmp/slides.sha256; then
+            echo "::error::The slide-proof session changed the post or its slides. The post is held as UNVERIFIED; Re-run the checks to render it again." >&2
+            echo "$changed"
+            if [ -f /tmp/slideproof.md ]; then
+              mv /tmp/slideproof.md /tmp/slideproof.original.md
+            fi
+            {
+              echo "UNVERIFIED — the slide-proof session changed what it may only look at:"
+              echo
+              echo "${changed:-the rendered slides in output/}"
+              echo
+              echo "The slides in this message may not be the post. Its report is kept"
+              echo "as slideproof.original.md in the run's artifact. Re-run the checks."
+            } > /tmp/slideproof.md
+            exit 0
+          fi
+          if [ -s /tmp/slideproof.md ]; then
+            echo "slide-proof reported."
+          elif [ "$OUTCOME" = "skipped" ]; then
+            echo "Not configured — nobody has looked at these slides but you. CLAUDE_CODE_OAUTH_TOKEN turns this on." > /tmp/slideproof.md
+          else
+            {
+              echo "UNVERIFIED — slide-proof was configured but produced no report."
+              echo "See the workflow run log. Look at every slide yourself, or Re-run the checks."
+            } > /tmp/slideproof.md
+          fi
+
       # The reports exist in two places, and both are awkward to read later:
       # /tmp on a runner that is deleted when the job ends, and a phone. When
       # a post is held it is worth being able to see afterwards what the gate
@@ -238,6 +340,8 @@ jobs:
             /tmp/factcheck.round-*.md
             /tmp/autofix.md
             /tmp/proof.md
+            /tmp/slideproof.md
+            /tmp/slideproof.original.md
           retention-days: 14
           if-no-files-found: warn
 
@@ -250,6 +354,7 @@ jobs:
           python src/telegram.py send "${{ inputs.post }}" \
             --review /tmp/factcheck.md \
             --review /tmp/proof.md \
+            --review /tmp/slideproof.md \
             $([ -s /tmp/autofix.md ] && echo --review /tmp/autofix.md)
 
       # A failed run is silent unless somebody opens the Actions tab. See

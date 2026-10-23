@@ -95,6 +95,17 @@ def test_an_unverified_verdict_holds_even_after_a_quoted_pass():
     assert tg.blocked_by([("factcheck", body)]) == ["factcheck"]
 
 
+def test_a_slide_proof_verdict_is_read_from_its_line():
+    """slide-proof's report quotes proof.py's verdict on its second line and
+    names BLOCK in its prose. Without its name in VERDICT_RE the gate falls
+    back to scanning those words, and a slide-proof that passed is held."""
+    body = ("SLIDE-PROOF · PASS\nproof.py: PROOF · PASS\n\n"
+            "Slide 1: no word lost, which would be a BLOCK.\nSafe to post")
+    assert tg.blocked_by([("slideproof", body)]) == []
+    assert tg.blocked_by([("slideproof", "SLIDE-PROOF · BLOCK\nslide 3")]) \
+        == ["slideproof"]
+
+
 def test_the_last_verdict_wins_if_a_report_quotes_the_format():
     body = "A report says BLOCK, FIX or PASS on line one.\nPROOF · PASS\n"
     assert tg.blocked_by([("proof", body)]) == []
