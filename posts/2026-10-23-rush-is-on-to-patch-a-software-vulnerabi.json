@@ -8,9 +8,9 @@
     "Governments and companies rushed to patch the bugs.",
     "The language is vital to an estimated 70% of websites globally."
   ],
-  "what_happened": "AI agents helped uncover critical flaws in PHP, used on an estimated 70% of websites. The PHP Foundation released fixes.",
+  "what_happened": "AI tools helped uncover critical flaws in PHP, used on an estimated 70% of websites. The PHP Foundation released fixes.",
   "why_it_matters": "Patching matters because PHP is estimated to run about 70% of websites, and the FBI warned the flaws could allow remote code execution.",
-  "the_catch": "Early reporting only: full cleanup could take weeks to months, and the 70% figure is an estimate with no source given.",
+  "the_catch": "Patching is slow: it could take months or years before all stragglers are weeded out, because each site must be found first.",
   "caption": "AI tools helped uncover critical flaws in PHP, which an estimated 70% of websites rely on. Has a site you use ever gone offline?",
   "keywords": [
     "AI",
@@ -31,10 +31,10 @@
   "beat": "software",
   "es": {
     "domain": "seguridad web",
-    "hook": "La IA ayudó a encontrar fallas en PHP; se estima que PHP se usa en alrededor del 70 % de los sitios web.",
-    "what_happened": "Los agentes de IA ayudaron a descubrir fallas críticas en PHP, que se usa en aproximadamente el 70 % de los sitios web. La PHP Foundation publicó correcciones.",
-    "why_it_matters": "Aplicar parches es importante porque se estima que PHP se usa en alrededor del 70 % de los sitios web, y el FBI advirtió que esas fallas podrían permitir la ejecución remota de código.",
-    "the_catch": "Solo es un informe preliminar: la limpieza completa podría tardar semanas o meses, y la cifra del 70 % es una estimación sin fuente citada.",
-    "_en": "53219d153d0ab8c9"
+    "hook": "La IA ayudó a encontrar vulnerabilidades en PHP; PHP está presente en aproximadamente el 70 % de los sitios web.",
+    "what_happened": "Herramientas de IA ayudaron a descubrir vulnerabilidades críticas en PHP, que está presente en aproximadamente el 70 % de los sitios web. La PHP Foundation publicó correcciones.",
+    "why_it_matters": "Aplicar parches es importante porque PHP está presente en aproximadamente el 70 % de los sitios web, y el FBI advirtió que las vulnerabilidades podrían permitir la ejecución remota de código.",
+    "the_catch": "Aplicar parches es lento: podría tomar meses o años antes de que todos los sitios rezagados sean actualizados, porque primero hay que localizar cada sitio.",
+    "_en": "2f4966e6a14ed275"
   }
 }
