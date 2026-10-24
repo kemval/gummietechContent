@@ -295,9 +295,10 @@ type system, since 2026-09-30), no drawn frame — type sits 60px from the edge,
 box inset 34px that `proof.py` measures against. Content is always full
 `--on-field`; only corner chrome (`.lbl`) is muted. **Every word is a record
 field or fixed template copy**: `render.py` only *chooses* spans of the
-record to box, set large or strike (`emphasis`, `cover_figure`,
+record to box or strike (`emphasis`, `cover_figure`,
 `catch_diff`), and `typeset` ("1.81x" → "1.81×") is the only character it
-changes. A cover figure never appears without the hook's own qualifier.
+changes. The cover's hook is plain type — no number set large, no
+selection box (2026-10-24); a glossary's term is the only giant word there.
 The web archive (`site_base.html`) is on v2 too — flat colour blocks, mono
 labels, the same fonts at `font-display: swap`. The type stack lives in
 `tokens.css` with the palette; do not restate it in a template.

@@ -87,7 +87,6 @@ def render_kit(episode: dict, colorway: str | None, outdir: Path) -> list[Path]:
         },
         # slide_parts.html reads these; a Build has no post record behind it.
         show_preprint_flag=False, show_announcement=False, show_news_report=False,
-        figure=None,
         diff=None, domain="")
 
     outdir.mkdir(parents=True, exist_ok=True)

@@ -69,7 +69,13 @@ keep them, and `rhythm()` still colours every slide. What changed, and why:
   has exactly one, and always with the hook's own qualifier (after its em
   dash, or the rest of the clause), and never when a hedge stands before
   it ("an estimated 70%" was set as "70% of websites", 2026-10-23).
-  `catch_diff()` strikes it and sets the
+  **And since 2026-10-24 the cover sets no number large at all**: the
+  next day "Anthropic says AI halted attacks in 67% of cases" put "67% OF
+  CASES" at 440px without "Anthropic says", and a figure cover had its own
+  layout — the hook shrunk to the top, the spec row mid-slide — unlike
+  every other cover. Nor is the hook boxed: the owner wants the cover
+  plain; the inner slides keep their selection box.
+  `cover_figure()` now only feeds the diff. `catch_diff()` strikes it and sets the
   correction beside it only when the catch names that figure first and a
   second one after it; anything less regular is plain text.
 - **Layout is measured, in `slides_layout.js`.** Fitting type to a column,
