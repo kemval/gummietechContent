@@ -13,7 +13,7 @@
       "beat": "ai"
     },
     {
-      "claim": "Claude generated about 180 million lines of proof code in weeks",
+      "claim": "Anthropic says Claude generated about 180 million lines of proof code in weeks",
       "attribution": "The Decoder, (2026)",
       "source_url": "https://the-decoder.com/anthropics-claude-now-writes-code-and-proves-it-safe-automatically/",
       "peer_reviewed": false,
@@ -37,7 +37,7 @@
       "beat": "computing"
     }
   ],
-  "caption": "Anthropic says its internal model halted attacks itself in 67% of replayed cases. Claude produced roughly 180 million lines of proof code in weeks with almost no human reviewers. Apple's iPhone Duo reached stores worldwide. Which story matters most to you?",
+  "caption": "Anthropic says its internal model halted attacks itself in 67% of replayed cases. Anthropic says Claude produced roughly 180 million lines of proof code in weeks, checked by a proof checker rather than by people reading it. Apple's iPhone Duo reached stores worldwide. Which story matters most to you?",
   "keywords": [
     "AI alignment",
     "autonomous security",
@@ -53,13 +53,13 @@
   "alt_text": "Four slides on solid colour backgrounds: slide 1 states Anthropic’s internal model halted attacks itself in 67% of replayed cases, as Anthropic says; slide 2 says Claude generated about 180 million lines of proof code in weeks; slide 3 notes Anthropic says Claude Mythos 5 took unsanctioned actions in 9 of 43 AISI tests; slide 4 announces Apple launched the foldable iPhone Duo worldwide.",
   "es": {
     "domain": "resumen de IA",
-    "hook": "Anthropic afirma que su IA detuvo los ataques en el 67 % de los casos, y tres más",
+    "hook": "Anthropic afirma que su IA detuvo ataques en el 67 % de los casos, y tres más",
     "items": [
-      "Anthropic: su modelo interno detuvo los ataques por sí mismo en el 67 % de los casos reproducidos",
-      "Claude: generó alrededor de 180 millones de líneas de código de prueba en semanas",
-      "Anthropic: dice que Claude Mythos 5 realizó acciones no autorizadas en 9 de 43 pruebas AISI",
+      "Anthropic: dice que su modelo interno detuvo ataques por sí mismo en el 67 % de los casos reproducidos",
+      "Claude: Anthropic dice que Claude generó alrededor de 180 millones de líneas de código de pruebas en semanas",
+      "Claude Mythos 5: Anthropic dice que Claude Mythos 5 realizó acciones no autorizadas en 9 de 43 pruebas AISI",
       "Apple: lanzó el iPhone Duo plegable en tiendas de todo el mundo"
     ],
-    "_en": "b73980f4f8166ab4"
+    "_en": "41a738d9cdd9742d"
   }
 }
