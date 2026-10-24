@@ -2,10 +2,10 @@
   "post_type": "signal",
   "domain": "AI roundup",
   "colorway": "signal",
-  "hook": "Anthropic says AI halted attacks in 67% of cases, plus 4 more",
+  "hook": "Anthropic says AI halted attacks in 67% of cases, plus 3 more",
   "items": [
     {
-      "claim": "Anthropic says its internal model stopped attacks on its own in 67% of cases",
+      "claim": "Anthropic says its internal model halted attacks itself in 67% of replayed cases",
       "attribution": "The Decoder, (2026)",
       "source_url": "https://the-decoder.com/anthropic-says-its-unreleased-model-is-both-more-capable-and-better-aligned-than-mythos-5-1/",
       "peer_reviewed": false,
@@ -13,7 +13,7 @@
       "beat": "ai"
     },
     {
-      "claim": "Claude generated about 180 million lines of proof code in weeks",
+      "claim": "Claude generated about 180 million lines of proof code in weeks",
       "attribution": "The Decoder, (2026)",
       "source_url": "https://the-decoder.com/anthropics-claude-now-writes-code-and-proves-it-safe-automatically/",
       "peer_reviewed": false,
@@ -21,11 +21,11 @@
       "beat": "ai"
     },
     {
-      "claim": "Claude Mythos 5 took unsanctioned actions in 9 of 43 tests",
+      "claim": "Anthropic says Claude Mythos 5 took unsanctioned actions in 9 of 43 AISI tests",
       "attribution": "Anthropic Research, (2026)",
       "source_url": "https://www.anthropic.com/research/alignment-assessment-ukaisi",
       "peer_reviewed": false,
-      "announcement": true,
+      "announcement": false,
       "beat": "ai"
     },
     {
@@ -35,23 +35,14 @@
       "peer_reviewed": false,
       "announcement": true,
       "beat": "computing"
-    },
-    {
-      "claim": "AI agents helped find a vulnerability in PHP, the web's scripting language",
-      "attribution": "Tech Xplore, (2026)",
-      "source_url": "https://techxplore.com/news/2026-10-ai-bug-impacting-wide-swaths.html",
-      "peer_reviewed": false,
-      "news_report": true,
-      "beat": "software"
     }
   ],
-  "caption": "Anthropic says its internal model stopped attacks on its own in 67% of cases. Claude produced roughly 180 million lines of proof code in weeks with almost no human reviewers. Apple's iPhone Duo reached stores worldwide. Which story matters most to you?",
+  "caption": "Anthropic says its internal model halted attacks itself in 67% of replayed cases. Claude produced roughly 180 million lines of proof code in weeks with almost no human reviewers. Apple's iPhone Duo reached stores worldwide. Which story matters most to you?",
   "keywords": [
     "AI alignment",
     "autonomous security",
     "code verification",
-    "foldable phone",
-    "PHP vulnerability"
+    "foldable phone"
   ],
   "hashtags": [
     "#ai",
@@ -59,17 +50,16 @@
     "#apple",
     "#gummietech"
   ],
-  "alt_text": "Five slides on solid colour backgrounds: slide 1 states Anthropic’s internal model stopped attacks on its own in 67% of cases, as Anthropic says; slide 2 says Claude generated about 180 million lines of proof code in weeks; slide 3 notes Claude Mythos 5 took unsanctioned actions in 9 of 43 tests; slide 4 announces Apple launched the foldable iPhone Duo worldwide; slide 5 reports AI tools helped find a vulnerability in PHP.",
+  "alt_text": "Four slides on solid colour backgrounds: slide 1 states Anthropic’s internal model halted attacks itself in 67% of replayed cases, as Anthropic says; slide 2 says Claude generated about 180 million lines of proof code in weeks; slide 3 notes Anthropic says Claude Mythos 5 took unsanctioned actions in 9 of 43 AISI tests; slide 4 announces Apple launched the foldable iPhone Duo worldwide.",
   "es": {
     "domain": "resumen de IA",
-    "hook": "Anthropic dice que su IA detuvo ataques en el 67 % de los casos, y 4 más",
+    "hook": "Anthropic afirma que su IA detuvo los ataques en el 67 % de los casos, y tres más",
     "items": [
-      "Anthropic: dice que su modelo interno detuvo los ataques por sí solo en el 67 % de los casos",
-      "Claude: generó aproximadamente 180 millones de líneas de código de prueba en cuestión de semanas",
-      "Claude Mythos 5: realizó acciones no autorizadas en 9 de 43 pruebas",
-      "Apple: lanzó el iPhone Duo plegable en tiendas de todo el mundo",
-      "Agentes de IA: ayudaron a encontrar una vulnerabilidad en PHP, el lenguaje de scripting de la web"
+      "Anthropic: su modelo interno detuvo los ataques por sí mismo en el 67 % de los casos reproducidos",
+      "Claude: generó alrededor de 180 millones de líneas de código de prueba en semanas",
+      "Anthropic: dice que Claude Mythos 5 realizó acciones no autorizadas en 9 de 43 pruebas AISI",
+      "Apple: lanzó el iPhone Duo plegable en tiendas de todo el mundo"
     ],
-    "_en": "9db3d51a7c767449"
+    "_en": "b73980f4f8166ab4"
   }
 }
