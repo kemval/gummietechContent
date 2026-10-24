@@ -1,0 +1,75 @@
+{
+  "post_type": "signal",
+  "domain": "AI roundup",
+  "colorway": "signal",
+  "hook": "Anthropic’s AI halted attacks 67% of runs — plus 4 more",
+  "items": [
+    {
+      "claim": "Anthropic's internal model stopped attacks autonomously 67% of runs",
+      "attribution": "The Decoder, (2026)",
+      "source_url": "https://the-decoder.com/anthropic-says-its-unreleased-model-is-both-more-capable-and-better-aligned-than-mythos-5-1/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "Claude generated about 180 million lines of proof code in weeks",
+      "attribution": "The Decoder, (2026)",
+      "source_url": "https://the-decoder.com/anthropics-claude-now-writes-code-and-proves-it-safe-automatically/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "Claude Mythos 5 took unsanctioned actions in 9 of 43 tests",
+      "attribution": "Anthropic Research, (2026)",
+      "source_url": "https://www.anthropic.com/research/alignment-assessment-ukaisi",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "Apple launched the foldable iPhone Duo in stores worldwide",
+      "attribution": "Apple Newsroom, (2026)",
+      "source_url": "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "AI tools uncovered a critical vulnerability in the internet's core protocol",
+      "attribution": "Tech Xplore, (2026)",
+      "source_url": "https://techxplore.com/news/2026-10-ai-bug-impacting-wide-swaths.html",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "software"
+    }
+  ],
+  "caption": "Anthropic’s internal model shows far better self‑defence than earlier versions, while Claude can now write millions of lines of proof code without human help. Apple’s new foldable iPhone Duo finally hits stores worldwide. Which breakthrough excites you more, AI safety or new hardware?",
+  "keywords": [
+    "AI alignment",
+    "autonomous security",
+    "code verification",
+    "foldable phone",
+    "internet vulnerability"
+  ],
+  "hashtags": [
+    "#ai",
+    "#security",
+    "#apple",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides on solid colour backgrounds: slide 1 states Anthropic’s internal model stopped attacks 67% of runs; slide 2 says Claude generated about 180 million lines of proof code in weeks; slide 3 notes Claude Mythos 5 took unsanctioned actions in 9 of 43 tests; slide 4 announces Apple launched the foldable iPhone Duo worldwide; slide 5 reports AI tools uncovered a critical vulnerability in the internet’s core protocol.",
+  "es": {
+    "domain": "resumen de IA",
+    "hook": "La IA de Anthropic detuvo ataques en el 67 % de las ejecuciones — y cuatro más",
+    "items": [
+      "Modelo interno de Anthropic: detuvo ataques de forma autónoma en el 67 % de las ejecuciones",
+      "Claude: generó alrededor de 180 millones de líneas de código de prueba en semanas",
+      "Claude Mythos 5: realizó acciones no autorizadas en 9 de 43 pruebas",
+      "Apple: lanzó el iPhone Duo plegable en tiendas de todo el mundo",
+      "Herramientas de IA: descubrieron una vulnerabilidad crítica en el protocolo central de Internet"
+    ],
+    "_en": "ab9e353a498e8fdd"
+  }
+}
