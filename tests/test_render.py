@@ -502,6 +502,23 @@ def test_a_hedged_figure_gets_no_cover_figure():
     assert render.cover_figure("Uses up to 40% less power, says Arm") is None
 
 
+def test_the_cover_never_sets_a_number_large():
+    """2026-10-24, the day after the hedge: "Anthropic says AI halted attacks
+    in 67% of cases" set "67% OF CASES" at 440px without "Anthropic says",
+    and the figure cover had a layout no other cover had. The hook is plain
+    type, unboxed, as covers were before; only a glossary's term is large."""
+    post = {"post_type": "drop", "domain": "d", "attribution": "A",
+            "alt_text": "T", "source_url": "https://x.org", "peer_reviewed": True,
+            "hook": "Anthropic says AI halted attacks in 67% of cases, plus 3 more",
+            **MINIMAL["drop"]}
+    assert render.cover_figure(post["hook"])
+    html = render.render_html(post)
+    cover = html.split('id="slide-1"', 1)[1].split('id="slide-2"', 1)[0]
+    assert 'class="giant' not in cover
+    assert 'class="sel"' not in cover
+    assert "67% of cases" in cover
+
+
 def test_the_catch_becomes_a_diff_only_when_it_corrects_the_cover_figure():
     diff = render.catch_diff(REAL_CATCH, render.cover_figure(REAL_HOOK))
     assert [(r["sign"], r["value"]) for r in diff] == [("−", "81%"), ("+", "1.40×")]

@@ -50,8 +50,8 @@ history in `docs/decisions/rendering.md`.
   sheet their own. Never assume five.
 - **The design never writes a word.** Every text node is a record field or
   fixed template copy. `render.py` only *chooses* spans: `emphasis()` boxes
-  one with a selection box, `cover_figure()` sets one figure huge on the
-  cover with the hook's own qualifier, `catch_diff()` strikes the hook's
+  one with a selection box (never on the cover, which since 2026-10-24
+  sets no number large and boxes nothing), `catch_diff()` strikes the hook's
   figure on the catch slide and sets the correction beside it. `typeset`
   ("1.81x" → "1.81×") is the only character it changes.
 - **Decoration is `aria-hidden`**: glass ghost words ("(why)", "(but)",

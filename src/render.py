@@ -233,8 +233,8 @@ MULTIPLIER = re.compile(r"(\d)x\b")
 FIGURE = re.compile(r"\d[\d.,]*(?:[–-]\d[\d.,]*)?\s?(?:%|×|x\b)")
 
 
-# Words before a figure that make it an estimate or a bound: the cover's
-# giant figure cannot carry them, so a hedged figure is not set large.
+# Words before a figure that make it an estimate or a bound: a struck
+# figure cannot carry them, so a hedged figure gets no catch diff.
 HEDGE = re.compile(
     r"~|\b(?:estimated|estimate[sd]?|about|around|roughly|approximately|"
     r"nearly|almost|some|up to|over|under|more than|less than|fewer than|"
@@ -278,7 +278,12 @@ def figure_phrase(text: str) -> str | None:
 
 def cover_figure(hook: str) -> dict | None:
     """
-    The number the cover sets large, and the hook's own words that qualify it.
+    The hook's one figure, and the hook's own words that qualify it: what
+    catch_diff() strikes. The cover no longer sets it large (2026-10-24):
+    "Anthropic says AI halted attacks in 67% of cases" put "67% of cases"
+    at 440px without "Anthropic says", the day after the hedge below, and a
+    cover with a figure took a layout no other cover had. The history
+    stays because the diff still needs a figure the hook states plainly.
 
     On 2026-09-28 the cover set "81%" at 300px with no context, where the
     hook said "81% faster — best of 15 tries": the design made the
@@ -342,9 +347,10 @@ def catch_diff(the_catch: str, figure: dict | None) -> list[dict] | None:
 def emphasis(text: str, keywords: list[str] | None = None,
              figures_only: bool = False) -> str | None:
     """The span a slide boxes: its first figure phrase, else the first of
-    the post's keywords that appears in it, else nothing. The cover passes
-    `figures_only`: a boxed phrase cannot wrap, so a long keyword there
-    ("Decorrelation stretch") holds the whole hook to its width.
+    the post's keywords that appears in it, else nothing. A Signal claim
+    passes `figures_only`: a boxed phrase cannot wrap, so a long keyword
+    there ("Decorrelation stretch") holds the whole claim to its width.
+    The cover's hook is never boxed (2026-10-24).
 
     A keyword match is widened to whole words — "Bunsen burner" inside
     "Bunsen burners" boxes "Bunsen burners", or the box ends mid-word and
@@ -626,11 +632,11 @@ def render_html(post: dict, colorway: str | None = None,
         font_dir=(REPO_ROOT / "fonts").as_uri(),
         lead=lead,
         support=support,
-        figure=cover_figure(post.get("hook", "")),
     )
     if "example_post" in spec(post).record:
         context["example_from"] = example_post(post)
-    context["diff"] = catch_diff(post.get("the_catch", ""), context["figure"])
+    context["diff"] = catch_diff(post.get("the_catch", ""),
+                                 cover_figure(post.get("hook", "")))
     env.filters["typeset"] = typeset
     env.filters["commands"] = commands
     env.filters["emphasis"] = (lambda text, figures_only=False:

@@ -250,11 +250,8 @@ document.fonts.ready.then(() => {
     const hook = slide.querySelector('.hook'), spec = slide.querySelector('.spec');
     if (hook && spec) {
       const figure = slide.querySelector('.figure');
-      // Clear of the spec row, and nothing in the hook wider than the hook:
-      // a boxed phrase cannot wrap, so a long one ("Decorrelation stretch")
-      // is what limits how large the hook can go.
-      const fits = () => hook.scrollWidth <= hook.clientWidth &&
-        [...hook.querySelectorAll('.sel')].every(s => s.getBoundingClientRect().right <= hook.getBoundingClientRect().right);
+      // Clear of the spec row, and no word in the hook wider than the hook.
+      const fits = () => hook.scrollWidth <= hook.clientWidth;
       const clears = () => bottom(hook) + 40 <= top(spec) && fits();
       if (figure) {
         const g = figure.querySelector('.giant'), q = figure.querySelector('.qual');
@@ -273,7 +270,7 @@ document.fonts.ready.then(() => {
         hook.style.fontSize = px + 'px';
         while (!clears() && px > 64) { px -= 4; hook.style.fontSize = px + 'px'; }
       }
-      // With or without a figure, a boxed phrase wider than the column
+      // With or without a glossary word, a word wider than the column
       // steps the hook down until it fits.
       for (let px = parseFloat(getComputedStyle(hook).fontSize); !fits() && px > 64; ) {
         px -= 4; hook.style.fontSize = px + 'px';
