@@ -1,0 +1,49 @@
+{
+  "post_type": "incident",
+  "domain": "Software failure",
+  "colorway": "orbit",
+  "hook": "Ariane 5 exploded because of code that had no job in flight.",
+  "what_broke": "On its first flight, Ariane 5 veered off course, broke up and exploded about 39 seconds after H0, the start of the launch sequence.",
+  "timeline": [
+    "Lift-off: An alignment routine that serves no purpose in flight keeps running for about 40 seconds.",
+    "36.7 seconds after H0: Both identical inertial units stop working almost together. The backup failed in the previous 72 millisecond cycle.",
+    "H0 + 39 seconds: The rocket breaks up and explodes."
+  ],
+  "root_cause": "The inertial unit's software overflowed converting a 64-bit floating-point value to a 16-bit integer. Ariane 5 builds up horizontal speed five times faster than Ariane 4.",
+  "the_fix": "The inquiry board recommended switching the alignment function off at lift-off, and testing with as much real equipment as feasible in full simulations.",
+  "the_catch": "It was not a forgotten check. The conversion was left unprotected under an 80% workload target, since the value was judged unable to get that large on Ariane 4.",
+  "caption": "Ariane 5's first flight ended 37 seconds in, after code carried over from Ariane 4 overflowed. The inquiry board traced it to requirements and reuse, not one missed check. Both inertial units ran identical software, so the backup failed first and the same way. Which would you trust more: a backup copy of the same code, or a different one?",
+  "keywords": [
+    "Ariane 5",
+    "Flight 501",
+    "software overflow",
+    "code reuse",
+    "inquiry board"
+  ],
+  "hashtags": [
+    "#ariane5",
+    "#softwarefailure",
+    "#engineering",
+    "#programming",
+    "#gummietech"
+  ],
+  "alt_text": "Incident report slide about Ariane 5 Flight 501, which broke up shortly after lift-off in 1996 because of a software overflow in its inertial reference units.",
+  "source_url": "https://www-users.cse.umn.edu/~arnold/disasters/ariane5rep.html",
+  "attribution": "Ariane 501 Inquiry Board, chaired by J. L. Lions, ESA/CNES, July 1996",
+  "peer_reviewed": false,
+  "incident_report": true,
+  "es": {
+    "domain": "fallo de software",
+    "hook": "Ariane 5 explotó porque había un código que no tenía ninguna función en vuelo.",
+    "what_broke": "En su primer vuelo, Ariane 5 se desvió de su trayectoria, se desintegró y explotó aproximadamente 39 segundos después de H0, el inicio de la secuencia de lanzamiento.",
+    "timeline": [
+      "Despegue: una rutina de alineación que no tiene ninguna utilidad en vuelo siguió ejecutándose durante unos 40 segundos.",
+      "A los 36,7 segundos de H0: las dos unidades inerciales idénticas dejaron de funcionar casi simultáneamente. La unidad de respaldo falló en el ciclo de 72 milisegundos anterior.",
+      "H0 + 39 segundos: el cohete se desintegró y explotó."
+    ],
+    "root_cause": "El software de la unidad inercial se desbordó al convertir un valor de coma flotante de 64 bits a un entero de 16 bits. Ariane 5 alcanza una velocidad horizontal cinco veces más rápida que la de Ariane 4.",
+    "the_fix": "La comisión de investigación recomendó desactivar la función de alineación al despegue y probar con la mayor cantidad posible de equipos reales en simulaciones completas.",
+    "the_catch": "No se trató de una verificación olvidada. La conversión quedó sin protección bajo un objetivo de carga de trabajo del 80 %, ya que se consideró que el valor no podía alcanzar tal magnitud en Ariane 4.",
+    "_en": "ced4e4228ae08b21"
+  }
+}
