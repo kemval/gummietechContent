@@ -406,6 +406,33 @@ def test_a_long_format_is_split_into_groups_telegram_accepts(count, sizes):
     assert all(2 <= len(g) <= tg.MEDIA_GROUP_LIMIT for g in groups)
 
 
+def test_heavy_clips_are_split_under_the_upload_cap(tmp_path):
+    """2026-10-25: nine motion clips went up as one sendMediaGroup, over
+    Telegram's 50 MB request cap, and the Incident Report never reached the
+    gate. Count alone does not bound a group; bytes do too."""
+    clips = []
+    for i in range(1, 10):
+        clip = tmp_path / f"slide-{i}.mp4"
+        clip.write_bytes(b"")
+        with clip.open("r+b") as fh:
+            fh.truncate(tg.UPLOAD_LIMIT // 4)
+        clips.append(clip)
+    groups = tg.slide_groups(clips)
+    assert sum(groups, []) == clips
+    assert all(sum(c.stat().st_size for c in g) <= tg.UPLOAD_LIMIT
+               for g in groups)
+    assert [len(g) for g in groups] == [3, 3, 3]
+
+
+def test_a_clip_over_the_cap_says_so(tmp_path):
+    clip = tmp_path / "slide-1.mp4"
+    clip.write_bytes(b"")
+    with clip.open("r+b") as fh:
+        fh.truncate(tg.UPLOAD_LIMIT + 1)
+    with pytest.raises(tg.TelegramError, match="upload cap"):
+        tg.slide_groups([clip, tmp_path / "slide-2.mp4"])
+
+
 def test_send_uploads_the_whole_carousel(monkeypatch, tmp_path, posts_dir, quiet):
     """The bug this file is a post-mortem for lived in send(), not in a
     helper: it built its upload list from a constant, so the eight-slide

@@ -183,10 +183,15 @@ SIDECAR = "caption.txt"
 # when it cannot bind one — so a missing PDF never stops the gate.
 CAROUSEL_PDF = "carousel.pdf"
 
-# Telegram's cap on one sendMediaGroup. No format reaches it today — a
-# Breakdown is the longest at eight — but how many slides a post has is the
+# Telegram's cap on one sendMediaGroup. No format reaches it today — an
+# Incident Report is the longest at nine — but how many slides a post has is the
 # template's business, so this file does not get to assume ten is enough.
 MEDIA_GROUP_LIMIT = 10
+# And the Bot API's cap on one upload request: 50 MB, with room left for the
+# multipart framing. Counting slides was not enough — on 2026-10-25 the
+# Incident Report's nine motion clips went up as one group, Telegram answered
+# "Request Entity Too Large", and the post never reached the gate.
+UPLOAD_LIMIT = 45 * 1024 * 1024
 
 # Every checker states its verdict on the report's first line — proof.py
 # prints "PROOF · PASS", fact-check.md requires "FACT-CHECK · PASS",
@@ -657,16 +662,44 @@ def motion_clips(outdir: Path, count: int) -> list[Path]:
 
 
 def slide_groups(slides: list[Path]) -> list[list[Path]]:
-    """The slides split into media groups Telegram will accept.
+    """The slides split into uploads Telegram will accept.
 
-    sendMediaGroup takes 2–10 items, so a format longer than ten arrives in
-    more than one message. The groups are evened out instead of filled to ten
-    and remaindered: eleven slides as 10 + 1 would have Telegram reject the
-    second group, which takes two items at a minimum.
+    sendMediaGroup takes 2–10 items and one request carries UPLOAD_LIMIT
+    bytes, so a long or heavy carousel arrives in more than one message. The
+    groups are evened out instead of filled to ten and remaindered: eleven
+    slides as 10 + 1 would have Telegram reject the second group, which takes
+    two items at a minimum. A group of one only happens when the bytes force
+    it, and send_group() sends it as a plain document.
     """
-    groups = -(-len(slides) // MEDIA_GROUP_LIMIT)
-    size = -(-len(slides) // groups) if groups else 0
-    return [slides[i:i + size] for i in range(0, len(slides), size)] if size else []
+    if not slides:
+        return []
+    sizes = {p: p.stat().st_size if p.exists() else 0 for p in slides}
+    big = max(slides, key=sizes.get)
+    if sizes[big] > UPLOAD_LIMIT:
+        raise TelegramError(
+            f"{big.name} is {sizes[big] / 1e6:.0f} MB, over Telegram's "
+            f"{UPLOAD_LIMIT / 1e6:.0f} MB upload cap. Check render.py's "
+            f"encoder settings, or re-run with --no-motion.")
+    for count in range(-(-len(slides) // MEDIA_GROUP_LIMIT), len(slides) + 1):
+        size = -(-len(slides) // count)
+        groups = [slides[i:i + size] for i in range(0, len(slides), size)]
+        if all(sum(sizes[p] for p in g) <= UPLOAD_LIMIT for g in groups):
+            return groups
+    return [[p] for p in slides]  # unreachable: one file each always fits
+
+
+def send_group(token: str, chat_id: str, group: list[Path]) -> None:
+    """One upload: a media group, or a lone document when it is one file."""
+    if len(group) == 1:
+        with group[0].open("rb") as fh:
+            call(token, "sendDocument", {"chat_id": chat_id}, {"document": fh})
+        return
+    with contextlib.ExitStack() as stack:
+        media = [{"type": "document", "media": f"attach://{p.stem}"}
+                 for p in group]
+        files = {p.stem: stack.enter_context(p.open("rb")) for p in group}
+        call(token, "sendMediaGroup",
+             {"chat_id": chat_id, "media": json.dumps(media)}, files)
 
 
 def send(post_path: Path, review_paths: list[Path]) -> int:
@@ -701,26 +734,14 @@ def send(post_path: Path, review_paths: list[Path]) -> int:
     try:
         # Documents, not photos — see the module docstring.
         for group in slide_groups(slides):
-            with contextlib.ExitStack() as stack:
-                media = [{"type": "document", "media": f"attach://{p.stem}"}
-                         for p in group]
-                files = {p.stem: stack.enter_context(p.open("rb"))
-                         for p in group}
-                call(token, "sendMediaGroup",
-                     {"chat_id": chat_id, "media": json.dumps(media)}, files)
+            send_group(token, chat_id, group)
         print(f"  sent {len(slides)} slides")
 
         # The moving versions, which are what gets posted: the stills above
         # are what the reviews measured. Same documents-not-media rule.
         clips = motion_clips(outdir, len(slides))
         for group in slide_groups(clips):
-            with contextlib.ExitStack() as stack:
-                media = [{"type": "document", "media": f"attach://{p.stem}"}
-                         for p in group]
-                files = {p.stem: stack.enter_context(p.open("rb"))
-                         for p in group}
-                call(token, "sendMediaGroup",
-                     {"chat_id": chat_id, "media": json.dumps(media)}, files)
+            send_group(token, chat_id, group)
         if clips:
             print(f"  sent {len(clips)} motion clips")
 
