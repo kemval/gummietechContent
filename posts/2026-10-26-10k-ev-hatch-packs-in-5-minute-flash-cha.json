@@ -8,8 +8,8 @@
     "It can fill most of its battery in five minutes.",
     "BYD says the Seagull charges from 10% to 70% in five minutes."
   ],
-  "what_happened": "BYD introduced the Seagull hatchback, which it claims charges from 10% to 70% in five minutes on its Flash Charging system.",
-  "why_it_matters": "It lets owners add most of the driving range in a coffee‑break, reducing charging stops.",
+  "what_happened": "BYD's updated Seagull hatchback can, it claims, charge from 10% to 70% in five minutes on its Flash Charging system.",
+  "why_it_matters": "If BYD's claim holds, a five-minute stop could take the battery from 10% to 70%, but only at its dedicated stations.",
   "the_catch": "Flash Charging only comes on the top three trims and needs BYD's dedicated stations, which are effectively China-only for now.",
   "caption": "BYD claims the Seagull EV hatchback charges from 10% to 70% in five minutes using its Flash Charging system. Five minutes enough?",
   "keywords": [
@@ -31,10 +31,10 @@
   "beat": "engineering",
   "es": {
     "domain": "vehículos eléctricos",
-    "hook": "BYD dice que el Seagull carga del 10 % al 70 % en cinco minutos",
-    "what_happened": "BYD presentó el hatchback Seagull, que según afirma se carga del 10 % al 70 % en cinco minutos con su sistema Flash Charging",
-    "why_it_matters": "Te permite añadir la mayor parte de la autonomía en una pausa para tomar café, reduciendo las paradas de carga",
-    "the_catch": "Flash Charging solo está disponible en las tres versiones superiores y requiere estaciones dedicadas de BYD, que por ahora están efectivamente solo en China",
-    "_en": "93d548107de00cdc"
+    "hook": "BYD dice que el Seagull carga del 10 % al 70 % en cinco minutos.",
+    "what_happened": "BYD afirma que su Seagull hatchback actualizado puede cargar del 10 % al 70 % en cinco minutos con su sistema Flash Charging.",
+    "why_it_matters": "Si la afirmación de BYD es cierta, una parada de cinco minutos podría llevar la batería del 10 % al 70 %, pero solo en sus estaciones dedicadas.",
+    "the_catch": "Flash Charging solo está disponible en los tres niveles de equipamiento más altos y requiere las estaciones dedicadas de BYD, que por ahora están prácticamente solo en China.",
+    "_en": "307cf42b1ef9829f"
   }
 }
