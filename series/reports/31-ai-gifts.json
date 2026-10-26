@@ -39,5 +39,8 @@
   },
   "canvas": "Gifts-31.dc.html",
   "sent_at": "2026-10-23",
-  "published_at": "2026-10-23"
+  "published_at": "2026-10-23",
+  "metrics": {
+    "asked_at": "2026-10-26"
+  }
 }
