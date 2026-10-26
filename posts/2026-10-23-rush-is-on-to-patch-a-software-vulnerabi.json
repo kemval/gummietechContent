@@ -37,5 +37,8 @@
     "the_catch": "Aplicar parches es lento: podría tomar meses o años antes de que todos los sitios rezagados sean actualizados, porque primero hay que localizar cada sitio.",
     "_en": "2f4966e6a14ed275"
   },
-  "published_at": "2026-10-23"
+  "published_at": "2026-10-23",
+  "metrics": {
+    "asked_at": "2026-10-26"
+  }
 }
