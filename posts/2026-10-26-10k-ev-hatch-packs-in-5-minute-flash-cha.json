@@ -2,16 +2,16 @@
   "post_type": "drop",
   "domain": "electric vehicles",
   "colorway": "ember",
-  "hook": "The BYD Seagull can charge from 10% to 70% in five minutes.",
+  "hook": "BYD says the Seagull charges from 10% to 70% in five minutes.",
   "hooks": [
     "The BYD Seagull can charge from 10% to 70% in five minutes.",
     "It can fill most of its battery in five minutes.",
     "BYD says the Seagull charges from 10% to 70% in five minutes."
   ],
-  "what_happened": "BYD introduced the Seagull EV hatchback that can charge from 10% to 70% in five minutes using its Flash Charging system.",
+  "what_happened": "BYD introduced the Seagull hatchback, which it claims charges from 10% to 70% in five minutes on its Flash Charging system.",
   "why_it_matters": "It lets owners add most of the driving range in a coffee‑break, reducing charging stops.",
-  "the_catch": "It only works with BYD’s dedicated Flash Charging stations, which are currently limited to China.",
-  "caption": "The BYD Seagull EV hatchback can charge from 10% to 70% in just five minutes using its Flash Charging system. Five minutes enough?",
+  "the_catch": "Flash Charging only comes on the top three trims and needs BYD's dedicated stations, which are effectively China-only for now.",
+  "caption": "BYD claims the Seagull EV hatchback charges from 10% to 70% in five minutes using its Flash Charging system. Five minutes enough?",
   "keywords": [
     "ev",
     "fastcharging",
@@ -25,16 +25,16 @@
   ],
   "alt_text": "The slides explain that the BYD Seagull EV can charge from 10% to 70% in five minutes, needs special stations, and the limitation of current availability.",
   "source_url": "https://newatlas.com/automotive/byd-seagull-ev-flash-charging/",
-  "attribution": "Sood et al., New Atlas (2026)",
+  "attribution": "Utkarsh Sood, New Atlas (2026)",
   "peer_reviewed": false,
   "news_report": true,
   "beat": "engineering",
   "es": {
     "domain": "vehículos eléctricos",
-    "hook": "El BYD Seagull puede cargar del 10 % al 70 % en cinco minutos",
-    "what_happened": "BYD presentó el hatchback eléctrico Seagull, que puede cargar del 10 % al 70 % en cinco minutos usando el sistema Flash Charging",
-    "why_it_matters": "Así, los propietarios pueden añadir la mayor parte de la autonomía en una pausa para el café, reduciendo las paradas para cargar",
-    "the_catch": "Solo funciona con las estaciones Flash Charging dedicadas de BYD, que por ahora están limitadas a China",
-    "_en": "062408a6c504af2f"
+    "hook": "BYD dice que el Seagull carga del 10 % al 70 % en cinco minutos",
+    "what_happened": "BYD presentó el hatchback Seagull, que según afirma se carga del 10 % al 70 % en cinco minutos con su sistema Flash Charging",
+    "why_it_matters": "Te permite añadir la mayor parte de la autonomía en una pausa para tomar café, reduciendo las paradas de carga",
+    "the_catch": "Flash Charging solo está disponible en las tres versiones superiores y requiere estaciones dedicadas de BYD, que por ahora están efectivamente solo en China",
+    "_en": "93d548107de00cdc"
   }
 }
