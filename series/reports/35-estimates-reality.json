@@ -1,0 +1,45 @@
+{
+  "number": 35,
+  "eyebrow": "status report",
+  "title": "my estimates vs. reality",
+  "module": "pills",
+  "image": "35-estimates-reality.png",
+  "caption": "my time estimates, audited.\n\na typo fix: 2 minutes, then 40. one button: an hour, then a refactor.\nupdating one package: five minutes, then two days.\n\"almost done\" — due today, currently undefined.\n\nwhat's the furthest off you've ever been on an estimate?",
+  "hashtags": [
+    "#softwareengineer",
+    "#devhumor",
+    "#programmerlife",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "fix a typo",
+        "2 min",
+        "40 min"
+      ],
+      [
+        "add a button",
+        "1 hour",
+        "a refactor"
+      ],
+      [
+        "update one package",
+        "5 min",
+        "2 days"
+      ],
+      [
+        "“quick” demo",
+        "tonight",
+        "a weekend"
+      ],
+      [
+        "“almost done”",
+        "today",
+        "undefined"
+      ]
+    ],
+    "kicker": "why every quote I send has buffer built in"
+  }
+}

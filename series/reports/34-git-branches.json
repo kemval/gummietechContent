@@ -1,0 +1,44 @@
+{
+  "number": 34,
+  "eyebrow": "status report",
+  "title": "my git branches, honestly",
+  "module": "terminal",
+  "image": "34-git-branches.png",
+  "caption": "every branch name is a little diary entry.\n\n\"fix\" was optimistic. \"fix-final\" was not. \"fix-final-REAL\" is in caps, so it's serious.\nnobody knows why \"old-do-not-delete\" exists, and nobody is deleting it.\ncurrently on: please-work.\n\nwhat's the worst branch name in your repo right now?",
+  "hashtags": [
+    "#git",
+    "#versioncontrol",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "fix",
+        "optimistic"
+      ],
+      [
+        "fix-final",
+        "it was not"
+      ],
+      [
+        "fix-final-REAL",
+        "caps = serious"
+      ],
+      [
+        "try-this-instead",
+        "abandoned tuesday"
+      ],
+      [
+        "old-do-not-delete",
+        "no idea why"
+      ],
+      [
+        "please-work",
+        "you are here"
+      ]
+    ],
+    "kicker": "main hasn't moved since august"
+  }
+}

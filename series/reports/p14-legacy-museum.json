@@ -1,0 +1,26 @@
+{
+  "eyebrow": "gallery 3 · permanent collection",
+  "title": "the museum of legacy code",
+  "module": "exhibit",
+  "image": "p14-legacy-museum.png",
+  "caption": "gallery 3, permanent collection. no flash photos.\n\nUntitled (Checkout Module), 2017. artist unknown — left the company.\nmedium: jQuery, PHP and blind faith.\nit holds up every sale on the site. please do not touch.\n\nwhat's the oldest code still running in your project?",
+  "hashtags": [
+    "#legacycode",
+    "#webdev",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": {
+      "code": "if (user) {\n  if (user.ok) {\n    if (user.ok == \"true\") {\n      // DO NOT REMOVE\n      // nobody knows why\n      checkout();\n    }\n  }\n}",
+      "label": [
+        "Untitled (Checkout Module), 2017",
+        "Artist unknown. Left the company.",
+        "Medium: jQuery, PHP and blind faith",
+        "Currently holds up every sale on the site. Please do not touch."
+      ]
+    },
+    "kicker": "restoration services available. ask at the front desk (DMs)."
+  }
+}

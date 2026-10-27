@@ -1,0 +1,27 @@
+{
+  "number": 36,
+  "eyebrow": "status report",
+  "title": "what's in my .env",
+  "module": "code",
+  "image": "36-env-file.png",
+  "caption": "my environment variables, safely gitignored.\n\nSLEEP=false. COFFEE_LEVEL=critical. DEADLINE=yesterday.\nMOTIVATION is set to nothing, and PATIENCE is deprecated.\n# TODO: rotate my whole life.\n\nwhat would be in your .env?",
+  "hashtags": [
+    "#devhumor",
+    "#programmerhumor",
+    "#webdev",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      "SLEEP=false",
+      "COFFEE_LEVEL=critical",
+      "DEADLINE=yesterday",
+      "DEBUG=always",
+      "MOTIVATION=",
+      "PATIENCE=deprecated",
+      "# TODO: rotate my whole life"
+    ],
+    "kicker": "the real keys stay out of the screenshot"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "eyebrow": "architecture diagram",
+  "title": "my tech stack, all the way down",
+  "module": "stack",
+  "image": "p13-tech-stack.png",
+  "caption": "my architecture diagram, load-bearing layers included.\n\nReact, FastAPI, PostgreSQL, and Docker, mostly behaving.\nunder that: one forum answer from 2014.\nand at the bedrock: iced coffee and spite.\n\nwhat's holding up the bottom of your stack?",
+  "hashtags": [
+    "#techstack",
+    "#webdev",
+    "#fullstackdeveloper",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "frontend",
+        "React"
+      ],
+      [
+        "backend",
+        "FastAPI"
+      ],
+      [
+        "data",
+        "PostgreSQL"
+      ],
+      [
+        "infra",
+        "Docker, mostly behaving"
+      ],
+      [
+        "foundation",
+        "one forum answer from 2014"
+      ],
+      [
+        "bedrock",
+        "iced coffee and spite"
+      ]
+    ],
+    "kicker": "top four layers available for your project. DM me."
+  }
+}

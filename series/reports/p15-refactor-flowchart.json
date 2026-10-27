@@ -1,0 +1,42 @@
+{
+  "eyebrow": "decision tree",
+  "title": "should I refactor this?",
+  "module": "flowchart",
+  "image": "p15-refactor-flowchart.png",
+  "caption": "a scientific decision tree for ugly code.\n\nis it friday? close the laptop. are there tests? write those first.\ndid anyone ask? no — doing it anyway.\nmade it to the end? screenshot it. rare event.\n\nwhere do you usually land on this flowchart?",
+  "hashtags": [
+    "#refactoring",
+    "#cleancode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "start",
+        "the code is ugly"
+      ],
+      [
+        "is it friday?",
+        "yes",
+        "close the laptop"
+      ],
+      [
+        "are there tests?",
+        "no",
+        "write those first"
+      ],
+      [
+        "did anyone ask?",
+        "no",
+        "doing it anyway"
+      ],
+      [
+        "end",
+        "screenshot it. rare event."
+      ]
+    ],
+    "kicker": "every path leads to a new branch"
+  }
+}

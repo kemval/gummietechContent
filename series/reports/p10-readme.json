@@ -1,0 +1,43 @@
+{
+  "eyebrow": "readme.md",
+  "title": "how to use me",
+  "module": "pills",
+  "image": "p10-readme.png",
+  "caption": "my README, v1.0, unstable.\n\ninstall: bring snacks. run: best after 10am.\nknown bugs: renames files at 1am. unsupported: surprise phone calls.\ncontact: DMs open for builds.\n\nwhat would your README say?",
+  "hashtags": [
+    "#devhumor",
+    "#programmerlife",
+    "#buildinpublic",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "install",
+        "bring snacks"
+      ],
+      [
+        "run",
+        "best after 10am"
+      ],
+      [
+        "known bugs",
+        "renames files at 1am"
+      ],
+      [
+        "unsupported",
+        "surprise phone calls"
+      ],
+      [
+        "dependencies",
+        "one playlist, on loop"
+      ],
+      [
+        "contact",
+        "DMs open for builds"
+      ]
+    ],
+    "kicker": "PRs welcome. reviews take a while."
+  }
+}

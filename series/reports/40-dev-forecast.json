@@ -1,0 +1,45 @@
+{
+  "number": 40,
+  "eyebrow": "status report",
+  "title": "this week's dev forecast",
+  "module": "forecast",
+  "image": "40-dev-forecast.png",
+  "caption": "storm advisory in effect for the whole sprint.\n\nmonday: sunny, all tests green. tuesday: cloudy, one flaky test.\nwednesday: storms, prod is down. thursday: dense fog — who wrote this?\nfriday: a rainbow. the client paid the invoice.\n\nwhat's the forecast for your week?",
+  "hashtags": [
+    "#devlife",
+    "#devhumor",
+    "#programmerhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "monday",
+        "sunny, all tests green",
+        "high: confidence · low: context"
+      ],
+      [
+        "tue",
+        "cloudy",
+        "one flaky test"
+      ],
+      [
+        "wed",
+        "storms",
+        "prod is down"
+      ],
+      [
+        "thu",
+        "dense fog",
+        "who wrote this?"
+      ],
+      [
+        "fri",
+        "rainbow",
+        "client paid the invoice"
+      ]
+    ],
+    "kicker": "bring an umbrella to standup"
+  }
+}

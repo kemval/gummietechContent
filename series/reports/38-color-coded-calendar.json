@@ -1,0 +1,50 @@
+{
+  "number": 38,
+  "eyebrow": "status report",
+  "title": "my calendar, color-coded",
+  "module": "calendar",
+  "image": "38-color-coded-calendar.png",
+  "caption": "a tuesday, fully booked. 0 hours of actual coding.\n\nstandup that could've been a message. a sync about the sync.\nfocus time, interrupted at 11:04. a \"quick call\" that ran 78 minutes.\nthe actual work starts at 6, colored black.\n\nhow many meetings did you have this week?",
+  "hashtags": [
+    "#meetings",
+    "#devlife",
+    "#softwareengineer",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "9:00",
+        "standup",
+        "could've been a message"
+      ],
+      [
+        "10:00",
+        "sync about the sync",
+        "agenda: TBD"
+      ],
+      [
+        "11:00",
+        "focus time",
+        "interrupted at 11:04"
+      ],
+      [
+        "1:00",
+        "“quick call”",
+        "78 minutes"
+      ],
+      [
+        "3:00",
+        "recap of the call",
+        "same people, same call"
+      ],
+      [
+        "6:00",
+        "the actual work",
+        "unpaid overtime, colored black"
+      ]
+    ],
+    "kicker": "declined: nothing. accepted: regret."
+  }
+}

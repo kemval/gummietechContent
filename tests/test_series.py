@@ -115,3 +115,13 @@ def test_only_an_unposted_report_can_be_taken_back(reports):
     reports("11-b.json", number=11, title="b", image="11.png", caption=".",
             sent_at="2026-09-30")
     assert series.sent_on("2026-09-30")[0].name == "11-b.json"
+
+
+def test_a_two_digit_prototype_waits_its_turn(reports):
+    """p10 sorted ahead of p6 by plain string order, the day the prototypes
+    reached two digits — the queue would have skipped p6 through p9."""
+    for name in ("p10-readme.json", "p6-patch-notes.json", "p9-incident.json"):
+        reports(name, title="t", image="x.png", caption="...")
+
+    assert [p.name for p, _ in series.reports()] == [
+        "p6-patch-notes.json", "p9-incident.json", "p10-readme.json"]

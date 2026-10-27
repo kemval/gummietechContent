@@ -1,0 +1,36 @@
+{
+  "number": 44,
+  "eyebrow": "status report",
+  "title": "keys I actually use",
+  "module": "keyboard",
+  "image": "44-keys-i-use.png",
+  "caption": "my keyboard, worn smooth in exactly six places.\n\nctrl+C and ctrl+V: 70% of my career. backspace outworks every letter.\ntab: accept the suggestion now, read it later.\nctrl+Z: the only time machine I own.\n\nwhich key on your keyboard is worn the most?",
+  "hashtags": [
+    "#keyboard",
+    "#devhumor",
+    "#programmerhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "ctrl + C / V",
+        "70% of my career"
+      ],
+      [
+        "backspace",
+        "outworks every letter"
+      ],
+      [
+        "tab",
+        "accept now, read later"
+      ],
+      [
+        "ctrl + Z",
+        "the only time machine I own"
+      ]
+    ],
+    "kicker": "F1 through F9: still in the original packaging"
+  }
+}
