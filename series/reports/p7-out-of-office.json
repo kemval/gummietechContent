@@ -35,5 +35,6 @@
     ],
     "kicker": "your message has been received and ignored"
   },
-  "canvas": "OutOfOffice.dc.html"
+  "canvas": "OutOfOffice.dc.html",
+  "sent_at": "2026-10-27"
 }
