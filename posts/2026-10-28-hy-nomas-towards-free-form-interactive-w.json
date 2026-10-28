@@ -11,7 +11,7 @@
   "what_happened": "Hy‑Nomas generates interactive video worlds from text and camera input, runs on one RTX 4090 with low-memory inference, and supports LoRA fine-tuning.",
   "try_it": "Runs on one RTX 4090 with INT8 weights and CPU offload (needs Linux, plenty of system RAM); try the online demo at hy-nomas.hy.tencent.com/demo.",
   "why_it_matters": "It lets creators build interactive worlds on a single GPU and adapt the model for their own projects.",
-  "the_catch": "The paper reports failure modes: actions in the wrong order, actions recurring across segments, and small errors compounding into drift and scene breakdown.",
+  "the_catch": "The authors say it still trails Genie 3 on long-term spatial consistency, and cinematic LoRA tuning moderately regressed camera control.",
   "caption": "Hy‑Nomas is a free‑form interactive world‑generation model that runs on a single RTX 4090 and supports LoRA fine‑tuning. Would you run it on a single RTX 4090?",
   "keywords": [
     "world generation",
@@ -32,11 +32,11 @@
   "beat": "ai",
   "es": {
     "domain": "inteligencia artificial interactiva",
-    "hook": "Hy‑Nomas construye mundos de video explorables a partir de texto y controles de cámara.",
-    "what_happened": "Hy‑Nomas genera mundos de video interactivos a partir de texto y de la entrada de cámara, funciona en una sola RTX 4090 con inferencia de bajo consumo de memoria y admite ajuste fino LoRA.",
-    "try_it": "Funciona en una sola RTX 4090 con pesos INT8 y descarga a la CPU (requiere Linux y suficiente RAM del sistema); prueba la demo en línea en hy-nomas.hy.tencent.com/demo.",
-    "why_it_matters": "Permite a los creadores construir mundos interactivos con una sola GPU y adaptar el modelo a sus propios proyectos.",
-    "the_catch": "El artículo describe modos de fallo: acciones en orden incorrecto, acciones que se repiten en varios segmentos y pequeños errores que se acumulan, provocando deriva y colapso de la escena.",
-    "_en": "21719496f0503fd1"
+    "hook": "Hy‑Nomas crea mundos de video explorables a partir de texto y controles de cámara",
+    "what_happened": "Hy‑Nomas genera mundos de video interactivos a partir de texto y entrada de cámara, funciona en una RTX 4090 con inferencia de bajo consumo de memoria y admite el ajuste fino LoRA",
+    "try_it": "Funciona en una RTX 4090 con pesos INT8 y descarga a la CPU (requiere Linux y abundante RAM del sistema); prueba la demo en línea en hy-nomas.hy.tencent.com/demo",
+    "why_it_matters": "Permite a los creadores construir mundos interactivos con una sola GPU y adaptar el modelo a sus propios proyectos",
+    "the_catch": "Los autores indican que aún queda detrás de Genie 3 en consistencia espacial a largo plazo, y que el ajuste LoRA cinematográfico redujo moderadamente el control de cámara",
+    "_en": "b206322b68583c9b"
   }
 }
