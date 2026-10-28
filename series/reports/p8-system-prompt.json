@@ -40,5 +40,6 @@
     ],
     "kicker": "you are a helpful developer. mostly."
   },
-  "canvas": "SystemPrompt.dc.html"
+  "canvas": "SystemPrompt.dc.html",
+  "sent_at": "2026-10-28"
 }
