@@ -1,0 +1,33 @@
+{
+  "post_type": "run",
+  "domain": "interactive AI",
+  "colorway": "bloom",
+  "hook": "Hy‑Nomas lets you build 3D worlds using text and a camera.",
+  "hooks": [
+    "Hy‑Nomas lets you build 3D worlds using text and a camera.",
+    "It runs on a single RTX 4090 and supports LoRA fine‑tuning.",
+    "Tencent says Hy‑Nomas runs on a single RTX 4090."
+  ],
+  "what_happened": "Hy‑Nomas lets users generate 3D worlds via text and camera, runs on one RTX 4090 and supports LoRA fine‑tuning.",
+  "try_it": "Requires an RTX 4090 GPU; start the web demo at `https://hy-nomas.hy.tencent.com/demo`.",
+  "why_it_matters": "It lets creators build interactive worlds on a single GPU and adapt the model for their own projects.",
+  "the_catch": "",
+  "caption": "Hy‑Nomas is a free‑form interactive world‑generation model that runs on a single RTX 4090 and supports LoRA fine‑tuning. RTX 4090 or CPU?",
+  "keywords": [
+    "world generation",
+    "interactive AI",
+    "LoRA"
+  ],
+  "hashtags": [
+    "#worldgen",
+    "#interactiveai",
+    "#lora",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Hy‑Nomas lets users create 3D worlds with text and camera, runs on one RTX 4090, and supports LoRA fine‑tuning.",
+  "source_url": "https://arxiv.org/abs/2610.36729",
+  "code_url": "https://github.com/Tencent-Hunyuan/Hy-Nomas",
+  "attribution": "Chen et al., arXiv (2026)",
+  "peer_reviewed": false,
+  "beat": "ai"
+}
