@@ -37,5 +37,8 @@
     "the_catch": "Flash Charging solo está disponible en los tres niveles de equipamiento más altos y requiere las estaciones dedicadas de BYD, que por ahora están prácticamente solo en China.",
     "_en": "307cf42b1ef9829f"
   },
-  "published_at": "2026-10-26"
+  "published_at": "2026-10-26",
+  "metrics": {
+    "asked_at": "2026-10-29"
+  }
 }
