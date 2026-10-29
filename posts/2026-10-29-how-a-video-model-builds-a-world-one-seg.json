@@ -1,0 +1,48 @@
+{
+  "post_type": "breakdown",
+  "domain": "interactive AI",
+  "colorway": "signal",
+  "hook": "How a video model builds a world one segment at a time.",
+  "the_question": "Hy-Nomas can generate a 100-second video of seven segments at 1280×704 on one RTX 4090. How does each segment fit the last?",
+  "the_intuition": "A natural guess is that it renders one long clip in a single pass, from one prompt.",
+  "mechanism": [
+    "A prompt enhancer reads the request, the dialogue so far and earlier segments. It writes a structured caption and a segment length.",
+    "A diffusion transformer denoises the next segment from noise, using the caption and any camera path. Attention is bidirectional within a segment, causal across them.",
+    "Each finished segment is added to a cache of keys and values and becomes context for the next turn."
+  ],
+  "why_it_matters": "Keyboard and mouse input are turned into camera poses, and camera and text control can alternate within one sequence.",
+  "the_catch": "A preprint, not yet peer-reviewed. The authors say it still trails Genie 3 on long-term spatial consistency.",
+  "caption": "Hy-Nomas does not render a world in one pass. It builds the video segment by segment: a prompt enhancer writes a caption, a diffusion transformer denoises the next segment, and the finished segment is cached as context for the one after. Would you rather steer a generated world with text or with a camera?",
+  "keywords": [
+    "world generation",
+    "video diffusion",
+    "interactive AI",
+    "Hy-Nomas"
+  ],
+  "hashtags": [
+    "#ai",
+    "#worldmodels",
+    "#videogeneration",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how Hy-Nomas generates explorable video worlds: a prompt enhancer writes a caption, a diffusion transformer denoises each segment using that caption and an optional camera path, and each finished segment is cached as context for the next. Based on a 2026 preprint by Chen et al.",
+  "source_url": "https://arxiv.org/abs/2610.36729",
+  "attribution": "Chen et al., arXiv (2026)",
+  "peer_reviewed": false,
+  "beat": "ai",
+  "es": {
+    "domain": "ia interactiva",
+    "hook": "Cómo un modelo de video construye un mundo, segmento a segmento.",
+    "the_question": "Hy-Nomas puede generar un video de 100 segundos dividido en siete segmentos a 1280 × 704 píxeles en una RTX 4090. ¿Cómo encaja cada segmento con el anterior?",
+    "the_intuition": "Una suposición natural es que renderiza un solo clip largo en una única pasada, a partir de un único prompt.",
+    "mechanism": [
+      "El potenciador de prompt lee la solicitud, el diálogo hasta el momento y los segmentos anteriores. Escribe una leyenda estructurada y la duración del segmento.",
+      "El transformador de difusión elimina el ruido del siguiente segmento, usando la leyenda y cualquier trayectoria de cámara. La atención es bidireccional dentro de un segmento y causal entre ellos.",
+      "Cada segmento terminado se añade a una caché de claves y valores y se convierte en contexto para el siguiente paso."
+    ],
+    "why_it_matters": "Las entradas de teclado y ratón se convierten en poses de cámara, y el control de cámara y de texto pueden alternarse dentro de una misma secuencia.",
+    "the_catch": "Un preprint, aún sin revisión por pares. Los autores afirman que todavía está por detrás de Genie 3 en consistencia espacial a largo plazo.",
+    "_en": "5293ca7775d1cb92"
+  }
+}
