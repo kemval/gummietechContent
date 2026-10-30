@@ -1,0 +1,40 @@
+{
+  "post_type": "drop",
+  "domain": "AI models",
+  "colorway": "orbit",
+  "hook": "Gemini 4 Carbon is Google’s newest AI model for cybersecurity",
+  "hooks": [
+    "Gemini 4 Carbon is Google’s newest AI model for cybersecurity",
+    "Google says the model beats other frontier models on security tests",
+    "Google says Gemini 4 Carbon scores 88.2% on SEC-bench Pro for finding vulnerabilities"
+  ],
+  "what_happened": "Google announced Gemini 4 Carbon, its strongest AI model, which outperforms prior models on cybersecurity benchmarks and coding tasks.",
+  "why_it_matters": "It lets cyber defenders generate secure code and patches faster, improving vulnerability detection and remediation.",
+  "the_catch": "It is only available to a limited group of cyber defenders and trusted partners for now.",
+  "caption": "Google’s Gemini 4 Carbon model hits 88.2% on SEC-bench Pro, showing strong vulnerability detection. Vulnerabilities or patches?",
+  "keywords": [
+    "Gemini",
+    "cybersecurity",
+    "AI"
+  ],
+  "hashtags": [
+    "#gemini",
+    "#ai",
+    "#cybersecurity",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains Gemini 4 Carbon’s cybersecurity scores, its improvements over previous models, and its limited early access.",
+  "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/",
+  "attribution": "Google",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "Gemini 4 Carbon es el modelo de IA más reciente de Google para ciberseguridad",
+    "what_happened": "Google anunció Gemini 4 Carbon, su modelo de IA más potente, que supera a los modelos anteriores en benchmarks de ciberseguridad y en tareas de codificación",
+    "why_it_matters": "Permite a los defensores de ciberseguridad generar código y parches seguros más rápido, mejorando la detección y remediación de vulnerabilidades",
+    "the_catch": "Por ahora, solo está disponible para un grupo limitado de defensores de ciberseguridad y socios de confianza",
+    "_en": "cdb10440d1edbfaa"
+  }
+}
