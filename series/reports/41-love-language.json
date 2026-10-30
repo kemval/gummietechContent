@@ -1,0 +1,40 @@
+{
+  "number": 41,
+  "eyebrow": "status report",
+  "title": "my code's love language",
+  "module": "pills",
+  "image": "41-love-language.png",
+  "caption": "my code is needy, and here's how it wants to be loved.\n\nwords of affirmation: \"// it works. don't touch.\"\nquality time: six hours for one semicolon.\nphysical touch: ctrl+s every four seconds.\n\nwhat's your code's love language?",
+  "hashtags": [
+    "#devhumor",
+    "#programmerlife",
+    "#codinglife",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "words of affirmation",
+        "// it works. don't touch."
+      ],
+      [
+        "quality time",
+        "six hours for one semicolon"
+      ],
+      [
+        "acts of service",
+        "someone finally wrote tests"
+      ],
+      [
+        "receiving presents",
+        "a brand-new dark theme"
+      ],
+      [
+        "physical touch",
+        "ctrl+s every four seconds"
+      ]
+    ],
+    "kicker": "healthy relationship pending"
+  }
+}

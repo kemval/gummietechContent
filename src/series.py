@@ -25,6 +25,7 @@ imports. Importing this costs nothing.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -64,8 +65,18 @@ def write_report(path: Path, report: dict) -> None:
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
 
 
-def order_key(path: Path, report: dict) -> tuple[float, str]:
-    """Posting order: by `number`, then by name.
+def name_key(name: str) -> tuple:
+    """A filename split so its digits compare as numbers: p9 before p10.
+
+    Plain string order put p10-readme ahead of p6-patch-notes the day the
+    prototypes reached two digits, and the queue would have sent it first.
+    """
+    return tuple(int(part) if part.isdigit() else part
+                 for part in re.split(r"(\d+)", name))
+
+
+def order_key(path: Path, report: dict) -> tuple[float, tuple]:
+    """Posting order: by `number`, then by name, digits as numbers.
 
     A record with no usable number sorts last rather than crashing the queue
     — the unnumbered prototypes (LIVE FEED, SELF AUDIT, HOUSE RULES, BEHIND
@@ -73,9 +84,9 @@ def order_key(path: Path, report: dict) -> tuple[float, str]:
     out after the numbered run.
     """
     try:
-        return (float(report.get("number")), path.name)   # type: ignore[arg-type]
+        return (float(report.get("number")), name_key(path.name))   # type: ignore[arg-type]
     except (TypeError, ValueError):
-        return (float("inf"), path.name)
+        return (float("inf"), name_key(path.name))
 
 
 def reports() -> list[tuple[Path, dict]]:

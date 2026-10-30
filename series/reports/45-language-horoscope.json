@@ -1,0 +1,50 @@
+{
+  "number": 45,
+  "eyebrow": "status report",
+  "title": "your horoscope, by language",
+  "module": "cards-6",
+  "image": "45-language-horoscope.png",
+  "caption": "mercury is in prod. here's what your language says about you.\n\npython: you're indented for great things. javascript: nothing is equal today.\nrust: the borrow checker saw your future. it said no.\nc: you must free yourself. manually.\n\nwhat language are you, and is it accurate?",
+  "hashtags": [
+    "#programming",
+    "#devhumor",
+    "#programmerhumor",
+    "#coding",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        ".py",
+        "Python",
+        "you're indented for great things"
+      ],
+      [
+        ".js",
+        "JavaScript",
+        "nothing is equal today. use ==="
+      ],
+      [
+        ".java",
+        "Java",
+        "a very long name enters your life"
+      ],
+      [
+        ".sql",
+        "SQL",
+        "you'll JOIN something big. expect duplicates."
+      ],
+      [
+        ".rs",
+        "Rust",
+        "the borrow checker saw your future. it said no."
+      ],
+      [
+        ".c",
+        "C",
+        "you must free yourself. manually."
+      ]
+    ],
+    "kicker": "lucky number: 0. arrays start there."
+  }
+}

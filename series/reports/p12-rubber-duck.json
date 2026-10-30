@@ -1,0 +1,43 @@
+{
+  "eyebrow": "session transcript",
+  "title": "debugging with the rubber duck",
+  "module": "chat",
+  "image": "p12-rubber-duck.png",
+  "caption": "a full session transcript with my most senior engineer.\n\nI explain the function. the duck says nothing.\nI explain the check. the duck says nothing.\nhalfway through the next sentence: oh. OH.\n\ndo you have a rubber duck, or do you explain it to a person?",
+  "hashtags": [
+    "#debugging",
+    "#rubberduckdebugging",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "me",
+        "ok so the function takes the user id…"
+      ],
+      [
+        "duck",
+        "…"
+      ],
+      [
+        "me",
+        "then it checks if that user exists"
+      ],
+      [
+        "duck",
+        "…"
+      ],
+      [
+        "me",
+        "and if they don't, it returns— wait."
+      ],
+      [
+        "me",
+        "oh. OH."
+      ]
+    ],
+    "kicker": "the duck bills by the hour"
+  }
+}

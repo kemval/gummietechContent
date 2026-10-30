@@ -1,0 +1,40 @@
+{
+  "number": 42,
+  "eyebrow": "status report",
+  "title": "my screen time this week",
+  "module": "bars",
+  "image": "42-screen-time.png",
+  "caption": "daily average: 14h 22m. up 340%.\n\n6 hours in the code editor. 3 and a half staring at logs.\n2 and a half waiting for npm. 2 more \"just checking\" the deploy.\ntexting actual humans: 9 minutes.\n\nwhat's eating most of your screen time?",
+  "hashtags": [
+    "#devlife",
+    "#screentime",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "code editor",
+        "6h 02m"
+      ],
+      [
+        "staring at logs",
+        "3h 27m"
+      ],
+      [
+        "terminal, waiting for npm",
+        "2h 35m"
+      ],
+      [
+        "“just checking” the deploy",
+        "2h 09m"
+      ],
+      [
+        "texting actual humans",
+        "0h 09m"
+      ]
+    ],
+    "kicker": "sorry mom, I was compiling"
+  }
+}

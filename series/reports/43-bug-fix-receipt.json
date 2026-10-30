@@ -1,0 +1,48 @@
+{
+  "number": 43,
+  "eyebrow": "status report",
+  "title": "receipt for one bug fix",
+  "module": "receipt",
+  "image": "43-bug-fix-receipt.png",
+  "caption": "itemized, for the client who asked why it took all afternoon.\n\nreproducing it: 2.5 hours. 47 console.logs. 40 minutes blaming the cache.\nthe fix itself: one character, two minutes.\nno refunds. it may come back.\n\nwhat's the smallest fix that took you the longest?",
+  "hashtags": [
+    "#debugging",
+    "#devhumor",
+    "#freelancedeveloper",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "bug report: “it's broken”",
+        "0:01"
+      ],
+      [
+        "reproducing it",
+        "2:30"
+      ],
+      [
+        "console.log × 47",
+        "1:15"
+      ],
+      [
+        "blaming the cache",
+        "0:40"
+      ],
+      [
+        "the fix (one character)",
+        "0:02"
+      ],
+      [
+        "tax: tech debt",
+        "+20%"
+      ],
+      [
+        "TOTAL",
+        "one afternoon"
+      ]
+    ],
+    "kicker": "you pay for knowing which character"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "number": 37,
+  "eyebrow": "status report",
+  "title": "how I read documentation",
+  "module": "cards-4",
+  "image": "37-reading-docs.png",
+  "caption": "my documentation workflow, in four steps.\n\nskip the introduction. copy the code block whole, placeholders included.\nwhen it breaks, blame the library and start drafting an issue.\nthen read the docs. the answer was in paragraph one.\n\nhow far do you get before you actually read the docs?",
+  "hashtags": [
+    "#documentation",
+    "#devhumor",
+    "#programmerhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "introduction",
+        "skipped",
+        "I know what it does. I think."
+      ],
+      [
+        "code block",
+        "copied whole",
+        "placeholder values included"
+      ],
+      [
+        "it breaks",
+        "blame the library",
+        "open a GitHub issue (draft)"
+      ],
+      [
+        "finally",
+        "read the docs",
+        "answer was in paragraph one"
+      ]
+    ],
+    "kicker": "RTFM, eventually"
+  }
+}

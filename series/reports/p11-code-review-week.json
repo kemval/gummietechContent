@@ -1,0 +1,39 @@
+{
+  "eyebrow": "pull request",
+  "title": "code review: my week",
+  "module": "cards-4",
+  "image": "p11-code-review-week.png",
+  "caption": "my week, opened as a pull request. LGTM?\n\nmonday: shipped a feature, first try. suspicious.\ntuesday: aligned one div. took the whole afternoon.\nwednesday: the client saw the demo. \"can it also…\"\n\nhow would your week do in code review?",
+  "hashtags": [
+    "#codereview",
+    "#devhumor",
+    "#freelancedeveloper",
+    "#programmerlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": [
+      [
+        "mon · approved",
+        "shipped a feature",
+        "first try. suspicious."
+      ],
+      [
+        "tue · nit",
+        "aligned one div",
+        "took the whole afternoon"
+      ],
+      [
+        "wed · changes requested",
+        "client saw the demo",
+        "“can it also…”"
+      ],
+      [
+        "fri · blocked",
+        "no deploys on friday",
+        "house rule. still tempted."
+      ]
+    ],
+    "kicker": "merging into next week as-is"
+  }
+}

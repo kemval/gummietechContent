@@ -1,0 +1,56 @@
+{
+  "number": 39,
+  "eyebrow": "status report",
+  "title": "codebase dating profile",
+  "module": "flags",
+  "image": "39-codebase-dating.png",
+  "caption": "swiping through codebases, so you don't have to.\n\ngreen flags: tests that pass on purpose, commits that say why, one setup command.\nred flags: utils2_final.py, a 900-line handle(), every test skipped,\nand the dev who built it left no forwarding address.\n\nwhat's the biggest red flag you've found in a codebase?",
+  "hashtags": [
+    "#cleancode",
+    "#legacycode",
+    "#devhumor",
+    "#softwareengineering",
+    "#gummietech"
+  ],
+  "slide": {
+    "items": {
+      "green flags": [
+        [
+          "tests that run",
+          "and pass. on purpose."
+        ],
+        [
+          "commits that say why",
+          "not just “stuff”"
+        ],
+        [
+          "one setup command",
+          "emotionally available"
+        ],
+        [
+          "deletes dead code",
+          "knows how to let go"
+        ]
+      ],
+      "red flags": [
+        [
+          "utils2_final.py",
+          "where's utils1?"
+        ],
+        [
+          "a 900-line handle()",
+          "handles everything. badly."
+        ],
+        [
+          "every test skipped",
+          "commitment issues"
+        ],
+        [
+          "the dev who built it left",
+          "no forwarding address"
+        ]
+      ]
+    },
+    "kicker": "I inherit red flags. I hand back green ones."
+  }
+}
