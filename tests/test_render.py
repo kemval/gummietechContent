@@ -638,3 +638,12 @@ def test_an_auto_applied_catch_over_budget_is_refused(capsys):
     assert "the_catch is 33 words" in capsys.readouterr().out
     post["the_catch"] = "Patching could take months or years."
     assert render.over_budget(post) == 0
+
+
+def test_a_free_standing_dash_is_not_a_word():
+    """2026-10-31: fix.yml refused a 12-word Signal hook as 13, because the
+    " — " before "plus 3 more" was counted as a word."""
+    post = {**SIGNAL,
+            "hook": "Apple says its MacBook Pro screen hits 2000 nits — plus 3 more"}
+    assert dict((w, c) for w, c, _ in render.word_budget(post))["hook"] == 12
+    assert render.over_budget(post) == 0
