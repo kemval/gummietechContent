@@ -161,6 +161,18 @@ def example_post(post: dict) -> dict:
     return example
 
 
+def count_words(text: str) -> int:
+    """Words as a reader counts them: a free-standing dash or bullet is not one.
+
+    2026-10-31: the applier shortened a Signal hook to 12 words, and
+    str.split() counted its " — " as a thirteenth, so the budget refused a
+    fix that was within it. Every writer — the drafting model, the fact-check,
+    the applier — counts words, not punctuation.
+    """
+    return sum(1 for token in str(text).split()
+               if any(ch.isalnum() for ch in token))
+
+
 def word_budget(post: dict) -> Iterator[tuple[str, int, int]]:
     """(where, words, limit) for every piece of prose that has a budget.
 
@@ -168,13 +180,13 @@ def word_budget(post: dict) -> Iterator[tuple[str, int, int]]:
     measured one slide at a time — docs §1's rule is per slide, and a list of
     three steps measured as one string would pass a budget none of them meet.
     """
-    yield "hook", len(str(post.get("hook", "")).split()), HOOK_WORD_LIMIT
+    yield "hook", count_words(post.get("hook", "")), HOOK_WORD_LIMIT
     for section in sections(post):
         prose = pieces(post, section)
         for n, piece in enumerate(prose, start=1):
             where = (f"{section.field}[{n}]" if section.many and len(prose) > 1
                      else section.field)
-            yield where, len(piece.split()), WORD_LIMIT
+            yield where, count_words(piece), WORD_LIMIT
 
 
 def warn_on_length(post: dict) -> None:
