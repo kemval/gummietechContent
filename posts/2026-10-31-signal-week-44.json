@@ -1,0 +1,75 @@
+{
+  "post_type": "signal",
+  "domain": "Apple roundup",
+  "colorway": "ember",
+  "hook": "MacBook Pro’s 2000‑nit display dazzles — plus 4 more",
+  "items": [
+    {
+      "claim": "MacBook Pro’s PROLED XDR screen reaches 2000 nits brightness and 10‑million‑to‑1 contrast",
+      "attribution": "Hacker News 200+, (2026)",
+      "source_url": "https://www.apple.com/macbook-pro/proled-xdr-display/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "MacBook Pro adds on‑screen Touch, enabling gestures like drawing and rotating directly",
+      "attribution": "Apple Newsroom, (2026)",
+      "source_url": "https://www.apple.com/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "Gemini 4 Carbon tops SEC‑bench Pro, finding vulnerabilities with 88.2% success",
+      "attribution": "DeepMind, (2026)",
+      "source_url": "https://deepmind.google/blog/gemini-4-carbon-our-next-frontier-model/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "M6‑powered 14‑inch MacBook Pro gives up to 30% faster graphics",
+      "attribution": "Hacker News 200+, (2026)",
+      "source_url": "https://www.apple.com/in/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "iMac’s M6 includes first Dual 16‑core Neural Engine, boosting on‑device AI",
+      "attribution": "Hacker News 200+, (2026)",
+      "source_url": "https://www.apple.com/imac/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "computing"
+    }
+  ],
+  "caption": "Apple’s new MacBook Pro pushes display brilliance and adds Touch interaction. The M6‑powered models promise faster graphics and AI power across laptops and iMacs. Which upgrade excites you more, brighter screens or smarter AI?",
+  "keywords": [
+    "MacBook Pro",
+    "PROLED XDR",
+    "M6 chip",
+    "Gemini Carbon",
+    "iMac AI"
+  ],
+  "hashtags": [
+    "#apple",
+    "#hardware",
+    "#ai",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides list Apple product updates: a MacBook Pro with 2000‑nit PROLED XDR screen, a MacBook Pro with on‑screen Touch, DeepMind’s Gemini 4 Carbon security scores, a 14‑inch M6 MacBook Pro with faster graphics, and an iMac with a Dual 16‑core Neural Engine, each on solid colour backgrounds.",
+  "es": {
+    "domain": "resumen de Apple",
+    "hook": "La pantalla de 2000 nits del MacBook Pro deslumbra — y 4 más",
+    "items": [
+      "Pantalla PROLED XDR del MacBook Pro: alcanza 2000 nits de brillo y un contraste de 10 millones a 1",
+      "MacBook Pro: añade Touch en pantalla, permitiendo gestos como dibujar y rotar directamente",
+      "Gemini 4 Carbon: lidera SEC‑bench Pro, encontrando vulnerabilidades con un 88,2 % de éxito",
+      "MacBook Pro de 14 pulgadas con M6: ofrece gráficos hasta un 30 % más rápidos",
+      "M6 del iMac: incluye el primer Neural Engine Dual de 16 núcleos, impulsando la IA en el dispositivo"
+    ],
+    "_en": "540c0364adc1f23f"
+  }
+}
