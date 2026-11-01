@@ -171,6 +171,14 @@ MEASURE = """
       els,
       // The keyword cloud is skipped above as decoration, but its wires are
       // drawn over its own words: measured on their own, by check_cloud().
+      // Ghost words are aria-hidden too, so the text check above never sees
+      // them: measured on their own, by check_ghosts(), with the ~.22em the
+      // parentheses hang under the line box.
+      ghosts: [...slide.querySelectorAll('.giant.ghost')].map(g => {
+        const r = rel(g.getBoundingClientRect(), sr);
+        r.h += px(getComputedStyle(g).fontSize) * .22;
+        return {text: g.textContent.trim().slice(0, 48), rect: r};
+      }),
       cloud: [...slide.querySelectorAll('.cloud .tag, .cloud .wire')].map(e => ({
         kind: e.classList.contains('tag') ? 'tag' : 'wire',
         text: e.textContent.trim().slice(0, 48),
@@ -473,6 +481,24 @@ def check_colorway(path: Path | None, colorway: str | None,
                              f"--colorway {vary(colorway, recent)}")
 
 
+def check_ghosts(slide: dict, report: Report) -> None:
+    """No ghost word may sit over a line of text.
+
+    2026-11-01: the sheet's whole-sheet slide ran eight rows to the bottom of
+    the frame, the layout pass had no room to shrink "(save)" into, and it
+    stayed full size over the last row. This file said PASS, because the
+    ghost is aria-hidden decoration and the text check skips it.
+    """
+    for ghost in slide.get("ghosts") or []:
+        for el in slide["els"]:
+            if el["kind"] in CHROME:
+                continue
+            if min(gap(line, ghost["rect"]) for line in el["lines"]) < -EPSILON:
+                report.block(slide["id"], f"the ghost word {ghost['text']!r} "
+                                          f"sits over {el['text']!r}")
+                break
+
+
 def proof(post: dict, colorway: str | None,
           path: Path | None = None) -> Report:
     report = Report()
@@ -500,6 +526,7 @@ def proof(post: dict, colorway: str | None,
     for slide in slides:
         check_slide(slide, report)
         check_cloud(slide, report)
+        check_ghosts(slide, report)
     check_words(post, report)
     check_wording(post, report)
     check_catch(post, report)
