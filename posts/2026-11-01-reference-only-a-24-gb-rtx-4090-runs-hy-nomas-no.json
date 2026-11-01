@@ -7,19 +7,19 @@
     "Flagship phone: No, needs an NVIDIA GPU",
     "Laptop, 8 GB, no GPU: No, needs an NVIDIA GPU",
     "MacBook Air, 16 GB: No, needs an NVIDIA GPU",
-    "RTX 4060, 8 GB: No, a 100-second video peaks at 20.53 GiB",
+    "RTX 4060, 8 GB: Not tested; the one published peak, 20.53 GiB, is over 8 GB",
     "RTX 4090, 24 GB: Yes, 20.53 GiB peak (100 s video), INT8 plus CPU offload",
     "Prompt following vs LingBot: Wins 75%, ties 16.7%, loses 8.3%",
     "Camera control vs Genie 3: Mostly ties 54%; wins 32%, loses 14%",
     "Spatial memory vs Genie 3: Behind, wins 13.3%, loses 30%"
   ],
-  "the_catch": "The scores are the authors' own human ratings, and it still trails Genie 3 on long-term spatial consistency.",
+  "the_catch": "Scores come from the authors' benchmark, rated by trained human annotators; it still trails Genie 3 on long-term spatial consistency.",
   "source_post": "2026-10-28-hy-nomas-towards-free-form-interactive-w",
   "figure_sources": [
     "Flagship phone: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
     "Laptop, 8 GB, no GPU: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
     "MacBook Air, 16 GB: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
-    "RTX 4060, 8 GB: https://arxiv.org/html/2610.36729 (Section 6.2, 20.53 GiB peak exceeds 8 GB)",
+    "RTX 4060, 8 GB: https://arxiv.org/html/2610.36729 (Section 6.2, 20.53 GiB peak for a 100-second video; no 8 GB card tested)",
     "RTX 4090, 24 GB: https://arxiv.org/html/2610.36729 (Section 6.2, 20.53 GiB peak for a 100-second 1280x704 video)"
   ],
   "caption": "Hy-Nomas is an 8B world model whose default launch needs eight GPUs. A single RTX 4090 works with INT8 weights and CPU offload. What do you run models on?",
@@ -42,18 +42,18 @@
   "beat": "ai",
   "es": {
     "domain": "modelos de IA",
-    "hook": "Hy‑Nomas se ejecuta en una RTX 4090 de 24 GB; no se probó nada más pequeño",
+    "hook": "Hy-Nomas funciona con una RTX 4090 de 24 GB; no se probó nada más pequeño",
     "items": [
       "Teléfono insignia: No, necesita una GPU NVIDIA",
       "Portátil, 8 GB, sin GPU: No, necesita una GPU NVIDIA",
       "MacBook Air, 16 GB: No, necesita una GPU NVIDIA",
-      "RTX 4060, 8 GB: No, un video de 100 s alcanza un pico de 20,53 GiB",
-      "RTX 4090, 24 GB: Sí, pico de 20,53 GiB (video de 100 s), INT8 y descarga a la CPU",
-      "Seguimiento de prompt vs LingBot: Gana 75 %, empata 16,7 %, pierde 8,3 %",
-      "Control de cámara vs Genie 3: Mayormente empata 54 %; gana 32 %; pierde 14 %",
-      "Memoria espacial vs Genie 3: Por detrás, gana 13,3 %, pierde 30 %"
+      "RTX 4060, 8 GB: No probado; el pico publicado, 20,53 GiB, supera los 8 GB",
+      "RTX 4090, 24 GB: Sí, pico de 20,53 GiB (video de 100 s), INT8 y descarga a CPU",
+      "Seguimiento de prompts vs LingBot: Gana el 75 %, empata el 16,7 %, pierde el 8,3 %",
+      "Control de cámara vs Genie 3: Mayormente empata el 54 %; gana el 32 %; pierde el 14 %",
+      "Memoria espacial vs Genie 3: En desventaja, gana el 13,3 %, pierde el 30 %"
     ],
-    "the_catch": "Las puntuaciones son las propias valoraciones humanas de los autores, y aún queda detrás de Genie 3 en consistencia espacial a largo plazo",
-    "_en": "e37bcdfc9ad67f78"
+    "the_catch": "Las puntuaciones provienen del benchmark de los autores, evaluadas por anotadores humanos entrenados; aún queda detrás de Genie 3 en consistencia espacial a largo plazo.",
+    "_en": "81e4ec05a936f4c0"
   }
 }
