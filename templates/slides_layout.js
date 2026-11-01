@@ -243,6 +243,18 @@ document.fonts.ready.then(() => {
           fit(g, COLUMN, +g.dataset.max || 520); lift(); settle();
         }
       }
+      // No room left at all: a full slide (the sheet's whole-sheet page of
+      // eight rows, 2026-11-01) leaves a negative gap, fit() is handed a
+      // negative width, the browser ignores the negative size and "(save)"
+      // stayed full size over the last row. The word is decoration; the
+      // text is not. Drop it — the glass repaint below only paints what is
+      // still in the page. proof.py's check_ghosts() BLOCKs if one slips by.
+      const ink = g.getBoundingClientRect(), pad = parseFloat(g.style.fontSize) * .22 * k;
+      const hits = [...slide.querySelectorAll('.body')].some(b => {
+        const r = b.getBoundingClientRect();
+        return ink.top < r.bottom && ink.bottom + pad > r.top && ink.left < r.right && ink.right > r.left;
+      });
+      if (hits) g.remove();
     });
 
     // The cover: the spec row docks above the figure, or takes the bottom

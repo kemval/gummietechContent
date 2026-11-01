@@ -330,3 +330,24 @@ def test_an_empty_catch_withholds_the_button():
     report = proof.Report()
     proof.check_catch({"post_type": "drop", "the_catch": "Tested on two PCs."}, report)
     assert "BLOCK" not in report.render().splitlines()[0]
+
+
+def ghost_slide(ghost: dict, *lines: tuple[str, dict]) -> dict:
+    return {"id": "slide-4", "ghosts": [{"text": "(save)", "rect": ghost}],
+            "els": [{"kind": k, "text": k, "lines": [r]} for k, r in lines]}
+
+
+def test_a_ghost_word_over_a_row_of_the_sheet_is_a_block():
+    # 2026-11-01: "(save)" stayed full size over the whole sheet's last row.
+    report = proof.Report()
+    proof.check_ghosts(ghost_slide(box(60, 980, 340, 110),
+                                   ("dt", box(60, 1015, 290, 80))), report)
+    assert report.verdict == "BLOCK"
+
+
+def test_a_ghost_word_under_the_text_and_over_chrome_passes():
+    report = proof.Report()
+    proof.check_ghosts(ghost_slide(box(60, 900, 600, 200),
+                                   ("dd", box(392, 600, 400, 40)),
+                                   ("lbl", box(60, 1050, 200, 20))), report)
+    assert report.verdict == "PASS"
