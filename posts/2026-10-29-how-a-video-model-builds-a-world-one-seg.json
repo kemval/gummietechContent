@@ -45,5 +45,8 @@
     "the_catch": "Un preprint, aún sin revisión por pares. Los autores afirman que todavía está por detrás de Genie 3 en consistencia espacial a largo plazo.",
     "_en": "5293ca7775d1cb92"
   },
-  "published_at": "2026-10-29"
+  "published_at": "2026-10-29",
+  "metrics": {
+    "asked_at": "2026-11-01"
+  }
 }
