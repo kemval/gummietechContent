@@ -2,13 +2,13 @@
   "post_type": "reference",
   "domain": "AI models",
   "colorway": "signal",
-  "hook": "Only a 24 GB RTX 4090 runs Hy-Nomas, nothing smaller",
+  "hook": "Hy-Nomas runs on one 24 GB RTX 4090; nothing smaller tested",
   "items": [
     "Flagship phone: No, needs an NVIDIA GPU",
     "Laptop, 8 GB, no GPU: No, needs an NVIDIA GPU",
     "MacBook Air, 16 GB: No, needs an NVIDIA GPU",
-    "RTX 4060, 8 GB: No, peaks near 20.5 GiB",
-    "RTX 4090, 24 GB: Yes, 20.53 GiB peak, INT8 offload",
+    "RTX 4060, 8 GB: No, a 100-second video peaks at 20.53 GiB",
+    "RTX 4090, 24 GB: Yes, 20.53 GiB peak (100 s video), INT8 plus CPU offload",
     "Prompt following vs LingBot: Wins 75%, ties 16.7%, loses 8.3%",
     "Camera control vs Genie 3: Mostly ties 54%; wins 32%, loses 14%",
     "Spatial memory vs Genie 3: Behind, wins 13.3%, loses 30%"
@@ -42,18 +42,18 @@
   "beat": "ai",
   "es": {
     "domain": "modelos de IA",
-    "hook": "Solo una RTX 4090 de 24 GB ejecuta Hy‑Nomas, nada más pequeño",
+    "hook": "Hy‑Nomas se ejecuta en una RTX 4090 de 24 GB; no se probó nada más pequeño",
     "items": [
       "Teléfono insignia: No, necesita una GPU NVIDIA",
       "Portátil, 8 GB, sin GPU: No, necesita una GPU NVIDIA",
       "MacBook Air, 16 GB: No, necesita una GPU NVIDIA",
-      "RTX 4060, 8 GB: No, alcanza un pico cercano a 20,5 GiB",
-      "RTX 4090, 24 GB: Sí, pico de 20,53 GiB, descarga INT8",
-      "Seguimiento de prompts vs LingBot: Gana 75 %, empata 16,7 %, pierde 8,3 %",
-      "Control de cámara vs Genie 3: Mayormente empata 54 %; gana 32 %; pierde 14 %",
-      "Memoria espacial vs Genie 3: En desventaja, gana 13,3 %; pierde 30 %"
+      "RTX 4060, 8 GB: No, un video de 100 s alcanza un pico de 20,53 GiB",
+      "RTX 4090, 24 GB: Sí, pico de 20,53 GiB (video de 100 s), INT8 y descarga a la CPU",
+      "Seguimiento de prompt vs LingBot: Gana 75 %, empata 16,7 %, pierde 8,3 %",
+      "Control de cámara vs Genie 3: Mayormente empata 54 %; gana 32 %; pierde 14 %",
+      "Memoria espacial vs Genie 3: Por detrás, gana 13,3 %, pierde 30 %"
     ],
-    "the_catch": "Las puntuaciones son las propias valoraciones humanas de los autores y todavía están por detrás de Genie 3 en la consistencia espacial a largo plazo.",
-    "_en": "27aaa6fcbc8eee7f"
+    "the_catch": "Las puntuaciones son las propias valoraciones humanas de los autores, y aún queda detrás de Genie 3 en consistencia espacial a largo plazo",
+    "_en": "e37bcdfc9ad67f78"
   }
 }
