@@ -1,0 +1,59 @@
+{
+  "post_type": "reference",
+  "domain": "AI models",
+  "colorway": "signal",
+  "hook": "Only a 24 GB RTX 4090 runs Hy-Nomas, nothing smaller",
+  "items": [
+    "Flagship phone: No, needs an NVIDIA GPU",
+    "Laptop, 8 GB, no GPU: No, needs an NVIDIA GPU",
+    "MacBook Air, 16 GB: No, needs an NVIDIA GPU",
+    "RTX 4060, 8 GB: No, peaks near 20.5 GiB",
+    "RTX 4090, 24 GB: Yes, 20.53 GiB peak, INT8 offload",
+    "Prompt following vs LingBot: Wins 75%, ties 16.7%, loses 8.3%",
+    "Camera control vs Genie 3: Mostly ties 54%; wins 32%, loses 14%",
+    "Spatial memory vs Genie 3: Behind, wins 13.3%, loses 30%"
+  ],
+  "the_catch": "The scores are the authors' own human ratings, and it still trails Genie 3 on long-term spatial consistency.",
+  "source_post": "2026-10-28-hy-nomas-towards-free-form-interactive-w",
+  "figure_sources": [
+    "Flagship phone: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
+    "Laptop, 8 GB, no GPU: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
+    "MacBook Air, 16 GB: https://huggingface.co/tencent/Hy-Nomas (card lists NVIDIA driver and CUDA only)",
+    "RTX 4060, 8 GB: https://arxiv.org/html/2610.36729 (Section 6.2, 20.53 GiB peak exceeds 8 GB)",
+    "RTX 4090, 24 GB: https://arxiv.org/html/2610.36729 (Section 6.2, 20.53 GiB peak for a 100-second 1280x704 video)"
+  ],
+  "caption": "Hy-Nomas is an 8B world model whose default launch needs eight GPUs. A single RTX 4090 works with INT8 weights and CPU offload. What do you run models on?",
+  "keywords": [
+    "Hy-Nomas",
+    "world model",
+    "RTX 4090",
+    "VRAM"
+  ],
+  "hashtags": [
+    "#worldmodel",
+    "#localai",
+    "#rtx4090",
+    "#gummietech"
+  ],
+  "alt_text": "A cheat sheet on whether Hy-Nomas runs on a phone, laptop, MacBook Air, RTX 4060 or RTX 4090, plus three human-rated comparisons.",
+  "source_url": "https://arxiv.org/abs/2610.36729",
+  "attribution": "Chen et al., arXiv (2026)",
+  "peer_reviewed": false,
+  "beat": "ai",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "Solo una RTX 4090 de 24 GB ejecuta Hy‑Nomas, nada más pequeño",
+    "items": [
+      "Teléfono insignia: No, necesita una GPU NVIDIA",
+      "Portátil, 8 GB, sin GPU: No, necesita una GPU NVIDIA",
+      "MacBook Air, 16 GB: No, necesita una GPU NVIDIA",
+      "RTX 4060, 8 GB: No, alcanza un pico cercano a 20,5 GiB",
+      "RTX 4090, 24 GB: Sí, pico de 20,53 GiB, descarga INT8",
+      "Seguimiento de prompts vs LingBot: Gana 75 %, empata 16,7 %, pierde 8,3 %",
+      "Control de cámara vs Genie 3: Mayormente empata 54 %; gana 32 %; pierde 14 %",
+      "Memoria espacial vs Genie 3: En desventaja, gana 13,3 %; pierde 30 %"
+    ],
+    "the_catch": "Las puntuaciones son las propias valoraciones humanas de los autores y todavía están por detrás de Genie 3 en la consistencia espacial a largo plazo.",
+    "_en": "27aaa6fcbc8eee7f"
+  }
+}
