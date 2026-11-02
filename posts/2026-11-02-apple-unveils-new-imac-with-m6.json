@@ -1,0 +1,32 @@
+{
+  "post_type": "drop",
+  "domain": "personal computing",
+  "colorway": "ember",
+  "hook": "Apple's iMac M6 brings a faster CPU and AI engine.",
+  "hooks": [
+    "Apple's iMac M6 brings a faster CPU and AI engine.",
+    "The iMac now runs AI models on‑device up to five times faster.",
+    "Apple says the M6 delivers up to 5× faster on‑device AI performance than the M4."
+  ],
+  "what_happened": "Apple unveiled the iMac M6 with a 12‑core CPU, up to 5× faster AI than M4, and up to 18× performance over the Intel iMac.",
+  "why_it_matters": "It lets users run on‑device AI and demanding apps much faster, improving everyday productivity and creative workflows.",
+  "the_catch": "",
+  "caption": "Apple's new iMac M6 delivers up to 5× faster on‑device AI than the M4 and up to 18× performance over Intel iMacs. AI speed or overall performance?",
+  "keywords": [
+    "iMac",
+    "M6",
+    "AI performance"
+  ],
+  "hashtags": [
+    "#apple",
+    "#imac",
+    "#m6",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel lists the iMac M6’s faster CPU, AI speed gains, performance over Intel, why it matters, and notes no stated limitations.",
+  "source_url": "https://www.apple.com/newsroom/2026/10/apple-unveils-new-imac-with-m6/",
+  "attribution": "Apple",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing"
+}
