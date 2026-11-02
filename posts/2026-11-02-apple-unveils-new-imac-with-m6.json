@@ -7,10 +7,10 @@
     "Apple's iMac M6 brings a faster CPU and AI engine.",
     "Apple says the M6 delivers up to 5× faster on‑device AI performance than the M4."
   ],
-  "what_happened": "Apple says iMac M6 has up to a 12-core CPU, up to 5× faster AI than M4, up to 18× faster than Intel.",
+  "what_happened": "Apple says iMac M6 has up to a 12-core CPU, up to 5× faster AI than M4, and up to 18× faster overall than Intel.",
   "why_it_matters": "Apple says it lets users run powerful AI models on the device, keeping their data private, and speeds up everyday productivity and creative apps.",
   "the_catch": "Apple ran the tests itself, and both figures are \"up to\" results: 5× is versus M4, 18× versus the most popular Intel iMac.",
-  "caption": "Apple says its new iMac M6 is up to 5× faster at on-device AI than the M4, and up to 18× faster than the most popular Intel iMac. AI speed or overall performance?",
+  "caption": "Apple says its new iMac M6 is up to 5× faster at on-device AI than the M4, and up to 18× faster overall than the most popular Intel iMac. AI speed or overall performance?",
   "keywords": [
     "iMac",
     "M6",
@@ -30,10 +30,10 @@
   "beat": "computing",
   "es": {
     "domain": "computación personal",
-    "hook": "El iMac M6 de Apple trae una CPU más rápida y un motor de IA más rápido.",
-    "what_happened": "Apple dice que el iMac M6 tiene una CPU de hasta 12 núcleos, una IA hasta 5× más rápida que la M4 y hasta 18× más rápida que Intel.",
-    "why_it_matters": "Apple dice que permite a los usuarios ejecutar modelos de IA potentes en el dispositivo, manteniendo sus datos privados, y que acelera las aplicaciones de productividad y creatividad de uso cotidiano.",
-    "the_catch": "Apple realizó las pruebas por sí misma, y ambas cifras son valores \"hasta\": el 5× corresponde a la comparación con la M4, y el 18× a la comparación con el iMac Intel más popular.",
-    "_en": "577c3ec43a7cf550"
+    "hook": "El iMac M6 de Apple incorpora una CPU más rápida y un motor de IA.",
+    "what_happened": "Apple dice que el iMac M6 tiene una CPU de hasta 12 núcleos, una IA hasta 5 veces más rápida que la M4 y un rendimiento general hasta 18 veces más rápido que los iMac de Intel más populares.",
+    "why_it_matters": "Apple afirma que permite a los usuarios ejecutar modelos de IA potentes en el dispositivo, manteniendo sus datos privados, y que acelera las aplicaciones cotidianas de productividad y creatividad.",
+    "the_catch": "Apple realizó las pruebas por sí misma, y ambas cifras son resultados \"hasta\": el factor de 5 veces se refiere a la comparación con la M4, y el factor de 18 veces a la comparación con el iMac de Intel más popular.",
+    "_en": "6f912f390cd8c69b"
   }
 }
