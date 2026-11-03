@@ -36,5 +36,6 @@
     "example": "Meta indica que Muse Spark Open tiene 816 mil millones de parámetros totales, con 42 mil millones activos. La hoja del modelo dice que selecciona 8 de 256 expertos para cada token.",
     "the_catch": "Activo no significa pequeño. La hoja del modelo sigue requiriendo al menos 700 GB de VRAM, porque todo el modelo debe mantenerse en memoria.",
     "_en": "134b9f9f446b2b40"
-  }
+  },
+  "published_at": "2026-11-03"
 }
