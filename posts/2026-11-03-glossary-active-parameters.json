@@ -1,0 +1,40 @@
+{
+  "post_type": "term",
+  "domain": "AI models",
+  "colorway": "signal",
+  "hook": "The part of an AI model that works on each piece of text.",
+  "term": "Active parameters",
+  "definition": "The slice of a model's parameters used for each token, a piece of text. A model lists its total and its active count separately.",
+  "example": "Meta says Muse Spark Open has 816 billion total parameters, with 42 billion active. The model card says it picks 8 of 256 experts for each token.",
+  "the_catch": "Active does not mean small. The model card still asks for at least 700GB of VRAM, because the whole model has to be held.",
+  "example_post": "2026-10-22-meta-says-muse-spark-open-uses-42-billio",
+  "caption": "Active parameters are the slice of a model used for each token. Meta says Muse Spark Open has 816 billion parameters in total, with 42 billion active. Its model card still asks for at least 700GB of VRAM. When a model's size is quoted, do you look at the total or the active count?",
+  "keywords": [
+    "active parameters",
+    "AI model size",
+    "mixture of experts",
+    "Muse Spark Open"
+  ],
+  "hashtags": [
+    "#ai",
+    "#llm",
+    "#mixtureofexperts",
+    "#openweights",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining active parameters: the slice of a model's parameters used for each token. It shows Meta's Muse Spark Open, with 42 billion of 816 billion parameters active, and the common mistake of reading active as small, since the model card still asks for at least 700GB of VRAM.",
+  "source_url": "https://research.meta.ai/blog/muse-spark-open",
+  "attribution": "Meta",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "La parte de un modelo de IA que funciona con cada fragmento de texto",
+    "term": "Parámetros activos",
+    "definition": "El subconjunto de los parámetros de un modelo que se usa para cada token, que es una pieza de texto. Un modelo indica por separado su total de parámetros y la cantidad activa.",
+    "example": "Meta indica que Muse Spark Open tiene 816 mil millones de parámetros totales, con 42 mil millones activos. La hoja del modelo dice que selecciona 8 de 256 expertos para cada token.",
+    "the_catch": "Activo no significa pequeño. La hoja del modelo sigue requiriendo al menos 700 GB de VRAM, porque todo el modelo debe mantenerse en memoria.",
+    "_en": "134b9f9f446b2b40"
+  }
+}
