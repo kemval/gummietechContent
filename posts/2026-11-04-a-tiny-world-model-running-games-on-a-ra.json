@@ -2,16 +2,16 @@
   "post_type": "run",
   "domain": "edge AI",
   "colorway": "ember",
-  "hook": "A Raspberry Pi Pico 2 W runs a tiny transformer that plays games.",
+  "hook": "A Pico 2 W dreams up games with a tiny transformer.",
   "hooks": [
-    "A Raspberry Pi Pico 2 W runs a tiny transformer that plays games.",
+    "A Pico 2 W dreams up games with a tiny transformer.",
     "It uses two tiny neural nets to generate frames and choose actions.",
     "SheepSeb says the world model uses 26k–131k parameters."
   ],
-  "what_happened": "A looped transformer and a small MLP run on a Raspberry Pi Pico 2 W, generating game frames and selecting actions in real time.",
-  "try_it": "Run a game with `uv run python -m tinyworldformer.games.play --game pacman`.",
-  "why_it_matters": "It lets a microcontroller both imagine and play simple games without external hardware.",
-  "the_catch": "Exact‑frame accuracy excludes frames right after random events, which cannot be predicted.",
+  "what_happened": "A looped transformer generates game frames and a small MLP picks actions, both running on a Raspberry Pi Pico 2 W.",
+  "try_it": "Play the real game in a terminal with `uv run python -m tinyworldformer.games.play --game pacman`; flashing a Pico uses ./flash.sh.",
+  "why_it_matters": "On the chip, the actor only sees frames from the world model and never touches the real game.",
+  "the_catch": "The author says the frame rate has not been measured on the Pico itself yet.",
   "caption": "A tiny looped transformer can generate and play games directly on a Raspberry Pi Pico 2 W. Can your microcontroller dream up games?",
   "keywords": [
     "looped transformer",
@@ -24,7 +24,7 @@
     "#tinyml",
     "#gummietech"
   ],
-  "alt_text": "The slides explain that a Raspberry Pi Pico 2 W runs a tiny looped transformer that creates and plays simple games, its performance numbers, and its current limitation.",
+  "alt_text": "The slides explain that a Raspberry Pi Pico 2 W runs a tiny looped transformer that generates simple games and a small network that plays them, how to try it, and a limitation.",
   "source_url": "https://github.com/SheepSeb/tinyworldformer",
   "code_url": "https://github.com/SheepSeb/tinyworldformer",
   "attribution": "SheepSeb",
@@ -32,12 +32,12 @@
   "announcement": true,
   "beat": "computing",
   "es": {
-    "domain": "IA de borde",
-    "hook": "Una Raspberry Pi Pico 2 W ejecuta un transformador diminuto que juega videojuegos",
-    "what_happened": "Un transformador en bucle y una pequeña MLP se ejecutan en una Raspberry Pi Pico 2 W, generando fotogramas del juego y seleccionando acciones en tiempo real",
-    "try_it": "Ejecuta un juego con `uv run python -m tinyworldformer.games.play --game pacman`",
-    "why_it_matters": "Permite que un microcontrolador imagine y juegue juegos simples sin hardware externo",
-    "the_catch": "La precisión de fotograma exacto excluye los fotogramas que siguen inmediatamente a eventos aleatorios, los cuales no pueden predecirse",
-    "_en": "0ce6876d29bf0e0e"
+    "domain": "IA en el borde",
+    "hook": "Un Pico 2 W imagina juegos con un pequeño transformer.",
+    "what_happened": "Un transformer en bucle genera fotogramas del juego y una pequeña MLP selecciona acciones; ambos se ejecutan en una Raspberry Pi Pico 2 W.",
+    "try_it": "Juega al juego real en una terminal con `uv run python -m tinyworldformer.games.play --game pacman`; para flashear el Pico usa ./flash.sh.",
+    "why_it_matters": "En el chip, el agente solo ve fotogramas del modelo del mundo y nunca interactúa con el juego real.",
+    "the_catch": "El autor dice que la tasa de fotogramas aún no se ha medido en el propio Pico.",
+    "_en": "6bd47bd948615e2e"
   }
 }
