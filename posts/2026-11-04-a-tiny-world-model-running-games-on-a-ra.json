@@ -1,0 +1,43 @@
+{
+  "post_type": "run",
+  "domain": "edge AI",
+  "colorway": "ember",
+  "hook": "A Raspberry Pi Pico 2 W runs a tiny transformer that plays games.",
+  "hooks": [
+    "A Raspberry Pi Pico 2 W runs a tiny transformer that plays games.",
+    "It uses two tiny neural nets to generate frames and choose actions.",
+    "SheepSeb says the world model uses 26k–131k parameters."
+  ],
+  "what_happened": "A looped transformer and a small MLP run on a Raspberry Pi Pico 2 W, generating game frames and selecting actions in real time.",
+  "try_it": "Run a game with `uv run python -m tinyworldformer.games.play --game pacman`.",
+  "why_it_matters": "It lets a microcontroller both imagine and play simple games without external hardware.",
+  "the_catch": "Exact‑frame accuracy excludes frames right after random events, which cannot be predicted.",
+  "caption": "A tiny looped transformer can generate and play games directly on a Raspberry Pi Pico 2 W. Can your microcontroller dream up games?",
+  "keywords": [
+    "looped transformer",
+    "microcontroller",
+    "games"
+  ],
+  "hashtags": [
+    "#edgeai",
+    "#pico",
+    "#tinyml",
+    "#gummietech"
+  ],
+  "alt_text": "The slides explain that a Raspberry Pi Pico 2 W runs a tiny looped transformer that creates and plays simple games, its performance numbers, and its current limitation.",
+  "source_url": "https://github.com/SheepSeb/tinyworldformer",
+  "code_url": "https://github.com/SheepSeb/tinyworldformer",
+  "attribution": "SheepSeb",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "IA de borde",
+    "hook": "Una Raspberry Pi Pico 2 W ejecuta un transformador diminuto que juega videojuegos",
+    "what_happened": "Un transformador en bucle y una pequeña MLP se ejecutan en una Raspberry Pi Pico 2 W, generando fotogramas del juego y seleccionando acciones en tiempo real",
+    "try_it": "Ejecuta un juego con `uv run python -m tinyworldformer.games.play --game pacman`",
+    "why_it_matters": "Permite que un microcontrolador imagine y juegue juegos simples sin hardware externo",
+    "the_catch": "La precisión de fotograma exacto excluye los fotogramas que siguen inmediatamente a eventos aleatorios, los cuales no pueden predecirse",
+    "_en": "0ce6876d29bf0e0e"
+  }
+}
