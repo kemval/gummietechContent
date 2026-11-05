@@ -24,6 +24,15 @@ feeds:
     reports: [techcrunch.com/, theverge.com/, tomshardware.com/,
               404media.co/, phoronix.com/news/]
 
+  # Free tools people built and shared, added 2026-11-05 for news a reader
+  # can use. A Show HN rarely reaches the front page's 200 points, so it
+  # gets its own, lower threshold. Most items link a GitHub repo, which
+  # suits Wednesday's --run. No `reports`: a project page is neither a news
+  # outlet nor a maker's newsroom, so these reach Drops, not the Signal.
+  - name: Show HN 100+
+    url: https://hnrss.org/show?points=100
+    topic: tech
+
   # Smaller and more technical than HN. The front page is already ranked, so
   # there is no points threshold to set — but equally no quality floor, so all
   # ~12/day land in the sheet. https://lobste.rs/t/ai.rss narrows it if needed.

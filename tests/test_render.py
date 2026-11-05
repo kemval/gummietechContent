@@ -208,6 +208,24 @@ def test_an_optional_section_is_not_required_but_is_rendered_when_present():
     assert "recap" in [s.field for s in render.sections(with_recap)]
 
 
+@pytest.mark.parametrize("steps, count", [("", 5), ("Update Chrome to 157.", 6)])
+def test_a_drop_grows_a_what_to_do_slide_only_when_it_has_one(steps, count):
+    """2026-11-05: security Drops say what to do, on their own slide, and a
+    Drop without a step stays the locked five — catch second to last, the
+    dark slide, either way."""
+    import re
+    post = {"post_type": "drop", "hook": "Hook.", "domain": "d",
+            "attribution": "A", "alt_text": "T", "source_url": "https://x.org",
+            "peer_reviewed": False, "news_report": True,
+            **MINIMAL["drop"], **({"what_to_do": steps} if steps else {})}
+    html = render.render_html(post)
+    fields = re.findall(r'<div class="slide ([a-z-]+)" id="slide-\d+"', html)
+    assert fields == render.rhythm("pink", "olive", count)
+    assert fields[count - 2] == "dark"
+    assert ("Update Chrome to 157." in html) == bool(steps)
+    assert ("What to do" in html) == bool(steps)
+
+
 def test_es_fields_follow_the_format():
     assert "mechanism" in render.es_fields({"post_type": "breakdown"})
     assert "mechanism" not in render.es_fields({"post_type": "drop"})

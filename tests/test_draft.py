@@ -392,6 +392,30 @@ def test_a_tie_goes_to_the_newest_row():
     assert (n, item["title"]) == (3, "this-week")
 
 
+def test_a_signal_takes_at_most_two_items_from_one_site(monkeypatch):
+    """2026-10-31: the Signal's four items were all apple.com pages about one
+    launch event, because the walk ranks by score alone."""
+    from types import SimpleNamespace
+    rows = [HEADER]
+    for title, score, site in [("macbook", 9.5, "www.apple.com"),
+                               ("imac", 9.4, "www.apple.com"),
+                               ("m6", 9.3, "www.apple.com"),
+                               ("display", 9.2, "www.apple.com"),
+                               ("chrome-fix", 8.0, "www.bleepingcomputer.com"),
+                               ("free-tool", 7.5, "github.com")]:
+        row = sheet_row(title, score, beat="computing")
+        row[COL["url"]] = f"https://{site}/{title}"
+        rows.append(row)
+    monkeypatch.setattr(draft, "fetch_article", lambda url: ("text", "", None))
+    monkeypatch.setattr(draft, "resolve_paper", lambda page: (None, None))
+    args = SimpleNamespace(evergreen=None, url=None, row=None, run=False,
+                           dry_run=True)
+
+    taken = [c["item"]["title"]
+             for c in draft.settled_candidates(args, rows, COL, None, {}, 4)]
+    assert taken == ["macbook", "imac", "chrome-fix", "free-tool"]
+
+
 def test_a_row_named_by_hand_ignores_the_preference():
     rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
             sheet_row("agents", 9.5, beat="ai")]
@@ -436,6 +460,23 @@ def drop_reply(**over):
 def drop_item(url="https://openai.com/index/a-launch"):
     return {"url": url, "source": "OpenAI", "title": "A launch",
             "summary": "A launch."}
+
+
+@pytest.mark.parametrize("post_type, steps, kept", [
+    ("drop", "Update  Chrome to 157.", "Update Chrome to 157."),
+    ("drop", "  ", None),          # the source gives no step: no slide
+    ("run", "Update Chrome to 157.", None),   # try_it is a run's action slide
+])
+def test_what_to_do_is_kept_only_on_a_drop_that_has_a_step(post_type, steps,
+                                                            kept):
+    """2026-11-05: a step the source does not give is a false claim on the
+    slide a reader acts on, so "" leaves the slide out rather than empty."""
+    run = ({"try_it": "Needs a GPU."} if post_type == "run" else {})
+    item = drop_item() | ({"summary": "Code: https://github.com/a/b"}
+                          if run else {})
+    post = draft.validate(drop_reply(post_type=post_type, what_to_do=steps,
+                                     **run), item, None)
+    assert post.get("what_to_do") == kept
 
 
 def test_a_launch_with_no_paper_is_an_announcement_not_a_preprint():

@@ -56,6 +56,7 @@ import html
 import json
 import re
 import sys
+from collections import Counter
 from collections.abc import Iterator
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -152,7 +153,8 @@ TITLE_TAG_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
 PROMPT = """You write posts for @gummietech, an Instagram account explaining \
 science, technology and engineering to a smart non-expert audience.
 
-Write a five-slide carousel about the item below. Return ONLY a JSON object, \
+Write a five-slide carousel about the item below (six when what_to_do is \
+not empty). Return ONLY a JSON object, \
 no prose and no code fences, with exactly these keys:
 
 {{
@@ -184,6 +186,15 @@ changes or makes possible, in plain words and no stronger than the text puts \
 it: what people can do or use if the text says so, otherwise what the \
 result shows. Concrete, never 'implications for the field', and never a use \
 the text does not name>",
+  "what_to_do": "<at most {word_limit} words, or an empty string. Only when \
+the text itself tells readers a concrete step to protect themselves or fix \
+something: update to a version it names, turn off a setting it names, change \
+a password, check for a sign it describes, avoid a message it describes. \
+Written as the step, plainly ('Update Chrome to version 157'), with every \
+version, setting and name exactly as the text gives them. Never a step the \
+text does not give, never general advice ('use strong passwords', 'stay \
+safe'), and never a step for a product the reader cannot get. If the text \
+gives no such step, return an empty string: the slide is left out>",
   "the_catch": "<at most {word_limit} words. A real limitation stated in the \
 source: sample size, conditions, what was not tested. For a company's or \
 project's own announcement: what the maker says it cannot do yet, where it \
@@ -443,6 +454,14 @@ def outlet(url: str) -> str:
 # with a 15-minute timeout, so the guard gives up rather than walking a queue
 # of 1440 rows. Five is enough for a story covered by every feed at once.
 MAX_DUPLICATE_SKIPS = 5
+
+# A Signal takes at most this many items from one site. The walk ranks by
+# score alone, and on 2026-10-31 all four items were apple.com pages about
+# one launch event; on 10-24 three of four were about Anthropic. A roundup
+# of one maker's press kit is not a roundup. The site is what code knows,
+# not the company: coverage of Anthropic on the-decoder.com counts as the
+# Decoder's. A row skipped here stays queued, and costs no fetch.
+SIGNAL_PER_SITE = 2
 
 
 # The account is tech-first: AI, software, automation, ML and robotics are
@@ -895,7 +914,8 @@ def finish(post: dict, order: list[str]) -> dict:
 
 
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
-             "what_happened", "try_it", "why_it_matters", "the_catch", "caption",
+             "what_happened", "try_it", "why_it_matters", "what_to_do",
+             "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
              "peer_reviewed", "announcement", "news_report", "beat"]
 
@@ -1029,6 +1049,14 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     if link := code_link(paper, item):
         post["code_url"] = link
 
+    # The step a reader can take, on its own slide — only a Drop has one, and
+    # only when the source states it. "" is the model's answer when it does
+    # not, and a Drop without the key is the five-slide Drop. A run post has
+    # its own action slide (try_it) and no room for a second.
+    steps = " ".join(str(post.pop("what_to_do", "") or "").split())
+    if steps and post.get("post_type") == "drop":
+        post["what_to_do"] = steps
+
     post.update(hook_choices(post))
     check_hooks(post)
     return finish(post, DROP_KEYS)
@@ -1142,6 +1170,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
     # names one, and naming one is the override.
     auto_evergreen = args.evergreen == 0
     found = 0
+    sites: Counter[str] = Counter()     # items taken per site, SIGNAL_PER_SITE
 
     while found < wanted:
         row_number = None
@@ -1162,6 +1191,12 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                           f"with {found} items instead of {wanted}")
                     return
                 raise
+            site = outlet(item["url"])
+            if wanted > 1 and sites[site] >= SIGNAL_PER_SITE:
+                print(f"  skipping row {row_number}: the Signal already has "
+                      f"{SIGNAL_PER_SITE} items from {site}")
+                skipped.add(row_number)
+                continue
 
         where = f"row {row_number}" if row_number else item["source"]
         print(f"{'Item ' + str(found + 1) if wanted > 1 else 'Drafting'} "
@@ -1242,6 +1277,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         if not covered:
             yield settled
             found += 1
+            sites[outlet(item["url"])] += 1
             # Taken, not rejected: it must not come back on the next pass of
             # a Signal, and it is not a duplicate so it does not count as one.
             if row_number is not None:

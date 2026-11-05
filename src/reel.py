@@ -128,7 +128,7 @@ def ffmpeg() -> str:
     return found
 
 
-def check_scenes(page, report: Report) -> list[float]:
+def check_scenes(page, report: Report, expected: int) -> list[float]:
     """Each scene's slide, settled, must sit inside the safe zone.
 
     Measured at the last moment of the scene, when its slide has landed and
@@ -148,19 +148,20 @@ def check_scenes(page, report: Report) -> list[float]:
                          f"{SAFE_BOTTOM}")
         if box["left"] < 0 or box["right"] > REEL_W:
             report.block(f"scene {i + 1}", "slide runs off the side of the frame")
-    if len(starts) != 5:
-        report.block("template", f"{len(starts)} scene(s); a Drop reel has 5")
+    if len(starts) != expected:
+        report.block("template", f"{len(starts)} scene(s); this Drop has "
+                                 f"{expected} slides")
     return ends
 
 
-def capture(html: str, outdir: Path, flagged: bool) -> Report:
+def capture(html: str, outdir: Path, flagged: bool, scenes: int) -> Report:
     report = Report()
     encoder = ffmpeg()
     video, cover = outdir / VIDEO, outdir / COVER
 
     with open_page(html, size=(REEL_W, REEL_H)) as page:
         length = page.evaluate(PAUSE)
-        ends = check_scenes(page, report)
+        ends = check_scenes(page, report, scenes)
         loop = page.evaluate("window.__backdropLoop || 0")
         stretch = max(1, round(length / loop)) * loop / length if loop else 1
 
@@ -249,7 +250,11 @@ def main() -> int:
 
     print(f"Rendering the reel for {path.name} → {shown(outdir)}")
     flagged = post_preprint_flag(post)
-    report = capture(render_html(post, template=TEMPLATE), outdir, flagged)
+    # One scene per slide: five, or six with a What to do slide, which
+    # reel.html times the same way (2026-11-05).
+    scenes = 6 if post.get("what_to_do") else 5
+    report = capture(render_html(post, template=TEMPLATE), outdir, flagged,
+                     scenes)
 
     text = report.render()
     (outdir / REPORT).write_text(text + "\n")
