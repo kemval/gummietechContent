@@ -36,5 +36,8 @@
     "the_catch": "Apple realizó las pruebas por sí misma, y ambas cifras son resultados \"hasta\": el factor de 5 veces se refiere a la comparación con la M4, y el factor de 18 veces a la comparación con el iMac de Intel más popular.",
     "_en": "6f912f390cd8c69b"
   },
-  "published_at": "2026-11-02"
+  "published_at": "2026-11-02",
+  "metrics": {
+    "asked_at": "2026-11-05"
+  }
 }
