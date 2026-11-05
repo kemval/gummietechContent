@@ -292,6 +292,14 @@ An already-covered story is a **BLOCK**, and the only one that is not about
 the post being wrong: every claim can be true and it still must not go out.
 Name the file that already covers it.
 
+**A post that builds on a published post is not a duplicate of it.** A
+Breakdown explains a published Drop (`weekly.subject()` picks it, by design,
+the day after if need be), a term names its `example_post`, a reference its
+`source_post`. Sharing that post's source, attribution or subject is the
+point. For these, only another post **of the same `post_type`** on the same
+paper or source URL is already-covered: a second Breakdown of one Drop, not
+the Breakdown of a Drop.
+
 ## Report
 
 **The first line of the report is the verdict, alone, in exactly this form:**
