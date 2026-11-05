@@ -283,6 +283,9 @@ Relaunch to install version 157", which is the article's own instruction.
 The six slides passed `proof.py` but for the empty catch, which is the
 existing hold.
 
-Not done: the reel. Its five scenes are timed in CSS and were approved by
-eye, so `reel.py` refuses a Drop with the slide instead of animating a sixth
-untimed.
+The reel takes it as a sixth scene, timed exactly as the other five: the
+same `--scene` (3.5s), the same fade and rise, the cover's return moved one
+scene later (`--scenes` on the stage). Nothing the owner approved on the
+five-scene reel changed. The Chrome 157 draft rendered at 21.5s, passed
+every frame's safe-zone and flag checks, and its first and last frames
+match at 44 dB PSNR, so the loop has no seam.

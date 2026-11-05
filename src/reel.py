@@ -114,8 +114,7 @@ def latest() -> Path:
     for path in reversed(post_order()):
         post = json.loads(path.read_text())
         if (post.get("published_at") and not post.get("reel")
-                and format_name(post.get("post_type")) == "drop"
-                and not post.get("what_to_do")):
+                and format_name(post.get("post_type")) == "drop"):
             return path
     sys.exit("No published Drop is waiting for a reel. Name one with the "
              "post input, e.g. posts/2026-09-15-tides.json.")
@@ -129,7 +128,7 @@ def ffmpeg() -> str:
     return found
 
 
-def check_scenes(page, report: Report) -> list[float]:
+def check_scenes(page, report: Report, expected: int) -> list[float]:
     """Each scene's slide, settled, must sit inside the safe zone.
 
     Measured at the last moment of the scene, when its slide has landed and
@@ -149,19 +148,20 @@ def check_scenes(page, report: Report) -> list[float]:
                          f"{SAFE_BOTTOM}")
         if box["left"] < 0 or box["right"] > REEL_W:
             report.block(f"scene {i + 1}", "slide runs off the side of the frame")
-    if len(starts) != 5:
-        report.block("template", f"{len(starts)} scene(s); a Drop reel has 5")
+    if len(starts) != expected:
+        report.block("template", f"{len(starts)} scene(s); this Drop has "
+                                 f"{expected} slides")
     return ends
 
 
-def capture(html: str, outdir: Path, flagged: bool) -> Report:
+def capture(html: str, outdir: Path, flagged: bool, scenes: int) -> Report:
     report = Report()
     encoder = ffmpeg()
     video, cover = outdir / VIDEO, outdir / COVER
 
     with open_page(html, size=(REEL_W, REEL_H)) as page:
         length = page.evaluate(PAUSE)
-        ends = check_scenes(page, report)
+        ends = check_scenes(page, report, scenes)
         loop = page.evaluate("window.__backdropLoop || 0")
         stretch = max(1, round(length / loop)) * loop / length if loop else 1
 
@@ -237,13 +237,6 @@ def main() -> int:
     if format_name(post.get("post_type")) != "drop":
         sys.exit(f"{path.name} is a {post.get('post_type')}; only a Drop has "
                  f"a reel so far.")
-    # reel.html's choreography is five scenes, timed slide by slide in CSS
-    # (nth-child 1-5) and approved by eye; a sixth slide would swipe in
-    # untimed over the catch. Refused until a six-scene reel is designed.
-    if post.get("what_to_do"):
-        sys.exit(f"{path.name} has a What to do slide, so it is six slides, "
-                 f"and the reel is choreographed for five. Post the carousel "
-                 f"only, or design a six-scene reel.html first.")
     if not post.get("published_at") and not args.draft:
         sys.exit(f"{path.name} has no published_at. A reel repeats claims the "
                  f"gate already approved, so it waits for the carousel to go "
@@ -257,7 +250,11 @@ def main() -> int:
 
     print(f"Rendering the reel for {path.name} → {shown(outdir)}")
     flagged = post_preprint_flag(post)
-    report = capture(render_html(post, template=TEMPLATE), outdir, flagged)
+    # One scene per slide: five, or six with a What to do slide, which
+    # reel.html times the same way (2026-11-05).
+    scenes = 6 if post.get("what_to_do") else 5
+    report = capture(render_html(post, template=TEMPLATE), outdir, flagged,
+                     scenes)
 
     text = report.render()
     (outdir / REPORT).write_text(text + "\n")

@@ -8,7 +8,7 @@
 
 /* ============================================================
    The Drop reel — 1080x1920 (9:16). The same five slides as the
-   carousel, from the same partial, swiped through one at a time.
+   carousel (six with a What to do slide; --scenes says which), from the same partial, swiped through one at a time.
    Rendered frame by frame by src/reel.py, which reads the reel's
    length off these animations: the template owns how long the
    reel is, as it owns how many slides a post has.
@@ -63,14 +63,18 @@ body { background: var(--ink); }
   animation-delay: var(--t), calc(var(--t) + var(--scene) - var(--enter) * .6);
 }
 
-/* When each scene starts. Slide 1 is on screen from the first frame. */
-.stage > .backdrop.slide:nth-of-type(1) { --t: 0s; animation: none; }
+/* When each scene starts. Slide 1 is on screen from the first frame. The
+   backdrops carry their own --t inline (the loop below writes them), so
+   only the slides, which come from drop_slides.html, are timed here. A
+   sixth rule is inert on a five-slide Drop. */
+.stage > .backdrop.slide:nth-of-type(1) { animation: none; }
 /* on from frame 0 (a zero-length fade-in keeps reel.py's scene start at 0) */
 .card > .slide:nth-child(1) { --t: 0s; animation-duration: 0s, calc(var(--enter) * .6); }
-.stage > .backdrop.slide:nth-of-type(2), .card > .slide:nth-child(2) { --t: calc(var(--scene) * 1); }
-.stage > .backdrop.slide:nth-of-type(3), .card > .slide:nth-child(3) { --t: calc(var(--scene) * 2); }
-.stage > .backdrop.slide:nth-of-type(4), .card > .slide:nth-child(4) { --t: calc(var(--scene) * 3); }
-.stage > .backdrop.slide:nth-of-type(5), .card > .slide:nth-child(5) { --t: calc(var(--scene) * 4); }
+.card > .slide:nth-child(2) { --t: calc(var(--scene) * 1); }
+.card > .slide:nth-child(3) { --t: calc(var(--scene) * 2); }
+.card > .slide:nth-child(4) { --t: calc(var(--scene) * 3); }
+.card > .slide:nth-child(5) { --t: calc(var(--scene) * 4); }
+.card > .slide:nth-child(6) { --t: calc(var(--scene) * 5); }
 .stage > .backdrop.slide { animation-delay: var(--t); }
 
 /* The words rise in just after their slide lands. */
@@ -118,29 +122,28 @@ body { background: var(--ink); }
    ends the moment it lands, so its last frame is its first and Instagram's
    replay has no seam. It is a clone of slide 1 made in the page (see the
    script below), so it cannot say anything the cover does not; it is not a
-   `.card > .slide`, so reel.py still counts five scenes. Its box stays
+   `.card > .slide`, so reel.py still counts five (or six) scenes. Its box stays
    undrawn, as it is on frame 0. */
 .card > .loop {
   position: absolute; inset: 0;
   animation: fade-in var(--enter) ease-out both;
-  animation-delay: calc(var(--scene) * 5);
+  animation-delay: calc(var(--scene) * var(--scenes));
 }
 .card > .loop > .slide { position: absolute; top: 0; left: 0; }
 .card > .loop .sel :is(.box, .h) { visibility: hidden; }
-.stage > .backdrop.slide:nth-of-type(6) { --t: calc(var(--scene) * 5); }
 /* Except the hook's: a reel autoplays from its first frame, and a viewer
    deciding whether to stop scrolling must see the hook on it, not an
    empty card. The cover's whole face is there from frame 0 — the hook is
    not animated on it, and its spec row and figure never were. */
 
 /* Not decoration: the one animation that spans the whole reel, so its end
-   is the reel's length — five scenes, then the cover's return, ending on
+   is the reel's length — every scene, then the cover's return, ending on
    the frame it lands. The extra 0.05s is one frame at 30fps: reel.py's
    last frame falls up to a frame before the end, and without it the cover
    was 17ms short of landing, so the loop visibly jumped. */
 .clock {
   position: absolute; width: 1px; height: 1px; opacity: 0;
-  animation: hold calc(var(--scene) * 5 + var(--enter) + 0.05s) linear both;
+  animation: hold calc(var(--scene) * var(--scenes) + var(--enter) + 0.05s) linear both;
 }
 
 /* The preprint flag for the whole reel, not just the catch scene: in a
@@ -175,10 +178,13 @@ body { background: var(--ink); }
 </style>
 </head>
 <body style="--lead: var(--{{ lead }})" data-palette="{{ lead }} {{ support }}">
-<div class="stage">
-  {% set scenes = rhythm(5) %}
-  {% for field in scenes %}<div class="backdrop slide {{ field }}"></div>{% endfor %}
-  <div class="backdrop slide {{ scenes[0] }}"></div>
+{# As many scenes as drop_slides.html has slides: five, or six when the
+   source says what to do. Same rule, same place to read it. #}
+{% set n = 6 if (what_to_do is defined and what_to_do) else 5 %}
+<div class="stage" style="--scenes: {{ n }}">
+  {% set scenes = rhythm(n) %}
+  {% for field in scenes %}<div class="backdrop slide {{ field }}" style="--t: calc(var(--scene) * {{ loop.index0 }})"></div>{% endfor %}
+  <div class="backdrop slide {{ scenes[0] }}" style="--t: calc(var(--scene) * {{ n }})"></div>
   <div class="card">
 {% include 'drop_slides.html' %}
     <div class="loop" aria-hidden="true"></div>
