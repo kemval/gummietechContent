@@ -1,0 +1,49 @@
+{
+  "post_type": "breakdown",
+  "domain": "edge AI",
+  "colorway": "ember",
+  "hook": "A game on a tiny chip exists only as a neural net's guess.",
+  "the_question": "On a Raspberry Pi Pico 2 W, one tiny network predicts each next game frame while a second network plays it.",
+  "the_intuition": "The common guess: a chip this small must run an ordinary game program, with the networks only watching.",
+  "mechanism": [
+    "The world model takes a frame and an action, then predicts the next frame and a reward. One transformer block is reused twice on the Pico.",
+    "The author says one global choice for the ball, so exactly one exists, lifted Breakout's exact frames from 91.6% to 99.7%.",
+    "The actor sees only dreamed frames. The author says a Breakout agent scored 154 in the dream with 26 bricks left."
+  ],
+  "why_it_matters": "The author says each round of collecting real play and fine-tuning closed one exploit in the dream.",
+  "the_catch": "The maker's own project, not a study. The author says the frame rate on the Pico itself is not measured yet.",
+  "caption": "A Raspberry Pi Pico 2 W runs two tiny neural networks: one predicts each game frame, the other plays what it predicts. SheepSeb says the world model's exact-frame accuracy on held-out frames ranges from 83.6% to 100% across five games. Would you rather play a real game or a dreamed one?",
+  "keywords": [
+    "world model",
+    "looped transformer",
+    "Raspberry Pi Pico",
+    "edge AI"
+  ],
+  "hashtags": [
+    "#edgeai",
+    "#tinyml",
+    "#pico",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how a Raspberry Pi Pico 2 W runs a game that exists only as a neural network's prediction: a looped transformer predicts each next frame, a second small network plays it, and the author's own notes list the exploits the player found in the dream.",
+  "source_url": "https://github.com/SheepSeb/tinyworldformer",
+  "attribution": "SheepSeb",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "ia en el borde",
+    "hook": "Un juego en un chip diminuto solo existe como una suposición de la red neuronal",
+    "the_question": "En una Raspberry Pi Pico 2 W, una red diminuta predice cada fotograma siguiente del juego mientras otra red lo juega",
+    "the_intuition": "La suposición habitual: un chip tan pequeño debe ejecutar un programa de juego convencional, y las redes solo lo observan",
+    "mechanism": [
+      "Modelo del mundo: el modelo del mundo toma un fotograma y una acción, y predice el fotograma siguiente y una recompensa. Un bloque transformer se reutiliza dos veces en la Pico.",
+      "Elección global: el autor indica que hay una única decisión global para la pelota, de modo que solo existe una, lo que elevó la precisión de los fotogramas exactos de Breakout del 91,6 % al 99,7 %.",
+      "Actor: el actor solo ve fotogramas soñados. El autor indica que un agente de Breakout obtuvo 154 puntos en el sueño, con 26 ladrillos restantes."
+    ],
+    "why_it_matters": "El autor afirma que cada ronda de recopilación de juego real y ajuste fino cerró una explotación en el sueño",
+    "the_catch": "Es el propio proyecto del creador, no un estudio. El autor indica que la velocidad de fotogramas en la propia Pico aún no se ha medido.",
+    "_en": "72a8e88ce611e4c6"
+  }
+}
