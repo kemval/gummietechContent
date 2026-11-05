@@ -114,7 +114,8 @@ def latest() -> Path:
     for path in reversed(post_order()):
         post = json.loads(path.read_text())
         if (post.get("published_at") and not post.get("reel")
-                and format_name(post.get("post_type")) == "drop"):
+                and format_name(post.get("post_type")) == "drop"
+                and not post.get("what_to_do")):
             return path
     sys.exit("No published Drop is waiting for a reel. Name one with the "
              "post input, e.g. posts/2026-09-15-tides.json.")
@@ -236,6 +237,13 @@ def main() -> int:
     if format_name(post.get("post_type")) != "drop":
         sys.exit(f"{path.name} is a {post.get('post_type')}; only a Drop has "
                  f"a reel so far.")
+    # reel.html's choreography is five scenes, timed slide by slide in CSS
+    # (nth-child 1-5) and approved by eye; a sixth slide would swipe in
+    # untimed over the catch. Refused until a six-scene reel is designed.
+    if post.get("what_to_do"):
+        sys.exit(f"{path.name} has a What to do slide, so it is six slides, "
+                 f"and the reel is choreographed for five. Post the carousel "
+                 f"only, or design a six-scene reel.html first.")
     if not post.get("published_at") and not args.draft:
         sys.exit(f"{path.name} has no published_at. A reel repeats claims the "
                  f"gate already approved, so it waits for the carousel to go "

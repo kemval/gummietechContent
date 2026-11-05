@@ -1,21 +1,24 @@
-{# The Drop's five slides, without the document around them. Shared by
+{# The Drop's slides, without the document around them. Shared by
    drop.html (the carousel) and reel.html (the same slides, animated), so a
    reel cannot say anything its carousel does not. #}
-{# Five slides, and render.py's rhythm() says what colour each one goes in.
-   The count lives here because this file is what has the divs; the rule
-   lives there because every format shares it. #}
+{# Five slides, or six when the source tells readers what to do
+   (`what_to_do`, formats.py), and render.py's rhythm() says what colour
+   each one goes in. The count lives here because this file is what has the
+   divs; the rule lives there because every format shares it. #}
 {% import 'slide_parts.html' as parts with context %}
-{% set fields = rhythm(5) %}
+{% set has_steps = what_to_do is defined and what_to_do %}
+{% set n = 6 if has_steps else 5 %}
+{% set fields = rhythm(n) %}
 
 <!-- 1. HOOK -->
-{{ parts.cover("drop", 5, fields[0], [
+{{ parts.cover("drop", n, fields[0], [
      ("domain", domain, false),
      ("status", parts.status(), true),
      ("source", attribution, false)]) }}
 
 <!-- 2. WHAT HAPPENED -->
 <div class="slide {{ fields[1] }}" id="slide-2"><div class="frame">
-  {{ parts.corners("drop", 2, 5, domain) }}
+  {{ parts.corners("drop", 2, n, domain) }}
   {% if keywords %}<div class="cloud" aria-hidden="true" data-words="{{ keywords|join('|') }}" data-seed="{{ hook }}"></div>{% endif %}
   <div class="body">
     {{ parts.sec(1, t("What happened", "Qué pasó")) }}
@@ -26,7 +29,7 @@
 <!-- 3. WHY IT MATTERS — text from the top, the ghost word below it, so the
      middle of the post does not repeat one layout three times. -->
 <div class="slide {{ fields[2] }}" id="slide-3"><div class="frame">
-  {{ parts.corners("drop", 3, 5, domain) }}
+  {{ parts.corners("drop", 3, n, domain) }}
   <div class="body top">
     {{ parts.sec(2, t("Why it matters", "Por qué importa")) }}
     <p class="text">{{ parts.boxed(why_it_matters) }}</p>
@@ -34,8 +37,21 @@
   <div class="giant ghost" aria-hidden="true" data-anchor="bottom">(why)</div>
 </div></div>
 
-<!-- 4. THE CATCH -->
-{{ parts.catch("drop", 4, 5, fields[3], 3, t("The catch", "El detalle")) }}
+{% if has_steps %}
+<!-- 4. WHAT TO DO — the ghost above the text this time, as run.html's
+     fourth slide does, so slides 3 and 4 do not share a layout. -->
+<div class="slide {{ fields[3] }}" id="slide-4"><div class="frame">
+  {{ parts.corners("drop", 4, n, domain) }}
+  <div class="giant ghost" aria-hidden="true" data-anchor="top">(do)</div>
+  <div class="body">
+    {{ parts.sec(3, t("What to do", "Qué hacer")) }}
+    <p class="text">{{ what_to_do|typeset }}</p>
+  </div>
+</div></div>
+{% endif %}
 
-<!-- 5. CTA + SOURCE -->
-{{ parts.follow("drop", 5, fields[4], [("source", attribution), ("code", code_url)]) }}
+<!-- THE CATCH -->
+{{ parts.catch("drop", n - 1, n, fields[n - 2], n - 2, t("The catch", "El detalle")) }}
+
+<!-- CTA + SOURCE -->
+{{ parts.follow("drop", n, fields[n - 1], [("source", attribution), ("code", code_url)]) }}

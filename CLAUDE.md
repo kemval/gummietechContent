@@ -312,7 +312,8 @@ labels, the same fonts at `font-display: swap`. The type stack lives in
 `COLORWAYS` in `src/render.py` is the single source of truth; address
 colour by role (`--field`, `--on-field`, `--frame`, `--flag-bg`/`--flag-fg`),
 never hardcode a hue in a template. A Drop renders
-`lead · cream · support · dark · lead`. Since 2026-10-17 each family is a
+`lead · cream · support · dark · lead`, or with a What to do slide
+`lead · cream · support · lead · dark · lead`. Since 2026-10-17 each family is a
 tech subject, so the grid varies by topic; `vary()` handles collisions:
 
 | family | topics | lead | support |
@@ -337,7 +338,9 @@ captured frame by frame through the Web Animations API, ffmpeg apt-installed,
 slides kept inside `SAFE_TOP`/`SAFE_BOTTOM`, preprint flag checked on every
 frame. Audio is never added. The selection box draws itself, the catch's
 diff strikes its figure, and the cover swipes back in so the reel loops —
-animated elements are real ones, never `::before`. The Build's cover and
+animated elements are real ones, never `::before`. Five scenes, timed in
+CSS: a Drop with a What to do slide is refused until a six-scene reel is
+designed. The Build's cover and
 cards come from `src/build_kit.py`; its reel is still a person's.
 → `docs/decisions/rendering.md`
 
@@ -396,6 +399,12 @@ does not state. A source that cannot be read is a hold, not a pass.
   states no limitation, instead of inventing one. It renders a held slide,
   `proof.py` BLOCKs it, and the fact-check's replacement is what **Apply the
   fixes** writes in (`formats.UNSTATED`). A missing key is still refused.
+- A Drop may carry `what_to_do` (2026-11-05): the step the source tells
+  readers to take — update to a named version, turn a setting off — on its
+  own slide before the catch, so six slides. Only when the source states it:
+  the model returns `""` otherwise and `draft.validate()` drops the key, so
+  the Drop stays five. The fact-check BLOCKs a step the source does not
+  give (its §7e). Not on a run post, and no reel yet (`reel.py` refuses it).
 - When `peer_reviewed` is false the template must show the
   "Preprint — not yet peer-reviewed" flag, enforced in code — **unless**
   `"announcement": true`: a maker's own launch with no study behind it,

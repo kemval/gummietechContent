@@ -132,9 +132,19 @@ LADDER = (
 # item or they are wrong. It also has no catch: the dark slide is where a
 # post's caveat goes, and a roundup has five of them or none.
 FORMATS: dict[str, Format] = {
+    # `what_to_do` (2026-11-05) is the step the source tells readers to take
+    # — update to a named version, turn a setting off, change a password —
+    # on its own slide before the catch. Only when the source states one:
+    # draft.py drops it when the model returns "", and a Drop without it is
+    # the five slides it always was. The owner asked for security news that
+    # says what to do; a step the source does not give is a false claim on
+    # the one slide a reader acts on, so the fact-check checks it word for
+    # word against the source.
     "drop": Format("drop.html", (
         Section("what_happened",  "What happened",  "Qué pasó"),
         Section("why_it_matters", "Why it matters", "Por qué importa"),
+        Section("what_to_do",     "What to do",     "Qué hacer",
+                optional=True),
         Section("the_catch",      "The catch",      "El detalle"),
     ), en="Drop", es="Drop"),
     "breakdown": Format("breakdown.html", (

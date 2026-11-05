@@ -205,6 +205,23 @@ Hugging Face) and quote the line that supports each requirement.
   a **BLOCK**: a reader acts on this slide with their own money and time.
 - A README that cannot be read is `UNVERIFIED` for `try_it`, like any source.
 
+### 7e. A Drop with `what_to_do`: the step must be the source's
+
+A Drop may carry `what_to_do`, its own slide before the catch: the step the
+source tells readers to take (update to a version, turn off a setting, change
+a password). Quote the source line that gives each step.
+
+- **A version, setting, product or step the source does not name is a
+  BLOCK**, as an unsupported claim is — and a wrong one is worse than
+  elsewhere: a reader acts on this slide, on their own device. "Update to
+  157" when the source says 157.0.7650 or later is a FIX with the exact
+  figure.
+- **General advice the source does not give** ("use strong passwords",
+  "stay safe online") is a **BLOCK**: it is the model's, not the source's.
+- **A step the source gives that the slide leaves out**, when it is the one
+  that protects the reader (the fixed version, the setting), is a FIX.
+- The replacement must fit `render.py --budget`, like every replacement.
+
 ### 7c. A glossary term: check `example_post`
 
 A `post_type: "term"` post defines one word and shows it in a post this

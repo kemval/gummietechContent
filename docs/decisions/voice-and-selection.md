@@ -259,3 +259,30 @@ so coverage of a maker on a news site counts as that site's.
 takes the top score, so a run of breach stories is possible. Watch the
 next two weeks; if every Drop is a breach, the place to fix it is the
 pick, not the score.
+
+## What to do, on its own slide (2026-11-05)
+
+The same day, the owner asked that a security Drop say what to do. It is an
+optional `what_to_do` section of the Drop (`formats.py`), not a new
+`post_type`: everything that reads the table (word budget, translation,
+archive, gate) picked it up unchanged, and a new type would have meant a new
+archive filter and a second answer to "was today's Drop drafted". The slide
+goes before the catch, so the catch stays second to last and dark, and the
+rhythm is `rhythm(6)`, the one `run.html` already uses.
+
+It exists only when the source states a step. The prompt asks for `""`
+otherwise and `draft.validate()` drops the key, rather than holding an empty
+slide the way an empty catch is held: a Drop without a step is a whole post,
+and a step the source does not give is the worst claim this account could
+make, on the slide a reader acts on with their own device. The fact-check's
+§7e BLOCKs one.
+
+Tried on Malwarebytes' "Chrome 157 fixes 213 security issues" on Groq: the
+step came back as "Open Chrome Settings → About Google Chrome and click
+Relaunch to install version 157", which is the article's own instruction.
+The six slides passed `proof.py` but for the empty catch, which is the
+existing hold.
+
+Not done: the reel. Its five scenes are timed in CSS and were approved by
+eye, so `reel.py` refuses a Drop with the slide instead of animating a sixth
+untimed.

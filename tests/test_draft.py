@@ -462,6 +462,23 @@ def drop_item(url="https://openai.com/index/a-launch"):
             "summary": "A launch."}
 
 
+@pytest.mark.parametrize("post_type, steps, kept", [
+    ("drop", "Update  Chrome to 157.", "Update Chrome to 157."),
+    ("drop", "  ", None),          # the source gives no step: no slide
+    ("run", "Update Chrome to 157.", None),   # try_it is a run's action slide
+])
+def test_what_to_do_is_kept_only_on_a_drop_that_has_a_step(post_type, steps,
+                                                            kept):
+    """2026-11-05: a step the source does not give is a false claim on the
+    slide a reader acts on, so "" leaves the slide out rather than empty."""
+    run = ({"try_it": "Needs a GPU."} if post_type == "run" else {})
+    item = drop_item() | ({"summary": "Code: https://github.com/a/b"}
+                          if run else {})
+    post = draft.validate(drop_reply(post_type=post_type, what_to_do=steps,
+                                     **run), item, None)
+    assert post.get("what_to_do") == kept
+
+
 def test_a_launch_with_no_paper_is_an_announcement_not_a_preprint():
     post = draft.validate(drop_reply(), drop_item(), None)
     assert post["announcement"] is True and post["peer_reviewed"] is False
