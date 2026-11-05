@@ -16,7 +16,7 @@ feedparser==6.0.14
     # via -r requirements.in
 feedparser-sgmllib==2.1.0
     # via feedparser
-google-auth==2.61.0
+google-auth==2.62.0
     # via
     #   -r requirements.in
     #   google-auth-oauthlib
@@ -37,7 +37,7 @@ markupsafe==3.0.4
     #   jinja2
 oauthlib==4.0.0
     # via requests-oauthlib
-playwright==1.63.0
+playwright==1.64.1
     # via -r requirements.in
 pyasn1==0.6.4
     # via pyasn1-modules
