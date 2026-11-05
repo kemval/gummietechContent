@@ -240,6 +240,33 @@ feeds:
     announces: [cohere.com/blog/]
     max_items: 10
 
+  # --- security: what to patch, what to avoid ---
+  #
+  # Added 2026-11-05, when the owner asked for news a reader can act on.
+  # Until then nothing in feeds/ was about security, so a fix to install or
+  # a scam going around could not reach the queue. `reports` measured from
+  # each feed's own item links that day (15/15, 10/10, 20/20). Google's
+  # Online Security Blog was considered: its newest item was 195 days old.
+  # CISA's advisories feed answers 403 to verify_feeds.HEADERS.
+  - name: BleepingComputer
+    url: https://www.bleepingcomputer.com/feed/
+    topic: tech
+    reports: [bleepingcomputer.com/news/]
+
+  - name: Krebs on Security
+    url: https://krebsonsecurity.com/feed/
+    topic: tech
+    reports: [krebsonsecurity.com/]
+
+  # A security vendor's blog, written for consumers: "Chrome 157 fixes 213
+  # security issues", "The fake $750 Apple Cash reward". It reports on
+  # others' products, not its own, which is why it is `reports` and not
+  # `announces`.
+  - name: Malwarebytes Labs
+    url: https://www.malwarebytes.com/blog/feed/index.xml
+    topic: tech
+    reports: [malwarebytes.com/blog/]
+
   # --- journals / science press ---
 
   - name: Nature Materials

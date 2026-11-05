@@ -237,11 +237,14 @@ then `SECONDARY_BEATS` (quantum, space). Do not move either into the score.
 → `docs/decisions/tech-first.md`
 
 **Launches are news, and the voice is a doc.** `score.py` also asks for
-`relevance` (would someone who uses technology want this today?) — a lift,
+`relevance` (can someone who uses technology act on this — a fix to apply,
+a scam to avoid, a free tool to use? since 2026-11-05) — a lift,
 not a fifth axis: at `LIFT_AT` (8) it becomes the score, below it the mean
 of the four axes stands. Averaging it in was measured and gutted the queue.
 Funding, personnel news, drama, customer stories and capability-free
-marketing stay at 3 or below. How every post
+marketing stay at 3 or below, and a maker's own spec-sheet figures are
+marketing. A Signal takes at most `draft.SIGNAL_PER_SITE` (2) items from one
+site. How every post
 sounds lives in `docs/voice.md`, pasted into `draft.py`'s prompts and named
 in `weekly.py`'s brief. The prompt's fact rules outrank it. The three rules a
 word list can check — no dating words, and in a maker's release no "you"

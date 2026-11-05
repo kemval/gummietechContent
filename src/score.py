@@ -11,8 +11,9 @@ status and a one-line reason.
     explain      can a smart non-expert get it in 5 slides?
     surprise     does it violate an intuition? (the share driver)
 
-and separately on relevance — would someone who uses technology want to
-know it today? — which lifts an item at LIFT_AT or above (see overall()).
+and separately on relevance — can someone who uses technology act on it:
+patch, avoid, download, turn on? — which lifts an item at LIFT_AT or above
+(see overall()).
 
 It also names the item's `beat` (see BEATS) in the same call, so it costs
 no quota. draft.py reads it to put the account's priority subjects first
@@ -72,6 +73,15 @@ AXES = ["novelty", "visual", "explain", "surprise"]
 # `visual`, both cut the queue from 14-19 to 1-2 of 60 rows (the model gives
 # nearly everything 4-7) while moving almost no launch across THRESHOLD. See
 # docs/decisions/voice-and-selection.md.
+#
+# Since 2026-11-05 relevance asks "can the reader act on this?", not "would
+# they want to know it today?". The second question lifted makers' spec
+# sheets: of the 18 posts from 10-12 to 11-01, nine were a company's own
+# announcement ("Apple says iPhone Duo's inner screen is 50 percent
+# larger"), and the Signal of week 44 was four Apple pages. The owner asked
+# for news that is useful and can be applied — security fixes, free tools,
+# practical guides — so a maker's own figures are marketing unless the item
+# says what a person can now do.
 RELEVANCE = "relevance"
 LIFT_AT = 8
 
@@ -119,7 +129,8 @@ names: a material, a measurement or a lab result with no product, device \
 or industry it is for is science."""
 
 PROMPT = """You are the editorial filter for @gummietech, an Instagram account \
-that explains science, technology and engineering to a smart non-expert audience.
+that explains technology to a smart non-expert audience and favours what \
+they can use: security fixes, free tools, practical how-tos.
 
 Score each item below from 1 to 10 on four axes:
 
@@ -131,20 +142,33 @@ text-only by default. Text-only policy news scores low.
 - explain: can a smart non-expert understand the point in five slides?
 - surprise: does it violate an intuition? This is what makes people share.
 
-Then score relevance from 1 to 10, separately: would a curious person who \
-uses technology want to know this today?
-- 9-10: a launch or change that many people will use or hear about this \
-week — a major AI model, a feature in a product millions use, a change to a \
-browser, phone or operating system.
-- 7-8: a release developers or enthusiasts will try or talk about.
-- 4-6: interesting, but only to one field.
+Then score relevance from 1 to 10, separately: can a person who uses \
+technology act on this — do, change, protect or decide something — after \
+reading it?
+- 9-10: something many people should act on now: a security flaw in \
+software, a device or a service many people use, with a fix or a step to \
+take; a scam or attack going around and how to avoid it; a free tool, app \
+or open model people can download and use today, and the item says what it \
+does; a setting or feature in a phone, browser, operating system or app \
+millions use that people can turn on or off.
+- 7-8: something developers or enthusiasts can try or apply: an open-source \
+tool, library or model release with a concrete use; a practical guide or \
+technique for a specific tool; a widely used AI model or product people can \
+use now, when the item says what changed for its users.
+- 4-6: interesting, but nothing for the reader to do with it, or only for \
+one field.
 - 1-3: customer stories ("how X uses our product"), partnerships, \
 marketing, policy positions, and anything in the list below.
 
 A launch of a model, product feature or tool that people can use is news: \
-score it on what it can do, as long as the item states a concrete \
-capability. A release that publishes how it works — a technical report, a \
-paper, a method or an architecture — scores on what it shows.
+score it on what people can now do with it, as long as the item states a \
+concrete capability. A maker's own figures about its product — faster, \
+brighter, bigger, more parameters, a benchmark it ran itself — are not a \
+capability on their own: a new phone, laptop or chip described by its spec \
+sheet, or a model described by its size and scores, is marketing unless the \
+item also says what a person can now do that they could not before. A \
+release that publishes how it works — a technical report, a paper, a method \
+or an architecture — scores on what it shows.
 
 Score 3 or below on every axis and on relevance for: funding rounds and \
 acquisitions, hiring, firings and personnel news, lawsuits and company \

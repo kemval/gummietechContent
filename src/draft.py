@@ -56,6 +56,7 @@ import html
 import json
 import re
 import sys
+from collections import Counter
 from collections.abc import Iterator
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -443,6 +444,14 @@ def outlet(url: str) -> str:
 # with a 15-minute timeout, so the guard gives up rather than walking a queue
 # of 1440 rows. Five is enough for a story covered by every feed at once.
 MAX_DUPLICATE_SKIPS = 5
+
+# A Signal takes at most this many items from one site. The walk ranks by
+# score alone, and on 2026-10-31 all four items were apple.com pages about
+# one launch event; on 10-24 three of four were about Anthropic. A roundup
+# of one maker's press kit is not a roundup. The site is what code knows,
+# not the company: coverage of Anthropic on the-decoder.com counts as the
+# Decoder's. A row skipped here stays queued, and costs no fetch.
+SIGNAL_PER_SITE = 2
 
 
 # The account is tech-first: AI, software, automation, ML and robotics are
@@ -1142,6 +1151,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
     # names one, and naming one is the override.
     auto_evergreen = args.evergreen == 0
     found = 0
+    sites: Counter[str] = Counter()     # items taken per site, SIGNAL_PER_SITE
 
     while found < wanted:
         row_number = None
@@ -1162,6 +1172,12 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                           f"with {found} items instead of {wanted}")
                     return
                 raise
+            site = outlet(item["url"])
+            if wanted > 1 and sites[site] >= SIGNAL_PER_SITE:
+                print(f"  skipping row {row_number}: the Signal already has "
+                      f"{SIGNAL_PER_SITE} items from {site}")
+                skipped.add(row_number)
+                continue
 
         where = f"row {row_number}" if row_number else item["source"]
         print(f"{'Item ' + str(found + 1) if wanted > 1 else 'Drafting'} "
@@ -1242,6 +1258,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         if not covered:
             yield settled
             found += 1
+            sites[outlet(item["url"])] += 1
             # Taken, not rejected: it must not come back on the next pass of
             # a Signal, and it is not a duplicate so it does not count as one.
             if row_number is not None:

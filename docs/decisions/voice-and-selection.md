@@ -207,3 +207,55 @@ command that restores it, rather than drafting in no voice at all.
 `learn.py`. Saves and shares on Drops drafted after 2026-10-07 against the
 ones before. If launches drag the numbers down, the threshold or the
 relevance wording is the thing to change, not the voice file.
+
+## Useful over newsworthy (2026-11-05)
+
+**What prompted it.** The owner said the posts no longer felt relevant or
+useful. The posts agreed: of the 18 published from 10-12 to 11-01, nine were
+a company's own announcement, several of them spec sheets ("Apple says
+iPhone Duo's inner screen is 50 percent larger", "Google says Gemini 4
+Carbon is its strongest model yet"). The Signal of week 44 was four
+apple.com pages about one event; week 43 was three items about Anthropic.
+Asked what they wanted instead, the owner named practical guides, security
+and free tools: "something relevant that can be applied and that helps".
+
+**Relevance asks whether the reader can act.** The question was "would a
+curious person who uses technology want to know this today?", and a launch
+event answers yes to it. It is now "can they do, change, protect or decide
+something after reading it?": 9-10 for a flaw with a fix to apply, a scam
+going around, a free tool or open model to download, a setting millions can
+turn on or off. A maker's own figures (faster, brighter, more parameters, a
+benchmark it ran) are marketing unless the item says what a person can now
+do. Still a lift at `LIFT_AT`, for the reasons above.
+
+**The feeds had nothing to act on.** No security source was wired in, so a
+patch to install could not reach the queue whatever the prompt said.
+Added: BleepingComputer, Krebs on Security and Malwarebytes Labs
+(`tier1_primary.yaml`, as `reports`), and Show HN at 100 points
+(`tier3_signal.yaml`) for free tools.
+
+**Measured before shipping**, on 56 real rows from the last five days plus
+the new feeds' current items, scored with both prompts in mixed batches
+(Gemini 3.5 Flash Lite, which overloaded partway and failed over to Groq
+`gpt-oss-120b`, so part of the run is the drafting model's):
+
+| prompt | queued | from the new feeds |
+|---|---|---|
+| "want to know today" | 13 of 56 | 3 |
+| "can act on it" | 14 of 56 | 10 |
+
+In: a Zyxel zero-day with its fix, a backdoored Linux web server, the fake
+Apple Cash reward scam, 1.3 million backdoored TV boxes, a tool that prices
+a pre-built PC part by part, an open speech model. Out: a gut-inspired
+biobattery, an aerogel, an MIT vaccination system, "Google wants video AI to
+understand what people need". The queue kept its size. Two arXiv robotics
+rows also rose past 7 on the axes, with relevance 2: noise, not the change.
+
+**A Signal takes at most `SIGNAL_PER_SITE` (2) items from one site**
+(`draft.settled_candidates`). The site is what code knows, not the company,
+so coverage of a maker on a news site counts as that site's.
+
+**The risk this leaves.** Security now scores highest, and `pick_row()`
+takes the top score, so a run of breach stories is possible. Watch the
+next two weeks; if every Drop is a breach, the place to fix it is the
+pick, not the score.

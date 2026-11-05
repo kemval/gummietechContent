@@ -278,7 +278,7 @@ Every item scored 1–10 on four axes, plus relevance, which can lift it. Only i
 - **Visual potential** — is there an image, diagram, or video? No visual = hard to post. A diagram of how a system works, a benchmark chart or a before/after of a model's output counts — software is not text-only by default.
 - **Explainability** — can a smart non-expert get it in 5 slides?
 - **Surprise** — does it violate an intuition? This is the share driver.
-- **Relevance** (a lift, not an axis) — would a curious person who uses technology want to know this today? At 8 or above it *is* the item's score; below, the mean of the four axes stands. It can raise a launch, never sink a finding.
+- **Relevance** (a lift, not an axis) — can a person who uses technology act on this: patch, avoid, download, turn on? (Since 2026-11-05; it asked "would they want to know this today?" before, which lifted makers' spec sheets.) At 8 or above it *is* the item's score; below, the mean of the four axes stands. It can raise a launch, never sink a finding.
 
 Reject automatically: funding rounds and acquisitions, hiring, firings and company drama, customer stories, opinion pieces, listicles, announcements that state no concrete capability, anything already covered by three or more large accounts. A release that publishes how it works — technical report, paper, method — scores on what it shows.
 
