@@ -10,7 +10,7 @@
   "what_happened": "D-Link shared mitigations for multiple unpatched DGS‑3130 switch flaws that could let attackers steal data, change configs, leak SNMP communities or cause resets.",
   "why_it_matters": "Attackers with access to the network could compromise these switches, which are designed mainly for small and midsize businesses, exposing data and disrupting service.",
   "what_to_do": "Disable DDP on the switches",
-  "the_catch": "No firmware patches are available yet and D-Link has not disclosed the CVE IDs for the flaws.",
+  "the_catch": "No firmware patch exists and no date is set. Only the DGS-3130-30TS is confirmed affected; D-Link is still checking other models.",
   "caption": "D-Link has uncovered multiple zero‑day vulnerabilities in its DGS‑3130 series switches that could let attackers steal data or reboot devices. Do you rely on DGS‑3130 switches?",
   "keywords": [
     "network",
@@ -31,11 +31,11 @@
   "beat": "computing",
   "es": {
     "domain": "seguridad de redes",
-    "hook": "Los conmutadores DGS‑3130 de D‑Link tienen varias vulnerabilidades de día cero.",
-    "what_happened": "D‑Link compartió mitigaciones para varias vulnerabilidades sin parchear en los conmutadores DGS‑3130, que podrían permitir a los atacantes robar datos, modificar configuraciones, filtrar comunidades SNMP o provocar reinicios.",
-    "why_it_matters": "Los atacantes que tengan acceso a la red podrían comprometer estos conmutadores, que están diseñados principalmente para pequeñas y medianas empresas, exponiendo datos y provocando interrupciones del servicio.",
-    "what_to_do": "Desactiva DDP en los conmutadores",
-    "the_catch": "Aún no hay parches de firmware disponibles y D‑Link no ha revelado los identificadores CVE de las vulnerabilidades.",
-    "_en": "a413329d1ef9760d"
+    "hook": "Los switches DGS-3130 de D-Link presentan varias vulnerabilidades de día cero",
+    "what_happened": "D-Link compartió mitigaciones para varias vulnerabilidades sin parchear en los switches DGS-3130 que podrían permitir a los atacantes robar datos, modificar configuraciones, filtrar comunidades SNMP o provocar reinicios",
+    "why_it_matters": "Los atacantes que tengan acceso a la red podrían comprometer estos switches, que están diseñados principalmente para pequeñas y medianas empresas, exponiendo datos y provocando interrupciones del servicio",
+    "what_to_do": "Desactiva DDP en los switches",
+    "the_catch": "No existe un parche de firmware y aún no se ha fijado una fecha de lanzamiento. Solo se ha confirmado que el modelo DGS-3130-30TS está afectado; D-Link sigue verificando otros modelos",
+    "_en": "07905b7ed6bd7669"
   }
 }
