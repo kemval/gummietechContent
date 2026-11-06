@@ -37,5 +37,8 @@
     "the_catch": "Activo no significa pequeño. La hoja del modelo sigue requiriendo al menos 700 GB de VRAM, porque todo el modelo debe mantenerse en memoria.",
     "_en": "134b9f9f446b2b40"
   },
-  "published_at": "2026-11-03"
+  "published_at": "2026-11-03",
+  "metrics": {
+    "asked_at": "2026-11-06"
+  }
 }
