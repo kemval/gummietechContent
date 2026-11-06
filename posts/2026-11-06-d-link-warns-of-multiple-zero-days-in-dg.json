@@ -1,0 +1,42 @@
+{
+  "post_type": "drop",
+  "domain": "network security",
+  "colorway": "bloom",
+  "hook": "D-Link's DGS-3130 switches have multiple zero‑day flaws.",
+  "hooks": [
+    "D-Link's DGS-3130 switches have multiple zero‑day flaws.",
+    "Attackers could steal data or reboot the switches if they exploit them.",
+    "D-Link cites CVE‑2026‑86296 as a maximum‑severity zero‑day."
+  ],
+  "what_happened": "D-Link reports multiple unpatched zero‑day flaws in DGS‑3130 switches that let attackers steal data, alter configs, leak SNMP communities, or cause resets.",
+  "why_it_matters": "The bugs could let attackers compromise network devices, exposing data and disrupting services for SMBs using these switches.",
+  "what_to_do": "Disable DDP on the switches",
+  "the_catch": "No firmware patches are available yet and D-Link has not disclosed the CVE IDs for the flaws.",
+  "caption": "D-Link has uncovered multiple zero‑day vulnerabilities in its DGS‑3130 series switches that could let attackers steal data or reboot devices. Do you rely on DGS‑3130 switches?",
+  "keywords": [
+    "network",
+    "switches",
+    "vulnerabilities"
+  ],
+  "hashtags": [
+    "#dlink",
+    "#networksecurity",
+    "#switches",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains D-Link's DGS‑3130 switches zero‑day flaws, their risks, mitigation steps, and current lack of patches.",
+  "source_url": "https://www.bleepingcomputer.com/news/security/d-link-warns-of-multiple-zero-days-in-dgs-3130-series-switches/",
+  "attribution": "BleepingComputer",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "computing",
+  "es": {
+    "domain": "seguridad de redes",
+    "hook": "Los switches DGS‑3130 de D‑Link presentan varias vulnerabilidades zero‑day",
+    "what_happened": "D‑Link informó que los switches DGS‑3130 tienen varias vulnerabilidades zero‑day sin parchear, que permiten a los atacantes robar datos, alterar configuraciones, filtrar comunidades SNMP o provocar reinicios",
+    "why_it_matters": "Estas fallas podrían permitir a los atacantes comprometer dispositivos de red, exponiendo información y interrumpiendo servicios en pymes que usan estos switches",
+    "what_to_do": "Desactiva DDP en los switches",
+    "the_catch": "Aún no hay parches de firmware disponibles y D‑Link no ha divulgado los identificadores CVE de las vulnerabilidades",
+    "_en": "8cd00e47cc7d51eb"
+  }
+}
