@@ -13,7 +13,7 @@
       "beat": "computing"
     },
     {
-      "claim": "Hackers exploit Plex2Shell chain to breach QNAP NAS devices",
+      "claim": "Hackers exploit Plex2Shell chain in Plex Media Server to compromise QNAP NAS devices",
       "attribution": "BleepingComputer, BleepingComputer (2026)",
       "source_url": "https://www.bleepingcomputer.com/news/security/qnap-says-hackers-breaching-nas-devices-in-plex2shell-attacks/",
       "peer_reviewed": false,
@@ -21,7 +21,7 @@
       "beat": "software"
     },
     {
-      "claim": "319 malicious extensions hijacked searches of about 13.4 million Chrome users",
+      "claim": "319 malicious Chrome extensions hijacked searches, with an estimated 13.4 million installs over a decade",
       "attribution": "Malwarebytes Labs, Malwarebytes Labs (2026)",
       "source_url": "https://www.malwarebytes.com/blog/news/2026/10/fake-pdf-and-search-tools-hijacked-searches-for-13-4-million-chrome-users",
       "peer_reviewed": false,
@@ -59,17 +59,17 @@
     "#chrome",
     "#gummietech"
   ],
-  "alt_text": "Five slides list security threats: SonicWall VPN MFA bypass exploited, QNAP NAS breach via Plex2Shell, 319 malicious Chrome extensions affecting 13.4 million users, Chrome 157 fixing 213 issues, and Chainalysis credential theft.",
+  "alt_text": "Five slides list security threats: SonicWall VPN MFA bypass exploited, QNAP NAS breach via Plex2Shell, 319 malicious Chrome extensions with an estimated 13.4 million installs, Chrome 157 fixing 213 issues, and Chainalysis credential theft.",
   "es": {
-    "domain": "seguridad informática",
+    "domain": "resumen de seguridad",
     "hook": "El bypass MFA de la VPN de SonicWall está siendo explotado — y 4 más",
     "items": [
-      "Vulnerabilidad del bypass MFA del SSL‑VPN de SonicWall (CVE‑2026‑19868) está siendo explotada",
-      "Los hackers explotan la cadena Plex2Shell para vulnerar dispositivos NAS de QNAP",
-      "319 extensiones maliciosas secuestraron las búsquedas de aproximadamente 13,4 millones de usuarios de Chrome",
-      "Actualización de Chrome 157 corrige 213 problemas de seguridad, siete de ellos críticos",
+      "La vulnerabilidad de bypass MFA del SSL‑VPN de SonicWall (CVE‑2026‑19868) está siendo explotada",
+      "Los hackers explotan la cadena Plex2Shell en Plex Media Server para comprometer dispositivos NAS QNAP",
+      "319 extensiones maliciosas de Chrome secuestraron búsquedas, con un estimado de 13,4 millones de instalaciones en una década",
+      "La actualización Chrome 157 corrige 213 vulnerabilidades de seguridad, siete de ellas críticas",
       "Los hackers robaron credenciales y tokens en vivo de todos los clientes de Chainalysis"
     ],
-    "_en": "8fbbe6df2a8987a6"
+    "_en": "eeb5c81b921c925c"
   }
 }
