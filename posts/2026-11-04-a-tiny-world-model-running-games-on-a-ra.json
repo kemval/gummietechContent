@@ -40,5 +40,8 @@
     "the_catch": "El autor dice que la tasa de fotogramas aún no se ha medido en el propio Pico.",
     "_en": "6bd47bd948615e2e"
   },
-  "published_at": "2026-11-04"
+  "published_at": "2026-11-04",
+  "metrics": {
+    "asked_at": "2026-11-07"
+  }
 }
