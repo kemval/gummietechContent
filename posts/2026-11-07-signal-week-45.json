@@ -1,0 +1,75 @@
+{
+  "post_type": "signal",
+  "domain": "Security roundup",
+  "colorway": "orbit",
+  "hook": "SonicWall’s VPN MFA bypass is being exploited — plus 4 more",
+  "items": [
+    {
+      "claim": "SonicWall’s SSL‑VPN MFA bypass flaw (CVE‑2026‑19868) is being exploited",
+      "attribution": "BleepingComputer, BleepingComputer (2026)",
+      "source_url": "https://www.bleepingcomputer.com/news/security/sonicwall-warns-of-new-ssl-vpn-mfa-bypass-flaw-exploited-in-attacks/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "computing"
+    },
+    {
+      "claim": "Hackers exploit Plex2Shell chain to breach QNAP NAS devices",
+      "attribution": "BleepingComputer, BleepingComputer (2026)",
+      "source_url": "https://www.bleepingcomputer.com/news/security/qnap-says-hackers-breaching-nas-devices-in-plex2shell-attacks/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "software"
+    },
+    {
+      "claim": "319 malicious extensions hijacked searches of about 13.4 million Chrome users",
+      "attribution": "Malwarebytes Labs, Malwarebytes Labs (2026)",
+      "source_url": "https://www.malwarebytes.com/blog/news/2026/10/fake-pdf-and-search-tools-hijacked-searches-for-13-4-million-chrome-users",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "software"
+    },
+    {
+      "claim": "Chrome 157 update patches 213 security issues, seven of them critical",
+      "attribution": "Malwarebytes Labs, Malwarebytes Labs (2026)",
+      "source_url": "https://www.malwarebytes.com/blog/bugs/2026/11/chrome-157-fixes-213-security-issues-including-7-critical-flaws",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "software"
+    },
+    {
+      "claim": "Hackers stole credentials and live tokens for every Chainalysis customer",
+      "attribution": "Ars Technica, Ars Technica (2026)",
+      "source_url": "https://arstechnica.com/security/2026/11/chainalysis-says-hackers-stole-credentials-and-tokens-for-all-of-its-customers/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "computing"
+    }
+  ],
+  "caption": "Your devices face many hidden threats, from VPN logins to browser extensions. Keeping software up to date can block many of them. Which risk scares you more, the VPN MFA bypass or the Chrome search hijack?",
+  "keywords": [
+    "VPN MFA bypass",
+    "QNAP Plex2Shell",
+    "malicious Chrome extensions",
+    "Chrome 157 security",
+    "Chainalysis breach"
+  ],
+  "hashtags": [
+    "#cybersecurity",
+    "#vpn",
+    "#chrome",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides list security threats: SonicWall VPN MFA bypass exploited, QNAP NAS breach via Plex2Shell, 319 malicious Chrome extensions affecting 13.4 million users, Chrome 157 fixing 213 issues, and Chainalysis credential theft.",
+  "es": {
+    "domain": "seguridad informática",
+    "hook": "El bypass MFA de la VPN de SonicWall está siendo explotado — y 4 más",
+    "items": [
+      "Vulnerabilidad del bypass MFA del SSL‑VPN de SonicWall (CVE‑2026‑19868) está siendo explotada",
+      "Los hackers explotan la cadena Plex2Shell para vulnerar dispositivos NAS de QNAP",
+      "319 extensiones maliciosas secuestraron las búsquedas de aproximadamente 13,4 millones de usuarios de Chrome",
+      "Actualización de Chrome 157 corrige 213 problemas de seguridad, siete de ellos críticos",
+      "Los hackers robaron credenciales y tokens en vivo de todos los clientes de Chainalysis"
+    ],
+    "_en": "8fbbe6df2a8987a6"
+  }
+}
