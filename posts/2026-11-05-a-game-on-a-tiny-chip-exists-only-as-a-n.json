@@ -46,5 +46,8 @@
     "the_catch": "Es el propio proyecto del creador, no un estudio. El autor indica que la velocidad de fotogramas en la propia Pico aún no se ha medido.",
     "_en": "72a8e88ce611e4c6"
   },
-  "published_at": "2026-11-05"
+  "published_at": "2026-11-05",
+  "metrics": {
+    "asked_at": "2026-11-08"
+  }
 }
