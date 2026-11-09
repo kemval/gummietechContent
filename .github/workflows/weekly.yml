@@ -128,6 +128,14 @@ jobs:
           mkdir -p /tmp/weekly
           python3 src/weekly.py brief "$KIND" | tee /tmp/weekly/brief.md
 
+      # The Read tool reads a PDF only through poppler's pdftoppm, and an
+      # incident's source is often a PDF (the SEC's Knight Capital order).
+      # Without it the writer, rightly, wrote nothing on 2026-11-08.
+      - uses: ./.github/actions/install-render-tools
+        with:
+          chromium: 'false'
+          poppler: 'true'
+
       # Writes one JSON file outside the repo. It may read the repo and the
       # source; it may write nothing but /tmp/weekly.
       - name: Write the post

@@ -65,7 +65,7 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 .github/actions/     notify-failure (one definition of "this run broke",
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
-                     install-render-tools (Chromium + ffmpeg, bounded and
+                     install-render-tools (Chromium + ffmpeg + poppler, bounded and
                      retried against a crawling Ubuntu mirror) ·
                      push-to-master (the one way a job pushes: rebase,
                      retry a race, fail on a conflict) · heartbeat (the
@@ -576,8 +576,9 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
   already got wrong once** — that is the entry criterion.
 - `.github/actions/notify-failure` posts every failed run's URL to Telegram,
   unthrottled; missing credentials are a no-op.
-- `.github/actions/install-render-tools` is the only place Chromium and
-  ffmpeg are installed: five minutes an attempt, one retry, and every
+- `.github/actions/install-render-tools` is the only place Chromium,
+  ffmpeg and poppler (for a PDF source the writer or fact-check must
+  read) are installed: five minutes an attempt, one retry, and every
   caller's `timeout-minutes` leaves room for both.
 - Green is not safe, only "nothing obvious". Bot commits do not trigger
   `check.yml`.

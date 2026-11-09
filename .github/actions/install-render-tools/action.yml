@@ -32,30 +32,59 @@ description: >
 # Worst case is two full attempts, about ten minutes: every caller's
 # timeout-minutes leaves room for that on top of its normal run.
 
+#
+# 2026-11-08: weekly.yml's incident writer fetched the SEC's Knight Capital
+# order (a PDF) and could not read it: the Read tool turns a PDF into pages
+# through poppler's pdftoppm, which the runner image does not ship. It
+# rightly wrote nothing, and the Sunday post did not go out. So poppler is
+# an option here too — for the writer, with no Chromium, and for review.yml's
+# fact-check, which checks the same source.
+
 inputs:
+  chromium:
+    description: Install Chromium for Playwright. 'false' for a job that only needs the apt packages below.
+    default: 'true'
   ffmpeg:
     description: Also install ffmpeg (reel.py, and render.py's motion clips).
+    default: 'false'
+  poppler:
+    description: Also install poppler-utils, so Claude's Read tool can read a PDF source.
     default: 'false'
 
 runs:
   using: composite
   steps:
-    - name: Install Chromium${{ inputs.ffmpeg == 'true' && ' and ffmpeg' || '' }}
+    - name: Install${{ inputs.chromium == 'true' && ' Chromium' || '' }}${{ inputs.ffmpeg == 'true' && ' ffmpeg' || '' }}${{ inputs.poppler == 'true' && ' poppler' || '' }}
       shell: bash
       env:
         # apt is the slow half; the browser comes from Playwright's CDN
         APT_MINUTES: '4'
         BROWSER_MINUTES: '1'
+        CHROMIUM: ${{ inputs.chromium }}
         FFMPEG: ${{ inputs.ffmpeg }}
+        POPPLER: ${{ inputs.poppler }}
       run: |
         printf '%s\n' 'Acquire::Retries "3";' \
           'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' |
           sudo tee /etc/apt/apt.conf.d/80-retries >/dev/null
 
         # Run as root, values baked in: sudo resets PATH and the environment.
-        apt_half="$(command -v python) -m playwright install-deps chromium"
-        if [ "$FFMPEG" = "true" ]; then
-          apt_half="$apt_half && apt-get install -y --no-install-recommends ffmpeg"
+        # install-deps refreshes the package lists itself; without it, do so.
+        if [ "$CHROMIUM" = "true" ]; then
+          apt_half="$(command -v python) -m playwright install-deps chromium"
+        else
+          apt_half="apt-get update"
+        fi
+        packages=""
+        [ "$FFMPEG" = "true" ] && packages="$packages ffmpeg"
+        [ "$POPPLER" = "true" ] && packages="$packages poppler-utils"
+        if [ -n "$packages" ]; then
+          apt_half="$apt_half && apt-get install -y --no-install-recommends$packages"
+        fi
+        # A command line, split deliberately where it is run below.
+        browser_half=true
+        if [ "$CHROMIUM" = "true" ]; then
+          browser_half="python -m playwright install chromium"
         fi
 
         for attempt in 1 2; do
@@ -65,12 +94,15 @@ runs:
           # Each timeout signals its whole process group, and kills it
           # outright if a TERM is ignored. The first is root, so it reaches
           # apt and dpkg; see the 2026-10-23 note above.
+          # shellcheck disable=SC2086 # browser_half is a command line, split on purpose
           if sudo timeout --kill-after=30s "${APT_MINUTES}m" bash -c "$apt_half" &&
-             timeout --kill-after=30s "${BROWSER_MINUTES}m" python -m playwright install chromium; then
+             timeout --kill-after=30s "${BROWSER_MINUTES}m" $browser_half; then
             exit 0
           fi
           echo "::warning::Install attempt $attempt failed or ran past its ${APT_MINUTES}+${BROWSER_MINUTES} minutes — the Ubuntu mirror is the usual cause."
         done
-        what=Chromium; [ "$FFMPEG" = "true" ] && what="Chromium and ffmpeg"
-        echo "::error::$what did not install in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."
+        what=""
+        [ "$CHROMIUM" = "true" ] && what="$what Chromium"
+        what="$what$packages"
+        echo "::error::${what# } did not install in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."
         exit 1
