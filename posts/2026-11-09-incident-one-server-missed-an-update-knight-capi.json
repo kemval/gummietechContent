@@ -1,0 +1,50 @@
+{
+  "post_type": "incident",
+  "domain": "software deployment",
+  "colorway": "orbit",
+  "hook": "One server missed an update. Knight Capital lost over $460 million.",
+  "what_broke": "Knight's order router turned 212 customer orders into over 4 million executions in 154 stocks, in about 45 minutes. Knight lost over $460 million.",
+  "timeline": [
+    "July 27, 2012: Knight began rolling out the update in stages. One technician did not copy it to one of the eight servers.",
+    "About 8:01 a.m. ET: An internal system emailed 97 \"Power Peg disabled\" errors before the 9:30 open. Staff generally did not review them.",
+    "August 1, 2012: Staff uninstalled the update from the seven good servers. That made it worse: more orders activated Power Peg."
+  ],
+  "root_cause": "Power Peg, code Knight stopped using years earlier, was still on the eighth server. The update reused its flag, so orders woke it.",
+  "the_fix": "Knight agreed to hire an independent consultant. It would review how Knight deploys code, its order routers, firm-wide capital limits and incident response.",
+  "the_catch": "The SEC says over $460 million, not the $440M often quoted. It faults missing controls, not one technician: no second review, no incident procedures.",
+  "caption": "One missed server, one dormant flag, and 45 minutes of runaway orders. The SEC's order shows the checks Knight did not have. Have you ever shipped a change to almost everything, and forgotten the last box?",
+  "keywords": [
+    "Knight Capital",
+    "Power Peg",
+    "SMARS",
+    "deployment",
+    "SEC order",
+    "trading software"
+  ],
+  "hashtags": [
+    "#incidentreport",
+    "#softwareengineering",
+    "#devops",
+    "#postmortem",
+    "#gummietech"
+  ],
+  "alt_text": "Incident report slides on Knight Capital's 2012 trading failure: what broke, a three-step timeline, the root cause, the fix and the catch.",
+  "source_url": "https://www.sec.gov/litigation/admin/2013/34-70694.pdf",
+  "attribution": "U.S. Securities and Exchange Commission, In the Matter of Knight Capital Americas LLC, Release 34-70694, 16 Oct 2013",
+  "peer_reviewed": false,
+  "incident_report": true,
+  "es": {
+    "domain": "despliegue de software",
+    "hook": "Un servidor no recibió la actualización; Knight Capital perdió más de 460 millones de dólares.",
+    "what_broke": "El enrutador de órdenes de Knight transformó 212 órdenes de clientes en más de 4 millones de ejecuciones en 154 acciones, en aproximadamente 45 minutos. Knight perdió más de 460 millones de dólares.",
+    "timeline": [
+      "27 de julio de 2012: Knight empezó a desplegar la actualización por etapas. Un técnico no la copió a uno de los ocho servidores.",
+      "Alrededor de las 8:01 a.m. ET: Un sistema interno envió por correo electrónico 97 errores de «Power Peg desactivado» antes de la apertura a las 9:30. El personal, por lo general, no los revisó.",
+      "1 de agosto de 2012: El personal desinstaló la actualización de los siete servidores que funcionaban bien. Eso empeoró la situación: más órdenes activaron Power Peg."
+    ],
+    "root_cause": "Power Peg, un código que Knight dejó de usar años atrás, seguía presente en el octavo servidor. La actualización reutilizó su bandera, de modo que las órdenes lo activaron.",
+    "the_fix": "Knight aceptó contratar a un consultor independiente. Este revisará cómo Knight despliega código, sus enrutadores de órdenes, los límites de capital de toda la firma y la respuesta a incidentes.",
+    "the_catch": "La SEC indica que la pérdida supera los 460 millones de dólares, no los 440 millones que se citan con frecuencia. Señala la falta de controles, no a un técnico: no hubo segunda revisión ni procedimientos de incidentes.",
+    "_en": "d0b42d734abf7a47"
+  }
+}
