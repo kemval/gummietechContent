@@ -1,0 +1,51 @@
+# Incidents — where operators say what broke in production
+#
+# Re-verify after editing:  python src/verify_feeds.py --file feeds/incidents.yaml -v
+#
+# Not news for the sheet: `ingest: false` keeps ingest.py off this file.
+# Status pages post every degraded minute, and scoring each one would spend
+# the free tier's daily cap on rows score.py rejects. verify_feeds.py and
+# watch.py still sweep it, so a feed that dies here is found the same way.
+#
+# Read by weekly.recent_incidents() for Sunday's Incident Report
+# (2026-11-09: the owner wants a recent failure, with the evergreen queue
+# as the fallback). It shortlists entries from the last
+# INCIDENT_FRESH_DAYS by keyword; the writer reads each and decides
+# whether the operator stated a cause and a fix. `publisher` is who the
+# credit names.
+#
+# Measured on 2026-11-09, considered and left out:
+#   blog.cloudflare.com/tag/post-mortem/rss/  newest entry 192 days old;
+#                   the main blog below carries the same posts sooner.
+#   status.openai.com, status.anthropic.com   live, but no entry in 30
+#                   days names a cause — the resolution line only.
+#   azure.status.microsoft/en-us/status/feed/ answers 200 with 0 entries.
+#   cloudflarestatus.com/history.rss          mostly scheduled maintenance,
+#                   dated in the future.
+
+ingest: false
+
+feeds:
+  - name: Cloudflare Blog (post-mortems)
+    url: https://blog.cloudflare.com/rss/
+    publisher: Cloudflare
+
+  - name: GitHub availability report
+    url: https://github.blog/tag/github-availability-report/feed/
+    publisher: GitHub
+
+  - name: GitHub Status
+    url: https://www.githubstatus.com/history.rss
+    publisher: GitHub
+
+  - name: Google Cloud Status
+    url: https://status.cloud.google.com/en/feed.atom
+    publisher: Google Cloud
+
+  - name: GitLab Status
+    url: https://status.gitlab.com/pages/5b36dc6502d06804c08349f7/rss
+    publisher: GitLab
+
+  - name: Slack Status
+    url: https://slack-status.com/feed/rss
+    publisher: Slack

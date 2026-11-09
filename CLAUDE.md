@@ -431,7 +431,8 @@ does not state. A source that cannot be read is a hold, not a pass.
 - A term (Tuesday), a Breakdown (Thursday) and a reference (Sunday: "Can
   I run it?", a sheet about one fresh model on the fixed hardware ladder
   `formats.LADDER`, with a catch) or an incident (Sunday, odd ISO weeks:
-  an evergreen row marked `**Kind** — incident`) are written by Claude in
+  a recent post-mortem from `feeds/incidents.yaml`, else an evergreen row
+  marked `**Kind** — incident`) are written by Claude in
   `weekly.yml`, and
   a sheet by hand — none by `draft.py`. `formats.by_hand()` is the
   one test of that, for the Drop-day gate, `watch.py` and redrafting;
@@ -443,7 +444,9 @@ does not state. A source that cannot be read is a hold, not a pass.
   `source_post`, which may be one Signal item, "stem#N"), never written by
   the model. A reference's `figure_sources` names the source of every
   hardware figure; the fact-check blocks a figure without one. An
-  incident's credit is its row's, and it carries `"incident_report": true`,
+  incident's credit is its feed entry's (operator, title, date — from the
+  `menu.json` the brief saved) or its row's, picked by the draft's
+  `source_pick` and dropped once copied, and it carries `"incident_report": true`,
   the fifth label ("Incident report — not a peer-reviewed study"),
   `formats.incident_report()`, code's alone.
 
@@ -517,8 +520,12 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
   first, whose paper no Breakdown covers yet — code picks it, not Claude.
   A reference is built on a published AI post or Signal item from the last
   ten days, or an older run post. Code lists them and Claude picks the one
-  with downloadable weights, because no record says that. An incident tells
-  the next uncovered evergreen row marked as one, and code picks it.
+  with downloadable weights, because no record says that. An incident is
+  recent first (2026-11-09): code lists the last `INCIDENT_FRESH_DAYS` (14)
+  of uncovered post-mortem-like entries from `feeds/incidents.yaml` —
+  `ingest: false`, so ingest.py never scores those status pages — and
+  Claude picks one that states a cause and a fix, else the next uncovered
+  evergreen row marked as one, which code picks.
   → `docs/decisions/sunday-rotation.md`
 - `review.yml` is the one reusable review; callers commit before calling it.
   Its only commit is the auto-fix's, so every caller grants `contents: write`.

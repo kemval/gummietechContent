@@ -123,10 +123,26 @@ jobs:
       # terms taken and the posts a term may use, the Drop a Breakdown
       # explains, the fresh posts a reference may be built on, or the
       # evergreen row an incident tells. Exits non-zero, with what to do, when nothing is left.
+      # Before the brief, not just before translate.py: an incident's brief
+      # fetches feeds/incidents.yaml through verify_feeds (feedparser,
+      # requests, yaml).
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # No `playwright install`: translate.py needs the package, not the
+      # browsers. review.yml downloads Chromium when it renders.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # An incident's brief also saves the recent post-mortems it offered to
+      # menu.json, which finish reads back to check the pick and copy its
+      # credit.
       - name: Write the brief
         run: |
           mkdir -p /tmp/weekly
-          python3 src/weekly.py brief "$KIND" | tee /tmp/weekly/brief.md
+          python3 src/weekly.py brief "$KIND" /tmp/weekly/menu.json | tee /tmp/weekly/brief.md
 
       # The Read tool reads a PDF only through poppler's pdftoppm, and an
       # incident's source is often a PDF (the SEC's Knight Capital order).
@@ -179,7 +195,7 @@ jobs:
         id: first
         run: |
           set +e
-          python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json > /tmp/weekly/finish.log 2>&1
+          python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json /tmp/weekly/menu.json > /tmp/weekly/finish.log 2>&1
           code=$?
           cat /tmp/weekly/finish.log
           if [ "$code" -eq 0 ]; then
@@ -236,7 +252,7 @@ jobs:
           REFUSED: ${{ steps.first.outputs.refused }}
         run: |
           if [ "$REFUSED" = "true" ]; then
-            python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json | tee finish.log
+            python3 src/weekly.py finish "$KIND" /tmp/weekly/draft.json /tmp/weekly/menu.json | tee finish.log
           else
             cp /tmp/weekly/finish.log finish.log
           fi
@@ -246,16 +262,6 @@ jobs:
             exit 1
           fi
           echo "post=$post" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      # No `playwright install`: translate.py needs the package, not the
-      # browsers. review.yml downloads Chromium when it renders.
-      - name: Install dependencies
-        run: pip install -r requirements.txt
 
       - name: Translate for the web archive
         env:

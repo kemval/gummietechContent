@@ -256,8 +256,12 @@ is built on a published post or Signal item (`source_post`, "stem" or
 
 An Incident Report (`post_type: "incident"`) tells one failure from its own
 report: a post-mortem, an inquiry board's or a regulator's finding. Its
-subject is an evergreen row (`docs/evergreen_queue.md`, `**Kind** —
-incident`), and its credit is that row's. It carries `"incident_report":
+subject is a recent failure from `feeds/incidents.yaml` (since 2026-11-09),
+credited to the operator with its page's title and date, or else an
+evergreen row (`docs/evergreen_queue.md`, `**Kind** — incident`), credited
+as that row is. Code copies either credit. For a recent one, check the page
+is the operator's own account and states the cause and the fix; a status
+entry that only says "resolved" is a **BLOCK**. It carries `"incident_report":
 true`, so the cover says "Incident report — not a peer-reviewed study". That
 label is correct; do not ask for `peer_reviewed: true`. Check against the
 source itself, not the row:
