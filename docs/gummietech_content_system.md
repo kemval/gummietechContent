@@ -175,12 +175,18 @@ I run it?, odd weeks the Incident Report. It tells one famous production
 failure: what broke, a 2–3 slide timeline, the root cause, the fix, and on
 the dark slide what people usually get wrong about it.
 
-- **The subject is the next evergreen row marked `**Kind** — incident`**
-  that no post covers yet, in score order. Five rows are marked today
-  (Ariane 5, Knight Capital, xz, Cloudflare's regex, CrowdStrike), about ten
-  weeks of odd Sundays. The Uber fatality (#9) is left unmarked on purpose.
-- **Its credit is the row's,** copied by code, as a term's is copied from
-  its post.
+- **The subject is recent when it can be (since 2026-11-09).** The owner
+  wants a failure readers may have felt, not a famous one from years ago.
+  `weekly.py` lists the last 14 days of uncovered entries from
+  `feeds/incidents.yaml` (operators' blogs and status pages) and the writer
+  picks the one most readers noticed whose page states a cause and a fix.
+  Official post-mortems are rare, so expect many Sundays to fall back.
+- **The fallback is the next evergreen row marked `**Kind** — incident`**
+  that no post covers yet, in score order. Five rows were marked
+  (Ariane 5, Knight Capital, xz, Cloudflare's regex, CrowdStrike). The Uber
+  fatality (#9) is left unmarked on purpose.
+- **Its credit is copied by code** — the feed entry's operator, title and
+  date, or the row's — as a term's is copied from its post.
 - **A fifth source label: "Incident report — not a peer-reviewed study".**
   A post-mortem is neither a preprint nor peer-reviewed, and both existing
   labels would have been false about it.

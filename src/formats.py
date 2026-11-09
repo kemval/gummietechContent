@@ -220,8 +220,9 @@ FORMATS: dict[str, Format] = {
     # people who ran it said why. The timeline is one slide per entry, as a
     # Breakdown's mechanism is, and the catch is what people usually get
     # wrong about the incident, not a weakness of the report. Its subject is
-    # an evergreen row marked `**Kind** — incident`, picked by weekly.py,
-    # and its credit is that row's. Its source is a post-mortem or an
+    # a recent post-mortem from feeds/incidents.yaml, or else an evergreen
+    # row marked `**Kind** — incident`, offered by weekly.py, which copies
+    # the credit. Its source is a post-mortem or an
     # official finding, so it says so (`incident_report`), not "preprint".
     "incident": Format("incident.html", (
         Section("what_broke", "What broke",  "Qué se rompió"),
@@ -425,8 +426,8 @@ def incident_report(record: dict) -> bool:
     """Whether a source is an incident's own report — a post-mortem, an
     inquiry board's, a regulator's finding — rather than a study.
 
-    Written only by weekly.py, for an Incident Report built on an evergreen
-    row, so it is code's label. Without it a Cloudflare post-mortem would
+    Written only by weekly.py, for an Incident Report, so it is code's
+    label. Without it a Cloudflare post-mortem would
     have had two labels to choose from and both were false: "Preprint" on
     the slides, and "Peer-reviewed" on the archive page.
     """

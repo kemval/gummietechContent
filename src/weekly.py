@@ -6,8 +6,11 @@ Incident Report. What weekly.yml decides in code, around the one step a
 model does.
 
     python src/weekly.py due <kind>             # exit 0 if this week still owes one
-    python src/weekly.py brief <kind>           # the writer's instructions
-    python src/weekly.py finish <kind> <draft>  # refuse a bad draft, or file it
+    python src/weekly.py brief <kind> [menu]           # the writer's instructions
+    python src/weekly.py finish <kind> <draft> [menu]  # refuse a bad draft, or file it
+
+[menu] is a JSON file: the brief saves an incident's recent candidates
+there, and finish checks the pick and copies its credit from it.
 
 <kind> is a key of KINDS: glossary, breakdown, reference or incident.
 
@@ -22,7 +25,9 @@ model is decided here, before and after it writes:
     writer picks from a list; a Breakdown's subject is a published Drop this
     file picks, tech first, that has no Breakdown yet; a reference's model
     is a fresh published AI post, or Signal item, the writer picks from a
-    list; an incident is the next evergreen row marked as one
+    list; an incident is a recent post-mortem the writer picks from a list
+    code fetched from feeds/incidents.yaml, or else the next evergreen row
+    marked as one
   - a repeated term, a missing field, a mechanism of the wrong length
   - the credit. source_url, doi, attribution, peer_reviewed,
     announcement and news_report are copied
@@ -30,7 +35,9 @@ model is decided here, before and after it writes:
     credit is the one way a correct explanation still goes out wrong.
 
 Standard library, formats.py and evergreen.py only: `due` runs in the gate job, before
-anything is installed, and watch.py reads KINDS.
+anything is installed, and watch.py reads KINDS. The one exception is
+recent_incidents(), which imports verify_feeds inside itself; the write job
+installs requirements.txt before the brief.
 """
 
 from __future__ import annotations
@@ -283,20 +290,111 @@ def resolve(ref: str, directory: Path = POSTS_DIR) -> dict:
 
 # --------------------------------------------------------- the incident
 
-def incident(directory: Path = POSTS_DIR,
-             queue: Path = evergreen.QUEUE) -> evergreen.Row | None:
-    """The evergreen row this Sunday's Incident Report tells, or None.
+# 2026-11-09: the first Incident Reports told evergreen rows (Ariane 5,
+# Knight Capital 2012), and the owner wanted a failure readers may have
+# felt. So a recent post-mortem comes first, and the queue is the fallback.
+#
+# Two weeks, the rotation's own cadence: an incident Sunday comes every
+# other week, so a post-mortem published the Monday after one is still in
+# the window for the next.
+INCIDENT_FRESH_DAYS = 14
 
-    The first row marked `**Kind** — incident`, in the file's score order,
-    whose source no post in posts/ or posts/rejected/ already carries,
-    whether it was drafted as an Incident Report, a Drop or a Signal item.
-    """
+INCIDENT_FEEDS = REPO_ROOT / "feeds" / "incidents.yaml"
+
+# A shortlist, not a judgement: status pages post every degraded minute,
+# and these are the words of an entry that says why. Whether the operator
+# stated a cause and a fix is the writer's call, after reading it.
+POSTMORTEM_RE = re.compile(r"post-?mortem|post-incident|incident report|"
+                           r"root cause|availability report|caused by|"
+                           r"\boutage\b", re.I)
+
+# The draft's `source_pick` when no recent entry qualified.
+EVERGREEN = "evergreen"
+
+
+def covered_urls(directory: Path = POSTS_DIR) -> set[str]:
+    """Every source URL in posts/ and posts/rejected/, Signal items too."""
     covered = set()
     for post in every_post(directory):
         for record in (post, *(i for i in post.get("items") or []
                                if isinstance(i, dict))):
             if url := str(record.get("source_url", "")).strip().lower():
                 covered.add(url)
+    return covered
+
+
+def recent_incidents(today: date, directory: Path = POSTS_DIR,
+                     feeds: Path = INCIDENT_FEEDS) -> list[dict]:
+    """Uncovered entries from feeds/incidents.yaml in the last
+    INCIDENT_FRESH_DAYS that read like a post-mortem, newest first.
+
+    Each is {url, title, date, publisher}: what the credit is built from, so
+    the brief saves this list and finish() checks the pick against it. A
+    feed that cannot be fetched is skipped with a warning — the evergreen
+    row is still there.
+    """
+    import requests                                       # requirements.txt
+    import yaml
+    from verify_feeds import HEADERS, TIMEOUT, parse_feed  # browser UA
+
+    try:
+        entries = (yaml.safe_load(feeds.read_text()) or {}).get("feeds", [])
+    except (OSError, yaml.YAMLError) as exc:
+        print(f"  cannot read {feeds}: {exc} — telling an evergreen row "
+              f"instead. Restore the file.", file=sys.stderr)
+        return []
+    covered = covered_urls(directory)
+    found: dict[str, dict] = {}
+    for entry in entries:
+        try:
+            response = requests.get(entry["url"], headers=HEADERS,
+                                    timeout=TIMEOUT)
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            print(f"  skipped {entry.get('name')}: {exc} — run python "
+                  f"src/verify_feeds.py --file feeds/incidents.yaml -v",
+                  file=sys.stderr)
+            continue
+        for item in parse_feed(entry, response.content).entries:
+            stamp = item.get("published_parsed") or item.get("updated_parsed")
+            link = str(item.get("link", "")).strip()
+            if not (stamp and link) or link.lower() in covered:
+                continue
+            day = date(*stamp[:3])
+            text = f"{item.get('title', '')} {item.get('summary', '')}"
+            if (0 <= (today - day).days <= INCIDENT_FRESH_DAYS
+                    and POSTMORTEM_RE.search(text)):
+                found[link] = {
+                    "url": link,
+                    "title": " ".join(str(item.get("title", "")).split()),
+                    "date": day.isoformat(),
+                    "publisher": entry.get("publisher") or entry.get("name"),
+                }
+    return sorted(found.values(), key=lambda c: c["date"], reverse=True)
+
+
+def read_menu(path: Path | None) -> list[dict]:
+    """The recent incidents the brief offered, as it saved them."""
+    if path is None or not path.exists():
+        return []
+    try:
+        menu = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"  cannot read {path}: {exc} — only the evergreen row "
+              f"counts as offered.", file=sys.stderr)
+        return []
+    return [c for c in menu if isinstance(c, dict) and c.get("url")]
+
+
+def incident(directory: Path = POSTS_DIR,
+             queue: Path = evergreen.QUEUE) -> evergreen.Row | None:
+    """The evergreen row this Sunday's Incident Report falls back on, or None.
+
+    The first row marked `**Kind** — incident`, in the file's score order,
+    whose source no post in posts/ or posts/rejected/ already carries,
+    whether it was drafted as an Incident Report, a Drop or a Signal item.
+    """
+    covered = covered_urls(directory)
     try:
         text = queue.read_text()
     except OSError as exc:
@@ -319,11 +417,48 @@ def incident_credit(row: evergreen.Row) -> dict:
             "incident_report": True}
 
 
+def recent_credit(pick: dict) -> dict:
+    """The credit of a recent incident: the operator, its page's own title
+    and date, from the feed — never typed by the writer."""
+    day = date.fromisoformat(pick["date"])
+    return {"source_url": pick["url"],
+            "attribution": f"{pick['publisher']}, “{pick['title']}”, "
+                           f"{day.day} {day:%b %Y}",
+            "peer_reviewed": False,
+            "incident_report": True}
+
+
 # ---------------------------------------------------------------- the brief
 
+def incident_brief(recent: list[dict], row: evergreen.Row | None) -> str:
+    if not recent and row is None:
+        raise SystemExit("No recent post-mortem in feeds/incidents.yaml, and "
+                         "every evergreen row marked `**Kind** — incident` is "
+                         "already covered. Run the evergreen-scout agent for "
+                         "more, or write this Sunday's by hand.")
+    menu = "\n".join(f"  - {c['url']}  —  {c['publisher']}, {c['date']}: "
+                     f"{c['title']}" for c in recent) or "  (none)"
+    if row is None:
+        fallback = ("If none of them qualifies, say so in your final message "
+                    "and write nothing: the evergreen queue has no incident "
+                    "left.")
+    else:
+        fallback = INCIDENT_FALLBACK.format(
+            rank=row.rank, title=row.title, row=row.body.strip(),
+            source_url=evergreen.source_url(row.fields), evergreen=EVERGREEN)
+    if not recent:
+        fallback = "None is recent, so: " + fallback[0].lower() + fallback[1:]
+    return INCIDENT_BRIEF.format(days=INCIDENT_FRESH_DAYS, menu=menu,
+                                 fallback=fallback, evergreen=EVERGREEN,
+                                 words=MAX_TIME_WORDS)
+
+
 def brief(name: str, directory: Path = POSTS_DIR,
-          today: date | None = None) -> str:
-    """The writer's whole instruction, with the menu code already chose."""
+          today: date | None = None, menu: Path | None = None) -> str:
+    """The writer's whole instruction, with the menu code already chose.
+
+    An incident's menu of recent post-mortems is also saved to `menu`, for
+    finish() to check the pick and copy its credit from."""
     if name == "reference":
         found = sources(today or date.today(), directory)
         if not found:
@@ -340,16 +475,10 @@ def brief(name: str, directory: Path = POSTS_DIR,
                                       lo=BENCHMARK_LINES[0],
                                       hi=BENCHMARK_LINES[1])
     if name == "incident":
-        row = incident(directory)
-        if row is None:
-            raise SystemExit("Every evergreen row marked `**Kind** — "
-                             "incident` is already covered. Run the "
-                             "evergreen-scout agent for more, or write this "
-                             "Sunday's by hand.")
-        return INCIDENT_BRIEF.format(rank=row.rank, title=row.title,
-                                     words=MAX_TIME_WORDS,
-                                     row=row.body.strip(),
-                                     source_url=evergreen.source_url(row.fields))
+        recent = recent_incidents(today or date.today(), directory)
+        if menu is not None:
+            menu.write_text(json.dumps(recent, indent=2, ensure_ascii=False))
+        return incident_brief(recent, incident(directory))
     if name == "glossary":
         terms = [f"  - {t}" for t in defined_terms(directory)] or ["  (none)"]
         menu = [f"  - {stem}  —  {post.get('hook', '')}"
@@ -527,30 +656,36 @@ Finish by printing the ref you built on and the hook.
 INCIDENT_BRIEF = """\
 Write this Sunday's Incident Report for @gummietech, an Instagram account on
 technology. It tells one real failure in production: what broke, when, why,
-how it was fixed, and what people usually get wrong about it. It explains a
-famous failure; it does not report news.
+how it was fixed, and what people usually get wrong about it. A recent one
+comes first: a failure readers may have felt, explained by the people who
+ran the system.
 
-It tells evergreen row #{rank} of docs/evergreen_queue.md, "{title}":
+Failures from the last {days} days, from the operators' own blogs and status
+pages (url, then publisher, date and title). Code shortlisted them by
+keyword only — most status-page entries are not post-mortems:
+{menu}
 
-{row}
+  1. Pick the one most readers will have noticed (a big platform, a long or
+     wide outage) whose page is the operator's own account and states both
+     what caused it and what was changed afterwards. A status entry that
+     only says "investigating" or "resolved", coverage of an outage, or a
+     post that only mentions one does not qualify.
+  2. {fallback}
+  3. Read the source in full. A timeline written from a summary is the
+     failure this format exists to avoid. If you cannot read it, say so in
+     your final message and write nothing.
 
 Read first:
-  - docs/evergreen_queue.md, "Before drafting any of these": the numbers
-    not to add apply to you
   - src/formats.py, the "incident" entry
   - docs/voice.md
-  - the source itself, {source_url}, in full. The row is a summary, and a
-    timeline written from a summary is the failure this format exists to
-    avoid. If you cannot read the source, say so in your final message and
-    write nothing.
 
 Write /tmp/weekly/draft.json with exactly these fields: post_type
-("incident"), domain, colorway, hook, what_broke, timeline (a list of 2 or
-3 entries, one slide each), root_cause, the_fix, the_catch, caption,
+("incident"), source_pick (the url you picked, exactly as listed above, or
+"{evergreen}"), domain, colorway, hook, what_broke, timeline (a list of 2
+or 3 entries, one slide each), root_cause, the_fix, the_catch, caption,
 keywords, hashtags, alt_text.
 
-  - hook may start from the row's Hook, but check every word of it against
-    the source.
+  - hook: check every word of it against the source.
   - what_broke is what people saw: the outage, the loss, the explosion, in
     the report's own figures.
   - timeline entries are in order, each "<time>: <Sentence>": the time as
@@ -560,12 +695,22 @@ keywords, hashtags, alt_text.
     does not state.
   - root_cause is the mechanism the report names, at the level a reader can
     follow. the_fix is what was changed afterwards, per the source.
-  - the_catch is what people usually get wrong about this incident, and the
-    source must support it. The row's own "The catch" is a good start.
+  - the_catch is what people usually get wrong about this incident (for a
+    recent one, what a reader would likely assume), and the source must
+    support it. An evergreen row's own "The catch" is a good start.
 
 {rules}
-Finish by printing the hook and one line on the root cause.
+Finish by printing source_pick, the hook and one line on the root cause.
 """.replace("{rules}", SHARED_RULES)
+
+INCIDENT_FALLBACK = """\
+If none of them qualifies, tell evergreen row #{rank} of
+     docs/evergreen_queue.md instead, "{title}", and set source_pick to
+     "{evergreen}". Its source is {source_url}; read "Before drafting any of
+     these" in that file first, since the numbers not to add apply to you.
+
+{row}
+"""
 
 
 # ---------------------------------------------------------------- finishing
@@ -592,8 +737,11 @@ def required(kind: Kind) -> list[str]:
 
 
 def problems(name: str, post: dict, directory: Path = POSTS_DIR,
-             today: date | None = None) -> list[str]:
-    """Why this draft is not one weekly.yml may commit. Empty means fine."""
+             today: date | None = None,
+             menu: list[dict] | None = None) -> list[str]:
+    """Why this draft is not one weekly.yml may commit. Empty means fine.
+
+    `menu` is the recent incidents the brief offered (read_menu())."""
     kind = KINDS[name]
     found = []
     if post.get("post_type") != kind.post_type:
@@ -616,6 +764,14 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR,
     if name == "reference":
         found.extend(reference_problems(post, directory, today))
     if name == "incident":
+        pick = str(post.get("source_pick", "")).strip()
+        if pick == EVERGREEN:
+            if incident(directory) is None:
+                found.append("source_pick is \"evergreen\", but no evergreen "
+                             "incident row is left")
+        elif pick not in {c["url"] for c in menu or []}:
+            found.append(f"source_pick {pick!r} is neither one of the recent "
+                         f"incidents the brief offered nor \"{EVERGREEN}\"")
         steps = post.get("timeline")
         if not (isinstance(steps, list) and 2 <= len(steps) <= 3
                 and all(isinstance(s, str) and s.strip() for s in steps)):
@@ -682,7 +838,8 @@ def reference_problems(post: dict, directory: Path,
     return found
 
 
-def built_from(name: str, post: dict, directory: Path) -> tuple[str, dict]:
+def built_from(name: str, post: dict, directory: Path,
+               menu: list[dict] | None = None) -> tuple[str, dict]:
     """The published post (or Signal item) whose credit this draft carries:
     its name, for the log, and its record."""
     if name == "glossary":
@@ -691,6 +848,10 @@ def built_from(name: str, post: dict, directory: Path) -> tuple[str, dict]:
         ref = str(post["source_post"]).strip()
         return ref, resolve(ref, directory)
     elif name == "incident":
+        pick = str(post.get("source_pick", "")).strip()
+        for candidate in menu or []:
+            if candidate["url"] == pick:
+                return pick, recent_credit(candidate)
         row = incident(directory)
         return ((f"evergreen #{row.rank}", incident_credit(row)) if row
                 else ("", {}))
@@ -701,7 +862,7 @@ def built_from(name: str, post: dict, directory: Path) -> tuple[str, dict]:
 
 
 def finish(name: str, draft: Path, today: date,
-           directory: Path = POSTS_DIR) -> int:
+           directory: Path = POSTS_DIR, menu: list[dict] | None = None) -> int:
     """Refuse a bad draft, or stamp its credit and file it in posts/.
 
     The writer drafts outside the repo and this names the file, so the model
@@ -714,14 +875,16 @@ def finish(name: str, draft: Path, today: date,
         print(f"{draft} is not a JSON object. Nothing has been committed; read "
               f"the writer's output in this log.", file=sys.stderr)
         return 1
-    if bad := problems(name, post, directory, today):
+    if bad := problems(name, post, directory, today, menu):
         print(f"Refusing {draft.name}:", file=sys.stderr)
         for line in bad:
             print(f"  - {line}", file=sys.stderr)
         print(f"Nothing has been committed. Dispatch weekly.yml with "
               f"kind={name} and force to write another.", file=sys.stderr)
         return 1
-    stem, source = built_from(name, post, directory)
+    stem, source = built_from(name, post, directory, menu)
+    # Spent: the credit below is what records where an incident came from.
+    post.pop("source_pick", None)
     for field in CREDIT:
         if field in source:
             post[field] = source[field]
@@ -756,11 +919,14 @@ def main(argv: list[str]) -> int:
             return 1
         print(f"This week has no {name} yet.")
         return 0
-    if command == "brief":
-        print(brief(name))
+    # The optional last argument is where the brief saves an incident's
+    # menu and where finish reads it back; the other kinds ignore it.
+    if command == "brief" and len(argv) in (3, 4):
+        print(brief(name, menu=Path(argv[3]) if len(argv) == 4 else None))
         return 0
-    if command == "finish" and len(argv) == 4:
-        return finish(name, Path(argv[3]), date.today())
+    if command == "finish" and len(argv) in (4, 5):
+        menu = read_menu(Path(argv[4]) if len(argv) == 5 else None)
+        return finish(name, Path(argv[3]), date.today(), menu=menu)
     print(__doc__, file=sys.stderr)
     return 2
 

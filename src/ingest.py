@@ -337,6 +337,11 @@ def main() -> int:
             continue
 
         data = yaml.safe_load(feed_file.read_text()) or {}
+        # feeds/incidents.yaml: status pages for weekly.py, not stories
+        # for the sheet — scoring them would spend the daily cap.
+        if data.get("ingest") is False:
+            print(f"\n{feed_file.name}  (ingest: false — skipped)")
+            continue
         feeds = data.get("feeds", [])
         print(f"\n{feed_file.name}  ({len(feeds)} feeds)")
 

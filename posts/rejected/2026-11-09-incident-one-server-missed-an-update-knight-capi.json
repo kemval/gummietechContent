@@ -46,5 +46,9 @@
     "the_fix": "Knight aceptó contratar a un consultor independiente. Este revisará cómo Knight despliega el código, sus enrutadores de órdenes, los límites de capital de toda la firma y la respuesta a incidentes.",
     "the_catch": "La SEC indica que Knight perdió más de 460 millones de dólares. Señala la falta de controles, no la culpa de un técnico: no hubo una segunda revisión ni procedimientos de incidentes.",
     "_en": "d419eea384909efc"
+  },
+  "rejected": {
+    "at": "2026-11-09",
+    "reason": "Turned down by the owner at the gate: a failure from 2012, and the Incident Report should be recent."
   }
 }

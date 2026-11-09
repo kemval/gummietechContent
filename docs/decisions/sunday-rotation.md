@@ -116,6 +116,34 @@ is set again as the glass ghost. One layout option carries it, in
 `MAX_TIME_WORDS` (4) words, or a sentence that starts in lower case. The
 writer gets one rewrite.
 
+## Recent incidents first (2026-11-09)
+
+The first two Incident Reports told evergreen rows, Ariane 5 (1996) and
+Knight Capital (2012). The owner turned the second down: the point is a
+recent, relevant failure. So `weekly.recent_incidents()` now lists the last
+`INCIDENT_FRESH_DAYS` (14, the rotation's cadence) of entries from
+`feeds/incidents.yaml` that read like a post-mortem (`POSTMORTEM_RE`) and
+that no post carries yet. The writer picks the one most readers noticed
+whose page is the operator's own and states a cause and a fix, or answers
+`source_pick: "evergreen"` and tells the next row as before.
+
+- **Code shortlists, the writer judges.** Status pages post every degraded
+  minute, and whether one names a cause is reading, not a keyword.
+- **The credit is still code's.** The brief saves its menu to
+  `/tmp/weekly/menu.json` and `finish` copies the operator, the page's
+  title and its date from it; a pick outside the menu is refused, so the
+  rewrite gets one more go.
+- **`ingest: false` on the file.** These feeds are not stories for the
+  sheet: scoring every status entry would spend Gemini's daily cap on rows
+  score.py rejects. verify_feeds.py and watch.py still sweep them.
+- **Measured on 2026-11-09:** official post-mortems are rare. Cloudflare's
+  post-mortem tag was 192 days quiet, GitHub's availability report is
+  monthly, and Hacker News had one outage over 100 points in 30 days. Many
+  incident Sundays will still fall back to the queue; that is expected,
+  not a fault.
+- **The write job installs requirements.txt before the brief** now, for
+  feedparser and yaml. `due` still runs on the bare runner.
+
 ## Not built yet
 
 Hype Check and True or false?, phase 4 of the 2026-10-12 plan. Each would
