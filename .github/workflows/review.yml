@@ -65,10 +65,12 @@ jobs:
       # render.py and proof.py drive a real browser, so this one needs the
       # Chromium download and its system libraries; render.py films a
       # looping clip of each slide's moving backdrop, and ffmpeg is not on
-      # the runner image (see reel.yml). Bounded and retried: see the action.
+      # the runner image (see reel.yml). poppler lets the fact-check read a
+      # PDF source, as an incident's often is. Bounded and retried: see the action.
       - uses: ./.github/actions/install-render-tools
         with:
           ffmpeg: 'true'
+          poppler: 'true'
 
       # daily.yml always passes a path it has just committed, but recheck.yml
       # can be dispatched with one typed on a phone. Fail here with a sentence
