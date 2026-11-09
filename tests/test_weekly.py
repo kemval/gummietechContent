@@ -78,3 +78,29 @@ def test_an_incident_picked_from_outside_the_menu_is_refused(tmp_path):
     post = {**INCIDENT_DRAFT, "source_pick": "https://news.example/outage"}
     assert any("source_pick" in p
                for p in weekly.problems("incident", post, posts, menu=MENU))
+
+
+def test_a_status_pages_state_is_not_part_of_the_credit():
+    """2026-11-09: the first recent incident was credited as Google Cloud,
+    "RESOLVED: Multiple services were experiencing issues…" — the page's
+    state when it was read, not the incident's title."""
+    assert weekly.incident_title(
+        "RESOLVED: Multiple services were experiencing issues in the "
+        "europe-west2 region.") == ("Multiple services were experiencing "
+                                    "issues in the europe-west2 region.")
+    assert weekly.incident_title("Incident: Trouble connecting\n to Slack") == \
+        "Trouble connecting to Slack"
+    assert weekly.incident_title("GitHub availability report: September 2026") \
+        == "GitHub availability report: September 2026"
+
+
+def test_a_draft_over_the_word_budget_goes_back_to_the_writer(tmp_path):
+    """2026-11-09: a 26-word root_cause (limit 25) was filed, and review.yml's
+    auto-fix then refused the fact-check's fix to another field because the
+    post was still over budget — the false line reached the chat."""
+    posts = tmp_path / "posts"
+    posts.mkdir()
+    post = {**INCIDENT_DRAFT, "source_pick": MENU[0]["url"],
+            "root_cause": " ".join(["word"] * 26)}
+    assert any("root_cause is 26 words" in p
+               for p in weekly.problems("incident", post, posts, menu=MENU))

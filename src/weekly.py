@@ -308,6 +308,21 @@ POSTMORTEM_RE = re.compile(r"post-?mortem|post-incident|incident report|"
                            r"root cause|availability report|caused by|"
                            r"\boutage\b", re.I)
 
+# A status page's state, prefixed to its incident's title: "RESOLVED:" on
+# Google Cloud, "Incident:" on Slack. It is the page's state when the feed
+# was read, not the incident's name, and on 2026-11-09 the first recent
+# credit read "Google Cloud, “RESOLVED: Multiple services were…”".
+STATUS_PREFIX_RE = re.compile(r"^(?:(?:resolved|update[d]?|incident|"
+                              r"investigating|identified|monitoring)\s*:\s*)+",
+                              re.I)
+
+
+def incident_title(title: str) -> str:
+    """A feed entry's title as the credit names it: one line, without the
+    status page's state in front."""
+    return STATUS_PREFIX_RE.sub("", " ".join(title.split())).strip()
+
+
 # The draft's `source_pick` when no recent entry qualified.
 EVERGREEN = "evergreen"
 
@@ -366,7 +381,7 @@ def recent_incidents(today: date, directory: Path = POSTS_DIR,
                     and POSTMORTEM_RE.search(text)):
                 found[link] = {
                     "url": link,
-                    "title": " ".join(str(item.get("title", "")).split()),
+                    "title": incident_title(str(item.get("title", ""))),
                     "date": day.isoformat(),
                     "publisher": entry.get("publisher") or entry.get("name"),
                 }
@@ -794,7 +809,31 @@ def problems(name: str, post: dict, directory: Path = POSTS_DIR,
                 and all(isinstance(s, str) and s.strip() for s in steps)):
             found.append("mechanism must be a list of 2 or 3 non-empty steps "
                          "— docs §1's 8 to 10 slides")
+    found.extend(over_budget(post))
     return found
+
+
+def over_budget(post: dict) -> list[str]:
+    """render.py's word budget, refused here rather than warned at render.
+
+    2026-11-09: the first recent incident left the writer with a 26-word
+    root_cause against 25. review.yml's auto-fix then refused the
+    fact-check's correction to a different field, because the post as a
+    whole was still over budget, and the false timeline line went to the
+    chat. A weekly draft has a rewrite to spend on it; an auto-fix has
+    none. Imported here, not at the top: render.py needs jinja2 and
+    playwright, which the write job installs before finish, and `due`
+    runs without them.
+    """
+    try:
+        from render import word_budget
+    except ImportError as exc:
+        print(f"  word budget not checked ({exc}) — run after "
+              f"pip install -r requirements.txt", file=sys.stderr)
+        return []
+    return [f"{where} is {count} words; the limit is {limit}. Shorten it by "
+            f"deleting words, never by adding a claim"
+            for where, count, limit in word_budget(post) if count > limit]
 
 
 def reference_problems(post: dict, directory: Path,
