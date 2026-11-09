@@ -2,9 +2,9 @@
   "post_type": "drop",
   "domain": "email security",
   "colorway": "bloom",
-  "hook": "Outlook.com is bouncing some mail from domains without DMARC",
+  "hook": "MailRoute says Outlook.com is bouncing some mail from domains without DMARC",
   "hooks": [
-    "Outlook.com is bouncing some mail from domains without DMARC",
+    "MailRoute says Outlook.com is bouncing some mail from domains without DMARC",
     "Your messages to Hotmail may be getting rejected without you knowing"
   ],
   "what_happened": "Since Nov 5, MailRoute says Outlook.com has rejected some mail from domains without a DMARC record, with no Microsoft announcement.",
@@ -30,12 +30,12 @@
   "announcement": true,
   "beat": "computing",
   "es": {
-    "domain": "seguridad del correo",
-    "hook": "Outlook.com está rechazando algunos correos de dominios sin registro DMARC",
-    "what_happened": "Desde el 5 de noviembre, MailRoute informa que Outlook.com ha rechazado algunos correos de dominios que no tienen un registro DMARC, sin que Microsoft haya anunciado nada",
-    "why_it_matters": "La ausencia de DMARC puede ocultar tus mensajes a los usuarios de Outlook.com, provocando que facturas, citas o respuestas no se entreguen",
-    "what_to_do": "Añade un registro TXT llamado _dmarc con el valor v=DMARC1; p=none. Comprueba con dig +short TXT _dmarc.ejemplo.com",
-    "the_catch": "DMARC solo pasa cuando SPF o DKIM también se alinean con la dirección From, por lo que un registro por sí solo puede no garantizar la entrega",
-    "_en": "0f3e74ca106c5054"
+    "domain": "seguridad de correo electrónico",
+    "hook": "MailRoute indica que Outlook.com está rechazando algunos correos de dominios sin DMARC",
+    "what_happened": "Desde el 5 de noviembre, MailRoute informa que Outlook.com ha rechazado algunos correos de dominios sin registro DMARC, sin anuncio de Microsoft.",
+    "why_it_matters": "Si tu dominio carece de DMARC, tus mensajes pueden quedar ocultos para los usuarios de Outlook.com, lo que puede provocar facturas, citas o respuestas no entregadas.",
+    "what_to_do": "Añade un registro TXT llamado _dmarc con el valor v=DMARC1; p=none y verifica con dig +short TXT _dmarc.example.com.",
+    "the_catch": "DMARC solo es válido cuando SPF o DKIM también coinciden con la dirección del remitente, por lo que crear únicamente el registro podría no ser suficiente para garantizar la entrega.",
+    "_en": "b7c1c5f595f51fd8"
   }
 }
