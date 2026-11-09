@@ -2,17 +2,16 @@
   "post_type": "drop",
   "domain": "email security",
   "colorway": "bloom",
-  "hook": "Outlook.com now bounces mail from domains without DMARC",
+  "hook": "Outlook.com is bouncing some mail from domains without DMARC",
   "hooks": [
-    "Outlook.com now bounces mail from domains without DMARC",
-    "Your messages to Hotmail may be getting rejected without you knowing",
-    "Microsoft says domains sending over 5,000 daily messages must pass DMARC"
+    "Outlook.com is bouncing some mail from domains without DMARC",
+    "Your messages to Hotmail may be getting rejected without you knowing"
   ],
-  "what_happened": "Outlook.com began rejecting mail from domains that do not publish a DMARC record, causing bounce messages for many senders.",
+  "what_happened": "Since Nov 5, MailRoute says Outlook.com has rejected some mail from domains without a DMARC record, with no Microsoft announcement.",
   "why_it_matters": "Missing DMARC can hide your messages from Outlook.com users, leading to undelivered invoices, appointments, or replies.",
-  "what_to_do": "Publish a DMARC TXT record (e.g., p=none) for your domain, then verify with dig +short TXT _dmarc.yourdomain.com",
+  "what_to_do": "Add a TXT record named _dmarc with value v=DMARC1; p=none. Check with dig +short TXT _dmarc.example.com",
   "the_catch": "DMARC passes only when SPF or DKIM also align with the From address, so a record alone may not fix delivery.",
-  "caption": "Outlook.com is now rejecting emails from domains that lack a DMARC record, causing bounce errors for many senders. Do you have DMARC set up?",
+  "caption": "Outlook.com is rejecting some email from domains that lack a DMARC record, per MailRoute. Do you have DMARC set up?",
   "keywords": [
     "DMARC",
     "email",
@@ -26,16 +25,17 @@
   ],
   "alt_text": "Carousel explains that Outlook.com now bounces mail lacking DMARC, why it matters, how to add a DMARC record, and its limitation.",
   "source_url": "https://mailroute.net/blog/outlook-rejecting-email-without-dmarc",
-  "attribution": "Johnson et al., MailRoute (2026)",
+  "attribution": "Thomas A. Johnson, MailRoute (2026)",
   "peer_reviewed": false,
+  "announcement": true,
   "beat": "computing",
   "es": {
-    "domain": "seguridad de correo electrónico",
-    "hook": "Outlook.com ahora devuelve con rebote los correos de dominios sin DMARC",
-    "what_happened": "Outlook.com empezó a rechazar los correos de dominios que no publican un registro DMARC, lo que generó mensajes de rebote para muchos remitentes",
-    "why_it_matters": "La ausencia de DMARC puede ocultar tus mensajes a los usuarios de Outlook.com, lo que puede hacer que facturas, citas o respuestas no se entreguen",
-    "what_to_do": "Publica un registro TXT DMARC (por ejemplo, p=none) para tu dominio y verifica con dig +short TXT _dmarc.tudominio.com",
-    "the_catch": "DMARC solo se aprueba cuando SPF o DKIM también están alineados con la dirección From, por lo que un registro por sí solo puede no ser suficiente para garantizar la entrega",
-    "_en": "e05d4f2763ea93b2"
+    "domain": "seguridad del correo",
+    "hook": "Outlook.com está rechazando algunos correos de dominios sin registro DMARC",
+    "what_happened": "Desde el 5 de noviembre, MailRoute informa que Outlook.com ha rechazado algunos correos de dominios que no tienen un registro DMARC, sin que Microsoft haya anunciado nada",
+    "why_it_matters": "La ausencia de DMARC puede ocultar tus mensajes a los usuarios de Outlook.com, provocando que facturas, citas o respuestas no se entreguen",
+    "what_to_do": "Añade un registro TXT llamado _dmarc con el valor v=DMARC1; p=none. Comprueba con dig +short TXT _dmarc.ejemplo.com",
+    "the_catch": "DMARC solo pasa cuando SPF o DKIM también se alinean con la dirección From, por lo que un registro por sí solo puede no garantizar la entrega",
+    "_en": "0f3e74ca106c5054"
   }
 }
