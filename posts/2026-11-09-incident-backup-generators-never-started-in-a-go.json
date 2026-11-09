@@ -7,9 +7,9 @@
   "timeline": [
     "22:53 Pacific: A power event hits the data center facility hosting europe-west2-b.",
     "04:12 PDT: Google reports the power event as mitigated and advises moving workloads if feasible.",
-    "04:58 PDT: Power is restored and services start recovering."
+    "04:58 PDT: Google says the power event is mitigated and services are recovering."
   ],
-  "root_cause": "A cable fault cut utility feed A. Feed B was locked out for repairs. Sensors upstream of B's breaker saw live voltage, so generators never started.",
+  "root_cause": "A cable fault cut utility feed A. Feed B was locked out for repairs. Sensors upstream of B's breaker saw live voltage; generators never started.",
   "the_fix": "Load moved to the standby utility. The controllers were reconfigured and validated on 20 and 26 Oct. Maintenance was frozen at similar sites.",
   "the_catch": "The generators were not the root cause. Google's report names a misconfiguration of the controller logic that decides when they start.",
   "caption": "A power cut should be the easy case for a data center: the backup is built for it. Here the backup never got the signal to start. Google's report traces it to controller logic that trusted the wrong sensors. Have you ever had a backup that failed when you finally needed it?",
@@ -30,22 +30,22 @@
   ],
   "alt_text": "Incident report slides about the October 2026 Google Cloud europe-west2 outage, where backup generators did not start during a power event.",
   "source_url": "https://status.cloud.google.com/incidents/Xs2XTHzAVC9YnafnPyzj",
-  "attribution": "Google Cloud, “RESOLVED: Multiple services were experiencing issues in the europe-west2 region.”, 5 Nov 2026",
+  "attribution": "Google Cloud, “Multiple services were experiencing issues in the europe-west2 region.”, 4 Nov 2026",
   "peer_reviewed": false,
   "incident_report": true,
   "es": {
     "domain": "infraestructura en la nube",
-    "hook": "Los generadores de respaldo nunca se iniciaron en un centro de datos de Google Cloud.",
-    "what_broke": "Los servicios de Google Cloud en europe‑west2 experimentaron errores y fallas de red. El impacto principal duró 6 horas y 8 minutos.",
+    "hook": "Los generadores de respaldo nunca arrancaron en un centro de datos de Google Cloud.",
+    "what_broke": "Los servicios de Google Cloud en europe-west2 experimentaron errores y fallas de red. El impacto principal duró 6 horas y 8 minutos.",
     "timeline": [
-      "22:53 hora del Pacífico: Un evento eléctrico afectó la instalación del centro de datos que aloja europe‑west2‑b.",
-      "04:12 PDT: Google informó que el evento eléctrico estaba mitigado y aconsejó mover las cargas de trabajo si fuera posible.",
-      "04:58 PDT: Se restableció la energía y los servicios comenzaron a recuperarse."
+      "22:53 hora del Pacífico: Un evento eléctrico afectó la instalación del centro de datos que aloja europe-west2-b.",
+      "04:12 PDT: Google informó que el evento eléctrico se había mitigado y aconsejó mover las cargas de trabajo si era posible.",
+      "04:58 PDT: Google indicó que el evento eléctrico estaba mitigado y que los servicios se estaban recuperando."
     ],
-    "root_cause": "Una falla en un cable cortó la alimentación eléctrica A. La alimentación B estaba bloqueada por reparaciones. Los sensores aguas arriba del interruptor de B detectaron tensión activa, por lo que los generadores nunca se iniciaron.",
-    "the_fix": "La carga fue trasladada a la alimentación de reserva. Los controladores fueron reconfigurados y validados el 20 y el 26 de octubre. El mantenimiento quedó congelado en sitios similares.",
-    "the_catch": "Los generadores no fueron la causa raíz. El informe de Google indica una configuración incorrecta de la lógica del controlador que decide cuándo deben arrancar.",
-    "_en": "ff566779c18ce2d8"
+    "root_cause": "Una falla en un cable interrumpió el suministro eléctrico A. El suministro B estaba bloqueado por reparaciones. Los sensores aguas arriba del interruptor de B detectaron voltaje activo; los generadores nunca arrancaron.",
+    "the_fix": "La carga se trasladó al suministro de reserva. Los controladores se reconfiguraron y validaron el 20 y el 26 de octubre. El mantenimiento se suspendió en sitios similares.",
+    "the_catch": "Los generadores no fueron la causa raíz. El informe de Google indica una configuración errónea de la lógica del controlador que decide cuándo deben arrancar.",
+    "_en": "e6d6a7e46b1b76e2"
   },
   "published_at": "2026-11-09"
 }
