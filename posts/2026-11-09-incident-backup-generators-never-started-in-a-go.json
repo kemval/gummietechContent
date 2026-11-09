@@ -46,5 +46,6 @@
     "the_fix": "La carga fue trasladada a la alimentación de reserva. Los controladores fueron reconfigurados y validados el 20 y el 26 de octubre. El mantenimiento quedó congelado en sitios similares.",
     "the_catch": "Los generadores no fueron la causa raíz. El informe de Google indica una configuración incorrecta de la lógica del controlador que decide cuándo deben arrancar.",
     "_en": "ff566779c18ce2d8"
-  }
+  },
+  "published_at": "2026-11-09"
 }
