@@ -637,6 +637,21 @@ def test_a_signal_may_carry_a_launch_and_labels_it():
     assert render.preprint_claims(post) == 0
 
 
+def test_an_outlet_is_credited_once():
+    """2026-11-07: every Signal item read 'BleepingComputer, BleepingComputer
+    (2026)' — the outlet in both slots of the citation template."""
+    post = draft.validate_signal(
+        reply(1, items=[{"claim": "A flaw.",
+                         "attribution": "BleepingComputer, BleepingComputer (2026)"}]),
+        [pick(DECODER)])
+    assert post["items"][0]["attribution"] == "BleepingComputer (2026)"
+    drop = draft.validate(drop_reply(attribution="Ars Technica, Ars Technica"),
+                          drop_item(DECODER), None)
+    assert drop["attribution"] == "Ars Technica"
+    assert draft.plain_credit("Alvarez et al., Nature (2026)") == \
+        "Alvarez et al., Nature (2026)"
+
+
 def test_a_signal_still_refuses_a_source_nothing_can_label():
     with pytest.raises(SystemExit):
         draft.validate_signal(reply(1), [pick("https://example.org/no-paper")])

@@ -325,7 +325,7 @@ where there is one. "A brain implant decoded speech and gesture from one \
 a reader saves it to look something up later.
 - Write "attribution" from the source text as 'Surname et al., Journal \
 (year)'. Never invent one — if the text does not say who did the work, name \
-the outlet instead.
+the outlet once, as 'Outlet (year)': never 'Outlet, Outlet (year)'.
 - Do not write a caveat slide. This format has no catch slide; a roundup has \
 five caveats or none.
 - Write the hook, every claim and the caption in the voice below. Where it \
@@ -1011,6 +1011,8 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     # the interview, who may be the senior author or — as in the
     # Moon-formation draft that prompted this — an outside commentator who
     # did not write the paper at all.
+    if post.get("attribution"):
+        post["attribution"] = plain_credit(str(post["attribution"]))
     if paper:
         cite = citation(paper)
         if cite:
@@ -1062,6 +1064,22 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
     return finish(post, DROP_KEYS)
 
 
+def plain_credit(text: str) -> str:
+    """'BleepingComputer, BleepingComputer (2026)' → 'BleepingComputer (2026)'.
+
+    The 'Surname et al., Journal (year)' template has two slots, and for a
+    news story with no named author the model fills both with the outlet:
+    every item of 2026-11-07's Signal shipped that way, on the slides, the
+    archive and the newsletter. The prompt now says to name the outlet once;
+    this is the check for when it does not.
+    """
+    text = text.strip()
+    match = re.fullmatch(r"(.+?), (.+?)( \(\d{4}\))?", text)
+    if match and match[1].casefold() == match[2].casefold():
+        return match[1] + (match[3] or "")
+    return text
+
+
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
 ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
@@ -1090,7 +1108,7 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
     for item, pick in zip(items, picks):
         paper, url = pick["paper"], pick["item"]["url"]
         built = {"claim": str(item.get("claim", "")).strip(),
-                 "attribution": str(item.get("attribution", "")).strip(),
+                 "attribution": plain_credit(str(item.get("attribution", ""))),
                  "source_url": url,
                  "peer_reviewed": peer_review_flag(paper, url)}
         # Code's call, never the model's: a Signal labels only what code can.
