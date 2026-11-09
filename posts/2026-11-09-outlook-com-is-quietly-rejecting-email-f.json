@@ -1,0 +1,41 @@
+{
+  "post_type": "drop",
+  "domain": "email security",
+  "colorway": "bloom",
+  "hook": "Outlook.com now bounces mail from domains without DMARC",
+  "hooks": [
+    "Outlook.com now bounces mail from domains without DMARC",
+    "Your messages to Hotmail may be getting rejected without you knowing",
+    "Microsoft says domains sending over 5,000 daily messages must pass DMARC"
+  ],
+  "what_happened": "Outlook.com began rejecting mail from domains that do not publish a DMARC record, causing bounce messages for many senders.",
+  "why_it_matters": "Missing DMARC can hide your messages from Outlook.com users, leading to undelivered invoices, appointments, or replies.",
+  "what_to_do": "Publish a DMARC TXT record (e.g., p=none) for your domain, then verify with dig +short TXT _dmarc.yourdomain.com",
+  "the_catch": "DMARC passes only when SPF or DKIM also align with the From address, so a record alone may not fix delivery.",
+  "caption": "Outlook.com is now rejecting emails from domains that lack a DMARC record, causing bounce errors for many senders. Do you have DMARC set up?",
+  "keywords": [
+    "DMARC",
+    "email",
+    "Outlook.com"
+  ],
+  "hashtags": [
+    "#emailsecurity",
+    "#dmarc",
+    "#outlook",
+    "#gummietech"
+  ],
+  "alt_text": "Carousel explains that Outlook.com now bounces mail lacking DMARC, why it matters, how to add a DMARC record, and its limitation.",
+  "source_url": "https://mailroute.net/blog/outlook-rejecting-email-without-dmarc",
+  "attribution": "Johnson et al., MailRoute (2026)",
+  "peer_reviewed": false,
+  "beat": "computing",
+  "es": {
+    "domain": "seguridad de correo electrónico",
+    "hook": "Outlook.com ahora devuelve con rebote los correos de dominios sin DMARC",
+    "what_happened": "Outlook.com empezó a rechazar los correos de dominios que no publican un registro DMARC, lo que generó mensajes de rebote para muchos remitentes",
+    "why_it_matters": "La ausencia de DMARC puede ocultar tus mensajes a los usuarios de Outlook.com, lo que puede hacer que facturas, citas o respuestas no se entreguen",
+    "what_to_do": "Publica un registro TXT DMARC (por ejemplo, p=none) para tu dominio y verifica con dig +short TXT _dmarc.tudominio.com",
+    "the_catch": "DMARC solo se aprueba cuando SPF o DKIM también están alineados con la dirección From, por lo que un registro por sí solo puede no ser suficiente para garantizar la entrega",
+    "_en": "e05d4f2763ea93b2"
+  }
+}
