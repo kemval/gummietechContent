@@ -1,0 +1,56 @@
+<!doctype html>
+<!--
+  The Substack footer — the image that closes each weekly issue, pasted at
+  the end of the newsletter. 1200x400 (3:1), the header's sibling: the same
+  layout from assets/substack-banner.html, mirrored, with ember's ribbons at
+  seed "substack-footer" so it is not a copy of the header's frame.
+
+  To re-export after a change, from the repo root:
+    venv/bin/python -c "from playwright.sync_api import sync_playwright as s; \
+    import pathlib; p = s().start(); b = p.chromium.launch(); \
+    g = b.new_page(viewport={'width': 1200, 'height': 400}, device_scale_factor=2); \
+    g.goto(pathlib.Path('assets/substack-footer.html').resolve().as_uri()); \
+    g.wait_for_timeout(1000); g.screenshot(path='assets/substack-footer.png'); b.close(); p.stop()"
+-->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../templates/tokens.css">
+<style>
+@font-face { font-family: 'Hubot Sans'; src: url('../fonts/HubotSans.ttf'); font-weight: 200 900; font-stretch: 75% 125%; }
+@font-face { font-family: 'Mona Sans'; src: url('../fonts/MonaSans.ttf'); font-weight: 200 900; font-stretch: 75% 125%; }
+@font-face { font-family: 'Monaspace Neon'; src: url('../fonts/MonaspaceNeon-SemiBold.otf'); font-weight: 600; }
+* { margin: 0; box-sizing: border-box; }
+body { width: 1200px; height: 400px; overflow: hidden; }
+.banner { width: 1200px; height: 400px; display: grid; grid-template-columns: 520px 1fr;
+  color: var(--ink); font-family: var(--body); background: var(--amber); }
+.mono { font-family: var(--mono); font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
+.lead { position: relative; padding: 48px 60px; display: flex; flex-direction: column; justify-content: space-between; }
+.lead > canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.lead > :not(canvas) { position: relative; z-index: 1; }
+.word { font-family: var(--display); font-weight: 800; font-stretch: 110%; letter-spacing: -.02em; line-height: .9; font-size: 78px; }
+.tag { font-size: 21px; line-height: 1.3; font-weight: 500; max-width: 640px; }
+.links { display: grid; grid-template-rows: 1fr 1fr 1fr; }
+.links div { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 0 30px; white-space: nowrap;
+  font-family: var(--display); font-weight: 700; font-size: 30px; }
+.links .url { font-size: 24px; }
+.links .mono { font-size: 13px; opacity: .7; }
+</style></head><body>
+<div class="banner">
+  <div class="links">
+    <div style="background: var(--pink)"><span class="mono">Instagram</span>@gummietech</div>
+    <div style="background: var(--olive)"><span class="mono">Archive</span><span class="url">kemval.github.io/gummietechContent</span></div>
+    <div style="background: var(--sky)"><span class="mono">Newsletter</span>gummietech.substack.com</div>
+  </div>
+  <div class="lead">
+    <div class="mono">@gummietech · see you next week</div>
+    <div class="word">GummieTech</div>
+    <p class="tag">Every post links its source. Read it, share it, tell us what we got wrong.</p>
+  </div>
+</div>
+<script src="../templates/backdrop.js"></script>
+<script>
+// The slides' own shader, drawn once at frame 0, as in the header.
+// Without WebGL the field stays flat amber.
+if (window.Ribbons) Ribbons.attach(document.querySelector('.lead'),
+  { field: 'amber', palette: ['blush', 'amber'], seed: 'substack-footer' });
+</script>
+</body></html>
