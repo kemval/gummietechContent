@@ -5,8 +5,8 @@
   "hook": "The email record that ties checks to the address you see.",
   "term": "DMARC",
   "definition": "A DNS record that ties SPF and DKIM checks to the From address. It passes only when one of them passes for that domain.",
-  "example": "MailRoute says Outlook.com rejected some mail from domains without a DMARC record, with no Microsoft announcement.",
-  "the_catch": "A DMARC record alone does not make mail pass. Without aligned SPF or DKIM it fails, and p=none does not stop spoofing.",
+  "example": "MailRoute says Outlook.com rejected some mail from domains without DMARC on Nov 5–9, then Microsoft rolled back a spam-rule update it blamed.",
+  "the_catch": "A DMARC record alone does not make mail pass. Without aligned SPF or DKIM it fails, and p=none asks receivers to take no action.",
   "example_post": "2026-11-09-outlook-com-is-quietly-rejecting-email-f",
   "caption": "DMARC is the DNS record that ties SPF and DKIM checks to the From address, and a record alone won't help without an aligned check. Have you ever had an email bounce for no clear reason?",
   "keywords": [
@@ -27,12 +27,12 @@
   "announcement": true,
   "beat": "computing",
   "es": {
-    "domain": "seguridad del correo electrónico",
+    "domain": "seguridad de correo electrónico",
     "hook": "El registro de correo electrónico que vincula las verificaciones a la dirección que ves",
     "term": "DMARC",
-    "definition": "Es un registro DNS que vincula las comprobaciones SPF y DKIM a la dirección From; solo pasa cuando al menos una de ellas se aprueba para ese dominio",
-    "example": "MailRoute indica que Outlook.com rechazó algunos correos de dominios sin un registro DMARC, sin ningún anuncio de Microsoft",
-    "the_catch": "Un registro DMARC por sí solo no garantiza que el correo pase; si no hay SPF o DKIM alineados, el mensaje falla, y la política p=none no detiene la suplantación",
-    "_en": "77cda1a3a3da0cbe"
+    "definition": "Un registro DNS que vincula las verificaciones SPF y DKIM con la dirección From. Solo se aprueba cuando una de ellas pasa para ese dominio",
+    "example": "MailRoute indica que Outlook.com rechazó algunos correos de dominios sin DMARC del 5 al 9 de noviembre, y luego Microsoft revocó una actualización de regla antispam que había señalado como causa",
+    "the_catch": "Un registro DMARC por sí solo no hace que el correo pase. Sin SPF o DKIM alineados, falla, y p=none indica a los receptores que no tomen ninguna medida",
+    "_en": "fa3b01754b335ee1"
   }
 }
