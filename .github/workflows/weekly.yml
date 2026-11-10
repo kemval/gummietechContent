@@ -163,11 +163,12 @@ jobs:
           show_full_output: true
           claude_args: |
             --max-turns 40
-            --allowedTools "Read,Write,Glob,Grep,WebFetch"
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebFetch"
           settings: |
             {
               "permissions": {
-                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)"],
+                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)",
+                          "Edit(//tmp/weekly/**)"],
                 "deny": ["Write(posts/**)", "Edit(posts/**)",
                          "Write(src/**)", "Edit(src/**)",
                          "Write(.github/**)", "Edit(.github/**)",
@@ -209,7 +210,9 @@ jobs:
       # outside the menu — and before 2026-10-18 each one ended the run, so
       # a person had to dispatch the whole post again for one long line.
       # Once only: a draft refused twice is a brief the writer cannot
-      # follow, which is a person's to read.
+      # follow, which is a person's to read. It needs Edit, not just Write:
+      # fixing a file it did not write reaches for Edit, and without it the
+      # 2026-11-10 term's rewrite was denied and the run failed.
       - name: Rewrite the refused draft
         if: steps.first.outputs.refused == 'true'
         uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
@@ -224,11 +227,12 @@ jobs:
           show_full_output: true
           claude_args: |
             --max-turns 20
-            --allowedTools "Read,Write,Glob,Grep,WebFetch"
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebFetch"
           settings: |
             {
               "permissions": {
-                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)"],
+                "allow": ["Read(//tmp/weekly/**)", "Write(//tmp/weekly/**)",
+                          "Edit(//tmp/weekly/**)"],
                 "deny": ["Write(posts/**)", "Edit(posts/**)",
                          "Write(src/**)", "Edit(src/**)",
                          "Write(.github/**)", "Edit(.github/**)",
