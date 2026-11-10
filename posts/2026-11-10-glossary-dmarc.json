@@ -34,5 +34,6 @@
     "example": "MailRoute indica que Outlook.com rechazó algunos correos de dominios sin DMARC del 5 al 9 de noviembre, y luego Microsoft revocó una actualización de regla antispam que había señalado como causa",
     "the_catch": "Un registro DMARC por sí solo no hace que el correo pase. Sin SPF o DKIM alineados, falla, y p=none indica a los receptores que no tomen ninguna medida",
     "_en": "fa3b01754b335ee1"
-  }
+  },
+  "published_at": "2026-11-10"
 }
