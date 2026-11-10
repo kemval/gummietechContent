@@ -1,0 +1,38 @@
+{
+  "post_type": "term",
+  "domain": "email security",
+  "colorway": "bloom",
+  "hook": "The email record that ties checks to the address you see.",
+  "term": "DMARC",
+  "definition": "A DNS record that ties SPF and DKIM checks to the From address. It passes only when one of them passes for that domain.",
+  "example": "MailRoute says Outlook.com rejected some mail from domains without a DMARC record, with no Microsoft announcement.",
+  "the_catch": "A DMARC record alone does not make mail pass. Without aligned SPF or DKIM it fails, and p=none does not stop spoofing.",
+  "example_post": "2026-11-09-outlook-com-is-quietly-rejecting-email-f",
+  "caption": "DMARC is the DNS record that ties SPF and DKIM checks to the From address, and a record alone won't help without an aligned check. Have you ever had an email bounce for no clear reason?",
+  "keywords": [
+    "DMARC",
+    "email authentication",
+    "SPF and DKIM"
+  ],
+  "hashtags": [
+    "#emailsecurity",
+    "#dmarc",
+    "#dns",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining DMARC: a DNS record that ties SPF and DKIM checks to the From address, an example from an earlier gummietech post about Outlook.com rejecting some mail, and the common mistake of thinking a record alone makes mail pass.",
+  "source_url": "https://mailroute.net/blog/outlook-rejecting-email-without-dmarc",
+  "attribution": "Thomas A. Johnson, MailRoute (2026)",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "seguridad del correo electrónico",
+    "hook": "El registro de correo electrónico que vincula las verificaciones a la dirección que ves",
+    "term": "DMARC",
+    "definition": "Es un registro DNS que vincula las comprobaciones SPF y DKIM a la dirección From; solo pasa cuando al menos una de ellas se aprueba para ese dominio",
+    "example": "MailRoute indica que Outlook.com rechazó algunos correos de dominios sin un registro DMARC, sin ningún anuncio de Microsoft",
+    "the_catch": "Un registro DMARC por sí solo no garantiza que el correo pase; si no hay SPF o DKIM alineados, el mensaje falla, y la política p=none no detiene la suplantación",
+    "_en": "77cda1a3a3da0cbe"
+  }
+}
