@@ -819,3 +819,18 @@ def test_a_maker_with_no_feed_still_announces():
 def test_hashtags_are_lowercase_capped_and_end_on_the_brand(tags, expected):
     from formats import hashtags
     assert hashtags(tags) == expected
+
+
+@pytest.mark.parametrize("readme, try_it, post_type", [
+    ("## Usage\n`./run.sh`", "Run `./run.sh`.", "run"),
+    # 2026-11-11: the repo was a write-up with no code; the model left
+    # try_it "" and the refusal cost Wednesday's post.
+    ("## How to Reproduce\nMention a trip to Gemini.", "", "drop"),
+    ("", "Needs a GPU.", "drop"),      # no README read: never a run post
+])
+def test_a_readme_with_nothing_to_run_drafts_a_plain_drop(readme, try_it,
+                                                          post_type):
+    drafted = drop_reply(try_it=try_it)
+    draft.settle_run(drafted, readme)
+    assert drafted["post_type"] == post_type
+    assert ("try_it" in drafted) == (post_type == "run")
