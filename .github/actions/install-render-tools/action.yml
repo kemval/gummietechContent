@@ -29,6 +29,14 @@ description: >
 # ffmpeg) runs under a timeout that is itself root, and only the browser
 # download, which belongs in the runner's own cache, runs as the user.
 #
+# 2026-11-11: the retry ran, and timed out the same way, four times over
+# two hours. apt leaves a mirror only when a download stops dead (no data
+# for 30s); Azure's node was trickling, not stopped, so both attempts sat on
+# it (actions/runner-images#14823, open). The runner reads its mirrors from
+# /etc/apt/apt-mirrors.txt, Azure first; attempt 2 now deletes that line and
+# downloads from archive.ubuntu.com instead. Attempt 1 keeps Azure, which is
+# the fast one on a normal day.
+#
 # Worst case is two full attempts, about ten minutes: every caller's
 # timeout-minutes leaves room for that on top of its normal run.
 
@@ -90,6 +98,15 @@ runs:
         for attempt in 1 2; do
           if [ "$attempt" -gt 1 ]; then
             sudo dpkg --configure -a || true
+            # The retry goes to a different mirror, or it waits on the same
+            # slow node again: see the 2026-11-11 note above. Only when the
+            # runner's list names another mirror to fall back to.
+            mirrors=/etc/apt/apt-mirrors.txt
+            if grep -q azure.archive.ubuntu.com "$mirrors" 2>/dev/null &&
+               grep -v azure.archive.ubuntu.com "$mirrors" | grep -q .; then
+              sudo sed -i '/azure\.archive\.ubuntu\.com/d' "$mirrors"
+              echo "Retrying without the Azure mirror: $(tr '\n' ' ' < "$mirrors")"
+            fi
           fi
           # Each timeout signals its whole process group, and kills it
           # outright if a TERM is ignored. The first is root, so it reaches
