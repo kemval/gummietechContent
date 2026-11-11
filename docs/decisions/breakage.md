@@ -122,3 +122,11 @@ process. The apt half (Chromium's libraries and ffmpeg) now runs under
 `sudo timeout`, four minutes, and only the browser download runs as the user
 (one minute), since it belongs in the runner's cache: the same five minutes
 an attempt.
+**The retry has to go somewhere else** (2026-11-11). PR #79's check failed
+four times in two hours with the retry working as built: apt leaves a mirror
+only when a download stops dead, and Azure's node was trickling, so both
+attempts waited on it (actions/runner-images#14823, open since 2026-09-30).
+Attempt 2 now deletes the Azure line from the runner's
+`/etc/apt/apt-mirrors.txt` and fetches from `archive.ubuntu.com`. Attempt 1
+keeps Azure, which is the fast mirror on a normal day. If both mirrors are
+slow at once, the next step is caching the `.deb`s with `actions/cache`.
