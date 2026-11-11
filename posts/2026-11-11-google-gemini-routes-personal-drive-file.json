@@ -1,0 +1,38 @@
+{
+  "post_type": "drop",
+  "domain": "AI privacy",
+  "colorway": "orbit",
+  "hook": "Google Gemini now pulls your Drive files into human review.",
+  "what_happened": "Google Gemini with Connected Apps enabled can automatically retrieve personal Drive files or Gmail messages and send them to human reviewers, even without @ tags.",
+  "why_it_matters": "It means personal content you discuss can be seen by humans, so privacy expectations change.",
+  "what_to_do": "Avoid connecting your apps to Gemini Apps if they contain confidential information you wouldn't want a reviewer to see.",
+  "the_catch": "The retrieval is probabilistic, so it may not happen every time.",
+  "caption": "Google Gemini can automatically pull personal Drive files and Gmail messages into human review pipelines. Private or exposed?",
+  "keywords": [
+    "Gemini",
+    "privacy",
+    "human review"
+  ],
+  "hashtags": [
+    "#google",
+    "#gemini",
+    "#privacy",
+    "#gummietech"
+  ],
+  "alt_text": "The slides explain that Google Gemini may retrieve personal Drive and Gmail data and send it to human reviewers, note the probabilistic nature, and advise not connecting confidential apps.",
+  "source_url": "https://github.com/thisisme6598/gemini_files/",
+  "code_url": "https://github.com/thisisme6598/gemini_files",
+  "attribution": "Google",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "privacidad de IA",
+    "hook": "Google Gemini ahora extrae tus archivos de Drive para que los revisen humanos",
+    "what_happened": "Google Gemini, con la función Connected Apps activada, puede recuperar automáticamente archivos personales de Drive o mensajes de Gmail y enviarlos a revisores humanos, incluso si no llevan etiquetas @",
+    "why_it_matters": "Esto significa que el contenido personal que discutes puede ser visto por humanos, por lo que tus expectativas de privacidad cambian",
+    "what_to_do": "Evita conectar tus aplicaciones a Gemini Apps si contienen información confidencial que no quisieras que un revisor vea",
+    "the_catch": "La recuperación es probabilística, por lo que no ocurre siempre",
+    "_en": "d8582f2f56ce5d76"
+  }
+}
