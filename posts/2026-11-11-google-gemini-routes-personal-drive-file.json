@@ -4,7 +4,7 @@
   "colorway": "orbit",
   "hook": "Gemini may send excerpts of your Drive files to human reviewers.",
   "what_happened": "Google's help page says some Connected Apps data, including Drive and Gmail excerpts, is human-reviewed. One tester says Gemini fetches it without @ tags.",
-  "why_it_matters": "It means personal content you discuss can be seen by humans, so privacy expectations change.",
+  "why_it_matters": "In 2023 Google said Bard's Workspace content was not seen by human reviewers. Its blog now says human review can happen in limited circumstances.",
   "what_to_do": "Avoid connecting your apps to Gemini Apps if they contain confidential information you wouldn't want a reviewer to see.",
   "the_catch": "Personal accounts only; the author says Workspace business and education accounts are excluded. Retrieval is also probabilistic.",
   "caption": "Google Gemini may send excerpts of personal Drive files and Gmail messages to human reviewers. Private or exposed?",
@@ -28,11 +28,11 @@
   "beat": "ai",
   "es": {
     "domain": "privacidad de IA",
-    "hook": "Gemini podría enviar fragmentos de tus archivos de Drive a revisores humanos.",
-    "what_happened": "La página de ayuda de Google indica que algunos datos de aplicaciones conectadas, incluidos fragmentos de Drive y Gmail, son revisados por humanos. Un probador dice que Gemini los recupera sin etiquetas @.",
-    "why_it_matters": "Esto significa que el contenido personal que discutes puede ser visto por humanos, por lo que cambian tus expectativas de privacidad.",
+    "hook": "Gemini puede enviar fragmentos de tus archivos de Drive a revisores humanos.",
+    "what_happened": "La página de ayuda de Google dice que algunos datos de Connected Apps, incluidos fragmentos de Drive y Gmail, son revisados por humanos. Un probador afirma que Gemini los extrae sin etiquetas @.",
+    "why_it_matters": "En 2023 Google afirmó que el contenido de Workspace de Bard no era revisado por revisores humanos. Ahora su blog indica que la revisión humana puede ocurrir en circunstancias limitadas.",
     "what_to_do": "Evita conectar tus aplicaciones a Gemini Apps si contienen información confidencial que no querrías que un revisor vea.",
-    "the_catch": "Solo se aplica a cuentas personales; el autor indica que las cuentas de Workspace para empresas y educación están excluidas. Además, la recuperación es probabilística.",
-    "_en": "147e10472069fea9"
+    "the_catch": "Solo cuentas personales; el autor indica que las cuentas de Workspace para empresas y educación están excluidas. Además, la recuperación es probabilística.",
+    "_en": "bd3f075cfad4606e"
   }
 }
