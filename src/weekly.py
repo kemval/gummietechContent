@@ -308,6 +308,16 @@ POSTMORTEM_RE = re.compile(r"post-?mortem|post-incident|incident report|"
                            r"root cause|availability report|caused by|"
                            r"\boutage\b", re.I)
 
+
+def reads_like_postmortem(feed: dict, text: str) -> bool:
+    """Whether an entry belongs on the shortlist. A feed that publishes
+    nothing but incident write-ups declares `all_incidents: true` and skips
+    the keywords: 2026-11-11, Fly.io's infra log titles say what broke
+    ("…went read-only after etcd hit its space quota"), and only 3 of its
+    last 6 matched POSTMORTEM_RE. Widening the pattern instead would let
+    every degraded minute on the status pages through."""
+    return bool(feed.get("all_incidents")) or bool(POSTMORTEM_RE.search(text))
+
 # A status page's state, prefixed to its incident's title: "RESOLVED:" on
 # Google Cloud, "Incident:" on Slack. It is the page's state when the feed
 # was read, not the incident's name, and on 2026-11-09 the first recent
@@ -378,7 +388,7 @@ def recent_incidents(today: date, directory: Path = POSTS_DIR,
             day = date(*stamp[:3])
             text = f"{item.get('title', '')} {item.get('summary', '')}"
             if (0 <= (today - day).days <= INCIDENT_FRESH_DAYS
-                    and POSTMORTEM_RE.search(text)):
+                    and reads_like_postmortem(entry, text)):
                 found[link] = {
                     "url": link,
                     "title": incident_title(str(item.get("title", ""))),

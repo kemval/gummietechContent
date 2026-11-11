@@ -129,6 +129,12 @@ whose page is the operator's own and states a cause and a fix, or answers
 
 - **Code shortlists, the writer judges.** Status pages post every degraded
   minute, and whether one names a cause is reading, not a keyword.
+- **A feed of nothing but post-mortems skips the keywords** (2026-11-11).
+  Fly.io's infra log titles say what broke ("…went read-only after etcd
+  hit its space quota"), so only 3 of its last 6 matched `POSTMORTEM_RE`.
+  Its entry carries `all_incidents: true` (`reads_like_postmortem()`).
+  Widening the pattern instead would let the status pages' every degraded
+  minute through; set the flag only on a feed with nothing else in it.
 - **The credit is still code's.** The brief saves its menu to
   `/tmp/weekly/menu.json` and `finish` copies the operator, the page's
   title and its date from it; a pick outside the menu is refused, so the

@@ -49,3 +49,18 @@ feeds:
   - name: Slack Status
     url: https://slack-status.com/feed/rss
     publisher: Slack
+
+  # Added 2026-11-11: full write-ups (600-2,400 chars) that state a cause
+  # and a fix, ~1.5/week. Every post is an incident, but only 3 of the last
+  # 6 titles matched weekly.POSTMORTEM_RE — so `all_incidents` shortlists
+  # every entry. Set it only on a feed with nothing else in it.
+  - name: Fly.io infra log
+    url: https://fly.io/infra-log/feed.xml
+    publisher: Fly.io
+    all_incidents: true
+
+  # The whole blog; only "Incident Report:" posts (~1/month) match
+  # POSTMORTEM_RE, and ingest: false means the rest costs nothing.
+  - name: Railway Blog (incident reports)
+    url: https://blog.railway.com/rss.xml
+    publisher: Railway

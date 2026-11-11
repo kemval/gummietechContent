@@ -104,3 +104,16 @@ def test_a_draft_over_the_word_budget_goes_back_to_the_writer(tmp_path):
             "root_cause": " ".join(["word"] * 26)}
     assert any("root_cause is 26 words" in p
                for p in weekly.problems("incident", post, posts, menu=MENU))
+
+
+def test_a_feed_of_only_incidents_is_shortlisted_without_the_keywords():
+    """2026-11-11: Fly.io's infra log is all post-mortems, but its titles say
+    what broke, not "post-mortem" — 3 of its last 6 matched the keywords.
+    A status page without the flag still needs them."""
+    title = ("Managed Postgres control plane in IAD went read-only after "
+             "etcd hit its space quota")
+    assert not weekly.POSTMORTEM_RE.search(title)
+    assert weekly.reads_like_postmortem({"all_incidents": True}, title)
+    assert not weekly.reads_like_postmortem({"name": "Slack Status"},
+                                            "Degraded performance")
+    assert weekly.reads_like_postmortem({}, "Incident Report: Oct 21 attack")
