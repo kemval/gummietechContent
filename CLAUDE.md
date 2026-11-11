@@ -509,7 +509,8 @@ publish.yml ─ published_at · commit · dispatch site.yml ─→ the archive
 
 - `daily.yml` drafts Mon/Wed/Fri (and the Signal on Saturday), firing four
   times and gated to one draft per day; `force` is the override. Wednesday
-  passes `--run`, which falls back to a plain Drop when nothing links code.
+  passes `--run`, which falls back to a plain Drop when nothing links code
+  or the README gives nothing to run (`draft.settle_run()`).
 - `weekly.yml` writes Tuesday's term, Thursday's Breakdown and Sunday's
   reference or incident (`weekly.scheduled()`, by ISO week) the same way
   (four firings, one post, `kind` and `force` on dispatch). Claude writes

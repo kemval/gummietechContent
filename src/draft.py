@@ -855,7 +855,8 @@ RUN_KEY = """  "try_it": "<at most {word_limit} words. What a reader needs to ru
 code: hardware, language or framework, data, and the entry point or command. \
 Put each command a reader types between backticks, like `./setup.sh`. \
 Only what the REPOSITORY README below states. Never invent a requirement, \
-and never promise it runs on less than the README says>",
+and never promise it runs on less than the README says. Return "" when the \
+README gives no way to run anything>",
 """
 
 
@@ -864,6 +865,27 @@ def run_text(text: str, repo: str, readme: str) -> str:
     the prompt can say where try_it comes from and nothing else does."""
     return (f"{text}\n\nREPOSITORY README ({repo}) — the source for try_it, "
             f"and for nothing else:\n{readme}")
+
+
+def settle_run(drafted: dict, readme: str) -> None:
+    """Make the reply a run post only when the README gave it something to run.
+
+    Written by code, never the model: which format this is follows from
+    whether a README was read *and* the model found steps in it. "" is the
+    model's honest answer for a repo that is a write-up, not code
+    (2026-11-11: a reproduction guide for a Gemini privacy story), and that
+    is a plain Drop, said out loud, exactly like a story that links no code
+    — never a refused draft, which cost a Wednesday.
+    """
+    steps = " ".join(str(drafted.get("try_it") or "").split())
+    if readme and not steps:
+        print("  warning: the README gives no way to run anything — drafting "
+              "a plain Drop")
+    if readme and steps:
+        drafted["post_type"], drafted["try_it"] = "run", steps
+    else:
+        drafted["post_type"] = "drop"
+        drafted.pop("try_it", None)
 
 
 def finish(post: dict, order: list[str]) -> dict:
@@ -1421,12 +1443,7 @@ def main() -> int:
                           extra=RUN_KEY.format(word_limit=WORD_LIMIT)
                           if readme else ""),
             api_key, model)
-        # Written by code, never the model: which format this is follows
-        # from whether a README was read, and the run format requires the
-        # try_it and code_url that only a README day produces.
-        drafted["post_type"] = "run" if readme else "drop"
-        if not readme:
-            drafted.pop("try_it", None)
+        settle_run(drafted, readme)
         post = validate(drafted, item, paper)
         title = slugify(item["title"])
 
