@@ -112,3 +112,13 @@ feeds:
   - name: Practical Engineering
     url: https://practical.engineering/blog?format=rss
     topic: engineering
+
+  # Added 2026-11-11. One person's long-form posts on AI tools, models that
+  # run on a laptop, and Python — what you can do with AI, which no other
+  # feed here covers. Full text in the feed (~5.8k chars), ~2/week; often
+  # links a repo (Wednesday's --run) or a local model ("Can I run it?").
+  # /atom/everything/ would add every link post. The three limits above
+  # apply: no DOI, attribution is the model's — credit him by name.
+  - name: Simon Willison
+    url: https://simonwillison.net/atom/entries/
+    topic: ai

@@ -53,6 +53,53 @@
 #   Qwen, Z.ai,     2026-10-17: qwenlm.github.io/blog/index.xml is 389d
 #   Xiaomi MiMo     stale; z.ai/blog and mimo.xiaomi.com have no feed.
 #                   All three are under `feedless_newsrooms` too.
+#
+# Measured 2026-11-11 and rejected, with the same test (volume that survives
+# the prefilter and dies at score.py):
+#
+#   Engadget        engadget.com/feed/ is ~21/day and is_noise caught 1 of 20;
+#   (main feed)     the rest is reviews, gaming, EVs, Roku and lawsuits — 3-4
+#                   of 20 actionable, and those already in Ars. Descriptions
+#                   are 38-152 char stubs. /category/ai/feed/ (4/day) restates
+#                   maker launches the newsroom feeds below already carry.
+#                   The cybersecurity category is wired in instead.
+#   Digital Trends  digitaltrends.com/feed/ ~28/day, is_noise caught 1 of 20:
+#                   reviews, "Branded Content" (/brc/, /partner-content/) and
+#                   Black Friday roundups "best deals" misses. /computing/feed/
+#                   (9/day) no better. Section feeds 429 after ~4 requests.
+#   The Next Web    thenextweb.com/feed holds 10 items, ~3 hours' worth, so a
+#                   shed ingest cron loses items. 4 of 10 "Contributed" vendor
+#                   op-eds and 1 "Press Release" (tags, which is_noise does not
+#                   read). Its best two were already in AWS ML and Google AI
+#                   blogs. /topic/*/feed 404s.
+#   The Deep View   thedeepview.com/feed.xml, 2.6/day, one article per item but
+#                   descriptions cut at 200 chars. AI-business analysis of
+#                   launches the newsrooms already carry; 0 of 20 gave a reader
+#                   a step to take. A sponsored series passed is_noise unlabelled.
+#   The Hacker News feeds.feedburner.com/TheHackersNews, 8-13/day, mostly
+#   (thehackernews) enterprise advisories; 6 of 38 also in BleepingComputer
+#                   the same days. Volume without a new beat.
+#   CISA advisories cisa.gov/cybersecurity-advisories/all.xml (200 again on
+#                   11-11, 403 on 11-05): KEV additions are one item for six
+#                   CVEs, a digest; the rest are ICS advisories. KEV itself is
+#                   JSON only and would be a `kind`, i.e. code.
+#   Chrome Releases chromereleases.googleblog.com, 1 of 41 stable posts in 64
+#                   days named an in-the-wild exploit, and BleepingComputer and
+#                   Malwarebytes carry those the same day.
+#   FTC consumer    consumer.ftc.gov and ftc.gov 404 on every path to
+#   alerts          verify_feeds.HEADERS from a non-US network. Unverified, not
+#                   dead: re-probe from a US runner.
+#   Also rejected   FBI IC3 PSAs (empty descriptions), Troy Hunt (weekly
+#   on 2026-11-11   digests; his HIBP feed is wired in), Schneier, ESET
+#                   WeLiveSecurity, NCSC UK, The Record, Mozilla Security (71d
+#                   gaps), Project Zero, MSRC (no feed), AMD/Arm newsrooms
+#                   (corporate), Intel (403), blogs.windows.com/feed/ (Insider
+#                   builds), Official Microsoft Blog, VS Code (digests), Google
+#                   Open Source (digests), GitHub open-source/security feeds,
+#                   Apple Developer releases (32-char stubs), Node.js (empty),
+#                   Raspberry Pi, Citizen Lab, EFF, How-To Geek, Lifehacker
+#                   (deals), Privacy Guides (360d stale), Ai2 (mostly climate
+#                   work, a `science` beat never queued).
 
 # --- retired 2026-10-17: the account went technology only ---
 #
@@ -240,6 +287,26 @@ feeds:
     announces: [cohere.com/blog/]
     max_items: 10
 
+  # Added 2026-11-11: makers whose posts are a thing the reader can run or
+  # turn on. `announces` measured from each feed's newest 10 links, not the
+  # sheet — re-measure from the sheet after the first ingest.
+  #
+  # Ollama: each post is a model or feature you can run locally, free — the
+  # source "Can I run it?" needs. ~0.6/week; its longest gap in a year was
+  # 59 days, a day under STALE_AFTER_DAYS, so a stale alarm may be false.
+  - name: Ollama
+    url: https://ollama.com/blog/rss.xml
+    topic: ai
+    announces: [ollama.com/blog/]
+
+  # Microsoft's consumer Windows posts ("How to get the Windows 11 2026
+  # Update", family-safety settings). The parent blogs.windows.com/feed/ is
+  # rejected above: 4 of its newest 10 were Insider build notes.
+  - name: Windows Experience Blog
+    url: https://blogs.windows.com/windowsexperience/feed/
+    topic: tech
+    announces: [blogs.windows.com/windowsexperience/]
+
   # --- security: what to patch, what to avoid ---
   #
   # Added 2026-11-05, when the owner asked for news a reader can act on.
@@ -247,7 +314,8 @@ feeds:
   # a scam going around could not reach the queue. `reports` measured from
   # each feed's own item links that day (15/15, 10/10, 20/20). Google's
   # Online Security Blog was considered: its newest item was 195 days old.
-  # CISA's advisories feed answers 403 to verify_feeds.HEADERS.
+  # CISA's advisories feed answered 403 then; 200 on 2026-11-11, still
+  # rejected (see "considered, not wired in").
   - name: BleepingComputer
     url: https://www.bleepingcomputer.com/feed/
     topic: tech
@@ -266,6 +334,34 @@ feeds:
     url: https://www.malwarebytes.com/blog/feed/index.xml
     topic: tech
     reports: [malwarebytes.com/blog/]
+
+  # Added 2026-11-11, measured from each feed's own links that day.
+  #
+  # Engadget's cybersecurity category only (main feed rejected above).
+  # ~0.9/day of consumer how-tos ("5 iPhone security settings you should
+  # change", "wrong number text scams") no other feed here carried. These
+  # are evergreen pieces re-dated as new, so watch how the first few fit a
+  # Drop. Links are engadget.com/<id>/, so the prefix is the host — which
+  # also labels any Engadget link Hacker News surfaces as a news report.
+  - name: Engadget Cybersecurity
+    url: https://www.engadget.com/category/cybersecurity/feed/
+    topic: tech
+    reports: [engadget.com/]
+
+  # One breach per item, with what leaked and how many accounts; the
+  # reader's step is "check your address". Neither news outlet nor maker,
+  # so no `reports` or `announces`. An item's date is when HIBP loaded the
+  # data, not when the breach happened — the fact-check must date the breach.
+  - name: Have I Been Pwned
+    url: https://feeds.feedburner.com/HaveIBeenPwnedLatestBreaches
+    topic: tech
+
+  # Google's consumer security how-tos (Gmail security checkup, passkeys,
+  # scam checks). Live, unlike the Online Security Blog. Short summaries.
+  - name: Google Safety & Security
+    url: https://blog.google/innovation-and-ai/technology/safety-security/rss/
+    topic: tech
+    announces: [blog.google/]
 
   # --- journals / science press ---
 
