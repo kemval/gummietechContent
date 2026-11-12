@@ -38,5 +38,8 @@
     "the_catch": "DMARC solo es válido cuando SPF o DKIM también coinciden con la dirección del remitente, por lo que crear únicamente el registro podría no ser suficiente para garantizar la entrega.",
     "_en": "b7c1c5f595f51fd8"
   },
-  "published_at": "2026-11-09"
+  "published_at": "2026-11-09",
+  "metrics": {
+    "asked_at": "2026-11-12"
+  }
 }
