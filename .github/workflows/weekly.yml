@@ -153,7 +153,11 @@ jobs:
           poppler: 'true'
 
       # Writes one JSON file outside the repo. It may read the repo and the
-      # source; it may write nothing but /tmp/weekly.
+      # source; it may write nothing but /tmp/weekly. curl, because WebFetch
+      # returns a small model's summary of a page: on 2026-11-12 the
+      # Breakdown's source (a GitHub README) came back paraphrased twice
+      # and the writer, rightly, wrote nothing. The diff check below still
+      # guards the repo whatever curl writes.
       - name: Write the post
         uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
         with:
@@ -163,7 +167,7 @@ jobs:
           show_full_output: true
           claude_args: |
             --max-turns 40
-            --allowedTools "Read,Write,Edit,Glob,Grep,WebFetch"
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebFetch,Bash(curl:*)"
           settings: |
             {
               "permissions": {

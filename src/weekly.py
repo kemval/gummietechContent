@@ -534,7 +534,13 @@ Rules:
   - Do NOT write source_url, doi, attribution, peer_reviewed, announcement,
     news_report, es or published_at. Code copies the credit after you; the rest is not
     yours.
-  - Write /tmp/weekly/draft.json and no other file.
+  - WebFetch hands you a model's summary of a page, not the page. To read a
+    source in full, fetch it with curl into /tmp/weekly (`curl -fsSL
+    --max-time 30 -A "Mozilla/5.0" -o /tmp/weekly/source.html <url>`) and
+    Read that file; for a GitHub repo, curl its README from
+    raw.githubusercontent.com. A PDF saved there is read with Read.
+  - Write /tmp/weekly/draft.json and no other file, beyond the sources you
+    save in /tmp/weekly.
 """
 
 GLOSSARY_BRIEF = """\
