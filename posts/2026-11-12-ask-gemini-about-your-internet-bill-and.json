@@ -4,7 +4,7 @@
   "colorway": "orbit",
   "hook": "Ask Gemini about your internet bill and it may read your email.",
   "the_question": "A tester asked Gemini, “I wonder if I’m paying too much for internet service.” Sometimes it replied with details from an email.",
-  "the_intuition": "A chatbot only opens your files when told to, with an @Drive or @Gmail tag.",
+  "the_intuition": "You might expect Gemini to open your files only when told, with an @Drive or @Gmail tag.",
   "mechanism": [
     "With Connected Apps on, the author says a passing mention of a trip, bill or reservation triggers a background search of Gmail or Drive.",
     "The author says retrieval varies run to run: repeat a prompt and get nothing, a summary, a 2–4 sentence quote or the full text.",
@@ -34,16 +34,16 @@
   "beat": "ai",
   "es": {
     "domain": "privacidad de IA",
-    "hook": "Pregúntale a Gemini sobre tu factura de internet y podría leer tu correo electrónico",
-    "the_question": "Un probador le preguntó a Gemini: «Me pregunto si estoy pagando de más por el servicio de internet». A veces respondió con detalles extraídos de un correo electrónico.",
-    "the_intuition": "Un chatbot solo abre tus archivos cuando le indicas, usando una etiqueta @Drive o @Gmail.",
+    "hook": "Pregúntale a Gemini sobre tu factura de internet y podría leer tu correo electrónico.",
+    "the_question": "Un evaluador le preguntó a Gemini: «Me pregunto si estoy pagando de más por el servicio de internet». En ocasiones, respondió con detalles extraídos de un correo electrónico.",
+    "the_intuition": "Podrías esperar que Gemini abra tus archivos solo cuando se lo indiques, usando una etiqueta @Drive o @Gmail.",
     "mechanism": [
-      "Con las aplicaciones conectadas activadas, el autor dice que una mención casual de un viaje, una factura o una reserva desencadena una búsqueda en segundo plano en Gmail o Drive.",
-      "El autor indica que la recuperación varía de una ejecución a otra: al repetir la solicitud puedes no obtener nada, un resumen, una cita de 2 a 4 oraciones o el texto completo.",
-      "La página de ayuda de Google afirma que un subconjunto de los datos de aplicaciones conectadas es revisado por humanos. El autor sostiene que cualquier información extraída en un chat puede ser revisada."
+      "Con Connected Apps activado, el autor afirma que una mención casual de un viaje, una factura o una reserva desencadena una búsqueda en segundo plano en Gmail o Drive.",
+      "Al repetir el mismo prompt, puede que no obtengas nada, que recibas un resumen, una cita de 2 a 4 frases o el texto completo.",
+      "La página de ayuda de Google afirma que humanos revisan un subconjunto de los datos de Connected Apps. El autor sostiene que cualquier información extraída en un chat puede ser revisada."
     ],
-    "why_it_matters": "En el blog de Google de 2023 se afirmaba que el contenido de Workspace no era revisado por humanos. El texto editado ahora permite la revisión en circunstancias limitadas.",
-    "the_catch": "Se trata de un artículo en GitHub escrito por su autor, no de un estudio. Los resultados varían según la ejecución. Solo se analizan cuentas personales; las cuentas empresariales y educativas de Workspace quedan excluidas.",
-    "_en": "17d9bcbd62d9887e"
+    "why_it_matters": "En 2023, el blog de Google declaraba que el contenido de Workspace no era revisado por humanos. El texto editado ahora permite que se revise en circunstancias limitadas.",
+    "the_catch": "Es un artículo en GitHub escrito por su autor, no un estudio. Los resultados varían según la ejecución. Solo cubre cuentas personales; las cuentas de Workspace para empresas y educación están excluidas.",
+    "_en": "de2f5c0712139586"
   }
 }
