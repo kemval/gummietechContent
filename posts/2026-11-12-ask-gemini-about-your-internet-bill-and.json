@@ -1,0 +1,49 @@
+{
+  "post_type": "breakdown",
+  "domain": "AI privacy",
+  "colorway": "orbit",
+  "hook": "Ask Gemini about your internet bill and it may read your email.",
+  "the_question": "A tester asked Gemini, “I wonder if I’m paying too much for internet service.” Sometimes it replied with details from an email.",
+  "the_intuition": "A chatbot only opens your files when told to, with an @Drive or @Gmail tag.",
+  "mechanism": [
+    "With Connected Apps on, the author says a passing mention of a trip, bill or reservation triggers a background search of Gmail or Drive.",
+    "The author says retrieval varies run to run: repeat a prompt and get nothing, a summary, a 2–4 sentence quote or the full text.",
+    "Google’s help page says Connected Apps data is human reviewed. The author argues anything Gemini pulled into a chat can reach a reviewer."
+  ],
+  "why_it_matters": "In 2023 Google’s blog said Workspace content was not seen by human reviewers. Its edited text now allows review in limited circumstances.",
+  "the_catch": "A GitHub write-up by its author, not a study. Results vary by run. It covers personal accounts only; Workspace business and education accounts are excluded.",
+  "caption": "A tester asked Gemini if they were paying too much for internet. Depending on the run, it pulled nothing, a summary, a quote or a whole email from their inbox. Google’s help page says Connected Apps data is human reviewed. Do you keep Connected Apps on or off?",
+  "keywords": [
+    "Gemini",
+    "Connected Apps",
+    "privacy",
+    "human review"
+  ],
+  "hashtags": [
+    "#gemini",
+    "#google",
+    "#privacy",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how Gemini's Connected Apps can pull personal Gmail and Drive content into a chat without @ tags, why the retrieval varies from run to run, and how Google's help page says that data is human reviewed. Based on a GitHub write-up by its author.",
+  "source_url": "https://github.com/thisisme6598/gemini_files/",
+  "attribution": "thisisme6598 on GitHub",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "ai",
+  "es": {
+    "domain": "privacidad de IA",
+    "hook": "Pregúntale a Gemini sobre tu factura de internet y podría leer tu correo electrónico.",
+    "the_question": "Un evaluador le preguntó a Gemini: «Me pregunto si estoy pagando de más por el servicio de internet». A veces respondió con detalles extraídos de un correo electrónico.",
+    "the_intuition": "Un chatbot solo abre tus archivos cuando se lo indicas, mediante una etiqueta @Drive o @Gmail.",
+    "mechanism": [
+      "Con la función Connected Apps activada, el autor indica que una mención casual de un viaje, una factura o una reserva desencadena una búsqueda en segundo plano en Gmail o Drive.",
+      "El autor señala que la recuperación varía de una ejecución a otra: al repetir la solicitud puedes no obtener nada, recibir un resumen, una cita de 2–4 frases o el texto completo.",
+      "La página de ayuda de Google indica que los datos de Connected Apps son revisados por humanos. El autor argumenta que cualquier información que Gemini extraiga en una conversación puede llegar a un revisor."
+    ],
+    "why_it_matters": "En el blog de Google de 2023 se afirmaba que el contenido de Workspace no era revisado por humanos. El texto editado ahora permite la revisión en circunstancias limitadas.",
+    "the_catch": "Se trata de un artículo en GitHub escrito por su autor, no de un estudio. Los resultados varían según la ejecución. Solo cubre cuentas personales; las cuentas de Workspace para empresas y educación están excluidas.",
+    "_en": "ae732906a98684c5"
+  }
+}
