@@ -47,5 +47,8 @@
     "the_catch": "Los generadores no fueron la causa raíz. El informe de Google indica una configuración errónea de la lógica del controlador que decide cuándo deben arrancar.",
     "_en": "e6d6a7e46b1b76e2"
   },
-  "published_at": "2026-11-09"
+  "published_at": "2026-11-09",
+  "metrics": {
+    "asked_at": "2026-11-12"
+  }
 }
