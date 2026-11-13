@@ -1,0 +1,32 @@
+{
+  "post_type": "drop",
+  "domain": "malware breach",
+  "colorway": "bloom",
+  "hook": "CastleRAT remote‑access trojan was used to hijack computers.",
+  "hooks": [
+    "CastleRAT remote‑access trojan was used to hijack computers.",
+    "Police shut down CastleRAT servers and shared 180k breached emails.",
+    "Europol gave HIBP 180k email addresses linked to CastleRAT infections."
+  ],
+  "what_happened": "Europol and partners dismantled CastleRAT infrastructure, providing HIBP with 180k emails and 893k passwords seen over 3 million times.",
+  "why_it_matters": "The leaked passwords are searchable, letting anyone check if their credentials were exposed, so users can replace compromised passwords.",
+  "what_to_do": "Change any password that appears in the CastleRAT breach immediately on every account where it was used.",
+  "the_catch": "",
+  "caption": "Europol handed over 180 000 compromised email addresses and 893 000 passwords from the CastleRAT trojan, now searchable on Pwned Passwords. Changed any passwords yet?",
+  "keywords": [
+    "malware",
+    "passwords",
+    "breach"
+  ],
+  "hashtags": [
+    "#malware",
+    "#databreach",
+    "#passwords",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Europol shared 180 k breached emails and 893 k passwords from CastleRAT, urging users to change affected passwords.",
+  "source_url": "https://haveibeenpwned.com/Breach/CastleRAT",
+  "attribution": "Europol",
+  "peer_reviewed": false,
+  "beat": "computing"
+}
