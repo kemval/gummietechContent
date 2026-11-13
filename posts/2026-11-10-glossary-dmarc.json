@@ -35,5 +35,8 @@
     "the_catch": "Un registro DMARC por sí solo no hace que el correo pase. Sin SPF o DKIM alineados, falla, y p=none indica a los receptores que no tomen ninguna medida",
     "_en": "fa3b01754b335ee1"
   },
-  "published_at": "2026-11-10"
+  "published_at": "2026-11-10",
+  "metrics": {
+    "asked_at": "2026-11-13"
+  }
 }
