@@ -10,8 +10,8 @@
   ],
   "what_happened": "Europol and partners dismantled CastleRAT infrastructure, providing HIBP with 180k emails and 893k passwords seen over 3 million times.",
   "why_it_matters": "The leaked passwords are searchable, letting anyone check if their credentials were exposed, so users can replace compromised passwords.",
-  "what_to_do": "Change any password that appears in the CastleRAT breach immediately on every account where it was used.",
-  "the_catch": "",
+  "what_to_do": "Change the password affected by this breach, if you haven't already.",
+  "the_catch": "The data covers only computers infected with CastleRAT: 180k email addresses and 893k passwords. HIBP's page states no other limitation.",
   "caption": "Europol handed over 180 000 compromised email addresses and 893 000 passwords from the CastleRAT trojan, now searchable on Pwned Passwords. Changed any passwords yet?",
   "keywords": [
     "malware",
@@ -26,7 +26,17 @@
   ],
   "alt_text": "The carousel explains that Europol shared 180 k breached emails and 893 k passwords from CastleRAT, urging users to change affected passwords.",
   "source_url": "https://haveibeenpwned.com/Breach/CastleRAT",
-  "attribution": "Europol",
+  "attribution": "Have I Been Pwned",
   "peer_reviewed": false,
-  "beat": "computing"
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "brecha de malware",
+    "hook": "El troyano de acceso remoto CastleRAT se utilizó para secuestrar computadoras.",
+    "what_happened": "Europol y sus socios desmantelaron la infraestructura de CastleRAT, proporcionando a HIBP 180 000 correos electrónicos y 893 000 contraseñas que fueron vistos más de 3 000 000 de veces.",
+    "why_it_matters": "Las contraseñas filtradas son buscables, lo que permite a cualquiera comprobar si sus credenciales fueron expuestas y, por lo tanto, reemplazar las contraseñas comprometidas.",
+    "what_to_do": "Cambia la contraseña afectada por esta brecha, si aún no lo has hecho.",
+    "the_catch": "Los datos abarcan solo las computadoras infectadas con CastleRAT: 180 000 direcciones de correo electrónico y 893 000 contraseñas. La página de HIBP indica que no hay otras limitaciones.",
+    "_en": "d0f7019576beabfb"
+  }
 }
