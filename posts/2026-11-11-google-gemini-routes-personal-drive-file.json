@@ -35,5 +35,8 @@
     "the_catch": "Solo cuentas personales; el autor indica que las cuentas de Workspace para empresas y educación están excluidas. Además, la recuperación es probabilística.",
     "_en": "bd3f075cfad4606e"
   },
-  "published_at": "2026-11-11"
+  "published_at": "2026-11-11",
+  "metrics": {
+    "asked_at": "2026-11-14"
+  }
 }
