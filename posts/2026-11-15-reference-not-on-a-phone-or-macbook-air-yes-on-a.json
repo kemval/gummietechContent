@@ -5,20 +5,20 @@
   "hook": "Too big for phone or MacBook Air memory; fits a gaming PC",
   "items": [
     "Flagship phone: No, Q2_0 needs 37.6 GB",
-    "Laptop, 8 GB, no GPU: Only from SSD, much slower: Q2_0, 37.6 GB",
-    "MacBook Air, 16 GB: Only from SSD, much slower: Q2_0, 37.6 GB",
+    "Laptop, 8 GB, no GPU: No, Strata lists only GPUs and Apple Silicon",
+    "MacBook Air, 16 GB: SSD only, much slower, untested below 32 GB",
     "RTX 4060, 8 GB: Yes, Q2_0, 37.6 GB, with 48 GB RAM",
     "RTX 4090, 24 GB: Yes, IQ3_S, 54.8 GB, with 64 GB RAM",
     "AIME25 96.67: Competition maths at 2.4 bits per weight; full model scores 100",
     "GPQA-Diamond 89.39: Graduate-level science questions, 2.5 below the full model's 91.92",
     "Task average 89.07: Q2_0 ties IQ2_XS (0.1 apart) and trails IQ3_XXS by 3.5"
   ],
-  "the_catch": "The scores are ISTA-DASLab's own tests, and Strata calls its memory figures estimates: a given context may still not fit.",
+  "the_catch": "ISTA-DASLab ran these tests itself, and Strata calls its memory figures estimates: a given context may still not fit.",
   "source_post": "2026-10-07-run-qwen-3-8-flash-next-125b-on-consumer",
   "figure_sources": [
     "Flagship phone: https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF (Q2_0 shard 1, 37.6 GB; compared by arithmetic with the machine's memory)",
-    "Laptop, 8 GB, no GPU: https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF (Q2_0 shard 1, 37.6 GB; compared by arithmetic with 8 GB)",
-    "MacBook Air, 16 GB: https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF (Q2_0 shard 1, 37.6 GB; compared by arithmetic with 16 GB)",
+    "Laptop, 8 GB, no GPU: https://raw.githubusercontent.com/Niko1221/Strata/main/docs/INSTALL.md (\"What you need\" lists only NVIDIA RTX, AMD Radeon, Intel Arc, Apple Silicon, Strix Halo and DGX Spark)",
+    "MacBook Air, 16 GB: https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF (Q2_0 shard 1, 37.6 GB; compared by arithmetic with 16 GB); https://raw.githubusercontent.com/Niko1221/Strata/main/docs/MAC.md (SSD streaming measured on Macs from 32 GB; below that, untested)",
     "RTX 4060, 8 GB: https://raw.githubusercontent.com/Niko1221/Strata/main/docs/MODELS.md (\"With 48 GB, Q2_0 and IQ2_XS fit\"; Q2_0 37.6 GB from https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF, which says Strata runs it from 8 GB of VRAM)",
     "RTX 4090, 24 GB: https://raw.githubusercontent.com/Niko1221/Strata/main/docs/MODELS.md (\"With 64 GB of RAM every size fits\"; IQ3_S 54.8 GB from https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF)"
   ],
@@ -47,15 +47,15 @@
     "hook": "Demasiado grande para la memoria de un teléfono o de un MacBook Air; cabe en una PC para juegos",
     "items": [
       "Teléfono insignia: No, Q2_0 necesita 37,6 GB",
-      "Portátil, 8 GB, sin GPU: Solo desde SSD, mucho más lento: Q2_0, 37,6 GB",
-      "MacBook Air, 16 GB: Solo desde SSD, mucho más lento: Q2_0, 37,6 GB",
+      "Portátil, 8 GB, sin GPU: No, Strata solo enumera GPUs y Apple Silicon",
+      "MacBook Air, 16 GB: Solo SSD, mucho más lento, no probado por debajo de 32 GB",
       "RTX 4060, 8 GB: Sí, Q2_0, 37,6 GB, con 48 GB de RAM",
       "RTX 4090, 24 GB: Sí, IQ3_S, 54,8 GB, con 64 GB de RAM",
-      "AIME25 96,67: Matemáticas de competición a 2,4 bits por peso; el modelo completo obtiene 100",
-      "GPQA-Diamond 89,39: Preguntas de ciencia a nivel de posgrado, 2,5 puntos por debajo del 91,92 del modelo completo",
-      "Promedio de tarea 89,07: Q2_0 empata con IQ2_XS (a 0,1 de diferencia) y queda detrás de IQ3_XXS por 3,5 puntos"
+      "AIME25 96,67: Matemáticas de competición a 2,4 bits por peso; el modelo completo alcanza 100",
+      "GPQA-Diamond 89,39: Preguntas de ciencia a nivel de posgrado, 2,5 por debajo de los 91,92 del modelo completo",
+      "Promedio de tareas 89,07: Q2_0 empata con IQ2_XS (a 0,1 de diferencia) y queda 3,5 puntos por detrás de IQ3_XXS"
     ],
-    "the_catch": "Las puntuaciones son pruebas propias de ISTA-DASLab y Strata indica que sus cifras de memoria son estimaciones: un contexto dado aún podría no caber.",
-    "_en": "1cef2a8d4e7da9b7"
+    "the_catch": "ISTA‑DASLab realizó estas pruebas por sí mismo, y Strata indica que sus cifras de memoria son estimaciones: un contexto dado aún podría no caber.",
+    "_en": "655b6d3f323869e1"
   }
 }
