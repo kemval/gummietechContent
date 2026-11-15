@@ -58,5 +58,9 @@
     ],
     "the_catch": "Las puntuaciones omiten fotogramas justo después de un evento aleatorio. El número de Doom‑lite parece peor de lo que el juego muestra. La tasa de fotogramas en el propio Pico aún no se ha medido.",
     "_en": "2d8432d8bbdcb49f"
+  },
+  "rejected": {
+    "at": "2026-11-15",
+    "reason": "Every rung is the same 460 KB microcontroller figure, so the ladder compares nothing; held at the gate (PROOF and SLIDE-PROOF BLOCK)."
   }
 }
