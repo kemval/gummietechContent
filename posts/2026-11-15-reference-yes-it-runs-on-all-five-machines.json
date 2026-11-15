@@ -1,0 +1,62 @@
+{
+  "post_type": "reference",
+  "domain": "Tiny AI models",
+  "colorway": "ember",
+  "hook": "Yes, it runs on all five machines",
+  "items": [
+    "Flagship phone: Yes, Pac-Man model, int8, about 460 KB, estimated",
+    "Laptop, 8 GB, no GPU: Yes, Pac-Man model, int8, about 460 KB, estimated",
+    "MacBook Air, 16 GB: Yes, Pac-Man model, int8, about 460 KB, estimated",
+    "RTX 4060, 8 GB: Yes, Pac-Man model, int8, about 460 KB, estimated",
+    "RTX 4090, 24 GB: Yes, Pac-Man model, int8, about 460 KB, estimated",
+    "Breakout 99.99: Author reports 99.99 of 100 next frames predicted exactly right",
+    "Doom-lite 60 to 84: A second pass lifts exact frames from 60 to 84 of 100",
+    "Pac-Man 86.4: Author reports 86 of 100 next frames predicted exactly right"
+  ],
+  "the_catch": "Scores skip frames right after a random event. Doom-lite's number looks worse than it plays. Frame rate on the Pico itself is not measured yet.",
+  "source_post": "2026-11-04-a-tiny-world-model-running-games-on-a-ra",
+  "figure_sources": [
+    "Flagship phone: estimated from the README's Pac-Man firmware RAM figure of 460 KB on a Pico 2 W, https://raw.githubusercontent.com/SheepSeb/tinyworldformer/HEAD/README.md",
+    "Laptop, 8 GB, no GPU: estimated from the README's Pac-Man firmware RAM figure of 460 KB on a Pico 2 W, https://raw.githubusercontent.com/SheepSeb/tinyworldformer/HEAD/README.md",
+    "MacBook Air, 16 GB: estimated from the README's Pac-Man firmware RAM figure of 460 KB on a Pico 2 W, https://raw.githubusercontent.com/SheepSeb/tinyworldformer/HEAD/README.md",
+    "RTX 4060, 8 GB: estimated from the README's Pac-Man firmware RAM figure of 460 KB on a Pico 2 W, https://raw.githubusercontent.com/SheepSeb/tinyworldformer/HEAD/README.md",
+    "RTX 4090, 24 GB: estimated from the README's Pac-Man firmware RAM figure of 460 KB on a Pico 2 W, https://raw.githubusercontent.com/SheepSeb/tinyworldformer/HEAD/README.md"
+  ],
+  "caption": "A world model small enough for a Raspberry Pi Pico 2 W board. The author says the largest game, Pac-Man, needs about 460 KB of RAM on the board, so any phone or laptop has room. The scores come from the author's own README. Save this sheet for the next tiny model. Which would you run first: Pong or Pac-Man?",
+  "keywords": [
+    "world model",
+    "Pico 2 W",
+    "int8",
+    "looped transformer",
+    "exact frames"
+  ],
+  "hashtags": [
+    "#ai",
+    "#tinyml",
+    "#microcontrollers",
+    "#rust",
+    "#gummietech"
+  ],
+  "alt_text": "A cheat sheet for the tinyworldformer world model. Five machines from a flagship phone to an RTX 4090 are each marked Yes, followed by three benchmark lines about how many next frames the model predicts exactly right.",
+  "source_url": "https://github.com/SheepSeb/tinyworldformer",
+  "attribution": "SheepSeb",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "modelos de IA pequeños",
+    "hook": "Sí, funciona en las cinco máquinas",
+    "items": [
+      "Teléfono insignia: Sí, modelo Pac‑Man, int8, aproximadamente 460 KB, estimado",
+      "Portátil, 8 GB, sin GPU: Sí, modelo Pac‑Man, int8, aproximadamente 460 KB, estimado",
+      "MacBook Air, 16 GB: Sí, modelo Pac‑Man, int8, aproximadamente 460 KB, estimado",
+      "RTX 4060, 8 GB: Sí, modelo Pac‑Man, int8, aproximadamente 460 KB, estimado",
+      "RTX 4090, 24 GB: Sí, modelo Pac‑Man, int8, aproximadamente 460 KB, estimado",
+      "Breakout 99,99: El autor informa que 99,99 de 100 fotogramas siguientes se predijeron con exactitud",
+      "Doom‑lite 60 a 84: Una segunda pasada aumenta la cantidad de fotogramas exactos de 60 a 84 de 100",
+      "Pac‑Man 86,4: El autor informa que 86 de 100 fotogramas siguientes se predijeron con exactitud"
+    ],
+    "the_catch": "Las puntuaciones omiten fotogramas justo después de un evento aleatorio. El número de Doom‑lite parece peor de lo que el juego indica. La tasa de fotogramas en el propio Pico aún no se ha medido.",
+    "_en": "03ae679581b1b069"
+  }
+}
