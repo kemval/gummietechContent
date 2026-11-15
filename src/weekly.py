@@ -50,7 +50,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 import evergreen
-from formats import FORMATS, LADDER, PAIR, hashtags, unpaired
+from formats import FORMATS, LADDER, MAX_RUNG_WORDS, PAIR, hashtags, unpaired
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_ROOT / "posts"
@@ -73,13 +73,6 @@ TECH_BEATS = frozenset({"ai", "software", "automation", "robotics", "computing",
 # draft.pick_row() has it applies on Sunday too: "can I run the model that
 # came out last month" is a question nobody is asking any more.
 FRESH_DAYS = 10
-
-# A rung's line, after its colon, in words. sheet.html sets all five rungs on
-# one slide at the sheet's type size, which holds five one-line entries and
-# not five two-line ones: the 2026-10-18 sample fitted with lines of four to
-# eight words. Refused in finish() rather than left to proof.py, which would
-# only say so at the gate.
-MAX_RUNG_WORDS = 8
 
 # An Incident Report's timeline entry is "<time>: <Sentence>". incident.html
 # sets the time as the slide's glass, broken over as many lines as set it
@@ -872,12 +865,6 @@ def reference_problems(post: dict, directory: Path,
     if tuple(terms[:len(LADDER)]) != LADDER:
         found.append(f"items must open on the hardware ladder, in order: "
                      f"{'; '.join(LADDER)}")
-    if long := [f"{t} ({len(line.split())} words)"
-                for t, line in (i.split(PAIR, 1) for i in items[:len(LADDER)]
-                                if PAIR in i)
-                if len(line.split()) > MAX_RUNG_WORDS]:
-        found.append(f"a machine's line is at most {MAX_RUNG_WORDS} words, so "
-                     f"the five fit one slide: {', '.join(long)}")
     lo, hi = BENCHMARK_LINES
     if not lo <= len(items) - len(LADDER) <= hi:
         found.append(f"after the ladder come {lo} or {hi} benchmark lines, "

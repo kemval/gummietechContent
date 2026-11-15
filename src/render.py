@@ -40,7 +40,7 @@ from playwright.sync_api import Page, sync_playwright
 # The format table is its own module so telegram.py can read it without
 # importing this one — see formats.py. Re-exported here because render.py
 # is where the rest of the shared vocabulary already lives.
-from formats import (DEFAULT_FORMAT, FORMATS, LADDER, PAIR, RECORD, Format, Section,  # noqa: F401
+from formats import (DEFAULT_FORMAT, FORMATS, LADDER, MAX_RUNG_WORDS, PAIR, RECORD, Format, Section,  # noqa: F401
                      body_text, entries, es_fields, format_name,  # noqa: F401
                      announcement, incident_report, missing_fields,
                      missing_from_entries, news_report, pieces, post_preprint_flag, preprint, preprint_claims, required,
@@ -179,14 +179,20 @@ def word_budget(post: dict) -> Iterator[tuple[str, int, int]]:
     Walks the format's own sections, so a Breakdown's mechanism steps are
     measured one slide at a time — docs §1's rule is per slide, and a list of
     three steps measured as one string would pass a budget none of them meet.
+    A reference's ladder rungs share one slide, so each is held to
+    MAX_RUNG_WORDS after its colon.
     """
     yield "hook", count_words(post.get("hook", "")), HOOK_WORD_LIMIT
+    ladder = post.get("post_type") == "reference"
     for section in sections(post):
         prose = pieces(post, section)
         for n, piece in enumerate(prose, start=1):
             where = (f"{section.field}[{n}]" if section.many and len(prose) > 1
                      else section.field)
-            yield where, count_words(piece), WORD_LIMIT
+            if ladder and section.field == "items" and n <= len(LADDER):
+                yield where, count_words(piece.partition(PAIR)[2]), MAX_RUNG_WORDS
+            else:
+                yield where, count_words(piece), WORD_LIMIT
 
 
 def warn_on_length(post: dict) -> None:
