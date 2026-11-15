@@ -117,3 +117,16 @@ def test_a_feed_of_only_incidents_is_shortlisted_without_the_keywords():
     assert not weekly.reads_like_postmortem({"name": "Slack Status"},
                                             "Degraded performance")
     assert weekly.reads_like_postmortem({}, "Incident Report: Oct 21 attack")
+
+
+def test_older_run_posts_still_stand_in_behind_a_fresh_post(tmp_path):
+    """2026-11-15: the one fresh AI post was a Gemini privacy Drop with no
+    weights, and the run posts were listed only when nothing fresh was left,
+    so the writer had nothing it could build on and the run failed."""
+    for stem, post_type in (("2026-11-11-privacy-drop", "drop"),
+                            ("2026-10-07-old-run", "run")):
+        (tmp_path / f"{stem}.json").write_text(json.dumps({
+            "post_type": post_type, "beat": "ai", "hook": "H",
+            "source_url": f"https://x.org/{stem}", "published_at": stem[:10]}))
+    refs = [ref for ref, _ in weekly.sources(date(2026, 11, 15), tmp_path)]
+    assert refs == ["2026-11-11-privacy-drop", "2026-10-07-old-run"]

@@ -236,8 +236,11 @@ def sources(today: date, directory: Path = POSTS_DIR) -> list[tuple[str, dict]]:
     since a week's model launches mostly reach this account as Signal items.
     Code cannot tell from a record whether a model's weights can be
     downloaded, so the writer chooses from this list and reads the source.
-    Only when nothing fresh is left does an older run post stand in. Its
-    repo is already verified, and running it is what the post is about. Any
+    Older run posts follow the fresh ones, so they stand in when no fresh
+    one has weights: their repos are already verified, and running the
+    model is what each is about. 2026-11-15: the one fresh post was a
+    Gemini privacy Drop, the run posts were hidden behind it, and the
+    writer had nothing it could build on. Any
     source a reference already covers is skipped, by DOI or by source URL.
     """
     covered = set()
@@ -274,7 +277,7 @@ def sources(today: date, directory: Path = POSTS_DIR) -> list[tuple[str, dict]]:
                 fresh.append((path.stem, post))
             elif post.get("post_type") == "run":
                 runs.append((path.stem, post))
-    return fresh or runs
+    return fresh + runs
 
 
 def resolve(ref: str, directory: Path = POSTS_DIR) -> dict:
