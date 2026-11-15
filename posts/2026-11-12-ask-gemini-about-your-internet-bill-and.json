@@ -46,5 +46,8 @@
     "the_catch": "Es un artículo en GitHub escrito por su autor, no un estudio. Los resultados varían según la ejecución. Solo cubre cuentas personales; las cuentas de Workspace para empresas y educación están excluidas.",
     "_en": "de2f5c0712139586"
   },
-  "published_at": "2026-11-12"
+  "published_at": "2026-11-12",
+  "metrics": {
+    "asked_at": "2026-11-15"
+  }
 }
