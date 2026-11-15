@@ -28,9 +28,12 @@ term and the Breakdown are, and reviewed by `review.yml` like any post.
   never typed (`source_post`, "stem#N" for an item). Reading the sheet
   would also need gspread before the brief, and `weekly.py` is stdlib so
   that it runs before `pip install`.
-- **Fresh means `FRESH_DAYS` (10)**, the Drop's `MAX_STORY_AGE_DAYS`. When
-  nothing fresh is left, an older run post: its repo is verified and
-  running it is the subject.
+- **Fresh means `FRESH_DAYS` (10)**, the Drop's `MAX_STORY_AGE_DAYS`. Older
+  run posts are listed after the fresh posts: each repo is verified and
+  running it is the subject. They are always listed, not only when nothing
+  fresh is left (2026-11-15). Code cannot tell which fresh post has
+  weights, so one fresh privacy Drop hid every run post and the writer
+  had nothing to build on.
 - **Claude picks from a menu.** No record says whether a model's weights
   can be downloaded, so code lists the candidates and the writer reads the
   sources. A pick from outside the menu is refused by `finish`.
