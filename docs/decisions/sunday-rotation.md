@@ -57,7 +57,10 @@ and two: the ladder is something to compare, and comparing across a swipe is
 harder. Five entries fit at the sheet's type size only while each is one
 line, so `MAX_RUNG_WORDS` (8) caps a rung's line and `finish` refuses a
 longer one. Leaving it to `proof.py` would have held the post at the gate
-instead.
+instead. The cap is part of `render.word_budget()` (2026-11-15), not a
+check of weekly.py's own. When only weekly.py held it, review.yml's
+auto-fix lengthened every rung to 12 words and passed its `--budget`
+guard, and slide 2 overflowed its frame at the gate.
 
 A refusal used to end the run, and a person had to dispatch the whole post
 again. Since this change, `weekly.yml` gives the writer one rewrite, with

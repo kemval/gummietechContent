@@ -259,6 +259,21 @@ def test_the_word_budget_measures_each_mechanism_step_separately():
     assert over == ["mechanism[1]"]
 
 
+def test_the_word_budget_holds_a_reference_rung_to_its_one_line():
+    """2026-11-15: the rung cap lived only in weekly.finish(), so the
+    auto-fix's --budget guard let every rung grow to 12 words and slide 2
+    overflowed at the gate. Benchmark lines keep the ordinary budget."""
+    long_rung = "Yes, Pac-Man firmware uses about 460 KB of RAM on a Pico 2 W"
+    items = [f"{rung}: Yes, about 460 KB, estimated" for rung in render.LADDER]
+    items[2] = f"{render.LADDER[2]}: {long_rung}"
+    items.append(f"Breakout 99.99: {long_rung}")
+    post = {"post_type": "reference", "hook": "Short hook.", "items": items,
+            "the_catch": "A limit."}
+    over = [where for where, count, limit in render.word_budget(post)
+            if count > limit]
+    assert over == ["items[3]"]
+
+
 # ---------------------------------------------------------- the Signal
 
 SIGNAL = {

@@ -110,6 +110,15 @@ LADDER = (
     "RTX 4090, 24 GB",
 )
 
+# A rung's line, after its colon, in words. sheet.html sets all five rungs on
+# one slide at the sheet's type size, which holds five one-line entries and
+# not five two-line ones: the 2026-10-18 sample fitted with lines of four to
+# eight words. Counted by render.word_budget(), the one budget, so the
+# writer's finish(), review.yml's auto-fix and proof.py all hold it.
+# 2026-11-15: it lived in weekly.py alone, the auto-fix lengthened every rung
+# to 12 words, and slide 2 overflowed its frame at the gate.
+MAX_RUNG_WORDS = 8
+
 
 # What each carousel format is made of, in the order a reader meets it.
 #
