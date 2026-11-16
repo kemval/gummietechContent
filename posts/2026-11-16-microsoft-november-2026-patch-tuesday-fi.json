@@ -6,12 +6,12 @@
   "hooks": [
     "Microsoft's November Patch Tuesday fixed 1,235 flaws.",
     "They patched a zero‑day Outlook bug that let attackers steal NTLM hashes.",
-    "Microsoft says the update addressed 66 critical vulnerabilities."
+    "BleepingComputer counts 66 critical flaws fixed in Microsoft's November Patch Tuesday."
   ],
   "what_happened": "Microsoft released its November Patch Tuesday, fixing 1,235 security flaws including 66 critical ones and an actively exploited Outlook zero‑day.",
   "why_it_matters": "The Outlook fix blocks stolen NTLM account hashes, and 48 of the 66 critical flaws allowed remote code execution.",
   "the_catch": "Microsoft says exploiting the Outlook flaw needs network connectivity and user interaction.",
-  "caption": "Microsoft's November Patch Tuesday fixed 1,235 security flaws, including a critical Outlook zero‑day that could steal NTLM hashes. Did your PC get the update?",
+  "caption": "Microsoft's November Patch Tuesday fixed 1,235 security flaws, including an Outlook zero‑day that could steal NTLM hashes. Did your PC get the update?",
   "keywords": [
     "patch Tuesday",
     "outlook zero‑day",
