@@ -41,5 +41,8 @@
     "kicker": "the duck bills by the hour"
   },
   "sent_at": "2026-11-13",
-  "published_at": "2026-11-13"
+  "published_at": "2026-11-13",
+  "metrics": {
+    "asked_at": "2026-11-16"
+  }
 }
