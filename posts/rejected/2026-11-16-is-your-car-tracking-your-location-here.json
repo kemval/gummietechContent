@@ -38,5 +38,9 @@
     "what_to_do": "Introduce el VIN de 17‑caracteres de tu coche en Privacy4Cars para obtener un Informe de Privacidad del Vehículo.",
     "the_catch": "Desactivar el uso de la ubicación puede desactivar funciones como la asistencia en carretera y el arranque remoto.",
     "_en": "78a5d891643fffa1"
+  },
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
   }
 }

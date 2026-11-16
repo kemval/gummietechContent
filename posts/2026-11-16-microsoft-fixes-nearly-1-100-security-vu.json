@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "software security",
+  "colorway": "bloom",
+  "hook": "Microsoft released a patch fixing almost 1,100 Windows vulnerabilities.",
+  "hooks": [
+    "Microsoft released a patch fixing almost 1,100 Windows vulnerabilities.",
+    "The update patches flaws that could let attackers take over your PC.",
+    "Microsoft says the patch fixes 1,093 vulnerabilities, including 63 critical flaws."
+  ],
+  "what_happened": "Microsoft released updates that fix 1,093 security bugs in Windows, covering 63 critical flaws that could let attackers control a system.",
+  "why_it_matters": "It reduces the chance of attackers seizing control of Windows PCs and elevates overall system security.",
+  "what_to_do": "Back up important data before installing the updates.",
+  "the_catch": "",
+  "caption": "Microsoft's November Patch Tuesday fixes 1,093 Windows security bugs, including 63 critical flaws. Update now?",
+  "keywords": [
+    "windows",
+    "security",
+    "patches"
+  ],
+  "hashtags": [
+    "#windows",
+    "#security",
+    "#patches",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel lists the Microsoft patch fixing 1,093 Windows vulnerabilities, why it matters, a backup step, and a catch slide.",
+  "source_url": "https://krebsonsecurity.com/2026/11/microsoft-fixes-nearly-1100-security-vulnerabilities/",
+  "attribution": "Krebs on Security",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "computing"
+}
