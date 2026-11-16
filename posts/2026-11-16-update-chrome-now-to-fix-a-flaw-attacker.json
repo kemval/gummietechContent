@@ -5,7 +5,6 @@
   "hook": "Chrome 157 fixes a zero‑day attackers are already exploiting.",
   "hooks": [
     "Chrome 157 fixes a zero‑day attackers are already exploiting.",
-    "Google rolled out a security update that stops attackers from exploiting Chrome.",
     "Google says Chrome 157.0.8103.50 patches the zero‑day vulnerability."
   ],
   "what_happened": "Google released Chrome 157.0.8103.50 for desktop, fixing a high‑severity zero‑day use‑after‑free bug (CVE‑2026‑125350).",
