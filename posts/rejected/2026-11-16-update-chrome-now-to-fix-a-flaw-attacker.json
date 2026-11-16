@@ -37,5 +37,9 @@
     "what_to_do": "Actualiza Chrome desde Configuración → Acerca de Google Chrome y reinícialo",
     "the_catch": "Google está implementando la actualización durante varios días y semanas; puedes actualizar manualmente. Google no ha dicho quién la está explotando ni cómo",
     "_en": "7bf522a8c79bbf0b"
+  },
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
   }
 }

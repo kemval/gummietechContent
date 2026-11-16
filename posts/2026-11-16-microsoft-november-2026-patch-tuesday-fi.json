@@ -1,0 +1,40 @@
+{
+  "post_type": "drop",
+  "domain": "software security",
+  "colorway": "orbit",
+  "hook": "Microsoft's November Patch Tuesday fixed 1,235 flaws.",
+  "hooks": [
+    "Microsoft's November Patch Tuesday fixed 1,235 flaws.",
+    "They patched a zero‑day Outlook bug that let attackers steal NTLM hashes.",
+    "Microsoft says the update addressed 66 critical vulnerabilities."
+  ],
+  "what_happened": "Microsoft released its November Patch Tuesday, fixing 1,235 security flaws including 66 critical ones and an actively exploited Outlook zero‑day.",
+  "why_it_matters": "The fixes stop attackers from stealing credentials via Outlook and close many critical bugs that could let malware run.",
+  "the_catch": "Some users reported installation errors such as 0x80070306 and 0x800F0989, causing the update to fail on certain machines.",
+  "caption": "Microsoft's November Patch Tuesday fixed 1,235 security flaws, including a critical Outlook zero‑day that could steal NTLM hashes. Did your PC get the update?",
+  "keywords": [
+    "patch Tuesday",
+    "outlook zero‑day",
+    "security updates"
+  ],
+  "hashtags": [
+    "#microsoft",
+    "#patchtuesday",
+    "#outlook",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Microsoft’s November Patch Tuesday fixed 1,235 security flaws, including 66 critical bugs and an Outlook zero‑day that stole NTLM hashes.",
+  "source_url": "https://www.bleepingcomputer.com/news/microsoft/microsoft-november-2026-patch-tuesday-fixes-1-235-flaws-outlook-zero-day/",
+  "attribution": "BleepingComputer",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "computing",
+  "es": {
+    "domain": "seguridad de software",
+    "hook": "El Patch Tuesday de noviembre de Microsoft corrigió 1 235 fallas",
+    "what_happened": "Microsoft lanzó su Patch Tuesday de noviembre, corrigiendo 1 235 vulnerabilidades de seguridad, entre ellas 66 críticas y un zero‑day de Outlook explotado activamente",
+    "why_it_matters": "Las correcciones impiden que los atacantes roben credenciales mediante Outlook y cierran muchos fallos críticos que podrían permitir la ejecución de malware",
+    "the_catch": "Algunos usuarios reportaron errores de instalación, como 0x80070306 y 0x800F0989, que provocaron que la actualización fallara en ciertas máquinas",
+    "_en": "25fbe3f52777f061"
+  }
+}
