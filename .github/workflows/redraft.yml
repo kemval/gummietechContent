@@ -121,7 +121,9 @@ jobs:
       # The old draft gone, its rejected copy, the new draft — and nothing
       # else. Two of those can be one path: a Signal is named by its week,
       # so one redrafted the same day lands where the rejected one was, and
-      # git sees a modification. Hence sort -u.
+      # git sees a modification. Hence sort -u. And --no-renames: the move
+      # is a rename, which git's default detection reports under the new
+      # name alone, so the old path vanished from the list (2026-11-16).
       - name: Check it changed those posts and nothing else
         env:
           OLD: ${{ steps.pick.outputs.post }}
@@ -130,7 +132,7 @@ jobs:
           git add -A posts/
           moved="posts/rejected/$(basename "$OLD")"
           expected=$(printf '%s\n' "$OLD" "$moved" "$NEW" | sort -u)
-          changed=$(git diff --cached --name-only | sort)
+          changed=$(git diff --cached --no-renames --name-only | sort)
           if [ "$changed" != "$expected" ]; then
             echo "::error::Expected only $OLD → $moved and $NEW to change, got: ${changed//$'\n'/ }. Nothing has been committed." >&2
             exit 1
