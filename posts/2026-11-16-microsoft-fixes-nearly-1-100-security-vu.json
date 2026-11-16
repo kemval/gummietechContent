@@ -2,17 +2,17 @@
   "post_type": "drop",
   "domain": "software security",
   "colorway": "bloom",
-  "hook": "Microsoft released a patch fixing almost 1,100 Windows vulnerabilities.",
+  "hook": "Microsoft's November updates fix almost 1,100 security flaws.",
   "hooks": [
     "Microsoft released a patch fixing almost 1,100 Windows vulnerabilities.",
     "The update patches flaws that could let attackers take over your PC.",
     "Microsoft says the patch fixes 1,093 vulnerabilities, including 63 critical flaws."
   ],
-  "what_happened": "Microsoft released updates that fix 1,093 security bugs in Windows, covering 63 critical flaws that could let attackers control a system.",
-  "why_it_matters": "It reduces the chance of attackers seizing control of Windows PCs and elevates overall system security.",
-  "what_to_do": "Back up important data before installing the updates.",
-  "the_catch": "",
-  "caption": "Microsoft's November Patch Tuesday fixes 1,093 Windows security bugs, including 63 critical flaws. Update now?",
+  "what_happened": "Microsoft's November updates fix 1,093 security bugs across Windows and supported software, including 63 critical flaws that could let attackers control a system.",
+  "why_it_matters": "The critical flaws can be exploited to seize control of a Windows system with little or no help from the user.",
+  "what_to_do": "Back up important data, then apply the updates, Krebs advises; the backup is best done first.",
+  "the_catch": "Per Microsoft, only one of the 1,093 flaws, an Outlook spoofing bug, is known to be under active exploitation.",
+  "caption": "Microsoft's November Patch Tuesday fixes 1,093 security bugs across Windows and supported software, including 63 critical flaws. Update now?",
   "keywords": [
     "windows",
     "security",
@@ -29,5 +29,14 @@
   "attribution": "Krebs on Security",
   "peer_reviewed": false,
   "news_report": true,
-  "beat": "computing"
+  "beat": "computing",
+  "es": {
+    "domain": "seguridad de software",
+    "hook": "Las actualizaciones de noviembre de Microsoft corrigen casi 1 100 vulnerabilidades de seguridad.",
+    "what_happened": "Las actualizaciones de noviembre de Microsoft corrigen 1 093 errores de seguridad en Windows y el software compatible, incluidas 63 vulnerabilidades críticas que podrían permitir a los atacantes tomar el control de un sistema.",
+    "why_it_matters": "Las vulnerabilidades críticas pueden explotarse para tomar el control de un sistema Windows con poca o ninguna ayuda del usuario.",
+    "what_to_do": "Krebs recomienda que primero hagas una copia de seguridad de los datos importantes y, después, apliques las actualizaciones.",
+    "the_catch": "Según Microsoft, solo una de las 1 093 vulnerabilidades, un fallo de suplantación en Outlook, se sabe que está siendo explotada activamente.",
+    "_en": "49864294a06f8c93"
+  }
 }
