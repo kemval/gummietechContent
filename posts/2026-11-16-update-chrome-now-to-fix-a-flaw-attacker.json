@@ -1,0 +1,42 @@
+{
+  "post_type": "drop",
+  "domain": "browser security",
+  "colorway": "orbit",
+  "hook": "Chrome 157 fixes a critical zero‑day flaw.",
+  "hooks": [
+    "Chrome 157 fixes a critical zero‑day flaw.",
+    "Google rolled out a security update that stops attackers from exploiting Chrome.",
+    "Google says Chrome 157.0.8103.50 patches the zero‑day vulnerability."
+  ],
+  "what_happened": "Google released Chrome 157.0.8103.50 for desktop, fixing a high‑severity zero‑day use‑after‑free bug (CVE‑2026‑125350).",
+  "why_it_matters": "The fix blocks attackers from exploiting the flaw, preventing possible remote code execution on browsers.",
+  "what_to_do": "Update Chrome via Settings → About Google Chrome and relaunch.",
+  "the_catch": "The update is still rolling out, so some users may remain vulnerable until it reaches them.",
+  "caption": "Google’s Chrome 157 update patches a high‑severity zero‑day use‑after‑free bug (CVE‑2026‑125350). Updated yet?",
+  "keywords": [
+    "chrome",
+    "security",
+    "update"
+  ],
+  "hashtags": [
+    "#chrome",
+    "#security",
+    "#zeroday",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Chrome 157.0.8103.50 fixes a zero‑day vulnerability, why it matters, how to update, and notes the rollout limitation.",
+  "source_url": "https://www.malwarebytes.com/blog/bugs/2026/11/update-chrome-now-to-fix-a-flaw-attackers-are-exploiting",
+  "attribution": "Malwarebytes",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "software",
+  "es": {
+    "domain": "seguridad del navegador",
+    "hook": "Chrome 157 corrige una vulnerabilidad crítica de día cero",
+    "what_happened": "Google lanzó Chrome 157.0.8103.50 para escritorio, corrigiendo una vulnerabilidad de día cero de tipo use‑after‑free y de alta gravedad (CVE‑2026‑125350)",
+    "why_it_matters": "La corrección impide que los atacantes exploten la vulnerabilidad, evitando una posible ejecución remota de código en los navegadores",
+    "what_to_do": "Actualiza Chrome desde Configuración → Acerca de Google Chrome y reinícialo",
+    "the_catch": "La actualización aún se está desplegando, por lo que algunos usuarios pueden seguir vulnerables hasta que la reciban",
+    "_en": "1dbdba45fe076cd4"
+  }
+}

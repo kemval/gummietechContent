@@ -38,5 +38,9 @@
     "what_to_do": "Krebs recomienda que primero hagas una copia de seguridad de los datos importantes y, después, apliques las actualizaciones.",
     "the_catch": "Según Microsoft, solo una de las 1 093 vulnerabilidades, un fallo de suplantación en Outlook, se sabe que está siendo explotada activamente.",
     "_en": "49864294a06f8c93"
+  },
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
   }
 }
