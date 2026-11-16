@@ -29,7 +29,7 @@
   "attribution": "Have I Been Pwned",
   "peer_reviewed": false,
   "announcement": true,
-  "beat": "computing",
+  "beat": "security",
   "es": {
     "domain": "brecha de malware",
     "hook": "El troyano de acceso remoto CastleRAT se usó para secuestrar computadoras.",
