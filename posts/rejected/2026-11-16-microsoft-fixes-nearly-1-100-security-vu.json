@@ -26,6 +26,7 @@
   ],
   "alt_text": "The carousel lists the Microsoft patch fixing 1,093 Windows vulnerabilities, why it matters, a backup step, and a catch slide.",
   "source_url": "https://krebsonsecurity.com/2026/11/microsoft-fixes-nearly-1100-security-vulnerabilities/",
+  "cve": "CVE-2026-124194",
   "attribution": "Krebs on Security",
   "peer_reviewed": false,
   "news_report": true,

@@ -119,6 +119,28 @@ MAKER_PREFIXES = announcement_prefixes()
 # news_report().
 REPORT_PREFIXES = report_prefixes()
 HREF_RE = re.compile(r"""href=["']([^"']+)["']""", re.I)
+CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
+
+
+def lead_cve(page: str) -> str:
+    """The first CVE id a page names, upper-cased, or "".
+
+    A security fix has no DOI and its vendor's advisory is rarely the page
+    drafted from, so two outlets' reports of one patch shared no key. On
+    2026-11-16 "Another story" drafted November's Patch Tuesday from Krebs,
+    then a Chrome zero-day, then the same Patch Tuesday from
+    BleepingComputer. Both reports lead with CVE-2026-124194, the exploited
+    Outlook bug; the Chrome story leads with its own.
+
+    The first id only, and from the raw page: BleepingComputer sets its CVEs
+    in styled paragraphs that papers.paragraphs() skips, and a roundup names
+    other makers' fixes after its own — the first two ids on Krebs's page
+    would have claimed the Chrome story too. A site whose header carried a
+    CVE ahead of the article would key every story on it; a wrong match
+    only skips a row, like announced_links().
+    """
+    found = CVE_RE.search(page or "")
+    return found.group(0).upper() if found else ""
 
 # What a *draft* needs on top of what render.py will refuse to render
 # without. formats.py owns the rest, per format, and is asked for it —
@@ -696,7 +718,7 @@ def covered_papers() -> dict[str, str]:
         records = [post, *format_entries(post)]
         for record in records:
             for key in (record.get("doi"), record.get("attribution"),
-                        record.get("source_url")):
+                        record.get("source_url"), record.get("cve")):
                 if key and str(key).strip():
                     seen.setdefault(" ".join(str(key).lower().split()),
                                     path.name)
@@ -802,7 +824,8 @@ def announced_links(page: str) -> list[str]:
 
 def already_covered(paper: dict | None, url: str,
                     seen: dict[str, str],
-                    announced: list[str] | tuple = ()) -> str | None:
+                    announced: list[str] | tuple = (),
+                    cve: str = "") -> str | None:
     """The post that already covers this candidate, if there is one.
 
     The paper's own keys first, then the URL the candidate came from — which
@@ -816,6 +839,8 @@ def already_covered(paper: dict | None, url: str,
     # A launch has no DOI, so its identity is its maker's page: the URL
     # itself, and any maker page the coverage links to.
     keys += [url_key(url), *(url_key(link) for link in announced)]
+    # A security fix has neither: its identity is the flaw it leads with.
+    keys.append(cve)
     for key in keys:
         if key:
             hit = seen.get(" ".join(str(key).lower().split()))
@@ -938,7 +963,7 @@ def finish(post: dict, order: list[str]) -> dict:
 DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
              "what_happened", "try_it", "why_it_matters", "what_to_do",
              "the_catch", "caption",
-             "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "attribution",
+             "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "cve", "attribution",
              "peer_reviewed", "announcement", "news_report", "beat"]
 
 
@@ -1015,10 +1040,16 @@ def check_hooks(post: dict) -> None:
         post.pop("hooks", None)
 
 
-def validate(post: dict, item: dict, paper: dict | None) -> dict:
+def validate(post: dict, item: dict, paper: dict | None,
+             cve: str = "") -> dict:
     """Fill the fields we own, then refuse anything render.py would reject."""
     url = item["url"]
     post["source_url"] = url                  # never the model's version
+    # For covered_papers(): the flaw a security story leads with. See
+    # lead_cve(). The model never supplies it.
+    post.pop("cve", None)
+    if cve:
+        post["cve"] = cve
 
     # An evergreen row settles the preprint flag itself — see
     # evergreen_candidate for why the model cannot. Retraction has no field in
@@ -1086,7 +1117,7 @@ def validate(post: dict, item: dict, paper: dict | None) -> dict:
 
 SIGNAL_KEYS = ["post_type", "domain", "colorway", "hook", "items", "caption",
                "keywords", "hashtags", "alt_text"]
-ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "peer_reviewed",
+ITEM_KEYS = ["claim", "attribution", "source_url", "doi", "cve", "peer_reviewed",
              "announcement", "news_report", "beat"]
 
 
@@ -1126,7 +1157,9 @@ def validate_signal(post: dict, picks: list[dict]) -> dict:
             if cite := citation(paper):
                 built["attribution"] = cite
             built["doi"] = paper["doi"]
-        elif built["peer_reviewed"] is None:
+        if pick.get("cve"):
+            built["cve"] = pick["cve"]
+        if not paper and built["peer_reviewed"] is None:
             # settled_candidates(labelled_only=True) rejects these before the
             # model is reached, so getting here means the picks did not come
             # from that walk. Still a stop: §7.2 is a per-claim rule, and an
@@ -1268,7 +1301,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                       "so check the mechanism before posting")
 
         settled = {"row": row_number, "item": item, "article": article,
-                   "paper": paper}
+                   "paper": paper, "cve": lead_cve(page)}
 
         # A Signal picks five from a queue of a thousand, so it can afford to
         # want every item labelled by Crossref or by its host rather than by
@@ -1294,7 +1327,8 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
         covered = already_covered(
             paper, item["url"], seen,
             announced_links(page)
-            if not paper and not maker_page(item["url"]) else ())
+            if not paper and not maker_page(item["url"]) else (),
+            settled["cve"])
 
         if not covered:
             yield settled
@@ -1444,7 +1478,7 @@ def main() -> int:
                           if readme else ""),
             api_key, model)
         settle_run(drafted, readme)
-        post = validate(drafted, item, paper)
+        post = validate(drafted, item, paper, pick["cve"])
         title = slugify(item["title"])
 
     print(json.dumps(post, indent=2, ensure_ascii=False))
