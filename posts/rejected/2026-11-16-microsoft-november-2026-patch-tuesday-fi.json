@@ -37,5 +37,9 @@
     "why_it_matters": "La corrección de Outlook impide el uso de hashes de cuentas NTLM robados, y 48 de las 66 vulnerabilidades críticas permitían la ejecución remota de código",
     "the_catch": "Microsoft indica que explotar la vulnerabilidad de Outlook requiere conectividad de red e interacción del usuario",
     "_en": "47142483e81d22a3"
+  },
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
   }
 }

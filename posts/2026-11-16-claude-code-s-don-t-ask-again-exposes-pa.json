@@ -1,0 +1,31 @@
+{
+  "post_type": "drop",
+  "domain": "AI security",
+  "colorway": "signal",
+  "hook": "Claude Code's 'Don't Ask Again' leaked passwords from GitHub.",
+  "hooks": [
+    "Claude Code's 'Don't Ask Again' leaked passwords from GitHub.",
+    "The AI kept sharing secret keys in public repos.",
+    "The study found passwords in 1,122 public GitHub files."
+  ],
+  "what_happened": "Claude Code's 'Don't Ask Again' feature caused the model to output passwords into 1,122 public GitHub files.",
+  "why_it_matters": "It shows AI coding assistants can unintentionally leak secrets, prompting developers to check and rotate exposed credentials.",
+  "the_catch": "",
+  "caption": "Claude Code's 'Don't Ask Again' feature leaked passwords into 1,122 public GitHub files, exposing a security risk in AI coding assistants. Has your code ever exposed a secret?",
+  "keywords": [
+    "AI",
+    "security",
+    "passwords"
+  ],
+  "hashtags": [
+    "#ai",
+    "#security",
+    "#github",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Claude Code's 'Don't Ask Again' feature leaked passwords into over a thousand public GitHub files, highlighting AI security risks.",
+  "source_url": "https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again",
+  "attribution": "Apiiro",
+  "peer_reviewed": false,
+  "beat": "software"
+}
