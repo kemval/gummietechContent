@@ -216,6 +216,27 @@ def test_a_fix_a_roundup_mentions_second_is_not_covered(covered):
                                  cve=draft.lead_cve(chrome)) is None
 
 
+def test_the_lead_cve_comes_from_the_text_not_the_markup(covered):
+    """2026-11-16: the gate turned down Chrome's zero-day from Malwarebytes,
+    and the next redraft took it from BleepingComputer. Malwarebytes's
+    article tag carried a typo'd CVE class and its JSON-LD the same
+    keyword, ahead of the CVE its text names."""
+    malwarebytes = (
+        '<script type="application/ld+json">{"keywords":["chrome",'
+        '"CVE-2026-12350"]}</script>'
+        '<article class="post tag-chrome tag-cve-2026-12350">'
+        '<p>The vulnerability is tracked as <a href="https://www.cve.org/'
+        'CVERecord/SearchResults?query=CVE-2026-125350">CVE-2026-125350</a>'
+        '</p></article>')
+    covered("2026-11-16-chrome-mb.json", source_url="https://malwarebytes/chrome",
+            cve=draft.lead_cve(malwarebytes))
+    bleeping = "<p>Google patched CVE-2026-125350, the eighth this year.</p>"
+    assert draft.already_covered(None, "https://bleeping/chrome",
+                                 draft.covered_papers(),
+                                 cve=draft.lead_cve(bleeping)) \
+        == "2026-11-16-chrome-mb.json"
+
+
 def test_a_page_with_no_cve_matches_nothing_by_it(covered):
     covered("2026-11-16-car.json", source_url="https://engadget/car")
     assert draft.lead_cve("<p>Your car tracks you.</p>") == ""

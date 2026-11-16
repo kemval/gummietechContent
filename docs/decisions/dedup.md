@@ -95,3 +95,15 @@ Microsoft's. The raw page, not `papers.paragraphs()`: BleepingComputer sets
 its CVEs in styled paragraphs the extractor skips. The cost: a site that
 prints a CVE in its header, ahead of the article, would key every story on
 it — a wrong match only skips a row, like the maker-link check.
+
+**The page's text, not its markup** (the same day). The next redraft took
+Chrome's zero-day from BleepingComputer, which the gate had turned down
+from Malwarebytes that morning: Malwarebytes writes its WordPress tags into
+the article's `class` and its JSON-LD keywords ahead of the text, and one
+tag was a typo (`tag-cve-2026-12350` for CVE-2026-125350). `lead_cve()` now
+drops scripts and tags before it looks. Re-measured on every security
+source in `posts/` (16 pages): the BleepingComputer, Krebs and Hackaday
+keys are unchanged; the three Malwarebytes pages moved off their tag
+classes, the Chrome one to its real CVE and its Patch Tuesday to
+CVE-2026-124194, the key Krebs and BleepingComputer already carry. The
+turned-down Malwarebytes Chrome record was re-keyed to match.

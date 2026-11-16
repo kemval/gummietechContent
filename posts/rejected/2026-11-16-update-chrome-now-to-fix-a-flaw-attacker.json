@@ -25,7 +25,7 @@
   ],
   "alt_text": "The carousel explains that Chrome 157.0.8103.50 fixes a zero‑day vulnerability, why it matters, how to update, and notes the rollout limitation.",
   "source_url": "https://www.malwarebytes.com/blog/bugs/2026/11/update-chrome-now-to-fix-a-flaw-attackers-are-exploiting",
-  "cve": "CVE-2026-12350",
+  "cve": "CVE-2026-125350",
   "attribution": "Malwarebytes",
   "peer_reviewed": false,
   "news_report": true,
