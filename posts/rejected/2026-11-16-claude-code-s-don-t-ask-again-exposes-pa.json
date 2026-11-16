@@ -27,5 +27,9 @@
   "source_url": "https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again",
   "attribution": "Apiiro",
   "peer_reviewed": false,
-  "beat": "software"
+  "beat": "software",
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
+  }
 }
