@@ -38,5 +38,9 @@
     "what_to_do": "Actualiza Chrome: Windows y macOS obtienen la versión 157.0.8103.50/.51, Linux la versión 157.0.8103.50.",
     "the_catch": "Google indica que la actualización podría tardar días o semanas en llegar a todos los usuarios de Chrome.",
     "_en": "9e4d260b6fa70763"
+  },
+  "rejected": {
+    "at": "2026-11-16",
+    "reason": ""
   }
 }
