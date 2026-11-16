@@ -71,7 +71,7 @@ from formats import (missing_fields, missing_from_entries,
                      required as format_required)
 from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, check_unmoved, open_sheet,
                     story_age_days)
-from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
+from papers import (CONTENT_RE, SCRIPT_RE, TAG_RE, citation, fetch_article, fetch_limits,
                     fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
                     post_order, recent_colorways, vary, warn_on_length)
@@ -124,7 +124,7 @@ CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
 
 
 def lead_cve(page: str) -> str:
-    """The first CVE id a page names, upper-cased, or "".
+    """The first CVE id a page's text names, upper-cased, or "".
 
     A security fix has no DOI and its vendor's advisory is rarely the page
     drafted from, so two outlets' reports of one patch shared no key. On
@@ -139,8 +139,16 @@ def lead_cve(page: str) -> str:
     would have claimed the Chrome story too. A site whose header carried a
     CVE ahead of the article would key every story on it; a wrong match
     only skips a row, like announced_links().
+
+    Text, not markup: scripts and tags are dropped first. The same day the
+    redraft after that took Chrome's zero-day from BleepingComputer, which
+    the gate had turned down from Malwarebytes that morning. Malwarebytes
+    writes its WordPress tags into the article's class attribute and its
+    JSON-LD keywords ahead of the text, and one tag was a typo,
+    "tag-cve-2026-12350" for CVE-2026-125350, so the two reports of one
+    flaw kept different keys.
     """
-    found = CVE_RE.search(page or "")
+    found = CVE_RE.search(TAG_RE.sub(" ", SCRIPT_RE.sub(" ", page or "")))
     return found.group(0).upper() if found else ""
 
 # What a *draft* needs on top of what render.py will refuse to render
