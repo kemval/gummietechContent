@@ -9,7 +9,7 @@
   ],
   "what_happened": "Google released emergency updates fixing a Use‑After‑Free bug in Chrome’s XML parser that attackers were exploiting in the wild.",
   "why_it_matters": "The fix covers Windows, macOS and Linux. Attackers can exploit this high-severity flaw to run malicious code.",
-  "what_to_do": "Update Chrome to version 157.0.8103.50 (or .51).",
+  "what_to_do": "Update Chrome: Windows and macOS get 157.0.8103.50/.51, Linux gets 157.0.8103.50.",
   "the_catch": "Google says the update may take days or weeks to reach all Chrome users.",
   "caption": "Google patched the eighth Chrome zero‑day this year, fixing a Use‑After‑Free bug that attackers were exploiting. Updated your browser yet?",
   "keywords": [
@@ -32,11 +32,11 @@
   "beat": "software",
   "es": {
     "domain": "seguridad del navegador",
-    "hook": "Chrome parcheó una vulnerabilidad de día cero que los atacantes ya están explotando.",
-    "what_happened": "Google lanzó actualizaciones de emergencia que corrigen un error Use‑After‑Free en el analizador XML de Chrome, que los atacantes estaban explotando en la práctica.",
+    "hook": "Chrome parcheó una vulnerabilidad de día cero que los atacantes ya estaban explotando.",
+    "what_happened": "Google lanzó actualizaciones de emergencia que corrigen un bug de tipo Use‑After‑Free en el analizador XML de Chrome, que los atacantes estaban explotando en entornos reales.",
     "why_it_matters": "La corrección cubre Windows, macOS y Linux. Los atacantes pueden aprovechar esta vulnerabilidad de alta gravedad para ejecutar código malicioso.",
-    "what_to_do": "Actualiza Chrome a la versión 157.0.8103.50 (o .51).",
-    "the_catch": "Google indica que la actualización puede tardar días o semanas en llegar a todos los usuarios de Chrome.",
-    "_en": "6f53ef41bbfc66ca"
+    "what_to_do": "Actualiza Chrome: Windows y macOS obtienen la versión 157.0.8103.50/.51, Linux la versión 157.0.8103.50.",
+    "the_catch": "Google indica que la actualización podría tardar días o semanas en llegar a todos los usuarios de Chrome.",
+    "_en": "9e4d260b6fa70763"
   }
 }
