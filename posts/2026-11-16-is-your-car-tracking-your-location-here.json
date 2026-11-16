@@ -2,13 +2,13 @@
   "post_type": "drop",
   "domain": "vehicle privacy",
   "colorway": "bloom",
-  "hook": "Your car is constantly sending your location data.",
+  "hook": "Your car likely tracks your location, and may share it.",
   "hooks": [
     "Your car is constantly sending your location data.",
     "Manufacturers can share that data with insurers and marketers.",
     "Privacy4Cars needs your car’s 17‑character VIN to produce a report."
   ],
-  "what_happened": "Cars built in recent years collect location data via GPS, telematics, and apps, which can be shared with insurers and marketers.",
+  "what_happened": "Most cars built in recent years likely collect location data via GPS, telematics and apps, which can be shared with insurers and marketers.",
   "why_it_matters": "You can check what data is collected and opt out to protect your privacy, though disabling may lose some services.",
   "what_to_do": "Enter your car’s 17‑character VIN on Privacy4Cars to get a Vehicle Privacy Report.",
   "the_catch": "Turning off location sharing can disable features like roadside assistance and remote start.",
@@ -32,11 +32,11 @@
   "beat": "software",
   "es": {
     "domain": "privacidad vehicular",
-    "hook": "Tu coche está enviando constantemente tus datos de ubicación",
-    "what_happened": "Los coches fabricados en los últimos años recogen datos de ubicación mediante GPS, telemática y aplicaciones; esos datos pueden compartirse con aseguradoras y empresas de marketing",
-    "why_it_matters": "Puedes revisar qué datos se recogen y optar por no compartirlos para proteger tu privacidad, aunque desactivar la recopilación puede hacer que pierdas algunos servicios",
-    "what_to_do": "Introduce el VIN de tu coche, de 17 caracteres, en Privacy4Cars para obtener un Informe de Privacidad del Vehículo",
-    "the_catch": "Desactivar el envío de datos de ubicación puede inhabilitar funciones como la asistencia en carretera y el arranque remoto",
-    "_en": "acd7656f1ba96e4a"
+    "hook": "Tu coche probablemente rastrea tu ubicación y podría compartirla.",
+    "what_happened": "La mayoría de los coches fabricados en los últimos años probablemente recopilan datos de ubicación mediante GPS, telemática y aplicaciones, y esos datos pueden compartirse con aseguradoras y empresas de marketing.",
+    "why_it_matters": "Puedes revisar qué datos se recopilan y optar por no compartirlos para proteger tu privacidad, aunque al desactivar la recopilación podrías perder algunos servicios.",
+    "what_to_do": "Introduce el VIN de 17‑caracteres de tu coche en Privacy4Cars para obtener un Informe de Privacidad del Vehículo.",
+    "the_catch": "Desactivar el uso de la ubicación puede desactivar funciones como la asistencia en carretera y el arranque remoto.",
+    "_en": "78a5d891643fffa1"
   }
 }
