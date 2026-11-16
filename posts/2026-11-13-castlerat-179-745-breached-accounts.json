@@ -39,5 +39,8 @@
     "the_catch": "Los datos solo cubren computadoras infectadas con CastleRAT: 180 000 direcciones de correo electrónico y 893 000 contraseñas. La página de HIBP indica que no hay otra limitación.",
     "_en": "e993803d577d4f00"
   },
-  "published_at": "2026-11-13"
+  "published_at": "2026-11-13",
+  "metrics": {
+    "asked_at": "2026-11-16"
+  }
 }
