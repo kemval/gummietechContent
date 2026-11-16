@@ -81,3 +81,17 @@ or a credit: coverage links the wrong announcement as readily as the right
 one (Mistral's docs page for Large 4 linked four older Mistral launches,
 and not Large 4).
 
+
+**A security fix has no DOI and no maker page, so its key is its lead CVE
+(2026-11-16).** "Another story" drafted November's Patch Tuesday from Krebs,
+then a Chrome zero-day, then the same Patch Tuesday from BleepingComputer:
+two URLs, no paper, and neither page linked by a post's `source_url`. Both
+pages name CVE-2026-124194, the exploited Outlook bug, first. `lead_cve()`
+takes the first CVE id on the raw page and the post records it as `cve`.
+Measured on that day's four pages: the first id alone paired the two Patch
+Tuesday reports and left the Chrome story apart; the first two or three ids
+merged Chrome in too, because Krebs's roundup names Chrome's fix after
+Microsoft's. The raw page, not `papers.paragraphs()`: BleepingComputer sets
+its CVEs in styled paragraphs the extractor skips. The cost: a site that
+prints a CVE in its header, ahead of the article, would key every story on
+it — a wrong match only skips a row, like the maker-link check.

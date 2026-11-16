@@ -182,3 +182,42 @@ def test_learn_reads_rejections_where_draft_writes_them():
     silence."""
     import learn
     assert learn.REJECTED == draft.POSTS_DIR / draft.REJECTED_DIR
+
+
+# ------------------------------------------------------- security fixes
+
+def test_a_second_outlets_report_of_one_patch_is_a_duplicate(covered):
+    """2026-11-16: "Another story" drafted November's Patch Tuesday from
+    Krebs, then from BleepingComputer — no DOI, no maker page, two URLs. Both
+    lead with the exploited Outlook bug, and BleepingComputer names it only
+    in a styled paragraph that papers.paragraphs() skips."""
+    krebs = ('<p>just one of the flaws is already seeing active exploitation: '
+             'cve-2026-124194, a spoofing bug in Outlook.</p>'
+             '<p>Google fixed CVE-2026-125350 in Chrome.</p>')
+    covered("2026-11-16-krebs.json", source_url="https://krebs/patch",
+            cve=draft.lead_cve(krebs))
+    bleeping = ('<p style="margin-left:40px"><a href="https://msrc.microsoft'
+                '.com/update-guide/en-US/advisory/CVE-2026-124194">'
+                'CVE-2026-124194</a></p><table><td>CVE-2026-118747</td></table>')
+    assert draft.already_covered(None, "https://bleeping/patch",
+                                 draft.covered_papers(),
+                                 cve=draft.lead_cve(bleeping)) \
+        == "2026-11-16-krebs.json"
+
+
+def test_a_fix_a_roundup_mentions_second_is_not_covered(covered):
+    """Krebs's Patch Tuesday piece names Chrome's zero-day after Microsoft's;
+    the Chrome story that leads with its own flaw is a different story."""
+    covered("2026-11-16-krebs.json", source_url="https://krebs/patch",
+            cve="CVE-2026-124194")
+    chrome = "<p>Chrome 157 fixes CVE-2026-12350 and CVE-2026-124194.</p>"
+    assert draft.already_covered(None, "https://malwarebytes/chrome",
+                                 draft.covered_papers(),
+                                 cve=draft.lead_cve(chrome)) is None
+
+
+def test_a_page_with_no_cve_matches_nothing_by_it(covered):
+    covered("2026-11-16-car.json", source_url="https://engadget/car")
+    assert draft.lead_cve("<p>Your car tracks you.</p>") == ""
+    assert draft.already_covered(None, "https://other/car",
+                                 draft.covered_papers(), cve="") is None

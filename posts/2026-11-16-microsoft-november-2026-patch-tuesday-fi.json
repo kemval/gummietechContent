@@ -25,6 +25,7 @@
   ],
   "alt_text": "The carousel explains that Microsoft’s November Patch Tuesday fixed 1,235 security flaws, including 66 critical bugs and an Outlook zero‑day that stole NTLM hashes.",
   "source_url": "https://www.bleepingcomputer.com/news/microsoft/microsoft-november-2026-patch-tuesday-fixes-1-235-flaws-outlook-zero-day/",
+  "cve": "CVE-2026-124194",
   "attribution": "BleepingComputer",
   "peer_reviewed": false,
   "news_report": true,

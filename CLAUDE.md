@@ -213,7 +213,8 @@ in `posts/` (`MAX_DUPLICATE_SKIPS` caps the walk). **Do not rebuild
 title-based deduplication** — it was measured and removed on 2026-09-21. A
 launch has no DOI, so its key is its maker's page: newsroom feeds declare
 `announces` prefixes (a maker with no feed, under `feedless_newsrooms`), and coverage that links an announcement already posted
-is a duplicate.
+is a duplicate. A security fix has neither a DOI nor a maker page, so its
+key is the first CVE its page names (`draft.lead_cve()`, recorded as `cve`).
 → `docs/decisions/dedup.md`
 
 **Drafting takes only fresh news.** `pick_row()` skips a queued row whose
@@ -424,7 +425,8 @@ does not state. A source that cannot be read is a hold, not a pass.
   peer-reviewed study". Code's alone (`draft.news_report()`), for Drops and
   Signal items; it outranks the model's `announcement`. Only declared
   outlets get it — an undeclared host may be a maker's page.
-- Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `es`
+- Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `cve`
+  (a security story's lead CVE, dedup's key for a fix), `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
   (`draft.py --run`, only when a README was read). `published_at` is added only
   when the post goes live, and `draft.py` never emits it.
