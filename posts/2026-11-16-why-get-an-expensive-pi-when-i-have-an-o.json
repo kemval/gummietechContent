@@ -2,16 +2,16 @@
   "post_type": "drop",
   "domain": "embedded hardware",
   "colorway": "orbit",
-  "hook": "A Redmi 13C 5G can replace a Raspberry Pi for sensor projects.",
+  "hook": "An old phone may replace a Raspberry Pi in one maker's project.",
   "hooks": [
-    "A Redmi 13C 5G can replace a Raspberry Pi for sensor projects.",
+    "An old phone may replace a Raspberry Pi in one maker's project.",
     "I rooted a cheap phone and used its camera, GPS and storage instead of buying a Pi and extra modules.",
     "The phones sell for about ¥300–500, roughly $45–75 each."
   ],
-  "what_happened": "The author unlocked a cheap Redmi phone and used its built‑in camera, GPS and storage to replace a Raspberry Pi and extra modules.",
-  "why_it_matters": "It shows a second‑hand phone can provide all needed hardware for projects, cutting cost and simplifying setup.",
+  "what_happened": "The author rooted a Redmi 13C 5G and is testing its camera, storage and GPS in place of a Raspberry Pi and add-on modules.",
+  "why_it_matters": "The author's listings put a used phone near ¥300–500 against about ¥1,483 for a Pi 4 build with camera, GPS and storage.",
   "the_catch": "Finding many matching phones with healthy batteries would take more work.",
-  "caption": "A cheap second‑hand phone can replace a Raspberry Pi by providing camera, GPS and storage in one device. Phone or Pi?",
+  "caption": "An old phone may replace a Raspberry Pi in one maker's project, by supplying camera, GPS and storage. Phone or Pi?",
   "keywords": [
     "smartphone",
     "raspberry-pi",
@@ -23,17 +23,18 @@
     "#hardware",
     "#gummietech"
   ],
-  "alt_text": "The slides explain how a cheap second‑hand phone can replace a Raspberry Pi by using its built‑in camera, GPS and storage.",
+  "alt_text": "The slides describe one maker testing a rooted second-hand phone's camera, GPS and storage in place of a Raspberry Pi and add-on modules.",
   "source_url": "https://so.long.thanks.fish/why-pi-when-i-have-an-old-phone/",
-  "attribution": "Hacker News",
+  "attribution": "so.long.thanks.fish",
   "peer_reviewed": false,
+  "announcement": true,
   "beat": "computing",
   "es": {
     "domain": "hardware embebido",
-    "hook": "Un Redmi 13C 5G puede reemplazar una Raspberry Pi en proyectos de sensores.",
-    "what_happened": "El autor desbloqueó un Redmi barato y utilizó su cámara integrada, GPS y almacenamiento para sustituir una Raspberry Pi y sus módulos adicionales.",
-    "why_it_matters": "Esto demuestra que un teléfono de segunda mano puede proporcionar todo el hardware necesario para los proyectos, reduciendo costos y simplificando la configuración.",
-    "the_catch": "Encontrar muchos teléfonos que cumplan los requisitos y tengan baterías en buen estado requeriría más trabajo.",
-    "_en": "826684acc930c393"
+    "hook": "Un teléfono viejo podría reemplazar a una Raspberry Pi en el proyecto de un maker.",
+    "what_happened": "El autor rooteó un Redmi 13C 5G y está probando su cámara, almacenamiento y GPS en lugar de una Raspberry Pi y sus módulos adicionales.",
+    "why_it_matters": "Según los precios consultados por el autor, un teléfono usado cuesta entre ¥300 y ¥500, frente a los cerca de ¥1 483 que requiere un montaje con una Pi 4 con cámara, GPS y almacenamiento.",
+    "the_catch": "Encontrar muchos teléfonos del mismo modelo con la batería en buen estado requeriría más trabajo.",
+    "_en": "b205388b3536bf9c"
   }
 }
