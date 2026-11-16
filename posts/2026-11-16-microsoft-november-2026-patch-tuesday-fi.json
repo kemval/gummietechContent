@@ -9,8 +9,8 @@
     "Microsoft says the update addressed 66 critical vulnerabilities."
   ],
   "what_happened": "Microsoft released its November Patch Tuesday, fixing 1,235 security flaws including 66 critical ones and an actively exploited Outlook zero‑day.",
-  "why_it_matters": "The fixes stop attackers from stealing credentials via Outlook and close many critical bugs that could let malware run.",
-  "the_catch": "Some users reported installation errors such as 0x80070306 and 0x800F0989, causing the update to fail on certain machines.",
+  "why_it_matters": "The Outlook fix blocks stolen NTLM account hashes, and 48 of the 66 critical flaws allowed remote code execution.",
+  "the_catch": "Microsoft says exploiting the Outlook flaw needs network connectivity and user interaction.",
   "caption": "Microsoft's November Patch Tuesday fixed 1,235 security flaws, including a critical Outlook zero‑day that could steal NTLM hashes. Did your PC get the update?",
   "keywords": [
     "patch Tuesday",
@@ -31,10 +31,10 @@
   "beat": "computing",
   "es": {
     "domain": "seguridad de software",
-    "hook": "El Patch Tuesday de noviembre de Microsoft corrigió 1 235 fallas",
-    "what_happened": "Microsoft lanzó su Patch Tuesday de noviembre, corrigiendo 1 235 vulnerabilidades de seguridad, entre ellas 66 críticas y un zero‑day de Outlook explotado activamente",
-    "why_it_matters": "Las correcciones impiden que los atacantes roben credenciales mediante Outlook y cierran muchos fallos críticos que podrían permitir la ejecución de malware",
-    "the_catch": "Algunos usuarios reportaron errores de instalación, como 0x80070306 y 0x800F0989, que provocaron que la actualización fallara en ciertas máquinas",
-    "_en": "25fbe3f52777f061"
+    "hook": "El Patch Tuesday de noviembre de Microsoft corrigió 1 235 vulnerabilidades",
+    "what_happened": "Microsoft lanzó su Patch Tuesday de noviembre, corrigiendo 1 235 vulnerabilidades de seguridad, incluidas 66 críticas y un zero‑day de Outlook que estaba siendo explotado activamente",
+    "why_it_matters": "La corrección de Outlook impide el uso de hashes de cuentas NTLM robados, y 48 de las 66 vulnerabilidades críticas permitían la ejecución remota de código",
+    "the_catch": "Microsoft indica que explotar la vulnerabilidad de Outlook requiere conectividad de red e interacción del usuario",
+    "_en": "47142483e81d22a3"
   }
 }
