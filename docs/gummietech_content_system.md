@@ -32,7 +32,7 @@ Decided by the owner on 2026-10-16 ("ciencia ya no"), with the beats settled on 
 
 | | beats (`score.py`) | what it covers |
 |---|---|---|
-| **Priority** | `ai`, `software`, `automation`, `robotics`, `computing`, `engineering` | AI and agents, programming and tools, data engineering and data science, chips and security, robots, and energy, batteries, materials and manufacturing *for technology* |
+| **Priority** | `ai`, `software`, `security`, `automation`, `robotics`, `computing`, `engineering` | AI and agents, programming and tools, flaws, patches, scams and privacy, data engineering and data science, chips, robots, and energy, batteries, materials and manufacturing *for technology* |
 | **Secondary** | `quantum`, `space` | quantum computing, and space as technology (rockets, satellites), drafted only when no priority row is left |
 | **Out** | `science` | biology, medicine, physics, astronomy, climate, ecology, chemistry, mathematics: never queued |
 

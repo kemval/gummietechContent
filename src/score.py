@@ -52,6 +52,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 
@@ -87,7 +88,7 @@ LIFT_AT = 8
 
 # What an item is about. Anything else the model says is stored as blank
 # rather than trusted into a column draft.py selects on.
-BEATS = ("ai", "software", "automation", "robotics", "computing",
+BEATS = ("ai", "software", "security", "automation", "robotics", "computing",
          "engineering", "quantum", "space", "science")
 
 # Since 2026-10-16 the account is technology only. A science item keeps the
@@ -107,8 +108,9 @@ THRESHOLD = 7.0
 # "Show HN" about a science topic is that topic; the medium is not the beat.
 BEAT_RULE = """Exactly one of: ai (machine learning, models, agents), software \
 (programming, languages, tools, infrastructure), automation, robotics, \
-computing (building computers: chips, processors, data infrastructure, \
-security), engineering (energy, batteries, materials and manufacturing for \
+security (flaws, patches, malware, scams, breaches and privacy: keeping \
+devices, accounts and data safe), computing (building computers: chips, \
+processors, data infrastructure), engineering (energy, batteries, materials and manufacturing for \
 technology, vehicles, built infrastructure), quantum (quantum computers, \
 qubits, quantum networks), space (rockets, satellites, spacecraft: the \
 hardware, not what it observes), science (everything else: biology, \
@@ -252,6 +254,26 @@ def overall(scores: dict) -> float:
     except (TypeError, ValueError):
         relevance = 0.0
     return max(mean, relevance) if relevance >= LIFT_AT else mean
+
+
+# A row's note, as main() writes it: "n6 v3 e7 s6 r8 · why". watch.py
+# restates the pattern, because it must not import the LLM clients.
+NOTE_AXIS_RE = re.compile(r"\b([nvesr])(\d+(?:\.\d+)?)\b")
+
+
+def axes_mean(note: str) -> float:
+    """The mean of AXES read back from a row's note, or 0 when it has none.
+
+    The overall score stops seeing the axes once relevance lifts a row, and
+    the lift lands on 9 or 10 for nearly every security item: on 2026-11-16,
+    36 of the top 45 fresh rows sat at exactly 9.00, so draft.pick_row()
+    breaks the tie on this instead.
+    """
+    found = dict(NOTE_AXIS_RE.findall(note.split("·")[0]))
+    values = [found.get(axis[0]) for axis in AXES]
+    if None in values:
+        return 0.0
+    return sum(float(v) for v in values) / len(AXES)
 
 
 def beat_of(result: dict) -> str:

@@ -416,6 +416,78 @@ def test_a_signal_takes_at_most_two_items_from_one_site(monkeypatch):
     assert taken == ["macbook", "imac", "chrome-fix", "free-tool"]
 
 
+def test_a_tie_goes_to_the_stronger_axes_before_the_newer_row():
+    """2026-11-16: 36 of the top 45 fresh rows sat at 9.00, where the lift
+    hides the axes, and the newest of them — usually the latest security
+    item — was the pick whatever its axes said."""
+    strong = sheet_row("free-app", 9.0, beat="ai")
+    strong[COL["notes"]] = "n8 v8 e9 s8 r9 · free open-source app"
+    weak = sheet_row("end-of-support", 9.0, beat="software")
+    weak[COL["notes"]] = "n2 v2 e8 s2 r9 · end of support notice"
+    n, item = draft.pick_row([HEADER, strong, weak], COL, None)
+    assert (n, item["title"]) == (2, "free-app")
+
+
+def test_a_drop_passes_over_the_last_drops_beat():
+    """2026-11-06 to 11-16: five Drops in a row were security, because the
+    pick took the top score and remembered nothing it had posted."""
+    rows = [HEADER, sheet_row("another-breach", 10.0, beat="security"),
+            sheet_row("free-tool", 8.0, beat="ai")]
+    _, item = draft.pick_row(rows, COL, None, avoid=frozenset({"security"}))
+    assert item["title"] == "free-tool"
+
+
+def test_a_drop_repeats_the_beat_when_nothing_else_is_queued():
+    rows = [HEADER, sheet_row("another-breach", 10.0, beat="security")]
+    _, item = draft.pick_row(rows, COL, None, avoid=frozenset({"security"}))
+    assert item["title"] == "another-breach"
+
+
+def test_a_row_named_by_hand_ignores_the_beat_to_avoid():
+    rows = [HEADER, sheet_row("another-breach", 10.0, beat="security"),
+            sheet_row("free-tool", 8.0, beat="ai")]
+    _, item = draft.pick_row(rows, COL, 2, avoid=frozenset({"security"}))
+    assert item["title"] == "another-breach"
+
+
+def test_the_beats_to_avoid_are_the_last_two_drops(tmp_path, monkeypatch):
+    """A Signal or a by-hand post between Drops is not a Drop, a run post is
+    Wednesday's Drop, and posts/era.json is a fixture: by filename it sorted
+    last and was read as the newest Drop."""
+    for name, post in [("2026-11-11-a", {"post_type": "drop", "beat": "ai"}),
+                       ("2026-11-12-b", {"post_type": "run", "beat": "security"}),
+                       ("2026-11-13-c", {"post_type": "breakdown", "beat": "space"}),
+                       ("2026-11-14-d", {"post_type": "signal"}),
+                       ("2026-11-15-e", {"post_type": "drop", "beat": "Computing"}),
+                       ("era", {"post_type": "drop", "beat": "engineering"})]:
+        (tmp_path / f"{name}.json").write_text(json.dumps(post))
+    monkeypatch.setattr(draft, "POSTS_DIR", tmp_path)
+    assert draft.recent_drop_beats() == {"computing", "security"}
+
+
+def test_a_signal_prefers_beats_it_does_not_have_twice(monkeypatch):
+    """Weeks 45 and 46: each Signal was five security items, from three
+    sites, so the per-site cap never noticed."""
+    from types import SimpleNamespace
+    rows = [HEADER]
+    for title, score, beat in [("patch-1", 10.0, "security"),
+                               ("patch-2", 9.9, "security"),
+                               ("patch-3", 9.8, "security"),
+                               ("free-tool", 8.0, "ai"),
+                               ("patch-4", 9.7, "security")]:
+        row = sheet_row(title, score, beat=beat)
+        row[COL["url"]] = f"https://site-{title}.example/{title}"
+        rows.append(row)
+    monkeypatch.setattr(draft, "fetch_article", lambda url: ("text", "", None))
+    monkeypatch.setattr(draft, "resolve_paper", lambda page: (None, None))
+    args = SimpleNamespace(evergreen=None, url=None, row=None, run=False,
+                           dry_run=True)
+
+    taken = [c["item"]["title"]
+             for c in draft.settled_candidates(args, rows, COL, None, {}, 4)]
+    assert taken == ["patch-1", "patch-2", "free-tool", "patch-3"]
+
+
 def test_a_row_named_by_hand_ignores_the_preference():
     rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
             sheet_row("agents", 9.5, beat="ai")]

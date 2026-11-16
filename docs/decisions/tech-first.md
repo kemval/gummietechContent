@@ -21,7 +21,9 @@ the score: a topic bonus would make the number stop meaning "worth posting".
 
 **Technology only, from 2026-10-16.** The owner dropped science
 ("ciencia ya no"). On 2026-10-17 the beats were settled with them: ai,
-software, automation, robotics, computing and a new `engineering` (energy,
+software, automation, robotics, computing (and, from 2026-11-16, `security`,
+split out of computing so the pick can see a streak: see
+`voice-and-selection.md`) and a new `engineering` (energy,
 batteries, materials and manufacturing for technology) come first; new
 `quantum` (quantum computing) and `space` (rockets, satellites, the hardware)
 are `SECONDARY_BEATS`, taken when no priority row is left; `science` —

@@ -74,7 +74,8 @@ from ingest import (COLUMNS, MAX_STORY_AGE_DAYS, check_unmoved, open_sheet,
 from papers import (CONTENT_RE, TAG_RE, citation, fetch_article, fetch_limits,
                     fetch_readme, resolve_paper, source_text)
 from render import (COLORWAYS, DEFAULT_COLORWAY, HOOK_WORD_LIMIT, WORD_LIMIT,
-                    recent_colorways, vary, warn_on_length)
+                    post_order, recent_colorways, vary, warn_on_length)
+from score import axes_mean
 from verify_feeds import announcement_prefixes, report_prefixes, url_key
 from wording import problems as wording_problems
 
@@ -462,6 +463,20 @@ MAX_DUPLICATE_SKIPS = 5
 # not the company: coverage of Anthropic on the-decoder.com counts as the
 # Decoder's. A row skipped here stays queued, and costs no fetch.
 SIGNAL_PER_SITE = 2
+# And prefers items whose beat has fewer than this many already. A
+# preference, not a cap: the weeks 45 and 46 Signals were five security items
+# each, from three sites, which SIGNAL_PER_SITE let through, but a queue that
+# holds nothing else still fills the roundup rather than cutting it short.
+SIGNAL_PER_BEAT = 2
+
+# A Drop prefers a beat that none of the last VARY_LAST_DROPS Drops had. The
+# pick ranks by score, so whatever score.py's prompt favours fills every
+# slot: October's Drops were back-to-back launches, and from 2026-11-06 all
+# five were security, because relevance lifts a flaw with a fix to 9 or 10.
+# The 11-05 note said a streak should be fixed in the pick, not the score.
+# This is the fix: a preference inside the queue, which every queued row
+# has already cleared, and dropped when no other beat is queued.
+VARY_LAST_DROPS = 2
 
 
 # The account is tech-first: AI, software, automation, ML and robotics are
@@ -472,8 +487,8 @@ SIGNAL_PER_SITE = 2
 # the queue starts at — so September shipped almost no AI while 777 tech
 # candidates sat above the threshold. The score stays topic-blind; the
 # preference is applied here, where one row is chosen from many.
-PRIORITY_BEATS = frozenset({"ai", "software", "automation", "robotics",
-                            "computing", "engineering"})
+PRIORITY_BEATS = frozenset({"ai", "software", "security", "automation",
+                            "robotics", "computing", "engineering"})
 # Technology too, but taken only when no priority row is left (2026-10-17,
 # the owner's call). Science is not here: score.py never queues it.
 SECONDARY_BEATS = frozenset({"quantum", "space"})
@@ -506,10 +521,32 @@ def links_code(row: list[str], col: dict) -> bool:
                 and CODE_URL_RE.search(row[idx]))
 
 
+def recent_drop_beats(count: int = VARY_LAST_DROPS) -> frozenset[str]:
+    """The beats of the last `count` Drops in posts/, in render.post_order().
+
+    A run post is Wednesday's Drop, so it counts. A post drafted before
+    beats existed has none and adds nothing. post_order, not the filenames:
+    posts/era*.json are undated fixtures that sort after every real post.
+    """
+    beats = []
+    for path in reversed(post_order(POSTS_DIR)):
+        try:
+            post = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if post.get("post_type") not in ("drop", "run"):
+            continue
+        beats.append(str(post.get("beat") or "").lower())
+        if len(beats) == count:
+            break
+    return frozenset(b for b in beats if b)
+
+
 def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
              skip: set[int] = frozenset(),
              prefer_code: bool = False,
-             now: datetime | None = None) -> tuple[int, dict]:
+             now: datetime | None = None,
+             avoid: frozenset[str] = frozenset()) -> tuple[int, dict]:
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
 
@@ -522,6 +559,11 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     before that, so without this the next pass would pick the same one.
 
     A queued row older than MAX_STORY_AGE_DAYS is not a candidate.
+
+    `avoid` holds beats to pass over when another is left in the pool —
+    the last Drops' (VARY_LAST_DROPS), or a Signal's full ones
+    (SIGNAL_PER_BEAT). It narrows inside the subject preference, last, so
+    tech first and a run day's code both still hold.
     """
     now = now or datetime.now(timezone.utc)
     candidates = []
@@ -569,10 +611,25 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
         else:
             print("  note: no queued row links its code — drafting a plain "
                   "Drop today")
-    # Ties go to the newest row: ingest.py appends, so a higher row number was
-    # fetched later. Scores bunch at 8.75, and on 2026-10-02 taking the first
-    # of a tie drafted a September story over that week's.
-    score, n, row = max(preferred or candidates, key=lambda c: (c[0], c[1]))
+    if avoid and not wanted:
+        pool = preferred or candidates
+        varied = [c for c in pool if row_cell(c[2], col, "beat") not in avoid]
+        if varied:
+            preferred = varied
+        else:
+            print(f"  note: every candidate is on {', '.join(sorted(avoid))} "
+                  "— repeating the beat")
+    # A tie goes to the stronger axes, then to the newest row. The axes: the
+    # relevance lift sets the score of nearly every security item to 9 or 10,
+    # and on 2026-11-16 "Windows Server 2016 reaches end of support" (axes
+    # 3.5) tied a free open-source app (8.25) at 9.00. The newest: ingest.py
+    # appends, so a higher row number was fetched later, and on 2026-10-02
+    # taking the first of a tie drafted a September story over that week's.
+    notes = col.get("notes")
+    score, n, row = max(
+        preferred or candidates,
+        key=lambda c: (c[0], axes_mean(c[2][notes]) if notes is not None
+                       and notes < len(c[2]) else 0.0, c[1]))
     return n, {name: row[idx] for name, idx in col.items()
                if idx < len(row)} | {"score": score}
 
@@ -1193,6 +1250,9 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
     auto_evergreen = args.evergreen == 0
     found = 0
     sites: Counter[str] = Counter()     # items taken per site, SIGNAL_PER_SITE
+    beats: Counter[str] = Counter()     # items taken per beat, SIGNAL_PER_BEAT
+    # A Drop varies from the last Drops; a Signal from its own items so far.
+    recent = recent_drop_beats() if wanted == 1 else frozenset()
 
     while found < wanted:
         row_number = None
@@ -1203,8 +1263,10 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                     "title": "", "summary": "", "score": "—"}
         else:
             try:
+                avoid = (recent if wanted == 1 else frozenset(
+                    b for b, n in beats.items() if b and n >= SIGNAL_PER_BEAT))
                 row_number, item = pick_row(rows, col, args.row, skipped,
-                                            prefer_code=args.run)
+                                            prefer_code=args.run, avoid=avoid)
             except SystemExit:
                 # The queue ran dry mid-Signal: the same short roundup as
                 # running out of budget, for the same reason.
@@ -1300,6 +1362,7 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
             yield settled
             found += 1
             sites[outlet(item["url"])] += 1
+            beats[str(item.get("beat") or "").lower()] += 1
             # Taken, not rejected: it must not come back on the next pass of
             # a Signal, and it is not a duplicate so it does not count as one.
             if row_number is not None:

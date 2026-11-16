@@ -234,7 +234,12 @@ moved under it. → `docs/decisions/sheet-growth.md`
 that lives.** `score.py` names each item's `beat`, and a `science` beat is
 never queued (`OUT_OF_SCOPE`); `draft.pick_row()` prefers `PRIORITY_BEATS`,
 then `SECONDARY_BEATS` (quantum, space). Do not move either into the score.
-→ `docs/decisions/tech-first.md`
+**Inside that, the pick varies (2026-11-16):** a Drop passes over the beats
+of the last `VARY_LAST_DROPS` (2) Drops, a Signal over a beat it already
+has `SIGNAL_PER_BEAT` (2) of — preferences, dropped when nothing else is
+queued — and a tied score goes to the stronger axes (`score.axes_mean()`),
+then the newest row. `security` is its own beat so a streak can be seen.
+→ `docs/decisions/tech-first.md`, `docs/decisions/voice-and-selection.md`
 
 **Launches are news, and the voice is a doc.** `score.py` also asks for
 `relevance` (can someone who uses technology act on this — a fix to apply,

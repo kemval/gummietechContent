@@ -66,8 +66,8 @@ CREDIT = ("source_url", "doi", "attribution", "peer_reviewed", "announcement",
 # LLM clients and gspread, and this runs before pip install. Posts drafted
 # before score.py named a beat have none, so the signal colorway — AI,
 # computing, software, robotics — stands in for it.
-TECH_BEATS = frozenset({"ai", "software", "automation", "robotics", "computing",
-                        "engineering"})
+TECH_BEATS = frozenset({"ai", "software", "security", "automation", "robotics",
+                        "computing", "engineering"})
 
 # ingest.MAX_STORY_AGE_DAYS, restated for TECH_BEATS' reason. The reason
 # draft.pick_row() has it applies on Sunday too: "can I run the model that
