@@ -1,0 +1,42 @@
+{
+  "post_type": "drop",
+  "domain": "vehicle privacy",
+  "colorway": "bloom",
+  "hook": "Your car is constantly sending your location data.",
+  "hooks": [
+    "Your car is constantly sending your location data.",
+    "Manufacturers can share that data with insurers and marketers.",
+    "Privacy4Cars needs your car’s 17‑character VIN to produce a report."
+  ],
+  "what_happened": "Cars built in recent years collect location data via GPS, telematics, and apps, which can be shared with insurers and marketers.",
+  "why_it_matters": "You can check what data is collected and opt out to protect your privacy, though disabling may lose some services.",
+  "what_to_do": "Enter your car’s 17‑character VIN on Privacy4Cars to get a Vehicle Privacy Report.",
+  "the_catch": "Turning off location sharing can disable features like roadside assistance and remote start.",
+  "caption": "Modern cars collect and share your location data, and you can generate a privacy report using your VIN. Will you check your car’s privacy settings?",
+  "keywords": [
+    "car privacy",
+    "location data",
+    "VIN"
+  ],
+  "hashtags": [
+    "#carprivacy",
+    "#locationtracking",
+    "#dataprivacy",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that cars collect location data, how to get a VIN‑based privacy report, and the trade‑offs of disabling tracking.",
+  "source_url": "https://www.engadget.com/2312168/car-location-tracking-how-to-opt-out/",
+  "attribution": "Engadget",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "software",
+  "es": {
+    "domain": "privacidad vehicular",
+    "hook": "Tu coche está enviando constantemente tus datos de ubicación",
+    "what_happened": "Los coches fabricados en los últimos años recogen datos de ubicación mediante GPS, telemática y aplicaciones; esos datos pueden compartirse con aseguradoras y empresas de marketing",
+    "why_it_matters": "Puedes revisar qué datos se recogen y optar por no compartirlos para proteger tu privacidad, aunque desactivar la recopilación puede hacer que pierdas algunos servicios",
+    "what_to_do": "Introduce el VIN de tu coche, de 17 caracteres, en Privacy4Cars para obtener un Informe de Privacidad del Vehículo",
+    "the_catch": "Desactivar el envío de datos de ubicación puede inhabilitar funciones como la asistencia en carretera y el arranque remoto",
+    "_en": "acd7656f1ba96e4a"
+  }
+}
