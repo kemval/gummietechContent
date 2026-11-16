@@ -289,3 +289,47 @@ scene later (`--scenes` on the stage). Nothing the owner approved on the
 five-scene reel changed. The Chrome 157 draft rendered at 21.5s, passed
 every frame's safe-zone and flag checks, and its first and last frames
 match at 44 dB PSNR, so the loop has no seam.
+
+## The pick varies (2026-11-16)
+
+**What prompted it.** The streak the 11-05 note warned about came. From
+11-06 every Drop was security or privacy (D-Link zero-days, Outlook and
+DMARC, Gemini and Drive, CastleRAT, then Patch Tuesday after the car
+tracking draft and a Chrome patch were turned down at the gate), and both
+Signals since were five security items each. October had done the same
+with launches. The owner asked how the choosing could improve.
+
+**Why the pick and not the score.** On the live sheet that day, 216 rows
+were fresh and queued, and 36 of the top 45 scored exactly 9.00, nearly
+all security. Once relevance lifts a row, it is the row's whole score, so
+the axes stop counting and a tie went to the newest row: in practice the
+latest BleepingComputer item (41 of the 216). "Windows Server 2016 reaches
+end of support" (`n2 v2 e8 s2 r9`) tied a free open-source app
+(`n8 v8 e9 s8 r9`). And nothing about the pick knew what had gone out.
+
+**What changed, all in `draft.pick_row()`:**
+
+- **A tie goes to the stronger axes**, read back from the row's note
+  (`score.axes_mean()`), then to the newest row as before.
+- **A Drop passes over the beats of the last `VARY_LAST_DROPS` (2)
+  Drops** (`recent_drop_beats()`, run posts included, in
+  `render.post_order()` because `posts/era*.json` are undated fixtures).
+  **A Signal passes over a beat it already has `SIGNAL_PER_BEAT` (2) of.**
+  Both are preferences: when nothing else is queued, the beat repeats with
+  a note in the log, rather than the Drop going undrafted or the Signal
+  going out short. Every queued row has cleared `THRESHOLD`, so the row
+  taken instead is still one score.py called worth posting.
+- **`security` is a beat**, split out of `computing`, because a streak the
+  beats cannot name is one this rule cannot see. Rows already queued keep
+  the beat they were given; `score.py --beats --again` re-names them, and
+  without it they age out of the 10-day window by about 11-26.
+
+**Not changed, on purpose.** The score and the relevance prompt. Much of
+what scores 10 is enterprise gear the reader does not own (Barracuda ESG,
+N-able, Check Point, Cisco BroadWorks, the D-Link DGS-3130 that went out);
+asking relevance whether the reader owns the thing is a prompt change, so
+it waits for a measured re-score on real rows, as the 10-07 and 11-05
+changes did.
+
+**Settled by** the next two weeks of Drops: if every one is still a single
+subject under a different beat name, the beat rule is the thing to tighten.

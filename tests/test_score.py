@@ -168,3 +168,10 @@ def test_science_is_never_queued_however_it_scores():
     assert score.queue_status(9.5, {"beat": "science"}) == "rejected"
     assert score.queue_status(9.5, {"beat": "space"}) == "queued"
     assert score.queue_status(6.0, {"beat": "ai"}) == "rejected"
+
+
+def test_the_axes_are_read_back_from_a_rows_note():
+    """draft.pick_row() breaks a 9.00 tie on them (2026-11-16)."""
+    assert score.axes_mean("n8 v4 e8 s8 r10 · a fix to apply") == 7.0
+    assert score.axes_mean("n6 v3 e7 · cut short") == 0.0
+    assert score.axes_mean("") == 0.0
