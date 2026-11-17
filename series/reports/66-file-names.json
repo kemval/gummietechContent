@@ -1,0 +1,49 @@
+{
+  "number": 66,
+  "eyebrow": "status report",
+  "title": "how I name my files",
+  "module": "files",
+  "image": "66-file-names.png",
+  "caption": "I use git for code. for everything else, there's this.\n\nreport. report_v2. report_final. report_final_FINAL.\nreport_final_FINAL_use-this. report_old_DONT_DELETE.\nand the one that's actually right: report (1).docx.\n\nwhat's the worst file name on your computer right now?",
+  "hashtags": [
+    "#filenaming",
+    "#versioncontrol",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "version control? no",
+    "items": [
+      [
+        "report.docx",
+        "mar 3"
+      ],
+      [
+        "report_v2.docx",
+        "mar 3"
+      ],
+      [
+        "report_final.docx",
+        "mar 4"
+      ],
+      [
+        "report_final_FINAL.docx",
+        "mar 6"
+      ],
+      [
+        "report_final_FINAL_use-this.docx",
+        "mar 6"
+      ],
+      [
+        "report_old_DONT_DELETE.docx",
+        "mar 9"
+      ],
+      [
+        "report (1).docx",
+        "today"
+      ]
+    ],
+    "kicker": "the right one is (1). it's always (1)."
+  }
+}

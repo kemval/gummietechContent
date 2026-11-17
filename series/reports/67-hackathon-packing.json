@@ -1,0 +1,53 @@
+{
+  "number": 67,
+  "eyebrow": "status report",
+  "title": "hackathon packing list",
+  "module": "checklist",
+  "image": "67-hackathon-packing.png",
+  "caption": "48 hours. packed and ready. mostly.\n\nlaptop, charger, backup charger. a pitch with \"AI\" in it.\nsix energy drinks. checked.\nsleep, a working demo, the idea itself: we'll figure it out.\n\nwhat's the one thing you always forget at a hackathon?",
+  "hashtags": [
+    "#hackathon",
+    "#buildinpublic",
+    "#devhumor",
+    "#codinglife",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "48 hours",
+    "items": [
+      [
+        "laptop",
+        true
+      ],
+      [
+        "charger",
+        true
+      ],
+      [
+        "backup charger",
+        true
+      ],
+      [
+        "a pitch with “AI” in it",
+        true
+      ],
+      [
+        "six energy drinks",
+        true
+      ],
+      [
+        "sleep",
+        false
+      ],
+      [
+        "a working demo",
+        false
+      ],
+      [
+        "the idea (we'll figure it out)",
+        false
+      ]
+    ],
+    "kicker": "we'll win “most creative.” that means we lost."
+  }
+}

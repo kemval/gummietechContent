@@ -1,0 +1,45 @@
+{
+  "number": 64,
+  "eyebrow": "status report",
+  "title": "languages I've “learned”",
+  "module": "bars",
+  "image": "64-languages-learned.png",
+  "caption": "languages I've \"learned\", and how far I got.\n\nRust: the borrow checker won. Go: hello, world.\nHaskell: can't explain monads. no one can. Kotlin: listed it on LinkedIn.\nPython: fluent in copy-paste.\n\nwhich language did you give up on fastest?",
+  "hashtags": [
+    "#programminglanguages",
+    "#learntocode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "hello, world",
+    "items": [
+      [
+        "Rust",
+        "the borrow checker won"
+      ],
+      [
+        "Go",
+        "hello, world"
+      ],
+      [
+        "Haskell",
+        "can't explain monads. no one can."
+      ],
+      [
+        "Elixir",
+        "watched one conference talk"
+      ],
+      [
+        "Kotlin",
+        "listed it on LinkedIn"
+      ],
+      [
+        "Python",
+        "fluent in copy-paste"
+      ]
+    ],
+    "kicker": "my GitHub is mostly first commits in new languages"
+  }
+}

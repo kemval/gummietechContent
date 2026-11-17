@@ -1,0 +1,46 @@
+{
+  "number": 68,
+  "eyebrow": "status report",
+  "title": "my job, as a pie chart",
+  "module": "pie",
+  "image": "68-job-pie-chart.png",
+  "caption": "software developer, technically. here's the breakdown.\n\nmeetings: 30%. chat: 25%. waiting for builds: 15%. looking busy: 15%.\nwriting code: 10%. the job title only covers that slice.\ngoogling \"will AI replace me\": 5%, and rising.\n\nwhat's the biggest slice of your workday?",
+  "hashtags": [
+    "#softwaredeveloper",
+    "#devlife",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "dev, technically",
+    "items": [
+      [
+        "meetings",
+        "30%"
+      ],
+      [
+        "chat",
+        "25%"
+      ],
+      [
+        "waiting for builds",
+        "15%"
+      ],
+      [
+        "looking busy",
+        "15%"
+      ],
+      [
+        "writing code",
+        "10%"
+      ],
+      [
+        "googling “will AI replace me”",
+        "5%"
+      ]
+    ],
+    "note": "the job title only covers the 10%",
+    "kicker": "the 10% is the part on my résumé"
+  }
+}

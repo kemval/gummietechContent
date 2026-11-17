@@ -1,0 +1,43 @@
+{
+  "number": 56,
+  "eyebrow": "status report",
+  "title": "meeting bingo",
+  "module": "bingo",
+  "image": "56-meeting-bingo.png",
+  "caption": "a card for your next all-hands. play quietly.\n\n\"you're on mute.\" \"let's circle back.\" \"one last thing\" (40 minutes).\n\"can you see my screen?\" \"per my last email.\" \"exciting changes.\"\nbingo by minute twelve. still had to stay.\n\nwhich square do you hit first in every meeting?",
+  "hashtags": [
+    "#meetings",
+    "#corporatehumor",
+    "#devlife",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "play quietly",
+    "items": [
+      "you're on mute",
+      "can you see my screen?",
+      "let's take this offline",
+      "per my last email",
+      "sorry, go ahead",
+      "circle back",
+      "can everyone hear me?",
+      "camera off, “bad wifi”",
+      "this could've been an email",
+      "who owns this? (silence)",
+      "one last thing (40 min)",
+      "who just joined?",
+      "the deck has 60 slides",
+      "hard stop (ignored)",
+      "any questions? (I have 9)",
+      "“exciting changes” (layoffs)"
+    ],
+    "marked": [
+      "you're on mute",
+      "circle back",
+      "one last thing (40 min)",
+      "“exciting changes” (layoffs)"
+    ],
+    "kicker": "won by minute twelve. still had to stay."
+  }
+}

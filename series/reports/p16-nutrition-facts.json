@@ -1,0 +1,61 @@
+{
+  "eyebrow": "back of the box · per serving",
+  "title": "what's inside one side project",
+  "module": "label",
+  "image": "p16-nutrition-facts.png",
+  "caption": "nutrition facts, one side project. no tests added.\n\nserving size: one weekend, planned. weekends sacrificed: 14.\ntotal scope: 340%. new frameworks: 85%. rewrites from scratch: 3.\nusers, including me: 1. finished: 2%.\n\nhow many weekends has your current side project eaten?",
+  "hashtags": [
+    "#sideprojects",
+    "#buildinpublic",
+    "#indiehacker",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "no tests added",
+    "items": [
+      [
+        "serving size",
+        "1 weekend (planned)"
+      ],
+      [
+        "weekends sacrificed",
+        "14"
+      ],
+      [
+        "excitement",
+        "100%"
+      ],
+      [
+        "total scope",
+        "340%"
+      ],
+      [
+        "scope creep",
+        "290%"
+      ],
+      [
+        "new frameworks",
+        "85%"
+      ],
+      [
+        "rewrites from scratch",
+        "3"
+      ],
+      [
+        "users (incl. me)",
+        "1"
+      ],
+      [
+        "tests",
+        "0%"
+      ],
+      [
+        "finished",
+        "2%"
+      ]
+    ],
+    "note": "* based on a 2,000-calorie diet of delusion and free-tier credits.",
+    "kicker": "contains a startup I'll never quit my job for"
+  }
+}

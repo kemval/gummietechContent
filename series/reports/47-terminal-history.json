@@ -1,0 +1,57 @@
+{
+  "number": 47,
+  "eyebrow": "status report",
+  "title": "my terminal history, annotated",
+  "module": "terminal",
+  "image": "47-terminal-history.png",
+  "caption": "my shell history, unedited. the terminal never lies.\n\ngit status, three times, in case it fixed itself.\nrm -rf node_modules, then npm install: same error, more confidence.\ngit push --force: deleted three people's week. then clear.\n\nwhat's the most-used command in your history?",
+  "hashtags": [
+    "#terminal",
+    "#commandline",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "unedited",
+    "items": [
+      [
+        "git status",
+        ""
+      ],
+      [
+        "git status",
+        "checking if it fixed itself"
+      ],
+      [
+        "git status",
+        ""
+      ],
+      [
+        "npm install",
+        ""
+      ],
+      [
+        "rm -rf node_modules",
+        "deleting 800 MB of strangers' choices"
+      ],
+      [
+        "npm install",
+        "same error, more confidence"
+      ],
+      [
+        "sudo !!",
+        "manners are for people with permissions"
+      ],
+      [
+        "git push --force",
+        "deleted three people's week"
+      ],
+      [
+        "clear",
+        "the closest I get to therapy"
+      ]
+    ],
+    "kicker": "my shell history is more honest than my standups"
+  }
+}

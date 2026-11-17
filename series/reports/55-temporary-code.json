@@ -1,0 +1,51 @@
+{
+  "number": 55,
+  "eyebrow": "status report",
+  "title": "“temporary” code, by age",
+  "module": "table",
+  "image": "55-temporary-code.png",
+  "caption": "nothing is more permanent than a temporary fix.\n\n\"// temporary fix\", added 2021. older than my contract.\n\"// TODO: remove before launch\". we launched. twice.\ntest@test.com is our most active user. and const HACK = true? I wrote that one.\n\nwhat's the oldest \"temporary\" thing in your codebase?",
+  "hashtags": [
+    "#technicaldebt",
+    "#legacycode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "still in prod",
+    "items": [
+      [
+        "// temporary fix",
+        "2021",
+        "older than my contract"
+      ],
+      [
+        "// TODO: remove before launch",
+        "2022",
+        "we launched. twice."
+      ],
+      [
+        "user: test@test.com",
+        "2022",
+        "our most active user"
+      ],
+      [
+        "if (true) {",
+        "2023",
+        "nobody dares"
+      ],
+      [
+        "sleep(2000) // just for now",
+        "2024",
+        "our whole perf budget"
+      ],
+      [
+        "const HACK = true;",
+        "last month",
+        "I wrote that one"
+      ]
+    ],
+    "kicker": "the most stable thing here is a hack"
+  }
+}

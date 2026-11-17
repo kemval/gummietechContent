@@ -1,0 +1,44 @@
+{
+  "eyebrow": "class of legacy · superlatives",
+  "title": "the codebase yearbook",
+  "module": "cards-6",
+  "image": "p24-codebase-yearbook.png",
+  "caption": "the codebase yearbook, class of 2019. superlatives are in.\n\nutils.js: most likely to break prod. README.md: most likely to be ignored.\nlegacy/: oldest member, never graduates. test/: most absent.\n.env: most secrets.\n\nwhich file in your repo wins \"most likely to break prod\"?",
+  "hashtags": [
+    "#legacycode",
+    "#softwareengineering",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "class of 2019",
+    "items": [
+      [
+        "utils.js",
+        "most likely to break prod"
+      ],
+      [
+        "README.md",
+        "most likely to be ignored"
+      ],
+      [
+        "legacy/",
+        "oldest member, never graduates"
+      ],
+      [
+        "index.ts",
+        "most popular"
+      ],
+      [
+        "test/",
+        "most absent"
+      ],
+      [
+        ".env",
+        "most secrets"
+      ]
+    ],
+    "kicker": "sign my yearbook (leave a code review)"
+  }
+}

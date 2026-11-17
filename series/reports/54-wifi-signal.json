@@ -1,0 +1,51 @@
+{
+  "number": 54,
+  "eyebrow": "status report",
+  "title": "wifi signal, room by room",
+  "module": "cards-6",
+  "image": "54-wifi-signal.png",
+  "caption": "a site survey of my apartment. router: hallway.\n\ndesk: two bars, where I pretend to work. kitchen: lunch, eaten on mute.\nbathroom: full bars. most of my code reviews happen there.\nnext to the router: one bar. physics is a lie.\n\nwhere's the best signal in your place?",
+  "hashtags": [
+    "#remotework",
+    "#workfromhome",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "router: hallway",
+    "items": [
+      [
+        "desk",
+        "2 bars",
+        "where I pretend to work"
+      ],
+      [
+        "kitchen",
+        "3 bars",
+        "lunch, eaten on mute"
+      ],
+      [
+        "bathroom",
+        "full bars",
+        "full bars. most of my code reviews."
+      ],
+      [
+        "bed",
+        "1 bar",
+        "work chat at 11 pm, for no reason"
+      ],
+      [
+        "balcony",
+        "no signal",
+        "no signal. the only peace I get."
+      ],
+      [
+        "next to the router",
+        "1 bar",
+        "one bar. physics is a lie."
+      ]
+    ],
+    "kicker": "I've done standups from all six. you'll never know which."
+  }
+}

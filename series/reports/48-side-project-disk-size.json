@@ -1,0 +1,38 @@
+{
+  "number": 48,
+  "eyebrow": "status report",
+  "title": "my side project, by disk size",
+  "module": "treemap",
+  "image": "48-side-project-disk-size.png",
+  "caption": "1.4 GB of side project. I wrote almost none of it.\n\nnode_modules: 97% of the project. other people's code, and I'm the one on call.\n.git: every mistake, notarized. dist: proof it worked once.\nsrc: the part I wrote. also the part that's broken.\n\nhow big is your node_modules right now?",
+  "hashtags": [
+    "#sideprojects",
+    "#javascript",
+    "#webdev",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "1.4 GB total",
+    "items": [
+      [
+        "node_modules/",
+        "other people's code, and I'm the one on call",
+        "≈ 97% of the project"
+      ],
+      [
+        ".git/",
+        "every mistake, notarized"
+      ],
+      [
+        "dist/",
+        "proof it worked once"
+      ],
+      [
+        "src/",
+        "the part I wrote. also the part that's broken."
+      ]
+    ],
+    "kicker": "I'm a glue engineer with a nicer job title"
+  }
+}

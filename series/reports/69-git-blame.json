@@ -1,0 +1,46 @@
+{
+  "number": 69,
+  "eyebrow": "status report",
+  "title": "git blame on a bug",
+  "module": "blame",
+  "image": "69-git-blame.png",
+  "caption": "ran git blame to find who broke checkout.\n\nline 3, last week: return item.price * tax. so every total was just the tax.\nline 5, yesterday: \"// who wrote this??\"\nline 6, five minutes ago: \"// oh.\" every line: me.\n\nhave you ever git blamed yourself?",
+  "hashtags": [
+    "#git",
+    "#debugging",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "spoiler: me",
+    "items": [
+      [
+        "me · 2 years ago",
+        "function getTotal(item) {"
+      ],
+      [
+        "me · 2 years ago",
+        "  const tax = 0.13;"
+      ],
+      [
+        "me · last week",
+        "  return item.price * tax;"
+      ],
+      [
+        "me · last week",
+        "}"
+      ],
+      [
+        "me · yesterday",
+        "// who wrote this??"
+      ],
+      [
+        "me · 5 min ago",
+        "// oh."
+      ]
+    ],
+    "note": "every line: me. every time.",
+    "kicker": "the culprit was always in the mirror"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "number": 63,
+  "eyebrow": "status report",
+  "title": "my brain's settings",
+  "module": "toggles",
+  "image": "63-brain-settings.png",
+  "caption": "settings › brain › notifications. none of these can be changed.\n\nrandom idea at 3am: on, delivers every night. remembering names: off since onboarding.\nfocus mode: managed by your organization.\nimpostor syndrome: on, and louder after every promotion.\n\nwhich setting would you turn off first?",
+  "hashtags": [
+    "#impostersyndrome",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "can't change these",
+    "items": [
+      [
+        "random idea at 3 am",
+        "delivers instantly, every night",
+        "on"
+      ],
+      [
+        "remembering names",
+        "paused since onboarding",
+        "off"
+      ],
+      [
+        "song stuck in head",
+        "repeats until further notice",
+        "on"
+      ],
+      [
+        "focus mode",
+        "managed by your organization",
+        "off"
+      ],
+      [
+        "embarrassing memory, 2014",
+        "scheduled: right before sleep",
+        "on"
+      ],
+      [
+        "impostor syndrome",
+        "louder after every promotion",
+        "on"
+      ]
+    ],
+    "kicker": "focus mode is run by an admin I've never met"
+  }
+}

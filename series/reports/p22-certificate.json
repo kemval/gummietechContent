@@ -1,0 +1,30 @@
+{
+  "eyebrow": "official · frame-worthy",
+  "title": "certificate of survival",
+  "module": "certificate",
+  "image": "p22-certificate.png",
+  "caption": "this one's for you. suitable for framing.\n\nthis certifies that the developer reading this\nhas survived a 47-file merge conflict,\nwithout force-pushing, crying in standup, or blaming the intern.\n\nwhat's the worst merge conflict you've survived?",
+  "hashtags": [
+    "#git",
+    "#mergeconflict",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "suitable for framing",
+    "items": [
+      "this certifies that",
+      "the developer reading this",
+      "has successfully survived",
+      "a 47-file merge conflict",
+      "without force-pushing, crying in standup, or blaming the intern"
+    ],
+    "seal": "100% resolved",
+    "signatures": [
+      "git",
+      "the senior who caused it (on PTO)"
+    ],
+    "kicker": "no raise attached. just the paper."
+  }
+}

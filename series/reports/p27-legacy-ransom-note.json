@@ -1,0 +1,25 @@
+{
+  "eyebrow": "unsigned · left on my desk",
+  "title": "a note from my legacy code",
+  "module": "ransom",
+  "image": "p27-legacy-ransom-note.png",
+  "caption": "found this on my desk this morning. unsigned.\n\npay the tech debt by friday,\nor the login page gets it.\np.s. we know you're interviewing.\n\nwhat's your legacy code holding hostage?",
+  "hashtags": [
+    "#technicaldebt",
+    "#legacycode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "no police",
+    "items": [
+      "PAY THE TECH DEBT",
+      "by FRIDAY",
+      "or THE LOGIN PAGE",
+      "GETS it."
+    ],
+    "note": "p.s. we know you're interviewing.",
+    "kicker": "I paid. it raised the price."
+  }
+}

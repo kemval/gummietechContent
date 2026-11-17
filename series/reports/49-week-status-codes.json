@@ -1,0 +1,63 @@
+{
+  "number": 49,
+  "eyebrow": "status report",
+  "title": "my week in status codes",
+  "module": "table",
+  "image": "49-week-status-codes.png",
+  "caption": "my week, as an HTTP response. uptime: debatable.\n\nmonday: 200 OK, pretending convincingly. wednesday: 409 Conflict.\nthursday: 429 Too Many Requests, every ping is \"quick\".\nfriday: 503, mentally clocked out at 11am. sunday: 404, the weekend. also me.\n\nwhat status code are you today?",
+  "hashtags": [
+    "#webdev",
+    "#http",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "uptime: debatable",
+    "items": [
+      [
+        "mon",
+        "200",
+        "OK",
+        "pretending, convincingly"
+      ],
+      [
+        "tue",
+        "302",
+        "Found",
+        "moved to a meeting about meetings"
+      ],
+      [
+        "wed",
+        "409",
+        "Conflict",
+        "my code vs. the tech lead's ego"
+      ],
+      [
+        "thu",
+        "429",
+        "Too Many Requests",
+        "every ping is “quick”"
+      ],
+      [
+        "fri",
+        "503",
+        "Service Unavailable",
+        "mentally clocked out at 11 am"
+      ],
+      [
+        "sat",
+        "418",
+        "I'm a teapot",
+        "refusing to be useful today"
+      ],
+      [
+        "sun",
+        "404",
+        "Not Found",
+        "the weekend. also: me."
+      ]
+    ],
+    "kicker": "monday reboots me without asking"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "eyebrow": "now hiring · apply within",
+  "title": "a job listing, honestly",
+  "module": "listing",
+  "image": "p26-job-listing.png",
+  "caption": "junior developer, entry level. urgent hire.\n\nrequirements: 5+ years with a framework released last year.\nfluent in 9 languages, 3 of them deprecated. passion, unpaid.\nbenefits: unlimited PTO that nobody takes. salary: competitive, with 2016.\n\nwhat's the most unrealistic requirement you've seen on a listing?",
+  "hashtags": [
+    "#techjobs",
+    "#juniordeveloper",
+    "#jobsearch",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "urgent hire",
+    "items": {
+      "role": "Junior Developer (entry level)",
+      "tags": [
+        "remote-ish",
+        "fast-paced",
+        "“we're like a family”"
+      ],
+      "requirements": [
+        "5+ years with a framework released last year",
+        "fluent in 9 languages, 3 of them deprecated",
+        "thrives in ambiguity (we have no plan)",
+        "passion (unpaid)"
+      ],
+      "benefits": [
+        "unlimited PTO (nobody takes it)",
+        "a laptop older than the intern"
+      ],
+      "salary": "competitive (with 2016)"
+    },
+    "kicker": "entry level: ten years required"
+  }
+}

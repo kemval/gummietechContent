@@ -1,0 +1,46 @@
+{
+  "number": 46,
+  "eyebrow": "status report",
+  "title": "tabs I'm afraid to close",
+  "module": "browser",
+  "image": "46-tabs-afraid-to-close.png",
+  "caption": "47 tabs open. RAM at 94%. closing none of them.\n\na job posting I'm \"not ready for\", open for 8 months.\na course I paid for, 4% done since 2023. a 30-day roadmap, on day 2.\nand an article on burnout, unread. too tired.\n\nwhat's the oldest tab you have open right now?",
+  "hashtags": [
+    "#browsertabs",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "RAM at 94%",
+    "items": [
+      [
+        "a job posting I'm “not ready for”",
+        "8 months"
+      ],
+      [
+        "the docs I'll read after I ship",
+        "never"
+      ],
+      [
+        "my own PR, begging for a review",
+        "11 days"
+      ],
+      [
+        "a course I paid for, 4% done",
+        "since 2023"
+      ],
+      [
+        "a “learn it in 30 days” roadmap",
+        "day 2"
+      ],
+      [
+        "an article on burnout, unread",
+        "too tired"
+      ]
+    ],
+    "note": "+ 41 more, each one a version of me with free time",
+    "kicker": "closing them means admitting I won't"
+  }
+}

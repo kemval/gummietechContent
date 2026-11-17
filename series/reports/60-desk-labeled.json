@@ -1,0 +1,45 @@
+{
+  "number": 60,
+  "eyebrow": "status report",
+  "title": "my desk, labeled",
+  "module": "diagram",
+  "image": "60-desk-labeled.png",
+  "caption": "my desk, with a legend. not to scale.\n\nmain monitor: code I'm scared to deploy. second monitor: job boards, minimized.\nthe mug has been cold since 10am. the plant gets watered more often than I eat.\nthe keyboard contains lunch and dinner. the cables: do not investigate.\n\nwhat's the most questionable thing on your desk?",
+  "hashtags": [
+    "#desksetup",
+    "#workspace",
+    "#devlife",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "not to scale",
+    "items": [
+      [
+        "main monitor",
+        "code I'm scared to deploy"
+      ],
+      [
+        "second monitor",
+        "job boards, minimized"
+      ],
+      [
+        "mug",
+        "cold since 10 am"
+      ],
+      [
+        "plant",
+        "watered more often than I eat"
+      ],
+      [
+        "keyboard",
+        "contains lunch and dinner"
+      ],
+      [
+        "cables",
+        "do not investigate"
+      ]
+    ],
+    "kicker": "the wallpaper is a beach I can't afford"
+  }
+}

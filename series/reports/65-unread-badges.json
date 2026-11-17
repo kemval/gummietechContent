@@ -1,0 +1,51 @@
+{
+  "number": 65,
+  "eyebrow": "status report",
+  "title": "my unread badges",
+  "module": "badges",
+  "image": "65-unread-badges.png",
+  "caption": "do not disturb: off. it shows.\n\nemail: 2,341, every one says \"urgent.\" team chat: 48, muted, still anxious.\ncode reviews: 112, half of them mine, waiting.\ntexts from mom: 3. the only ones I actually owe.\n\nwhat's your unread email count right now?",
+  "hashtags": [
+    "#inboxzero",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "do not disturb: off",
+    "items": [
+      [
+        "email",
+        "2,341",
+        "every one says “urgent”"
+      ],
+      [
+        "team chat",
+        "48",
+        "muted. still anxious."
+      ],
+      [
+        "code reviews",
+        "112",
+        "half are mine, waiting"
+      ],
+      [
+        "calendar",
+        "7",
+        "all “quick syncs”"
+      ],
+      [
+        "texts from mom",
+        "3",
+        "the only ones I owe"
+      ],
+      [
+        "networking app",
+        "99+",
+        "strangers getting promoted"
+      ]
+    ],
+    "kicker": "mom is the only stakeholder I respect"
+  }
+}

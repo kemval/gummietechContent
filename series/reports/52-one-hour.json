@@ -1,0 +1,45 @@
+{
+  "number": 52,
+  "eyebrow": "status report",
+  "title": "one hour, by the minute",
+  "module": "stacked-bar",
+  "image": "52-one-hour.png",
+  "caption": "one hour of work, audited minute by minute.\n\n14 minutes of setup, npm install and coffee. 9 on the wrong branch.\n11 doomscrolling \"for a sec.\" 12 in a meeting about the task.\nthe actual work: 7 minutes. explaining why it took an hour: another 7.\n\nhow many minutes of your hour are actual work?",
+  "hashtags": [
+    "#productivity",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "60 min, honestly",
+    "items": [
+      [
+        "setup, npm install, coffee",
+        "14 min"
+      ],
+      [
+        "working on the wrong branch",
+        "9 min"
+      ],
+      [
+        "doomscrolling “for a sec”",
+        "11 min"
+      ],
+      [
+        "the actual work",
+        "7 min"
+      ],
+      [
+        "a meeting about the task",
+        "12 min"
+      ],
+      [
+        "explaining why it took an hour",
+        "7 min"
+      ]
+    ],
+    "kicker": "billed as one hour. lived as seven minutes."
+  }
+}

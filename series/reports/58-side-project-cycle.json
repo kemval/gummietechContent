@@ -1,0 +1,31 @@
+{
+  "number": 58,
+  "eyebrow": "status report",
+  "title": "side project life cycle",
+  "module": "cycle",
+  "image": "58-side-project-cycle.png",
+  "caption": "the side project life cycle. it repeats forever.\n\nthe idea, at 1am. buy the domain. design a logo.\ntell everyone about it. then someone else launches it.\nand a new idea, at 1am. domains renewed out of guilt: 4.\n\nwhat step are you on right now?",
+  "hashtags": [
+    "#sideprojects",
+    "#buildinpublic",
+    "#indiehacker",
+    "#devhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "repeats forever",
+    "items": [
+      "the idea, at 1am",
+      "buy the domain",
+      "design a logo",
+      "tell everyone about it",
+      "someone else launches it",
+      "a new idea, 1am"
+    ],
+    "center": [
+      "domains renewed out of guilt",
+      "4"
+    ],
+    "kicker": "step 5 is where the self-esteem goes"
+  }
+}

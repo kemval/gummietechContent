@@ -1,0 +1,45 @@
+{
+  "number": 62,
+  "eyebrow": "status report",
+  "title": "time until I ask for help",
+  "module": "timeline",
+  "image": "62-ask-for-help.png",
+  "caption": "five hours of stubbornness, one minute of help.\n\n0:05: \"I got this.\" 0:45: reading the library's source.\n2:00: it's personal now. 4:00: drafts a message, deletes it.\n5:00: asks, apologizing three times. 5:01: fixed in one line. by them.\n\nhow long do you wait before you ask for help?",
+  "hashtags": [
+    "#debugging",
+    "#juniordeveloper",
+    "#devhumor",
+    "#programmerlife",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "stubborn mode",
+    "items": [
+      [
+        "0:05",
+        "“I got this”"
+      ],
+      [
+        "0:45",
+        "reading the library's source"
+      ],
+      [
+        "2:00",
+        "it's personal now"
+      ],
+      [
+        "4:00",
+        "drafts a message, deletes it"
+      ],
+      [
+        "5:00",
+        "asks, apologizing three times"
+      ],
+      [
+        "5:01",
+        "fixed in one line. by them."
+      ]
+    ],
+    "kicker": "next time I'll ask at 0:05. I won't."
+  }
+}

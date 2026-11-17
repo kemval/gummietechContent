@@ -1,0 +1,60 @@
+{
+  "eyebrow": "gate 404 · now boarding",
+  "title": "flight to production",
+  "module": "ticket",
+  "image": "p20-boarding-pass.png",
+  "caption": "now boarding: localhost to production. gate 404.\n\npassenger: a PR nobody reviewed. departs: friday, 4:55pm.\nseat: next to the on-call. bags: one hotfix.\nstatus: delayed, waiting on a guy on vacation.\n\nwhat's the latest you've ever deployed on a friday?",
+  "hashtags": [
+    "#deployment",
+    "#devops",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "delayed",
+    "items": [
+      [
+        "from",
+        "LCL · localhost"
+      ],
+      [
+        "to",
+        "PRD · production"
+      ],
+      [
+        "passenger",
+        "a PR nobody reviewed"
+      ],
+      [
+        "flight",
+        "DEP-1204"
+      ],
+      [
+        "departs",
+        "friday, 4:55 pm"
+      ],
+      [
+        "seat",
+        "next to the on-call"
+      ],
+      [
+        "group",
+        "Z"
+      ],
+      [
+        "gate",
+        "404"
+      ],
+      [
+        "bags",
+        "1 hotfix"
+      ],
+      [
+        "status",
+        "delayed · waiting on a guy on vacation"
+      ]
+    ],
+    "kicker": "final destination: the incident channel"
+  }
+}

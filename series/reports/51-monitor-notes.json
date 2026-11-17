@@ -1,0 +1,27 @@
+{
+  "number": 51,
+  "eyebrow": "status report",
+  "title": "notes stuck to my monitor",
+  "module": "stickies",
+  "image": "51-monitor-notes.png",
+  "caption": "six sticky notes, all of them load-bearing.\n\nDON'T touch prod. you know why. ask for a raise. you won't.\nstandup: just say \"no blockers.\" you are not your commits.\nand the password is on the other note.\n\nwhat's on the sticky note on your monitor?",
+  "hashtags": [
+    "#desksetup",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "load-bearing",
+    "items": [
+      "DON'T touch prod (you know why)",
+      "ask for a raise (you won't)",
+      "standup: just say “no blockers”",
+      "you are not your commits",
+      "the password is on the other note",
+      "TODO: a life"
+    ],
+    "kicker": "my monitor knows more about my career than HR"
+  }
+}

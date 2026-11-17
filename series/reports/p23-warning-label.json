@@ -1,0 +1,29 @@
+{
+  "eyebrow": "read before running",
+  "title": "warning label for my code",
+  "module": "warning",
+  "image": "p23-warning-label.png",
+  "caption": "CAUTION: written by a sleep-deprived adult.\n\ncontents under pressure. deadline. do not run on a friday.\nmay contain traces of jQuery. the author has since quit. good luck.\nnot tested on humans, or on Safari.\n\nwhat warning label does your code need?",
+  "hashtags": [
+    "#webdev",
+    "#legacycode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "handle with care",
+    "items": [
+      "contents under pressure (deadline)",
+      "do not run on a friday",
+      "may contain traces of jQuery",
+      "author has since quit. good luck.",
+      "not tested on humans or Safari"
+    ],
+    "header": [
+      "CAUTION",
+      "written by a sleep-deprived adult"
+    ],
+    "kicker": "side effects include pager alerts at 3 am"
+  }
+}

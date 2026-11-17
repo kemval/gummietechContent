@@ -1,0 +1,66 @@
+{
+  "number": 53,
+  "eyebrow": "status report",
+  "title": "commit messages, over time",
+  "module": "gitlog",
+  "image": "53-commit-messages.png",
+  "caption": "nine weeks of git log. read it top to bottom.\n\nweek 1: \"add auth, tests, CI and docs.\" in one commit. ambitious.\nweek 6: \"fix.\" then \"i hate javascript.\" week 7: \"why.\" \"final.\" \"final (real).\"\nweek 9: Revert \"final (real)\".\n\nwhat's the worst commit message you've ever pushed?",
+  "hashtags": [
+    "#git",
+    "#commitmessages",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "git log --oneline",
+    "items": [
+      [
+        "a1f3c9e",
+        "initial commit",
+        "week 1"
+      ],
+      [
+        "b7d204a",
+        "add auth, tests, CI and docs",
+        "week 1"
+      ],
+      [
+        "c09e11f",
+        "refactor user service",
+        "week 3"
+      ],
+      [
+        "d4a8b73",
+        "fix",
+        "week 6"
+      ],
+      [
+        "e2c6f10",
+        "i hate javascript",
+        "week 6"
+      ],
+      [
+        "f5b91d2",
+        "why",
+        "week 7"
+      ],
+      [
+        "0a7e3c4",
+        "final",
+        "week 7"
+      ],
+      [
+        "1c4d8e9",
+        "final (real)",
+        "week 7"
+      ],
+      [
+        "2e9f0b5",
+        "Revert “final (real)”",
+        "week 9"
+      ]
+    ],
+    "kicker": "you can watch the optimism leave in real time"
+  }
+}

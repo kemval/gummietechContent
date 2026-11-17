@@ -1,0 +1,46 @@
+{
+  "number": 59,
+  "eyebrow": "status report",
+  "title": "words I can't spell unassisted",
+  "module": "corrections",
+  "image": "59-cant-spell.png",
+  "caption": "six words, six typos, one degree.\n\nrecieve. accomodate. depricated. asyncronous. paramater. occurence.\nall six fixed by autocorrect.\nthe seventh made it into the database schema. it stays.\n\nwhat word do you always misspell in code?",
+  "hashtags": [
+    "#typo",
+    "#codinglife",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "spellcheck: on",
+    "items": [
+      [
+        "recieve",
+        "receive"
+      ],
+      [
+        "accomodate",
+        "accommodate"
+      ],
+      [
+        "depricated",
+        "deprecated"
+      ],
+      [
+        "asyncronous",
+        "asynchronous"
+      ],
+      [
+        "paramater",
+        "parameter"
+      ],
+      [
+        "occurence",
+        "occurrence"
+      ]
+    ],
+    "note": "6 of 6 fixed by autocorrect · I have a degree in this",
+    "kicker": "the typo is in the database schema now. it stays."
+  }
+}

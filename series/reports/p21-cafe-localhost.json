@@ -1,0 +1,55 @@
+{
+  "eyebrow": "now open · we take story points",
+  "title": "café localhost, today's menu",
+  "module": "menu",
+  "image": "p21-cafe-localhost.png",
+  "caption": "café localhost is open. we take story points.\n\nstarters: bug bisque, and stale cache, served warm.\nmains: spaghetti code (house special, nobody may change it), a monolith aged 9 years,\nmicroservice tapas, 40 plates. dessert: merge-conflict crumble.\n\nwhat are you ordering?",
+  "hashtags": [
+    "#softwareengineering",
+    "#agile",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "chef's choice",
+    "items": {
+      "starters": [
+        [
+          "bug bisque",
+          "2 pts"
+        ],
+        [
+          "stale cache, served warm",
+          "1 pt"
+        ]
+      ],
+      "mains": [
+        [
+          "spaghetti code",
+          "8 pts",
+          "house special. the founder's recipe. nobody may change it."
+        ],
+        [
+          "monolith, aged 9 years",
+          "13 pts"
+        ],
+        [
+          "microservice tapas (40 plates)",
+          "21 pts"
+        ]
+      ],
+      "dessert": [
+        [
+          "merge-conflict crumble",
+          "5 pts"
+        ],
+        [
+          "kudos in the group chat",
+          "free"
+        ]
+      ]
+    },
+    "kicker": "tips are not shared with the engineers"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "eyebrow": "legal · last updated: just now",
+  "title": "terms of working with me",
+  "module": "terms",
+  "image": "p19-terms.png",
+  "caption": "terms of working with me. nobody reads these. you agreed anyway.\n\n§1: messages after 6pm are read instantly, resented, and answered at 9:40am.\n§2: no question is quick. §3: estimates triple when repeated to a client.\n§5: I am not liable for code written after 1am. neither is anyone.\n\nwhat would be in your terms and conditions?",
+  "hashtags": [
+    "#freelancedeveloper",
+    "#devlife",
+    "#devhumor",
+    "#relatable",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "nobody reads these",
+    "items": [
+      [
+        "response time",
+        "Messages after 6 pm are read instantly, resented, and answered at 9:40 am."
+      ],
+      [
+        "“quick questions”",
+        "No question is quick. Asking one costs me the next 45 minutes of focus."
+      ],
+      [
+        "estimates",
+        "Non-binding, and tripled the moment you repeat them to a client."
+      ],
+      [
+        "meetings",
+        "Cameras optional. Enthusiasm is not included in the base salary."
+      ],
+      [
+        "liability",
+        "I am not liable for code written after 1 am. Neither is anyone."
+      ]
+    ],
+    "kicker": "you agreed by scrolling this far"
+  }
+}

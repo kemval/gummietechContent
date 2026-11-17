@@ -1,0 +1,41 @@
+{
+  "number": 57,
+  "eyebrow": "status report",
+  "title": "field guide: code comments",
+  "module": "cards-4",
+  "image": "57-field-guide-comments.png",
+  "caption": "a field guide to the comments in the wild.\n\n// TODO: procrastinatus eternus. it has outlived three managers.\n// magic. don't ask.: found in code the founder wrote, then left.\n// fixed it: optimismus brevis. habitat: the commit that took down prod.\n\nwhich species is most common in your codebase?",
+  "hashtags": [
+    "#codecomments",
+    "#cleancode",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "vol. 1",
+    "items": [
+      [
+        "// TODO",
+        "Procrastinatus eternus",
+        "everywhere. it outlived three managers."
+      ],
+      [
+        "// magic. don't ask.",
+        "Arcanum silens",
+        "code the founder wrote, then left"
+      ],
+      [
+        "// sorry",
+        "Apologia sincera",
+        "above anything written the night before a deadline"
+      ],
+      [
+        "// fixed it",
+        "Optimismus brevis",
+        "the commit that took down prod"
+      ]
+    ],
+    "kicker": "rarest species: a comment that's still accurate"
+  }
+}

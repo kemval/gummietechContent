@@ -1,0 +1,52 @@
+{
+  "number": 50,
+  "eyebrow": "status report",
+  "title": "my CI pipeline, emotionally",
+  "module": "pipeline",
+  "image": "50-ci-pipeline.png",
+  "caption": "run #1,204. feelings attached to every step.\n\ninstall deps: downloading the internet again. lint: 212 problems, all style.\nunit tests: all green. suspicious. build: there goes my lunch break.\ndeploy: failed at 98%, live, in front of the client.\n\nwhat step does your pipeline always fail on?",
+  "hashtags": [
+    "#cicd",
+    "#devops",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "run #1,204",
+    "items": [
+      [
+        "install deps",
+        "4m 12s",
+        "passed",
+        "downloading the internet again"
+      ],
+      [
+        "lint",
+        "0m 08s",
+        "passed",
+        "212 problems, all of them style"
+      ],
+      [
+        "unit tests",
+        "2m 40s",
+        "passed",
+        "all green. suspicious."
+      ],
+      [
+        "build",
+        "6m 55s",
+        "running",
+        "there goes my lunch break"
+      ],
+      [
+        "deploy",
+        "failed at 98%",
+        "failed",
+        "live, in front of the client"
+      ]
+    ],
+    "button": "re-run job",
+    "kicker": "it passed locally, which counts for nothing"
+  }
+}

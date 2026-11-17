@@ -1,0 +1,42 @@
+{
+  "number": 61,
+  "eyebrow": "status report",
+  "title": "my functions, by length",
+  "module": "bars",
+  "image": "61-functions-by-length.png",
+  "caption": "every codebase has one function that does everything.\n\nisEmpty(): 3 lines. formatDate(): 18. fetchUser(): 42.\nvalidateForm(): 160, which is already a warning sign.\nhandleEverything(): 1,240 lines. written in one night, maintained for five years.\n\nhow long is the longest function in your project?",
+  "hashtags": [
+    "#cleancode",
+    "#refactoring",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "lines of code",
+    "items": [
+      [
+        "isEmpty()",
+        "3 lines"
+      ],
+      [
+        "formatDate()",
+        "18 lines"
+      ],
+      [
+        "fetchUser()",
+        "42 lines"
+      ],
+      [
+        "validateForm()",
+        "160 lines"
+      ],
+      [
+        "handleEverything()",
+        "1,240 lines"
+      ]
+    ],
+    "note": "written in one night. maintained for five years.",
+    "kicker": "it started as a helper"
+  }
+}

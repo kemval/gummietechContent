@@ -1,0 +1,38 @@
+{
+  "eyebrow": "community board · please share",
+  "title": "have you seen my working build?",
+  "module": "poster",
+  "image": "p17-missing-build.png",
+  "caption": "MISSING. last seen at 5:58pm, all checks green.\n\nit was right before \"one small change.\" answers to: main.\ndistinguishing marks: it worked, and I never asked why.\nreward: I'll stop pretending I understood it.\n\nwhat's the \"one small change\" that broke your build?",
+  "hashtags": [
+    "#debugging",
+    "#git",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "reward offered",
+    "items": [
+      [
+        "last seen",
+        "5:58 pm, right before “one small change”"
+      ],
+      [
+        "answers to",
+        "main"
+      ],
+      [
+        "marks",
+        "it worked and I never asked why"
+      ],
+      [
+        "reward",
+        "I'll stop pretending I understood it"
+      ]
+    ],
+    "note": "last known photo · all checks green",
+    "tabs": "git revert HEAD",
+    "kicker": "if found, don't tell my manager it was ever gone"
+  }
+}

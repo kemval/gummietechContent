@@ -1,0 +1,30 @@
+{
+  "eyebrow": "verify you're human · step 2 of 7",
+  "title": "select every square with a bug",
+  "module": "captcha",
+  "image": "p18-captcha-bugs.png",
+  "caption": "verify you're human: select every square with a bug.\n\nif (x = 1). i <= arr.length. 0.1 + 0.2. '5' + 3.\nan empty catch. forEach with async. new Date('03/04').\nif there are none, click skip. (there are nine.)\n\nwhich square would you click first?",
+  "hashtags": [
+    "#javascript",
+    "#debugging",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "I am not a robot",
+    "items": [
+      "if (x = 1)",
+      "i <= arr.length",
+      "0.1 + 0.2",
+      "'5' + 3",
+      "catch (e) {}",
+      "arr.forEach(async…)",
+      "== null",
+      "new Date('03/04')",
+      "var i in list"
+    ],
+    "kicker": "trick question. there's no clean square. there never is."
+  },
+  "canvas": "Captcha.dc.html"
+}

@@ -1,0 +1,28 @@
+{
+  "eyebrow": "via air mail · sent at 2:14 am",
+  "title": "a postcard from production",
+  "module": "postcard",
+  "image": "p25-postcard-production.png",
+  "caption": "greetings from prod. wish you were here.\n\nweather's hot. everything's on fire,\nbut the logs are lovely this time of year.\nrollback planned for tuesday. don't wait up.\n\nwhat would your postcard from production say?",
+  "hashtags": [
+    "#oncall",
+    "#devops",
+    "#devhumor",
+    "#programmerhumor",
+    "#gummietech"
+  ],
+  "slide": {
+    "badge": "wish you were here",
+    "items": [
+      "Weather's hot. Everything's on fire, but the logs are lovely this time of year. Rollback planned for tuesday. Don't wait up."
+    ],
+    "stamp": "418",
+    "front": "greetings from prod",
+    "address": [
+      "to: the dev team",
+      "staging, apt 2",
+      "localhost"
+    ],
+    "kicker": "send help, or at least coffee"
+  }
+}
