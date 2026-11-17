@@ -1,0 +1,38 @@
+{
+  "post_type": "term",
+  "domain": "AI models",
+  "colorway": "signal",
+  "hook": "A world model guesses what happens next, without running the real thing.",
+  "term": "World model",
+  "definition": "A neural network that is given the current frame and an action, then predicts the next frame and the reward.",
+  "example": "On a Raspberry Pi Pico 2 W, a world model draws the game frames. The player network sees only those frames, never the game.",
+  "the_catch": "It is not a copy of the game. Agents trained only inside the dream scored 210 there, but 28 in the real game.",
+  "example_post": "2026-11-04-a-tiny-world-model-running-games-on-a-ra",
+  "caption": "A world model is a neural network that predicts the next frame and reward from the current frame and an action. In one Pico 2 W project, the player never touches the real game, and a Breakout agent still found a way to exploit the dream. Would you trust a dream to teach you a game?",
+  "keywords": [
+    "world model",
+    "neural network",
+    "reinforcement learning"
+  ],
+  "hashtags": [
+    "#ai",
+    "#worldmodel",
+    "#machinelearning",
+    "#gummietech"
+  ],
+  "alt_text": "A five-slide glossary carousel defining a world model: a neural network that predicts the next frame and reward from the current frame and an action, an example from an earlier gummietech post about games generated on a Raspberry Pi Pico 2 W, and the common mistake of treating it as a copy of the real game.",
+  "source_url": "https://github.com/SheepSeb/tinyworldformer",
+  "attribution": "SheepSeb",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "computing",
+  "es": {
+    "domain": "modelos de IA",
+    "hook": "Un modelo de mundo adivina lo que ocurrirá a continuación, sin ejecutar el entorno real.",
+    "term": "Modelo de mundo",
+    "definition": "Una red neuronal a la que se le suministra el fotograma actual y una acción, y que predice el siguiente fotograma y la recompensa.",
+    "example": "En una Raspberry Pi Pico 2 W, un modelo de mundo genera los fotogramas del juego. La red del jugador solo ve esos fotogramas, nunca el juego.",
+    "the_catch": "No es una copia del juego. Los agentes entrenados únicamente dentro del sueño obtuvieron 210 allí, pero solo 28 en el juego real.",
+    "_en": "ced165c5ad142719"
+  }
+}
