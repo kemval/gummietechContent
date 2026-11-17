@@ -34,5 +34,6 @@
     "example": "En una Raspberry Pi Pico 2 W, un modelo de mundo genera los fotogramas del juego. La red del jugador solo ve esos fotogramas, nunca el juego.",
     "the_catch": "No es una copia del juego. Los agentes entrenados únicamente dentro del sueño obtuvieron 210 allí, pero solo 28 en el juego real.",
     "_en": "ced165c5ad142719"
-  }
+  },
+  "published_at": "2026-11-17"
 }
