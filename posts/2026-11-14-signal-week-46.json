@@ -72,5 +72,8 @@
     ],
     "_en": "3ebaf2b6f336d091"
   },
-  "published_at": "2026-11-14"
+  "published_at": "2026-11-14",
+  "metrics": {
+    "asked_at": "2026-11-17"
+  }
 }
