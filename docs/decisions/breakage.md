@@ -130,3 +130,7 @@ Attempt 2 now deletes the Azure line from the runner's
 `/etc/apt/apt-mirrors.txt` and fetches from `archive.ubuntu.com`. Attempt 1
 keeps Azure, which is the fast mirror on a normal day. If both mirrors are
 slow at once, the next step is caching the `.deb`s with `actions/cache`.
+On 2026-11-18 the retry matched nothing: runners had moved to an AWS node
+(`us-east-2.ec2.archive.ubuntu.com`), which trickled the same way, and the
+fallback only knew Azure's hostname. Attempt 2 now replaces the list with
+`archive.ubuntu.com` alone, whatever the runner names first.
