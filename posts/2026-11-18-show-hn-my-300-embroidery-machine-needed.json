@@ -4,9 +4,9 @@
   "colorway": "orbit",
   "hook": "ZigZag says version 0.1.3 adds an in‑app updater",
   "what_happened": "ZigZag is a Rust‑based visual editor that turns SVG artwork into embroidery stitches, exports formats, and can send designs to a Brother Skitch via Bluetooth.",
-  "try_it": "Run the GUI with `./zigzag-studio` inside the extracted Linux folder.",
-  "why_it_matters": "It lets hobbyists and designers create and tweak embroidery files directly from SVGs and stitch them on a Brother Skitch without extra conversion steps.",
-  "the_catch": "",
+  "try_it": "On x86-64 Linux with glibc 2.35+, extract the release archive and run `./zigzag-studio` inside the extracted folder.",
+  "why_it_matters": "Turn SVG artwork into stitches, edit them, and send designs straight to a Brother Skitch over Bluetooth, per its README.",
+  "the_catch": "The Skitch protocol was reverse-engineered, so the README says to avoid firmware updates. Skitch upload was tested on a real Brother Skitch (PP1).",
   "caption": "ZigZag is a Rust‑based visual embroidery editor that converts SVG files into stitch patterns and can send them directly to a Brother Skitch via Bluetooth. Bluetooth?",
   "keywords": [
     "embroidery",
@@ -25,5 +25,14 @@
   "attribution": "ZigZag",
   "peer_reviewed": false,
   "announcement": true,
-  "beat": "software"
+  "beat": "software",
+  "es": {
+    "domain": "software de bordado",
+    "hook": "ZigZag anuncia que la versión 0.1.3 incluye un actualizador dentro de la aplicación",
+    "what_happened": "ZigZag es un editor visual escrito en Rust que convierte obras de arte en formato SVG en puntadas de bordado, exporta varios formatos y puede enviar los diseños a una máquina Brother Skitch mediante Bluetooth",
+    "try_it": "En Linux x86‑64 con glibc 2.35 o superior, extrae el archivo de la versión y ejecuta `./zigzag-studio` dentro de la carpeta extraída",
+    "why_it_matters": "Puedes convertir obras de arte SVG en puntadas, editarlas y enviar los diseños directamente a una Brother Skitch mediante Bluetooth, tal como indica su README",
+    "the_catch": "El protocolo de Skitch se obtuvo mediante ingeniería inversa, por lo que el README aconseja evitar actualizaciones de firmware. La carga a Skitch se probó en una Brother Skitch real (PP1)",
+    "_en": "d7e83ee65a0a8bb7"
+  }
 }
