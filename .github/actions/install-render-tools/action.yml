@@ -87,10 +87,14 @@ runs:
       if: inputs.poppler == 'true'
       shell: bash
       # ImageVersion is set by the runner itself. A new image may need other
-      # .debs (or none), so it is a new cache.
+      # .debs (or none), so it is a new cache. Keyed on the release
+      # (20261111), not the build: two jobs of one run were handed
+      # 20261111.127.1 and 20261111.370.1, and missed each other's cache. A
+      # .deb that no longer fits fails dpkg, and apt takes over.
       run: |
         echo "debs=$RUNNER_TEMP/render-tools-debs" >> "$GITHUB_OUTPUT"
-        echo "key=render-tools-poppler-${ImageOS:-unknown}-${ImageVersion:-unknown}" >> "$GITHUB_OUTPUT"
+        version="${ImageVersion:-unknown}"
+        echo "key=render-tools-poppler-${ImageOS:-unknown}-${version%%.*}" >> "$GITHUB_OUTPUT"
 
     - name: Restore poppler's packages
       id: restore
