@@ -1,0 +1,29 @@
+{
+  "post_type": "run",
+  "domain": "embroidery software",
+  "colorway": "orbit",
+  "hook": "ZigZag says version 0.1.3 adds an in‑app updater",
+  "what_happened": "ZigZag is a Rust‑based visual editor that turns SVG artwork into embroidery stitches, exports formats, and can send designs to a Brother Skitch via Bluetooth.",
+  "try_it": "Run the GUI with `./zigzag-studio` inside the extracted Linux folder.",
+  "why_it_matters": "It lets hobbyists and designers create and tweak embroidery files directly from SVGs and stitch them on a Brother Skitch without extra conversion steps.",
+  "the_catch": "",
+  "caption": "ZigZag is a Rust‑based visual embroidery editor that converts SVG files into stitch patterns and can send them directly to a Brother Skitch via Bluetooth. Bluetooth?",
+  "keywords": [
+    "embroidery",
+    "svg",
+    "rust"
+  ],
+  "hashtags": [
+    "#embroidery",
+    "#svg",
+    "#rust",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that ZigZag turns SVG artwork into embroidery stitches, exports formats, and can send designs to a Brother Skitch via Bluetooth.",
+  "source_url": "https://github.com/simpsoka/zigzag",
+  "code_url": "https://github.com/simpsoka/zigzag",
+  "attribution": "ZigZag",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "software"
+}
