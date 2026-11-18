@@ -37,6 +37,12 @@ description: >
 # downloads from archive.ubuntu.com instead. Attempt 1 keeps Azure, which is
 # the fast one on a normal day.
 #
+# 2026-11-18: the retry did not change mirror, twice. Runners now list an
+# AWS node first (us-east-2.ec2.archive.ubuntu.com), it trickled at tens of
+# kB/s, and the fallback only knew the Azure hostname, so it matched nothing
+# and attempt 2 sat on the same node. The retry now writes the list as
+# archive.ubuntu.com alone, whichever regional node the runner names.
+#
 # Worst case is two full attempts, about ten minutes: every caller's
 # timeout-minutes leaves room for that on top of its normal run.
 
@@ -99,13 +105,14 @@ runs:
           if [ "$attempt" -gt 1 ]; then
             sudo dpkg --configure -a || true
             # The retry goes to a different mirror, or it waits on the same
-            # slow node again: see the 2026-11-11 note above. Only when the
-            # runner's list names another mirror to fall back to.
+            # slow node again: see the 2026-11-11 and 2026-11-18 notes above.
+            # Whatever regional node the runner lists, the retry uses only
+            # archive.ubuntu.com.
             mirrors=/etc/apt/apt-mirrors.txt
-            if grep -q azure.archive.ubuntu.com "$mirrors" 2>/dev/null &&
-               grep -v azure.archive.ubuntu.com "$mirrors" | grep -q .; then
-              sudo sed -i '/azure\.archive\.ubuntu\.com/d' "$mirrors"
-              echo "Retrying without the Azure mirror: $(tr '\n' ' ' < "$mirrors")"
+            if [ -f "$mirrors" ] &&
+               grep -v '^http://archive\.ubuntu\.com/ubuntu/\?$' "$mirrors" | grep -q .; then
+              echo "Retrying on archive.ubuntu.com instead of: $(tr '\n' ' ' < "$mirrors")"
+              echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee "$mirrors" >/dev/null
             fi
           fi
           # Each timeout signals its whole process group, and kills it
