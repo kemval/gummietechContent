@@ -65,8 +65,8 @@ Gemini or Groq free tiers — never point `ingest.py` or `score.py` at a paid AP
 .github/actions/     notify-failure (one definition of "this run broke",
                      called by every scheduled workflow) · resolve-post
                      (one definition of "the post that is waiting") ·
-                     install-render-tools (Chromium + ffmpeg + poppler, bounded and
-                     retried against a crawling Ubuntu mirror) ·
+                     install-render-tools (Chromium + ffmpeg + poppler, off the
+                     Ubuntu mirror; apt only as a bounded fallback) ·
                      push-to-master (the one way a job pushes: rebase,
                      retry a race, fail on a conflict) · heartbeat (the
                      ping an outside watcher expects — see below) ·
@@ -593,8 +593,10 @@ held back, §8's decision at thirty posts. → `docs/decisions/measuring.md`
   unthrottled; missing credentials are a no-op.
 - `.github/actions/install-render-tools` is the only place Chromium,
   ffmpeg and poppler (for a PDF source the writer or fact-check must
-  read) are installed: five minutes an attempt, one retry, and every
-  caller's `timeout-minutes` leaves room for both.
+  read) are installed, and normally none comes from an Ubuntu mirror:
+  Playwright's CDN, the `imageio-ffmpeg` wheel, poppler's `.deb`s in
+  `actions/cache`. apt is the fallback — four minutes an attempt, one
+  retry on `archive.ubuntu.com`, room for both in every `timeout-minutes`.
 - Green is not safe, only "nothing obvious". Bot commits do not trigger
   `check.yml`.
 

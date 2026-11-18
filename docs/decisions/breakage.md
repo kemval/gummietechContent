@@ -134,3 +134,18 @@ On 2026-11-18 the retry matched nothing: runners had moved to an AWS node
 (`us-east-2.ec2.archive.ubuntu.com`), which trickled the same way, and the
 fallback only knew Azure's hostname. Attempt 2 now replaces the list with
 `archive.ubuntu.com` alone, whatever the runner names first.
+
+**Off the mirror** (2026-11-18). Each fix above patched the same dependency,
+and upstream (actions/runner-images#14823, #15040, both open) reports even
+`archive.ubuntu.com` going silent for 15+ minutes. So a normal run no longer
+downloads from an Ubuntu mirror. Chromium is Playwright's build from its
+CDN; the image ships Google Chrome, so the libraries are already there, and
+a launch proves it. ffmpeg is the static BtbN build inside the
+`imageio-ffmpeg` wheel (PyPI, pinned), symlinked onto the PATH after a
+check for libx264. poppler's `.deb`s live in `actions/cache`, keyed on the
+image release (`20261111`, not the build: two jobs of one run got
+`.127.1` and `.370.1`), installed with `dpkg`. Measured in PR #93's
+experiment: the fixture's 20 slides were byte-identical with and without
+`install-deps`' libraries and fonts, and the step went from 0.4–10 minutes
+to about 10 seconds. Any check that fails sends that tool through the old
+apt path, retry and mirror swap included.

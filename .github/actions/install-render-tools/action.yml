@@ -1,7 +1,7 @@
 name: Install the render tools
 description: >
-  Chromium for Playwright, with the system libraries it needs, and ffmpeg
-  when asked. Bounded and retried, because both come from the Ubuntu mirror.
+  Chromium for Playwright, ffmpeg and poppler when asked, without the Ubuntu
+  mirror on a normal day. apt is only the fallback, bounded and retried.
 
 # One definition, four callers — check.yml, review.yml, reel.yml and site.yml.
 # The same reasoning that put the alert in notify-failure: a copy per
@@ -53,13 +53,27 @@ description: >
 # rightly wrote nothing, and the Sunday post did not go out. So poppler is
 # an option here too — for the writer, with no Chromium, and for review.yml's
 # fact-check, which checks the same source.
+#
+# 2026-11-18: off the mirror. Every note above is a patch on the same
+# dependency, and the upstream issues (actions/runner-images#14823, #15040)
+# are still open, with archive.ubuntu.com itself reported silent for 15+
+# minutes. So the normal path no longer downloads from any Ubuntu mirror:
+#   - Chromium is Playwright's own build, from Playwright's CDN. Its system
+#     libraries are already on the image, which ships Google Chrome; a
+#     launch proves it. Only a failed launch runs install-deps through apt.
+#   - ffmpeg is the static BtbN build inside the imageio-ffmpeg wheel, from
+#     PyPI, pinned in requirements.txt. Only a missing libx264 falls back.
+#   - poppler's .debs are kept in actions/cache, keyed on the runner image
+#     version, and installed with dpkg. A miss (about once a week, when the
+#     image moves) fetches them through apt and saves them.
+# The apt path below is the same bounded, mirror-swapping retry as before.
 
 inputs:
   chromium:
-    description: Install Chromium for Playwright. 'false' for a job that only needs the apt packages below.
+    description: Install Chromium for Playwright. 'false' for a job that only needs the tools below.
     default: 'true'
   ffmpeg:
-    description: Also install ffmpeg (reel.py, and render.py's motion clips).
+    description: Also put ffmpeg on the PATH (reel.py, and render.py's motion clips).
     default: 'false'
   poppler:
     description: Also install poppler-utils, so Claude's Read tool can read a PDF source.
@@ -68,37 +82,117 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Key the poppler cache
+      id: key
+      if: inputs.poppler == 'true'
+      shell: bash
+      # ImageVersion is set by the runner itself. A new image may need other
+      # .debs (or none), so it is a new cache. Keyed on the release
+      # (20261111), not the build: two jobs of one run were handed
+      # 20261111.127.1 and 20261111.370.1, and missed each other's cache. A
+      # .deb that no longer fits fails dpkg, and apt takes over.
+      run: |
+        echo "debs=$RUNNER_TEMP/render-tools-debs" >> "$GITHUB_OUTPUT"
+        version="${ImageVersion:-unknown}"
+        echo "key=render-tools-poppler-${ImageOS:-unknown}-${version%%.*}" >> "$GITHUB_OUTPUT"
+
+    - name: Restore poppler's packages
+      id: restore
+      if: inputs.poppler == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.key.outputs.debs }}
+        key: ${{ steps.key.outputs.key }}
+
     - name: Install${{ inputs.chromium == 'true' && ' Chromium' || '' }}${{ inputs.ffmpeg == 'true' && ' ffmpeg' || '' }}${{ inputs.poppler == 'true' && ' poppler' || '' }}
+      id: install
       shell: bash
       env:
-        # apt is the slow half; the browser comes from Playwright's CDN
         APT_MINUTES: '4'
         BROWSER_MINUTES: '1'
         CHROMIUM: ${{ inputs.chromium }}
         FFMPEG: ${{ inputs.ffmpeg }}
         POPPLER: ${{ inputs.poppler }}
+        DEBS: ${{ steps.key.outputs.debs }}
       run: |
         printf '%s\n' 'Acquire::Retries "3";' \
           'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' |
           sudo tee /etc/apt/apt.conf.d/80-retries >/dev/null
 
+        # What still has to come through apt, if anything.
+        apt_half=""
+        packages=""
+        poppler_apt=false
+
+        if [ "$CHROMIUM" = "true" ]; then
+          # Playwright's CDN, not the mirror; the runner user's cache.
+          fetched=false
+          for attempt in 1 2; do
+            if timeout --kill-after=30s "${BROWSER_MINUTES}m" python -m playwright install chromium; then
+              fetched=true
+              break
+            fi
+            echo "::warning::Chromium download attempt $attempt failed or ran past ${BROWSER_MINUTES} minute(s)."
+          done
+          if [ "$fetched" != "true" ]; then
+            echo "::error::Playwright's Chromium did not download in two attempts. Its CDN, not the Ubuntu mirror: re-run this workflow later from the Actions tab."
+            exit 1
+          fi
+          # A launch is the proof that the image has its libraries.
+          if timeout 60s python -c 'from playwright.sync_api import sync_playwright as s; p = s().start(); p.chromium.launch().close(); p.stop()'; then
+            echo "Chromium launches with the image's own libraries."
+          else
+            echo "::warning::Chromium did not launch on the image's libraries; installing them through apt."
+            apt_half="$(command -v python) -m playwright install-deps chromium"
+          fi
+        fi
+
+        if [ "$FFMPEG" = "true" ]; then
+          # Captured, not piped into grep -q: under pipefail an early grep
+          # exit makes ffmpeg's SIGPIPE read as a missing encoder.
+          exe="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())' 2>/dev/null || true)"
+          encoders=""
+          [ -n "$exe" ] && encoders="$("$exe" -hide_banner -encoders 2>/dev/null || true)"
+          if [[ "$encoders" == *libx264* ]]; then
+            bin="$RUNNER_TEMP/render-tools-bin"
+            mkdir -p "$bin"
+            ln -sf "$exe" "$bin/ffmpeg"
+            echo "$bin" >> "$GITHUB_PATH"
+            echo "ffmpeg from the imageio-ffmpeg wheel: $("$exe" -version | head -n1)"
+          else
+            echo "::warning::imageio-ffmpeg gave no ffmpeg with libx264 (is it in requirements.txt and installed?); installing ffmpeg through apt."
+            packages="$packages ffmpeg"
+          fi
+        fi
+
+        if [ "$POPPLER" = "true" ]; then
+          if compgen -G "$DEBS/*.deb" >/dev/null &&
+             sudo timeout 2m dpkg -i "$DEBS"/*.deb >/dev/null &&
+             command -v pdftoppm >/dev/null; then
+            echo "poppler from the cache: $(pdftoppm -v 2>&1 | head -n1)"
+          else
+            echo "No usable poppler cache for this image; installing it through apt and saving the packages."
+            sudo dpkg --configure -a || true
+            rm -rf "$DEBS"
+            mkdir -p "$DEBS/partial"
+            poppler_apt=true
+          fi
+        fi
+
+        if [ -z "$apt_half" ] && [ -z "$packages" ] && [ "$poppler_apt" != "true" ]; then
+          echo "Nothing came from an Ubuntu mirror."
+          exit 0
+        fi
+
         # Run as root, values baked in: sudo resets PATH and the environment.
         # install-deps refreshes the package lists itself; without it, do so.
-        if [ "$CHROMIUM" = "true" ]; then
-          apt_half="$(command -v python) -m playwright install-deps chromium"
-        else
-          apt_half="apt-get update"
-        fi
-        packages=""
-        [ "$FFMPEG" = "true" ] && packages="$packages ffmpeg"
-        [ "$POPPLER" = "true" ] && packages="$packages poppler-utils"
+        [ -n "$apt_half" ] || apt_half="apt-get update"
         if [ -n "$packages" ]; then
           apt_half="$apt_half && apt-get install -y --no-install-recommends$packages"
         fi
-        # A command line, split deliberately where it is run below.
-        browser_half=true
-        if [ "$CHROMIUM" = "true" ]; then
-          browser_half="python -m playwright install chromium"
+        # Its own install, so only poppler's .debs land in the cached folder.
+        if [ "$poppler_apt" = "true" ]; then
+          apt_half="$apt_half && apt-get install -y --no-install-recommends -o Dir::Cache::archives=$DEBS poppler-utils"
         fi
 
         for attempt in 1 2; do
@@ -115,18 +209,26 @@ runs:
               echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee "$mirrors" >/dev/null
             fi
           fi
-          # Each timeout signals its whole process group, and kills it
-          # outright if a TERM is ignored. The first is root, so it reaches
-          # apt and dpkg; see the 2026-10-23 note above.
-          # shellcheck disable=SC2086 # browser_half is a command line, split on purpose
-          if sudo timeout --kill-after=30s "${APT_MINUTES}m" bash -c "$apt_half" &&
-             timeout --kill-after=30s "${BROWSER_MINUTES}m" $browser_half; then
+          # The timeout is root, so it can signal apt and dpkg: see the
+          # 2026-10-23 note above. It kills the group if a TERM is ignored.
+          if sudo timeout --kill-after=30s "${APT_MINUTES}m" bash -c "$apt_half"; then
+            if [ "$poppler_apt" = "true" ] && compgen -G "$DEBS/*.deb" >/dev/null; then
+              sudo chown -R "$(id -un)" "$DEBS"
+              rm -rf "$DEBS/partial" "$DEBS/lock"
+              echo "save=true" >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
-          echo "::warning::Install attempt $attempt failed or ran past its ${APT_MINUTES}+${BROWSER_MINUTES} minutes — the Ubuntu mirror is the usual cause."
+          echo "::warning::Install attempt $attempt failed or ran past its ${APT_MINUTES} minutes — the Ubuntu mirror is the usual cause."
         done
-        what=""
-        [ "$CHROMIUM" = "true" ] && what="$what Chromium"
-        what="$what$packages"
-        echo "::error::${what# } did not install in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."
+        echo "::error::The apt fallback did not finish in two attempts. The mirror is probably down or crawling: re-run this workflow later from the Actions tab."
         exit 1
+
+    # Saved straight away, not in a post step, so a job that fails later
+    # (a held post, say) still keeps the packages for the next run.
+    - name: Save poppler's packages
+      if: steps.install.outputs.save == 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.key.outputs.debs }}
+        key: ${{ steps.key.outputs.key }}
