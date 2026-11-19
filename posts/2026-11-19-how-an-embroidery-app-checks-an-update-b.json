@@ -1,0 +1,49 @@
+{
+  "post_type": "breakdown",
+  "domain": "software",
+  "colorway": "orbit",
+  "hook": "How an embroidery app checks an update before installing it",
+  "the_question": "ZigZag, an embroidery editor, looks at its GitHub releases when it opens. How does it install a newer one on a Mac?",
+  "the_intuition": "The common guess: an updater downloads a file and overwrites the app. ZigZag's README describes a check in between.",
+  "mechanism": [
+    "When ZigZag opens, it looks at its release page on GitHub. If a newer release exists, the toolbar shows an Update button.",
+    "On a Mac, Install and Relaunch downloads it, then checks the release's checksum and Apple's code signature. The signer must be the running copy's developer.",
+    "Then it swaps the update in and reopens with documents as they were. Windows and Linux are told and taken to the download."
+  ],
+  "why_it_matters": "Per the README, a Mac update is checked against its checksum and the developer's signature before it is swapped in.",
+  "the_catch": "This is the maker's own README, an announcement and not a study. On Windows and Linux, ZigZag only tells the user and links the download.",
+  "caption": "ZigZag, a Rust-based embroidery editor, checks for updates when it opens. On a Mac, its README says the download is checked against the release's checksum and Apple's code signature before it is swapped in. Do you let apps update themselves, or update by hand?",
+  "keywords": [
+    "ZigZag",
+    "app updates",
+    "code signing",
+    "embroidery software"
+  ],
+  "hashtags": [
+    "#software",
+    "#rust",
+    "#codesigning",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how the embroidery editor ZigZag updates itself: it looks at its GitHub release page on opening, on a Mac checks the download's checksum and Apple's code signature, then swaps it in and reopens. Based on the maker's README.",
+  "source_url": "https://github.com/simpsoka/zigzag",
+  "attribution": "ZigZag",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "software",
+  "es": {
+    "domain": "software",
+    "hook": "Cómo una aplicación de bordado verifica una actualización antes de instalarla",
+    "the_question": "ZigZag, un editor de bordado, revisa sus lanzamientos en GitHub al abrirse. ¿Cómo instala una versión más reciente en una Mac?",
+    "the_intuition": "La suposición más frecuente es que un actualizador descarga un archivo y sobrescribe la aplicación. El README de ZigZag describe una verificación intermedia.",
+    "mechanism": [
+      "Cuando ZigZag se abre, consulta su página de lanzamientos en GitHub. Si existe una versión más reciente, la barra de herramientas muestra un botón de actualizar.",
+      "En una Mac, la opción Instalar y Reiniciar la descarga, luego verifica la suma de verificación de la versión y la firma de código de Apple. El firmante debe coincidir con el desarrollador de la copia en ejecución.",
+      "Luego inserta la actualización y vuelve a abrirse con los documentos tal como estaban. En Windows y Linux solo informa al usuario y le proporciona el enlace de descarga."
+    ],
+    "why_it_matters": "Según el README, la actualización en Mac se verifica contra su suma de verificación y la firma del desarrollador antes de ser insertada.",
+    "the_catch": "Se trata del propio README del creador, un anuncio y no un estudio. En Windows y Linux, ZigZag solo informa al usuario y le proporciona el enlace de descarga.",
+    "_en": "07d09d11193788a3"
+  }
+}
