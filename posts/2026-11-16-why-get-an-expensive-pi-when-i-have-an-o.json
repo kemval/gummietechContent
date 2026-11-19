@@ -37,5 +37,8 @@
     "the_catch": "Encontrar muchos teléfonos del mismo modelo y con la batería en buen estado requeriría más trabajo.",
     "_en": "5c6788eaf7b089e8"
   },
-  "published_at": "2026-11-16"
+  "published_at": "2026-11-16",
+  "metrics": {
+    "asked_at": "2026-11-19"
+  }
 }
