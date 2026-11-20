@@ -333,3 +333,43 @@ changes did.
 
 **Settled by** the next two weeks of Drops: if every one is still a single
 subject under a different beat name, the beat rule is the thing to tighten.
+
+## An editor ranks the finalists (2026-11-20)
+
+**What prompted it.** The owner said some picks were not interesting. The
+first guess was that `visual` and `explain`, two axes that ask how easy a
+story is to make slides of, were carrying dull stories. The sheet said
+otherwise. Of the eight Drops and run posts from 11-01 to 11-18, seven won
+on the relevance lift, where the axes do not count, and the winners' `visual`
+was low (2 to 6). The real problem was saturation: of the 280 fresh queued
+rows, 218 were lifted and 228 sat at 8 or above, mostly security at 9 or
+10. The score had stopped choosing. The tie-break did (the axes mean, then
+the newest row), and Flash Lite scoring rows one at a time never sees two
+stories side by side.
+
+An outside proposal suggested a weighted six-axis score. That was not
+taken: it averages relevance in, which is what gutted the queue on 10-07.
+Its finalist evaluator was taken.
+
+**What changed.** For a Drop drawn from the sheet, `settled_candidates()`
+takes the top `FINALISTS` (8) of `ranked_pool()`, at most
+`FINALISTS_PER_BEAT` (3) per beat while other beats are queued, and asks the
+drafting model once to rank them by "if this is not posted today, what would
+the reader miss?" (`EDITOR_PROMPT`). The walk then takes the editor's order,
+so a duplicate among the finalists falls to the editor's next pick, not the
+score's. The reason for the pick is written as `picked_because`, code's
+alone, and shown at the gate as **Why this story**.
+
+- One request a Drop, on the provider already configured. No new key, no
+  new quota.
+- Any failure (network, quota, a reply that is not the ranking) prints a
+  warning and leaves the score order exactly as it was.
+- A Signal, `--row`, `--url` and `--evergreen` never ask the editor.
+
+The per-beat cap came from the first live run: all eight finalists were
+security items at 10, so the editor only ever compared flaws with flaws.
+
+**Settled by** the Drops of the next two weeks and the owner's read at the
+gate. If **Why this story** is often a reason the owner disagrees with, fix
+the prompt. If the editor keeps picking what the score would have picked,
+it is not earning its call.

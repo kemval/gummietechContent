@@ -535,6 +535,11 @@ def review_text(post: dict, stem: str,
         f"<i>{e(post.get('domain', ''))} · {e(post.get('colorway') or 'signal')}"
         f" · {e(flag)}</i>",
         "",
+        # The editor's reason (draft.editor_order()), so the gate can judge
+        # the choice of story as well as the copy. Absent when the score
+        # picked it: an older post, a fallback, or a format with no editor.
+        *([f"<b>Why this story</b>\n{e(post['picked_because'])}", ""]
+          if post.get("picked_because") else []),
         *hook_lines(post),
         "<b>Caption + hashtags</b>",
         f"<pre>{e(caption)}</pre>",

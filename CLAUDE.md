@@ -240,6 +240,11 @@ of the last `VARY_LAST_DROPS` (2) Drops, a Signal over a beat it already
 has `SIGNAL_PER_BEAT` (2) of — preferences, dropped when nothing else is
 queued — and a tied score goes to the stronger axes (`score.axes_mean()`),
 then the newest row. `security` is its own beat so a streak can be seen.
+**The score no longer has the last word (2026-11-20):** the lift saturates
+the top of the queue, so a Drop's top `FINALISTS` (8, at most 3 per beat)
+go to one call of the drafting model, which ranks them by what the reader
+would miss (`draft.editor_order()`); the walk takes that order, and any
+failure leaves the score's.
 → `docs/decisions/tech-first.md`, `docs/decisions/voice-and-selection.md`
 
 **Launches are news, and the voice is a doc.** `score.py` also asks for
@@ -425,7 +430,8 @@ does not state. A source that cannot be read is a hold, not a pass.
   peer-reviewed study". Code's alone (`draft.news_report()`), for Drops and
   Signal items; it outranks the model's `announcement`. Only declared
   outlets get it — an undeclared host may be a maker's page.
-- Written by code, never the model: `hooks`, `beat`, `code_url`, `doi`, `cve`
+- Written by code, never the model: `hooks`, `beat`, `picked_because` (the
+  editor's reason, shown at the gate), `code_url`, `doi`, `cve`
   (a security story's lead CVE, dedup's key for a fix), `es`
   (`translate.py`), `metrics` (`telegram.py`), and a run post's `post_type`
   (`draft.py --run`, only when a README was read). `published_at` is added only

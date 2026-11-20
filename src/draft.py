@@ -576,9 +576,29 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
              skip: set[int] = frozenset(),
              prefer_code: bool = False,
              now: datetime | None = None,
-             avoid: frozenset[str] = frozenset()) -> tuple[int, dict]:
+             avoid: frozenset[str] = frozenset(),
+             order: tuple[int, ...] = ()) -> tuple[int, dict]:
     """The highest-scoring queued row on a priority subject, or the one the
     caller asked for.
+
+    `order` is the editor's ranking of the finalists (editor_order()): the
+    first of them still in the pool is taken ahead of the score, and when
+    none is left the score decides as before.
+    """
+    pool = ranked_pool(rows, col, wanted, skip, prefer_code, now, avoid)
+    numbers = {c[1]: c for c in pool}
+    score, n, row = next((numbers[n] for n in order if n in numbers), pool[0])
+    return n, {name: row[idx] for name, idx in col.items()
+               if idx < len(row)} | {"score": score}
+
+
+def ranked_pool(rows: list[list[str]], col: dict, wanted: int | None,
+                skip: set[int] = frozenset(),
+                prefer_code: bool = False,
+                now: datetime | None = None,
+                avoid: frozenset[str] = frozenset()
+                ) -> list[tuple[float, int, list[str]]]:
+    """Every row pick_row() could take, best first, as (score, row, cells).
 
     A SECONDARY_BEATS row is taken only when no priority row is left, and
     anything else only when neither is — see PRIORITY_BEATS.
@@ -656,12 +676,142 @@ def pick_row(rows: list[list[str]], col: dict, wanted: int | None,
     # appends, so a higher row number was fetched later, and on 2026-10-02
     # taking the first of a tie drafted a September story over that week's.
     notes = col.get("notes")
-    score, n, row = max(
-        preferred or candidates,
+    return sorted(
+        preferred or candidates, reverse=True,
         key=lambda c: (c[0], axes_mean(c[2][notes]) if notes is not None
                        and notes < len(c[2]) else 0.0, c[1]))
-    return n, {name: row[idx] for name, idx in col.items()
-               if idx < len(row)} | {"score": score}
+
+
+# The score cannot choose among the top of the queue any more: measured on
+# 2026-11-20, 218 of the 280 fresh queued rows were lifted by relevance and
+# 228 sat at 8 or above, so the Drop was decided by pick_row()'s tie-break
+# (the axes, which include "is it easy to make slides of", then the newest
+# row) rather than by which story mattered. Seven of the eight Drops from
+# 11-01 won on the lift. Scoring rows one at a time on Flash Lite cannot fix
+# that — it never sees two stories side by side — so the finalists are
+# compared once, in one call to the drafting model, which is already
+# configured and costs one request a Drop. Any failure falls back to the
+# score order: the editor reorders the queue, it never empties it.
+FINALISTS = 8
+# And at most this many from one beat while others are queued: on the first
+# live run (2026-11-20) all eight finalists were security items at 10, so the
+# editor compared flaws with flaws and never saw a story of another kind.
+FINALISTS_PER_BEAT = 3
+EDITOR_SUMMARY_CHARS = 300
+
+
+def finalists(pool: list[tuple[float, int, list[str]]], col: dict,
+              count: int = FINALISTS,
+              per_beat: int = FINALISTS_PER_BEAT
+              ) -> list[tuple[float, int, list[str]]]:
+    """The top of the pool for the editor, in score order, at most
+    `per_beat` from one beat — filled past the cap only when the pool holds
+    too few other beats to reach `count`."""
+    taken, held, beats = [], [], Counter()
+    for c in pool:
+        beat = row_cell(c[2], col, "beat")
+        if beats[beat] < per_beat:
+            beats[beat] += 1
+            taken.append(c)
+        else:
+            held.append(c)
+        if len(taken) == count:
+            return taken
+    chosen = {c[1] for c in taken + held[:count - len(taken)]}
+    return [c for c in pool if c[1] in chosen]
+
+EDITOR_PROMPT = """You are the editor of @gummietech, an Instagram account \
+that explains technology to people who use it: one post a day. Below are \
+{count} stories that all passed the account's filters. Rank them for today's \
+post.
+
+The question that decides the ranking: if this story is not posted today, \
+what would the reader miss? Put first what changes something for many \
+people — a flaw they must patch, a scam they will meet, a tool or change \
+that alters how they work, a result that shifts what technology can do. \
+Put last what changes nothing for them: a maker praising its own product, \
+spec sheets, funding, personnel news, a minor update few people use, or \
+news only people in one niche would notice. Several items may report the \
+same event; rank the one that reports it best and put the rest last. How \
+easy a story is to illustrate does not count.
+
+{items}
+
+Return only JSON, no prose, no code fences:
+{{"ranking": [<every item number, best first>], \
+"why": {{"<item number>": "<one sentence: what the reader would miss>"}}}}
+Give "why" for your top three."""
+
+
+def editor_items(finalists: list[tuple[float, int, list[str]]],
+                 col: dict) -> str:
+    """The finalists as the editor reads them: numbered from 1."""
+    blocks = []
+    for i, (_, _, row) in enumerate(finalists, start=1):
+        cell = lambda name: (row[col[name]].strip() if name in col
+                             and col[name] < len(row) else "")
+        summary = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ",
+                                             cell("summary"))).strip()
+        blocks.append(f"[{i}] {cell('title')}\n"
+                      f"source: {cell('source')} · beat: {cell('beat') or '?'}"
+                      f" · published: {cell('published')[:10] or '?'}\n"
+                      f"{summary[:EDITOR_SUMMARY_CHARS]}")
+    return "\n\n".join(blocks)
+
+
+def editor_ranking(reply: str, count: int) -> tuple[list[int], dict[int, str]]:
+    """The editor's reply as 1-based item numbers, best first, and its
+    reasons. Numbers out of range or repeated are dropped; any item the
+    reply left out keeps its score order after the ranked ones. Raises
+    ValueError on a reply that is not the shape asked for."""
+    data = json.loads(reply.strip())
+    if not isinstance(data, dict) or not isinstance(data.get("ranking"), list):
+        raise ValueError(f"no ranking list in {reply[:200]!r}")
+    ranked: list[int] = []
+    for value in data["ranking"]:
+        try:
+            i = int(value)
+        except (TypeError, ValueError):
+            continue
+        if 1 <= i <= count and i not in ranked:
+            ranked.append(i)
+    if not ranked:
+        raise ValueError(f"the ranking named no item: {reply[:200]!r}")
+    ranked += [i for i in range(1, count + 1) if i not in ranked]
+    why = data.get("why") if isinstance(data.get("why"), dict) else {}
+    reasons = {}
+    for key, text in why.items():
+        try:
+            i = int(key)
+        except (TypeError, ValueError):
+            continue
+        if 1 <= i <= count and isinstance(text, str) and text.strip():
+            reasons[i] = text.strip()
+    return ranked, reasons
+
+
+def editor_order(finalists: list[tuple[float, int, list[str]]], col: dict,
+                 api_key: str, model: str) -> tuple[tuple[int, ...],
+                                                    dict[int, str]]:
+    """Sheet row numbers in the editor's order, and its reason per row.
+    Empty on any failure, which leaves the score order in charge."""
+    if len(finalists) < 2:
+        return (), {}
+    prompt = EDITOR_PROMPT.format(count=len(finalists),
+                                  items=editor_items(finalists, col))
+    try:
+        ranked, reasons = editor_ranking(
+            llm.generate(prompt, api_key, model, temperature=0.2),
+            len(finalists))
+    except Exception as exc:       # network, quota, a malformed reply: all one
+        print(f"  warning: the editor did not rank the finalists ({exc}) — "
+              "taking the top score instead")
+        return (), {}
+    rows = [finalists[i - 1][1] for i in ranked]
+    print("  editor: " + " > ".join(f"row {n}" for n in rows[:3])
+          + (f" — {reasons[ranked[0]]}" if ranked[0] in reasons else ""))
+    return tuple(rows), {finalists[i - 1][1]: text
+                         for i, text in reasons.items()}
 
 
 # The queue's shape — the row regexes and why each exists — is
@@ -1029,7 +1179,8 @@ DROP_KEYS = ["post_type", "domain", "colorway", "hook", "hooks",
              "what_happened", "try_it", "why_it_matters", "what_to_do",
              "the_catch", "caption",
              "keywords", "hashtags", "alt_text", "source_url", "code_url", "doi", "cve", "attribution",
-             "peer_reviewed", "announcement", "news_report", "beat"]
+             "peer_reviewed", "announcement", "news_report", "beat",
+             "picked_because"]
 
 
 def row_subject(item: dict) -> str:
@@ -1161,6 +1312,12 @@ def validate(post: dict, item: dict, paper: dict | None,
     if subject := row_subject(item):
         post["beat"] = subject
 
+    # The editor's reason for this story (editor_order()), for the person at
+    # the gate. Code's alone: whatever the drafting model wrote is dropped.
+    post.pop("picked_because", None)
+    if item.get("picked_because"):
+        post["picked_because"] = item["picked_because"]
+
     # Written by code, never by the model: a repo link the model supplies is
     # a URL nobody can tell from an invented one. See code_link().
     post.pop("code_url", None)
@@ -1264,7 +1421,9 @@ def check_budget(rejected: int, wanted: int, found: int = 0) -> bool:
 
 def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                        seen: dict[str, str], wanted: int,
-                       labelled_only: bool = False) -> Iterator[dict]:
+                       labelled_only: bool = False,
+                       editor: tuple[str, str] | None = None
+                       ) -> Iterator[dict]:
     """Candidates that survive the duplicate guard, in queue order.
 
     A candidate is only settled once its paper has been resolved, which is
@@ -1276,6 +1435,11 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
     the same either way, which is why it is one function rather than two.
     Only the plain sheet path ever asks for more than one: --row, --url and
     --evergreen each name a single candidate, and naming one is the override.
+
+    `editor` is (api_key, model): a Drop drawn from the sheet asks the
+    editor once, before the walk, to rank the top FINALISTS, and walks them
+    in that order — a duplicate among them falls to the editor's next, not
+    to the score's. A Signal, --row, --url and --evergreen never ask.
 
     Yields {"row", "item", "article", "paper"}.
     """
@@ -1294,6 +1458,16 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
     beats: Counter[str] = Counter()     # items taken per beat, SIGNAL_PER_BEAT
     # A Drop varies from the last Drops; a Signal from its own items so far.
     recent = recent_drop_beats() if wanted == 1 else frozenset()
+    order: tuple[int, ...] = ()
+    reasons: dict[int, str] = {}
+    if (editor and wanted == 1 and args.row is None and not args.url
+            and args.evergreen is None):
+        try:
+            pool = ranked_pool(rows, col, None, prefer_code=args.run,
+                               avoid=recent)
+        except SystemExit:
+            pool = []              # pick_row() below says why, and stops
+        order, reasons = editor_order(finalists(pool, col), col, *editor)
 
     while found < wanted:
         row_number = None
@@ -1307,7 +1481,10 @@ def settled_candidates(args, rows: list[list[str]], col: dict, worksheet,
                 avoid = (recent if wanted == 1 else frozenset(
                     b for b, n in beats.items() if b and n >= SIGNAL_PER_BEAT))
                 row_number, item = pick_row(rows, col, args.row, skipped,
-                                            prefer_code=args.run, avoid=avoid)
+                                            prefer_code=args.run, avoid=avoid,
+                                            order=order)
+                if row_number in reasons:
+                    item["picked_because"] = reasons[row_number]
             except SystemExit:
                 # The queue ran dry mid-Signal: the same short roundup as
                 # running out of budget, for the same reason.
@@ -1501,7 +1678,8 @@ def main() -> int:
 
     wanted = args.signal or 1
     picks = list(settled_candidates(args, rows, col, worksheet, seen, wanted,
-                                    labelled_only=bool(args.signal)))
+                                    labelled_only=bool(args.signal),
+                                    editor=(api_key, model)))
 
     if args.signal:
         drafted = drafted_reply(
