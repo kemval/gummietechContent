@@ -488,6 +488,88 @@ def test_a_signal_prefers_beats_it_does_not_have_twice(monkeypatch):
     assert taken == ["patch-1", "patch-2", "free-tool", "patch-3"]
 
 
+# ---------------------------------------------------------- the editor
+# 2026-11-20: 218 of 280 fresh queued rows were lifted by relevance and 228
+# sat at 8 or above, so the Drop was settled by the tie-break, not by which
+# story mattered. One call now ranks the finalists side by side.
+
+def editor_queue(monkeypatch, reply):
+    from types import SimpleNamespace
+    rows = [HEADER]
+    for title, score in [("minor-patch", 10.0), ("big-scam", 9.0),
+                         ("spec-sheet", 9.5)]:
+        row = sheet_row(title, score, beat="security")
+        row[COL["url"]] = f"https://site-{title}.example/{title}"
+        rows.append(row)
+    monkeypatch.setattr(draft, "fetch_article", lambda url: ("text", "", None))
+    monkeypatch.setattr(draft, "resolve_paper", lambda page: (None, None))
+    monkeypatch.setattr(draft, "recent_drop_beats", lambda: frozenset())
+    calls = []
+
+    def generate(prompt, key, model, temperature=0.2):
+        calls.append(prompt)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+    monkeypatch.setattr(draft.llm, "generate", generate)
+    args = SimpleNamespace(evergreen=None, url=None, row=None, run=False,
+                           dry_run=True)
+    picks = list(draft.settled_candidates(args, rows, COL, None, {}, 1,
+                                          editor=("key", "model")))
+    return picks, calls
+
+
+def test_the_editor_picks_over_the_top_score(monkeypatch):
+    # Score order is minor-patch (1), spec-sheet (2), big-scam (3).
+    picks, calls = editor_queue(monkeypatch, json.dumps(
+        {"ranking": [3, 1, 2], "why": {"3": "Readers will get this text."}}))
+    assert len(calls) == 1
+    item = picks[0]["item"]
+    assert item["title"] == "big-scam"
+    assert item["picked_because"] == "Readers will get this text."
+
+
+def test_a_failed_editor_leaves_the_score_in_charge(monkeypatch):
+    picks, _ = editor_queue(monkeypatch, RuntimeError("503"))
+    assert picks[0]["item"]["title"] == "minor-patch"
+    assert "picked_because" not in picks[0]["item"]
+
+
+def test_a_malformed_editor_reply_leaves_the_score_in_charge(monkeypatch):
+    picks, _ = editor_queue(monkeypatch, "I would pick the scam story.")
+    assert picks[0]["item"]["title"] == "minor-patch"
+
+
+def test_the_editor_ranking_drops_bad_numbers_and_keeps_every_item():
+    ranked, why = draft.editor_ranking(json.dumps(
+        {"ranking": [9, "2", 2, "x"], "why": {"2": " ok ", "7": "no"}}), 3)
+    assert ranked == [2, 1, 3]
+    assert why == {2: "ok"}
+    with pytest.raises(ValueError):
+        draft.editor_ranking(json.dumps({"ranking": [0, 4]}), 3)
+
+
+def test_the_finalists_are_not_all_one_beat():
+    """2026-11-20: all eight finalists were security items at 10."""
+    pool = [(10.0, n, sheet_row(f"flaw-{n}", 10.0, beat="security"))
+            for n in range(2, 10)]
+    pool += [(8.0, 10, sheet_row("model", 8.0, beat="ai")),
+             (7.5, 11, sheet_row("tool", 7.5, beat="software"))]
+    picked = draft.finalists(pool, COL, count=5, per_beat=3)
+    assert [c[1] for c in picked] == [2, 3, 4, 10, 11]
+    # Too few other beats to fill it: the cap gives way, in score order.
+    picked = draft.finalists(pool, COL, count=6, per_beat=3)
+    assert [c[1] for c in picked] == [2, 3, 4, 5, 10, 11]
+
+
+def test_the_editor_order_falls_through_a_rejected_finalist():
+    """A duplicate among the finalists goes to the editor's next choice."""
+    rows = [HEADER, sheet_row("a", 10.0, beat="ai"),
+            sheet_row("b", 9.0, beat="ai"), sheet_row("c", 8.0, beat="ai")]
+    n, _ = draft.pick_row(rows, COL, None, skip={4}, order=(4, 3, 2))
+    assert n == 3
+
+
 def test_a_row_named_by_hand_ignores_the_preference():
     rows = [HEADER, sheet_row("fossil", 9.0, beat="science"),
             sheet_row("agents", 9.5, beat="ai")]
