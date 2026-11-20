@@ -35,5 +35,8 @@
     "the_catch": "No es una copia del juego. Los agentes entrenados únicamente dentro del sueño obtuvieron 210 allí, pero solo 28 en el juego real.",
     "_en": "ced165c5ad142719"
   },
-  "published_at": "2026-11-17"
+  "published_at": "2026-11-17",
+  "metrics": {
+    "asked_at": "2026-11-20"
+  }
 }
