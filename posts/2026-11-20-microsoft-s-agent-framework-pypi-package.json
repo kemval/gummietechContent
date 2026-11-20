@@ -10,7 +10,7 @@
   ],
   "what_happened": "Two malicious versions (1.26.1 and 1.26.2) of Microsoft’s Agent Framework PyPI package were published, stealing cloud credentials during Python startup.",
   "why_it_matters": "Developers’ cloud secrets can be exfiltrated silently, exposing Azure, AWS, GitHub and other services to attackers.",
-  "what_to_do": "Reinstall the safe 1.26.0 release and rotate any exposed credentials.",
+  "what_to_do": "If you installed 1.26.1 or 1.26.2, rebuild from a clean environment on 1.26.0 and rotate exposed credentials.",
   "the_catch": "The method the attacker used to gain publishing access is unknown.",
   "caption": "Two malicious versions of Microsoft’s Agent Framework PyPI package stole cloud credentials from developers. Did you install the compromised version?",
   "keywords": [
@@ -24,7 +24,7 @@
     "#cloudcredentials",
     "#gummietech"
   ],
-  "alt_text": "The carousel explains that malicious releases of Microsoft’s Agent Framework PyPI package stole cloud credentials, advises reinstalling version 1.26.0, and notes the unknown breach method.",
+  "alt_text": "The carousel explains that malicious releases of Microsoft’s Agent Framework PyPI package stole cloud credentials, advises rebuilding on version 1.26.0, and notes the unknown breach method.",
   "source_url": "https://www.bleepingcomputer.com/news/security/microsofts-agent-framework-pypi-package-compromised-to-steal-credentials/",
   "attribution": "BleepingComputer",
   "peer_reviewed": false,
@@ -32,11 +32,11 @@
   "beat": "security",
   "es": {
     "domain": "cadena de suministro de software",
-    "hook": "El paquete Agent Framework de Microsoft en PyPI fue comprometido con versiones maliciosas.",
-    "what_happened": "Los atacantes publicaron dos versiones maliciosas (1.26.1 y 1.26.2) del paquete Agent Framework de Microsoft en PyPI, y robaron credenciales de la nube al iniciar Python.",
-    "why_it_matters": "Los secretos en la nube de los desarrolladores pueden exfiltrarse silenciosamente, exponiendo Azure, AWS, GitHub y otros servicios a los atacantes.",
-    "what_to_do": "Reinstala la versión segura 1.26.0 y rota cualquier credencial expuesta.",
-    "the_catch": "Los investigadores desconocen cómo el atacante obtuvo acceso para publicar.",
-    "_en": "a20a233a7e615c9e"
+    "hook": "El paquete Agent Framework de Microsoft en PyPI se comprometió con versiones maliciosas.",
+    "what_happened": "Dos versiones maliciosas (1.26.1 y 1.26.2) del paquete Agent Framework de Microsoft en PyPI fueron publicadas, robando credenciales de la nube durante el arranque de Python.",
+    "why_it_matters": "Los secretos de la nube de los desarrolladores pueden ser exfiltrados silenciosamente, exponiendo Azure, AWS, GitHub y otros servicios a los atacantes.",
+    "what_to_do": "Si instalaste la 1.26.1 o la 1.26.2, reinstala la versión 1.25.0 en un entorno limpio y rota las credenciales expuestas.",
+    "the_catch": "Se desconoce el método que el atacante usó para obtener acceso de publicación.",
+    "_en": "84d634f5a0a01483"
   }
 }
