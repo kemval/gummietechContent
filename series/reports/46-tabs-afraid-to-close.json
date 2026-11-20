@@ -44,5 +44,8 @@
     "kicker": "closing them means admitting I won't"
   },
   "sent_at": "2026-11-17",
-  "published_at": "2026-11-17"
+  "published_at": "2026-11-17",
+  "metrics": {
+    "asked_at": "2026-11-20"
+  }
 }
