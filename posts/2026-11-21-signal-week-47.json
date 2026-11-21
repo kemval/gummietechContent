@@ -1,0 +1,76 @@
+{
+  "post_type": "signal",
+  "domain": "Weekly Signal",
+  "colorway": "signal",
+  "hook": "Docker keys stolen in under ten seconds — plus 4 more",
+  "items": [
+    {
+      "claim": "Attackers used exposed Docker Hub keys within 7.86 seconds of publishing.",
+      "attribution": "BleepingComputer",
+      "source_url": "https://www.bleepingcomputer.com/news/security/cloud-keys-leaked-in-docker-hub-images-are-stolen-within-seconds/",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "security"
+    },
+    {
+      "claim": "Java4Shell flaw lets unauthenticated attackers run code on major Java apps.",
+      "attribution": "BleepingComputer",
+      "source_url": "https://www.bleepingcomputer.com/news/security/critical-java4shell-flaw-allows-rce-attacks-on-major-java-applications/",
+      "cve": "CVE-2026-114938",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "security"
+    },
+    {
+      "claim": "Google Search adds answers with tables and images using Gemini 4 Hydrogen.",
+      "attribution": "Google AI Blog",
+      "source_url": "https://blog.google/products-and-platforms/products/search/gemini-4-hydrogen-search-upgrade/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "Gemini app now runs on low‑memory Android phones, supporting 45 languages.",
+      "attribution": "Google AI Blog",
+      "source_url": "https://blog.google/innovation-and-ai/products/gemini-app/gemini-lower-memory-devices/",
+      "peer_reviewed": false,
+      "announcement": true,
+      "beat": "ai"
+    },
+    {
+      "claim": "Microsoft outage disrupted Outlook and Teams for companies and governments worldwide.",
+      "attribution": "Tech Xplore",
+      "source_url": "https://techxplore.com/news/2026-11-outlook-widespread-outage-microsoft-email.html",
+      "peer_reviewed": false,
+      "news_report": true,
+      "beat": "software"
+    }
+  ],
+  "caption": "From stolen cloud keys to a global email blackout, this week’s tech news spans security, AI, and outages. Stay ahead of the risks and upgrades that affect your daily tools. Which breach scared you more, the Docker key theft or the Java flaw?",
+  "keywords": [
+    "Docker security",
+    "Java vulnerability",
+    "Gemini AI",
+    "Android low memory",
+    "Microsoft outage"
+  ],
+  "hashtags": [
+    "#security",
+    "#ai",
+    "#cloud",
+    "#gummietech"
+  ],
+  "alt_text": "Five slides on flat colour backgrounds list: Docker keys used in 7.86 seconds, Java4Shell lets unauthenticated code execution, Google Search adds answers with tables and images using Gemini 4 Hydrogen, Gemini app runs on low‑memory Android phones supporting 45 languages, Microsoft outage disrupts Outlook and Teams worldwide.",
+  "es": {
+    "domain": "señal semanal",
+    "hook": "Claves de Docker robadas en menos de diez segundos — y cuatro más",
+    "items": [
+      "Ataque con claves Docker: Los atacantes usaron claves expuestas de Docker Hub en 7,86 segundos tras su publicación.",
+      "Vulnerabilidad Java4Shell: Permite a atacantes no autenticados ejecutar código en aplicaciones Java de gran relevancia.",
+      "Respuestas en Google Search: Google Search incorpora respuestas con tablas e imágenes mediante Gemini 4 Hydrogen.",
+      "Gemini en Android: La aplicación Gemini ahora funciona en teléfonos Android con poca memoria y admite 45 idiomas.",
+      "Corte de Microsoft: El corte de Microsoft afectó a Outlook y Teams en empresas y gobiernos de todo el mundo."
+    ],
+    "_en": "bba63e1b960838c5"
+  }
+}
