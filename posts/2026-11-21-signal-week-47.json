@@ -2,10 +2,10 @@
   "post_type": "signal",
   "domain": "Weekly Signal",
   "colorway": "signal",
-  "hook": "Docker keys stolen in under ten seconds — plus 4 more",
+  "hook": "Planted Docker keys were stolen in 8 seconds — plus 4 more",
   "items": [
     {
-      "claim": "Attackers used exposed Docker Hub keys within 7.86 seconds of publishing.",
+      "claim": "Researchers' planted Docker Hub AWS keys were first used 7.86 seconds after publishing; median 51 seconds.",
       "attribution": "BleepingComputer",
       "source_url": "https://www.bleepingcomputer.com/news/security/cloud-keys-leaked-in-docker-hub-images-are-stolen-within-seconds/",
       "peer_reviewed": false,
@@ -13,7 +13,7 @@
       "beat": "security"
     },
     {
-      "claim": "Java4Shell flaw lets unauthenticated attackers run code on major Java apps.",
+      "claim": "Java4Shell flaw lets unauthenticated attackers run code on Jenkins, Jira, Confluence and others; patched.",
       "attribution": "BleepingComputer",
       "source_url": "https://www.bleepingcomputer.com/news/security/critical-java4shell-flaw-allows-rce-attacks-on-major-java-applications/",
       "cve": "CVE-2026-114938",
@@ -30,7 +30,7 @@
       "beat": "ai"
     },
     {
-      "claim": "Gemini app now runs on low‑memory Android phones, supporting 45 languages.",
+      "claim": "Gemini app now runs on lower-memory Android phones; Gemini Live supports more than 45 languages.",
       "attribution": "Google AI Blog",
       "source_url": "https://blog.google/innovation-and-ai/products/gemini-app/gemini-lower-memory-devices/",
       "peer_reviewed": false,
@@ -46,7 +46,7 @@
       "beat": "software"
     }
   ],
-  "caption": "From stolen cloud keys to a global email blackout, this week’s tech news spans security, AI, and outages. Stay ahead of the risks and upgrades that affect your daily tools. Which breach scared you more, the Docker key theft or the Java flaw?",
+  "caption": "From stolen cloud keys to a worldwide Outlook and Teams outage, this week’s tech news spans security, AI, and outages. Stay ahead of the risks and upgrades that affect your daily tools. Which breach scared you more, the Docker key theft or the Java flaw?",
   "keywords": [
     "Docker security",
     "Java vulnerability",
@@ -60,17 +60,17 @@
     "#cloud",
     "#gummietech"
   ],
-  "alt_text": "Five slides on flat colour backgrounds list: Docker keys used in 7.86 seconds, Java4Shell lets unauthenticated code execution, Google Search adds answers with tables and images using Gemini 4 Hydrogen, Gemini app runs on low‑memory Android phones supporting 45 languages, Microsoft outage disrupts Outlook and Teams worldwide.",
+  "alt_text": "Five slides on flat colour backgrounds list: planted Docker keys first used 7.86 seconds after publishing, Java4Shell lets unauthenticated attackers run code on Jenkins, Jira and Confluence, Google Search adds answers with tables and images using Gemini 4 Hydrogen, Gemini app runs on lower-memory Android phones and Gemini Live supports more than 45 languages, Microsoft outage disrupts Outlook and Teams worldwide.",
   "es": {
     "domain": "señal semanal",
-    "hook": "Claves de Docker robadas en menos de diez segundos — y cuatro más",
+    "hook": "Las llaves Docker plantadas fueron robadas en 8 segundos — y 4 más",
     "items": [
-      "Ataque con claves Docker: Los atacantes usaron claves expuestas de Docker Hub en 7,86 segundos tras su publicación.",
-      "Vulnerabilidad Java4Shell: Permite a atacantes no autenticados ejecutar código en aplicaciones Java de gran relevancia.",
-      "Respuestas en Google Search: Google Search incorpora respuestas con tablas e imágenes mediante Gemini 4 Hydrogen.",
-      "Gemini en Android: La aplicación Gemini ahora funciona en teléfonos Android con poca memoria y admite 45 idiomas.",
-      "Corte de Microsoft: El corte de Microsoft afectó a Outlook y Teams en empresas y gobiernos de todo el mundo."
+      "Llaves Docker Hub de AWS plantadas por los investigadores: se usaron por primera vez 7,86 segundos después de su publicación; la mediana fue de 51 segundos.",
+      "Vulnerabilidad Java4Shell: permite que atacantes no autenticados ejecuten código en Jenkins, Jira, Confluence y otros; ya está parcheada.",
+      "Google Search: añade respuestas con tablas e imágenes usando Gemini 4 Hydrogen.",
+      "Aplicación Gemini: ahora funciona en teléfonos Android con menos memoria; Gemini Live admite más de 45 idiomas.",
+      "Corte de Microsoft: interrumpió Outlook y Teams para empresas y gobiernos de todo el mundo."
     ],
-    "_en": "bba63e1b960838c5"
+    "_en": "c6ed97d9ff047dc4"
   }
 }
