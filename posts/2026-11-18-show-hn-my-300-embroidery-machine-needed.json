@@ -35,5 +35,8 @@
     "the_catch": "El protocolo de Skitch se obtuvo mediante ingeniería inversa, por lo que el README recomienda evitar actualizaciones de firmware. El README indica que se probó en un Brother Skitch real (PP1).",
     "_en": "5673071960a6c1af"
   },
-  "published_at": "2026-11-18"
+  "published_at": "2026-11-18",
+  "metrics": {
+    "asked_at": "2026-11-21"
+  }
 }
