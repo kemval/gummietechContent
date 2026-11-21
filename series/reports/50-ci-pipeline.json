@@ -48,5 +48,6 @@
     ],
     "button": "re-run job",
     "kicker": "it passed locally, which counts for nothing"
-  }
+  },
+  "sent_at": "2026-11-21"
 }
