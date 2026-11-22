@@ -45,5 +45,9 @@
     "the_fix": "La comisión de investigación recomendó desactivar la función de alineación al despegue y probar con la mayor cantidad posible de equipos reales en simulaciones completas.",
     "the_catch": "No se trató de una verificación olvidada. La conversión quedó sin protección bajo un objetivo de carga de trabajo del 80 %, ya que se consideró que el valor no podía alcanzar tal magnitud en Ariane 4.",
     "_en": "ced4e4228ae08b21"
+  },
+  "rejected": {
+    "at": "2026-10-25",
+    "reason": "Turned down by the owner at the gate: a story they had already read elsewhere."
   }
 }
