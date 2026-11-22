@@ -46,5 +46,8 @@
     "the_catch": "Se trata del propio README del creador, un anuncio y no un estudio. En Windows y Linux, ZigZag solo informa al usuario y le proporciona el enlace de descarga.",
     "_en": "07d09d11193788a3"
   },
-  "published_at": "2026-11-19"
+  "published_at": "2026-11-19",
+  "metrics": {
+    "asked_at": "2026-11-22"
+  }
 }
