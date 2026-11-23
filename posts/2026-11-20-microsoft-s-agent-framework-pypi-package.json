@@ -39,5 +39,8 @@
     "the_catch": "Se desconoce el método que el atacante usó para obtener acceso de publicación.",
     "_en": "84d634f5a0a01483"
   },
-  "published_at": "2026-11-20"
+  "published_at": "2026-11-20",
+  "metrics": {
+    "asked_at": "2026-11-23"
+  }
 }
