@@ -1,0 +1,33 @@
+{
+  "post_type": "drop",
+  "domain": "AI assistants",
+  "colorway": "orbit",
+  "hook": "Gemini’s Computer Use lets the Mac app run tasks automatically.",
+  "hooks": [
+    "Gemini’s Computer Use lets the Mac app run tasks automatically.",
+    "It can fill forms, edit photos, and build slides while you work.",
+    "Google says Gemini clicks, types, and navigates menus in a background window."
+  ],
+  "what_happened": "Google added a Computer Use feature to Gemini’s Mac app that performs multistep tasks across files, apps, and websites in the background.",
+  "why_it_matters": "It lets users describe a goal and have Gemini handle the work while keeping the screen and cursor free.",
+  "the_catch": "",
+  "caption": "Google’s Gemini app now includes a Computer Use feature that runs Mac applications and completes desktop chores in the background. Would you trust it with your invoices?",
+  "keywords": [
+    "Gemini",
+    "Computer Use",
+    "Mac"
+  ],
+  "hashtags": [
+    "#gemini",
+    "#aiassistant",
+    "#macapps",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Google’s Gemini Mac app now has a Computer Use feature that runs background tasks on the Mac.",
+  "source_url": "https://the-decoder.com/googles-gemini-can-now-run-mac-apps-and-finish-desktop-chores-in-the-background-while-you-keep-working/",
+  "attribution": "The Decoder",
+  "peer_reviewed": false,
+  "news_report": true,
+  "beat": "ai",
+  "picked_because": "Readers would miss a new AI assistant that can automate Mac desktop tasks, saving time and boosting productivity."
+}
