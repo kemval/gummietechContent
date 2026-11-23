@@ -9,8 +9,8 @@
     "Google says Gemini clicks, types, and navigates menus in a background window."
   ],
   "what_happened": "Google added a Computer Use feature to Gemini’s Mac app that performs multistep tasks across files, apps, and websites in the background.",
-  "why_it_matters": "It lets users describe a goal and have Gemini handle the work while keeping the screen and cursor free.",
-  "the_catch": "It rolls out in English in the U.S. only, and needs an Apple Silicon Mac running macOS Sequoia 15.0 or later.",
+  "why_it_matters": "Google says users describe a goal and Gemini does the work in a background window, leaving the screen and cursor free.",
+  "the_catch": "Rolling out in U.S. English only; needs an Apple Silicon Mac on macOS Sequoia 15.0+ and a Google AI Plus, Pro or Ultra plan.",
   "caption": "Google’s Gemini app now includes a Computer Use feature that runs Mac applications and completes desktop chores in the background. Would you trust it with your invoices?",
   "keywords": [
     "Gemini",
@@ -32,10 +32,10 @@
   "picked_because": "Readers would miss a new AI assistant that can automate Mac desktop tasks, saving time and boosting productivity.",
   "es": {
     "domain": "asistentes de IA",
-    "hook": "Computer Use de Gemini permite que la aplicación para Mac ejecute tareas automáticamente",
-    "what_happened": "Google añadió la función Computer Use a la aplicación para Mac de Gemini, que realiza tareas de varios pasos en archivos, aplicaciones y sitios web en segundo plano",
-    "why_it_matters": "Permite a los usuarios describir un objetivo y que Gemini se encargue del trabajo, manteniendo la pantalla y el cursor libres",
-    "the_catch": "Google lo lanza solo en inglés y solo en EE. UU, y requiere un Mac con Apple Silicon que ejecute macOS Sequoia 15,0 o posterior",
-    "_en": "fa1bc0ee4967870e"
+    "hook": "Computer Use de Gemini permite que la aplicación Mac ejecute tareas automáticamente.",
+    "what_happened": "Google añadió la función Computer Use a la aplicación Mac de Gemini, que realiza tareas multietapa en archivos, aplicaciones y sitios web en segundo plano.",
+    "why_it_matters": "Google dice que los usuarios describen un objetivo y Gemini realiza el trabajo en una ventana en segundo plano, dejando la pantalla y el cursor libres.",
+    "the_catch": "Se lanza solo en inglés de EE. UU.; requiere un Mac con Apple Silicon con macOS Sequoia 15,0 + y un plan Google AI Plus, Pro o Ultra.",
+    "_en": "74aba98b5aad55ff"
   }
 }
