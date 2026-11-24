@@ -1,0 +1,37 @@
+{
+  "post_type": "term",
+  "domain": "cloud security",
+  "colorway": "bloom",
+  "hook": "How far one break-in can reach before it hits a wall.",
+  "term": "Blast radius",
+  "definition": "How much one failure or break-in can reach. Systems are built so one stolen key cannot open everything.",
+  "example": "Railway encrypts each environment's variables with its own key. After its breach, it said at most 1.85% of workspaces could have had variables decrypted.",
+  "the_catch": "It is not a count of victims. Railway's 1.85% was an upper bound, because its logs identify environments, not individual variables.",
+  "example_post": "2026-11-22-incident-a-build-server-exploit-at-railway-ended",
+  "caption": "Blast radius is how much one failure or break-in can reach. Railway's design meant one compromised key could not expose the whole platform, and it says at most 1.85% of workspaces had variables decrypted. Would you rather one big lock or many small ones?",
+  "keywords": [
+    "blast radius",
+    "security",
+    "encryption keys"
+  ],
+  "hashtags": [
+    "#cybersecurity",
+    "#cloud",
+    "#devops",
+    "#gummietech"
+  ],
+  "alt_text": "A glossary carousel defining blast radius: how much one failure or break-in can reach, an example from an earlier gummietech post about Railway's breach, and the common mistake of reading it as a count of victims.",
+  "source_url": "https://blog.railway.com/p/incident-report-october-security-incident",
+  "attribution": "Railway, “Incident Report: October 21st Security Attack”, 10 Nov 2026",
+  "peer_reviewed": false,
+  "incident_report": true,
+  "es": {
+    "domain": "seguridad en la nube",
+    "hook": "Hasta dónde puede llegar una intrusión antes de encontrarse con un límite",
+    "term": "Radio de explosión",
+    "definition": "El alcance de una falla o una intrusión. Los sistemas se construyen de modo que una clave robada no pueda abrir todo.",
+    "example": "Railway cifra las variables de cada entorno con su propia clave. Tras la brecha, dijo que, como máximo, el 1,85 % de los entornos de trabajo podrían haber tenido sus variables descifradas.",
+    "the_catch": "No se trata de un recuento de víctimas. El 1,85 % de Railway era un límite superior, ya que sus registros identifican entornos, no variables individuales.",
+    "_en": "48fdc046c61684ff"
+  }
+}
