@@ -8,7 +8,7 @@
   "example": "Railway encrypts each environment's variables with its own key. After its breach, it said at most 1.85% of workspaces could have had variables decrypted.",
   "the_catch": "It is not a count of victims. Railway's 1.85% was an upper bound, because its logs identify environments, not individual variables.",
   "example_post": "2026-11-22-incident-a-build-server-exploit-at-railway-ended",
-  "caption": "Blast radius is how much one failure or break-in can reach. Railway says its storage is designed so one compromised key cannot expose the whole platform, and that at most 1.85% of workspaces had variables decrypted. Would you rather one big lock or many small ones?",
+  "caption": "Blast radius is how much one failure or break-in can reach. Railway says its storage is designed so one compromised key cannot expose the whole platform, and that at most 1.85% of workspaces could have had variables decrypted. Would you rather one big lock or many small ones?",
   "keywords": [
     "blast radius",
     "security",
