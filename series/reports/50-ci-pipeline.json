@@ -50,5 +50,8 @@
     "kicker": "it passed locally, which counts for nothing"
   },
   "sent_at": "2026-11-21",
-  "published_at": "2026-11-21"
+  "published_at": "2026-11-21",
+  "metrics": {
+    "asked_at": "2026-11-24"
+  }
 }
