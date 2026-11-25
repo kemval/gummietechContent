@@ -1,0 +1,37 @@
+{
+  "post_type": "drop",
+  "domain": "local AI",
+  "colorway": "orbit",
+  "hook": "Songe trains your local model while your computer is idle.",
+  "what_happened": "Songe watches your local LLM when the agent is idle, records actions and errors, then trains a better version on your own computer.",
+  "why_it_matters": "It lets you personalize your model privately and improve it without sending data to the cloud.",
+  "the_catch": "Training only works on machines with a GPU; CPU‑only setups only record.",
+  "caption": "Songe lets your local language model learn from your own usage, training privately on idle compute. Local or cloud training?",
+  "keywords": [
+    "local LLM",
+    "idle compute",
+    "private training"
+  ],
+  "hashtags": [
+    "#localai",
+    "#llm",
+    "#privacy",
+    "#gummietech"
+  ],
+  "alt_text": "The carousel explains that Songe watches a local language model during idle time, records usage, and trains a better version on the same machine, all privately.",
+  "source_url": "https://github.com/sous-labs/songe",
+  "code_url": "https://github.com/sous-labs/songe",
+  "attribution": "sous-labs",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "software",
+  "picked_because": "They would miss a free method to turn unused CPU/GPU cycles into a private, cost‑free training engine for their own models.",
+  "es": {
+    "domain": "inteligencia artificial local",
+    "hook": "Songe entrena tu modelo local mientras tu computadora está inactiva",
+    "what_happened": "Songe observa tu LLM local cuando el agente está inactivo, registra acciones y errores y luego entrena una versión mejorada en tu propia computadora",
+    "why_it_matters": "Te permite personalizar tu modelo de forma privada y mejorarlo sin enviar datos a la nube",
+    "the_catch": "El entrenamiento solo funciona en máquinas con GPU; los sistemas solo con CPU únicamente registran",
+    "_en": "0591f712779b9f2b"
+  }
+}
