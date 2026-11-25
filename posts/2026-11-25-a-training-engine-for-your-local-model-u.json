@@ -2,9 +2,9 @@
   "post_type": "drop",
   "domain": "local AI",
   "colorway": "orbit",
-  "hook": "Songe trains your local model while your computer is idle.",
+  "hook": "Songe trains your local model while your agent is idle.",
   "what_happened": "Songe records what happens after your local model's actions, then trains a better version on your own computer when your agent is idle.",
-  "why_it_matters": "It lets you personalize your model privately and improve it without sending data to the cloud.",
+  "why_it_matters": "It personalizes your model on your own machine; nothing leaves it unless you turn on the optional cloud learning.",
   "the_catch": "Training only works on machines with a GPU; CPU‑only setups only record.",
   "caption": "Songe lets your local language model learn from your own usage, training privately on idle compute. Local or cloud training?",
   "keywords": [
@@ -28,10 +28,10 @@
   "picked_because": "They would miss a free method to turn unused CPU/GPU cycles into a private, cost‑free training engine for their own models.",
   "es": {
     "domain": "ia local",
-    "hook": "Songe entrena tu modelo local mientras tu computadora está en reposo",
-    "what_happened": "Songe registra lo que ocurre después de que tu modelo local actúa y, cuando tu agente está inactivo, entrena una versión mejorada en tu propia computadora",
-    "why_it_matters": "Te permite personalizar tu modelo de forma privada y mejorarlo sin enviar datos a la nube",
-    "the_catch": "El entrenamiento solo funciona en máquinas con GPU; las que solo tienen CPU únicamente registran",
-    "_en": "237ed5848c3414ce"
+    "hook": "Songe entrena tu modelo local mientras tu agente está inactivo.",
+    "what_happened": "Songe registra lo que ocurre después de las acciones de tu modelo local. Cuando tu agente está inactivo, entrena una versión mejorada en tu propia computadora.",
+    "why_it_matters": "Personaliza tu modelo en tu propia máquina; nada sale de ella a menos que actives el aprendizaje opcional en la nube.",
+    "the_catch": "El entrenamiento solo funciona en máquinas con GPU; los equipos que solo disponen de CPU únicamente pueden registrar.",
+    "_en": "9e980f792d0d90b9"
   }
 }
