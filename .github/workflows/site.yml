@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -81,7 +81,24 @@ jobs:
           path: site
           name: github-pages-${{ github.run_attempt }}
 
+      # deploy-pages lists the run's artifacts half a second after the
+      # upload finalises, and GitHub's listing sometimes lags: "Found 0
+      # artifact(s)" on 2026-10-08, 11-25 and 11-26, each time with the
+      # artifact uploaded and listed moments later. So a failed first try
+      # waits and asks once more for the same artifact in the same attempt.
+      # It fails before any deployment is created, so the retry is clean.
       - id: deploy
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Wait for the artifact listing to catch up
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 30
+
+      - id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
