@@ -1,0 +1,48 @@
+{
+  "post_type": "breakdown",
+  "domain": "local AI",
+  "colorway": "orbit",
+  "hook": "How a local AI model learns from your corrections while you're away.",
+  "the_question": "A developer corrects their local model, or a tool call fails. Songe says it turns moments like these into lessons for that model.",
+  "the_intuition": "The common guess: the model is simply retrained on the saved conversations. Songe says it never trains on the real ones.",
+  "mechanism": [
+    "Songe sits between the agent and the model server as a proxy. It reads conversations for corrections, stated rules, retries and tool errors.",
+    "When the agent is idle, the model writes short practice scenes from each lesson. Real conversations are never trained on.",
+    "A small add-on, a LoRA adapter, trains on those scenes. The model shown the lesson teaches the same model shown only the scene."
+  ],
+  "why_it_matters": "Songe says a new version is used only if it clearly does better on the user's conversations. One click goes back to an earlier version.",
+  "the_catch": "Training needs Apple Silicon or an NVIDIA or AMD GPU; without one, Songe only records. This is the maker's own README, not a study.",
+  "caption": "Songe is a proxy between a local agent and its model. Per its README, it logs corrections and errors, writes practice scenes from them while the agent is idle, then trains a LoRA adapter on those scenes. A new version is used only if it does clearly better. Would you let a model train itself on your own work, yes or no?",
+  "keywords": [
+    "local LLM",
+    "LoRA adapter",
+    "idle compute",
+    "on-policy distillation"
+  ],
+  "hashtags": [
+    "#localai",
+    "#llm",
+    "#howitworks",
+    "#gummietech"
+  ],
+  "alt_text": "An eight-slide carousel explaining how Songe, an OpenAI-compatible proxy, records a local model's corrections and errors, writes practice scenes from them while the agent is idle, trains a LoRA adapter on those scenes, and uses the new version only if it does clearly better.",
+  "source_url": "https://github.com/sous-labs/songe",
+  "attribution": "sous-labs",
+  "peer_reviewed": false,
+  "announcement": true,
+  "beat": "software",
+  "es": {
+    "domain": "IA local",
+    "hook": "Cómo un modelo de IA local aprende de tus correcciones mientras estás lejos",
+    "the_question": "Un desarrollador corrige su modelo local o falla una llamada a una herramienta. Songe dice que convierte esos momentos en lecciones para ese modelo.",
+    "the_intuition": "La suposición más frecuente es que el modelo simplemente se reentrena con las conversaciones guardadas. Songe dice que nunca se entrena con las conversaciones reales.",
+    "mechanism": [
+      "Proxy: Songe se sitúa entre el agente y el servidor del modelo como proxy. Lee las conversaciones en busca de correcciones, reglas declaradas, reintentos y errores de herramientas.",
+      "Escenas de práctica: Cuando el agente está inactivo, el modelo escribe breves escenas de práctica a partir de cada lección. Estas escenas nunca se entrenan con conversaciones reales.",
+      "Adaptador LoRA: Un pequeño complemento, un adaptador LoRA, se entrena con esas escenas. El modelo que recibe la lección entrena al mismo modelo que solo había visto la escena."
+    ],
+    "why_it_matters": "Songe dice que una nueva versión se usa solo si mejora claramente en las conversaciones del usuario. Con un solo clic, puedes volver a una versión anterior.",
+    "the_catch": "El entrenamiento requiere Apple Silicon o una GPU de NVIDIA o AMD; sin una, Songe solo registra. Este es el README del creador, no un estudio.",
+    "_en": "812cd37efb77a6e4"
+  }
+}
