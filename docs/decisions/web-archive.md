@@ -192,3 +192,17 @@ thumbnail, plus filter chips by format.
   had read as a brown slab before the footer. It carries the cards' shadow so
   an olive post's page does not swallow it.
 
+
+## The deploy asks twice (2026-11-26)
+
+`deploy-pages` looks up the run's artifact about half a second after
+`upload-pages-artifact` finalises it, and GitHub's artifact listing
+sometimes lags behind the upload: "Found 0 artifact(s)" on 2026-10-08,
+2026-11-25 and 2026-11-26, each time with the artifact uploaded and listed
+moments later, and a manual "Re-run" deploying fine. So `site.yml` lets the
+first deploy fail softly (`continue-on-error`), waits 30 seconds, and
+deploys the same artifact once more in the same attempt; only the second
+failure fails the job and reaches Telegram. The lookup fails before any
+deployment is created, so the retry starts clean. The artifact stays named
+per attempt (`github-pages-<run_attempt>`), so a manual re-run still works
+when both tries miss.
