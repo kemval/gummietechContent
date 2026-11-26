@@ -38,5 +38,8 @@
     "the_catch": "Se lanza solo en inglés de EE. UU.; requiere un Mac con Apple Silicon con macOS Sequoia 15,0 + y un plan Google AI Plus, Pro o Ultra.",
     "_en": "74aba98b5aad55ff"
   },
-  "published_at": "2026-11-23"
+  "published_at": "2026-11-23",
+  "metrics": {
+    "asked_at": "2026-11-26"
+  }
 }
