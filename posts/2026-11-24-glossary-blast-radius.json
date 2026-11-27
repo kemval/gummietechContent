@@ -34,5 +34,8 @@
     "the_catch": "No se trata de un recuento de víctimas. El 1,85 % que reportó Railway es una cota superior, porque sus registros identifican entornos, no variables individuales.",
     "_en": "5241acbe234c5626"
   },
-  "published_at": "2026-11-24"
+  "published_at": "2026-11-24",
+  "metrics": {
+    "asked_at": "2026-11-27"
+  }
 }
